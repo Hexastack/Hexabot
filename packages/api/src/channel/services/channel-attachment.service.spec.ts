@@ -1,0 +1,162 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { Readable } from 'stream';
+
+import { NotFoundException, StreamableFile } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
+
+import { AttachmentService } from '@/attachment/services/attachment.service';
+import { AttachmentAccess } from '@/attachment/types';
+import { config } from '@/config';
+import { LoggerService } from '@/logger/logger.service';
+import { buildURL } from '@/utils/helpers/URL';
+
+import { ChannelAttachmentService } from './channel-attachment.service';
+
+describe('ChannelAttachmentService', () => {
+  let service: ChannelAttachmentService;
+  let attachmentService: jest.Mocked<
+    Pick<AttachmentService, 'findOne' | 'download'>
+  >;
+  let jwtService: jest.Mocked<Pick<JwtService, 'sign' | 'verify'>>;
+  let logger: jest.Mocked<Pick<LoggerService, 'warn' | 'error'>>;
+
+  beforeEach(() => {
+    attachmentService = {
+      findOne: jest.fn(),
+      download: jest.fn(),
+    };
+    jwtService = {
+      sign: jest.fn(),
+      verify: jest.fn(),
+    };
+    logger = {
+      warn: jest.fn(),
+      error: jest.fn(),
+    };
+    service = new ChannelAttachmentService(
+      attachmentService as unknown as AttachmentService,
+      jwtService as unknown as JwtService,
+      logger as unknown as LoggerService,
+    );
+  });
+
+  it('builds a signed public URL for an internal attachment', async () => {
+    const resource = {
+      id: 'attachment-id',
+      name: 'filename.extension',
+      access: AttachmentAccess.Public,
+    };
+    jwtService.sign.mockReturnValue('signed-token');
+    attachmentService.findOne.mockResolvedValue(resource as any);
+
+    const url = await service.getPublicUrl('web-channel', { id: resource.id });
+
+    expect(attachmentService.findOne).toHaveBeenCalledWith(resource.id);
+    expect(jwtService.sign).toHaveBeenCalledWith(
+      { ...resource },
+      expect.objectContaining({
+        secret: config.parameters.signedUrl.secret,
+        expiresIn: config.parameters.signedUrl.expiresIn,
+      }),
+    );
+    expect(url).toBe(
+      buildURL(
+        config.apiBaseUrl,
+        '/webhook/web/download/filename.extension?t=signed-token',
+      ),
+    );
+  });
+
+  it('returns external URLs as-is', async () => {
+    const url = await service.getPublicUrl('web-channel', {
+      url: 'https://example.com/file.png',
+    });
+
+    expect(url).toBe('https://example.com/file.png');
+    expect(attachmentService.findOne).not.toHaveBeenCalled();
+  });
+
+  it('returns the not-found URL for attachments without an ID', async () => {
+    const url = await service.getPublicUrl('web-channel', { id: null });
+
+    expect(url).toBe(buildURL(config.apiBaseUrl, '/webhook/web/not-found'));
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Unable to build public URL: Empty attachment ID',
+    );
+  });
+
+  it('returns the not-found URL when an internal attachment cannot be resolved', async () => {
+    attachmentService.findOne.mockResolvedValue(null);
+
+    const url = await service.getPublicUrl('web-channel', {
+      id: 'missing-attachment',
+    });
+
+    expect(url).toBe(buildURL(config.apiBaseUrl, '/webhook/web/not-found'));
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Unable to find attachment sending fallback image',
+    );
+  });
+
+  it('downloads an attachment when token is valid and access policy allows it', async () => {
+    const req = {} as Request;
+    const attachment = {
+      id: 'attachment-id',
+      name: 'filename.extension',
+      access: AttachmentAccess.Public,
+    };
+    const file = new StreamableFile(Readable.from('content'));
+    jwtService.verify.mockReturnValue({
+      ...attachment,
+      exp: 123,
+      iat: 122,
+    } as any);
+    attachmentService.download.mockResolvedValue(file);
+    const hasDownloadAccess = jest.fn().mockResolvedValue(true);
+    const result = await service.download('token', req, hasDownloadAccess);
+
+    expect(hasDownloadAccess).toHaveBeenCalledWith(attachment, req);
+    expect(attachmentService.download).toHaveBeenCalledWith(attachment);
+    expect(result).toBe(file);
+  });
+
+  it('masks access denials as not found', async () => {
+    const req = {} as Request;
+    jwtService.verify.mockReturnValue({
+      id: 'attachment-id',
+      name: 'filename.extension',
+      access: AttachmentAccess.Private,
+      exp: 123,
+      iat: 122,
+    } as any);
+    const hasDownloadAccess = jest.fn().mockResolvedValue(false);
+
+    await expect(
+      service.download('token', req, hasDownloadAccess),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(attachmentService.download).not.toHaveBeenCalled();
+  });
+
+  it('masks invalid tokens as not found', async () => {
+    const req = {} as Request;
+    jwtService.verify.mockImplementation(() => {
+      throw new Error('invalid token');
+    });
+    const hasDownloadAccess = jest.fn().mockResolvedValue(true);
+
+    await expect(
+      service.download('token', req, hasDownloadAccess),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(attachmentService.download).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith(
+      'Failed to download attachment',
+      expect.any(Error),
+    );
+  });
+});

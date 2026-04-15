@@ -15,7 +15,7 @@ import { Web } from '../../../types';
 
 export abstract class WebMessageInboundEvent<
   N extends ChannelName = ChannelName,
-  T extends Web.IncomingMessageBase = Web.IncomingMessageBase,
+  T extends Web.InboundMessageBase = Web.InboundMessageBase,
   C extends ChannelHandler<N> = ChannelHandler<N>,
 > extends MessageInboundEvent<N, T, SubscriberChannelDict[N], C> {
   protected constructor(
@@ -30,28 +30,28 @@ export abstract class WebMessageInboundEvent<
   }
 
   isSyncFromChatbot(): boolean {
-    const raw = this.getRaw<Web.IncomingMessage>();
+    const raw = this.getRaw<Web.InboundMessage>();
 
     return raw.sync === true && raw.author === 'chatbot';
   }
 
   setMessageId(mid: string): void {
     this.setEventId(mid);
-    const raw = this.getRaw<Web.IncomingMessage>();
+    const raw = this.getRaw<Web.InboundMessage>();
 
     raw.mid = mid;
   }
 
   setAuthorForeignId(author: string): void {
     this.setSenderForeignId(author);
-    const raw = this.getRaw<Web.IncomingMessage>();
+    const raw = this.getRaw<Web.InboundMessage>();
 
     raw.author = author;
   }
 
   setCreatedAt(createdAt: Date): void {
     this.setOccurredAt(createdAt);
-    const raw = this.getRaw<Web.IncomingMessage>();
+    const raw = this.getRaw<Web.InboundMessage>();
 
     raw.createdAt = createdAt;
   }

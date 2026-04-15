@@ -12,20 +12,20 @@ import { Web } from '../../../types';
 
 import PayloadMessageInboundEvent from './payload.event';
 
-export class PostbackInboundEvent<
+export class QuickReplyInboundEvent<
   N extends ChannelName = ChannelName,
 > extends PayloadMessageInboundEvent<N> {
   constructor(
     context: ChannelInboundEventContext<
       N,
-      Web.IncomingMessage<Web.IncomingPayloadMessage>,
+      Web.InboundMessage<Web.IncomingPayloadMessage>,
       SubscriberChannelDict[N]
     >,
     payloadValue: string,
     text: string,
   ) {
-    super(context, IncomingMessageType.postback, payloadValue, text);
+    super(context, IncomingMessageType.quick_reply, payloadValue, text);
   }
 }
 
-export default PostbackInboundEvent;
+export default QuickReplyInboundEvent;

@@ -16,7 +16,7 @@ export * from './channels/web/web-channel.settings';
 
 export * from './channels/web/types';
 
-export * from './channels/web/inbound-events';
+export * from './channels/web/inbound';
 
 export * from './helpers/local-storage/index.helper';
 

@@ -6,15 +6,16 @@
 
 import { randomUUID } from 'crypto';
 
+import { Injectable, Type } from '@nestjs/common';
+
 import {
   ChannelInboundEvent,
-  ChannelInboundEventAdapter,
   ChannelInboundEventContext,
+  ChannelInboundEventDecoder,
 } from '@/channel/lib/inbound-events';
 import { ChannelName } from '@/channel/types';
 
 import { Web } from '../types';
-import { WEB_CHANNEL_NAME } from '../web-channel.settings';
 
 import DeliveryNotificationInboundEvent from './events/delivery.event';
 import AttachmentMessageInboundEvent from './events/messages/attachment.event';
@@ -26,10 +27,9 @@ import ReadNotificationInboundEvent from './events/read.event';
 import TypingNotificationInboundEvent from './events/typing.event';
 import UnsupportedInboundEvent from './events/unsupported.event';
 
-export class WebInboundEventAdapter<
-  N extends ChannelName = typeof WEB_CHANNEL_NAME,
-> implements
-    ChannelInboundEventAdapter<
+export class WebInboundEventDecoder<N extends ChannelName = ChannelName>
+  implements
+    ChannelInboundEventDecoder<
       N,
       ChannelInboundEvent<N, Web.Event, SubscriberChannelDict[N]>,
       SubscriberChannelDict[N]
@@ -74,34 +74,34 @@ export class WebInboundEventAdapter<
           this.createContext(event, channelAttrs),
         );
 
-      case Web.IncomingMessageType.text:
+      case Web.InboundMessageType.text:
         return new TextMessageInboundEvent(
           this.createContext(event, channelAttrs),
           event.data.text,
         );
 
-      case Web.IncomingMessageType.quick_reply:
+      case Web.InboundMessageType.quick_reply:
         return new QuickReplyInboundEvent(
           this.createContext(event, channelAttrs),
           event.data.payload,
           event.data.text,
         );
 
-      case Web.IncomingMessageType.postback:
+      case Web.InboundMessageType.postback:
         return new PostbackInboundEvent(
           this.createContext(event, channelAttrs),
           event.data.payload,
           event.data.text,
         );
 
-      case Web.IncomingMessageType.location:
+      case Web.InboundMessageType.location:
         return new LocationMessageInboundEvent(
           this.createContext(event, channelAttrs),
           event.data.coordinates.lat,
           event.data.coordinates.lng,
         );
 
-      case Web.IncomingMessageType.file: {
+      case Web.InboundMessageType.file: {
         const originalName =
           'name' in event.data && typeof event.data.name === 'string'
             ? event.data.name
@@ -180,4 +180,17 @@ export class WebInboundEventAdapter<
   }
 }
 
-export default WebInboundEventAdapter;
+export function createWebInboundEventDecoder<N extends ChannelName>(
+  channelName: N,
+): Type<WebInboundEventDecoder<N>> {
+  @Injectable()
+  class BoundWebInboundEventDecoder extends WebInboundEventDecoder<N> {
+    constructor() {
+      super(channelName);
+    }
+  }
+
+  return BoundWebInboundEventDecoder;
+}
+
+export default WebInboundEventDecoder;

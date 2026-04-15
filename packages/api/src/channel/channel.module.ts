@@ -23,6 +23,8 @@ import { WorkflowModule } from '@/workflow/workflow.module';
 import { ChannelController } from './channel.controller';
 import { ChannelMiddleware } from './channel.middleware';
 import { ChannelService } from './channel.service';
+import { ChannelAttachmentService } from './services/channel-attachment.service';
+import { ChannelDownloadService } from './services/channel-download.service';
 import { WebhookController } from './webhook.controller';
 
 export interface ChannelModuleOptions {
@@ -48,7 +50,7 @@ export interface ChannelModuleOptions {
     forwardRef(() => WorkflowModule),
   ],
   controllers: [WebhookController, ChannelController],
-  providers: [ChannelService],
+  providers: [ChannelService, ChannelAttachmentService, ChannelDownloadService],
   exports: [ChannelService],
 })
 export class ChannelModule {

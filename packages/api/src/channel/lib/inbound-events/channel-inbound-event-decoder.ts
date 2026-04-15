@@ -8,7 +8,7 @@ import { ChannelName } from '@/channel/types';
 
 import { ChannelInboundEvent } from './channel-inbound-event';
 
-export interface ChannelInboundEventAdapter<
+export interface ChannelInboundEventDecoder<
   N extends ChannelName,
   E extends ChannelInboundEvent<N> = ChannelInboundEvent<N>,
   S = SubscriberChannelDict[N],
@@ -18,4 +18,4 @@ export interface ChannelInboundEventAdapter<
   createEvents(raw: unknown, channelAttrs: S): E[];
 }
 
-export default ChannelInboundEventAdapter;
+export default ChannelInboundEventDecoder;

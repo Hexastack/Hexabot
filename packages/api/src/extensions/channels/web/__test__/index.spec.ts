@@ -10,17 +10,12 @@ import { Request } from 'express';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
-import {
-  attachmentMessage,
-  buttonsMessage,
-  contentMessage,
-  quickRepliesMessage,
-  textMessage,
-} from '@/channel/lib/__test__/common.mock';
+import { UnsupportedOutgoingFormatError } from '@/channel/lib/outbound';
+import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ThreadService } from '@/chat/services/thread.service';
-import { OutgoingMessageFormat } from '@/chat/types/message';
+import { OutgoingMessageFormat, StdEventType } from '@/chat/types/message';
 import { MenuService } from '@/cms/services/menu.service';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
 import { installMessageFixturesTypeOrm } from '@/utils/test/fixtures/message';
@@ -32,15 +27,6 @@ import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
-
-import {
-  webAttachment,
-  webButtons,
-  webCarousel,
-  webList,
-  webQuickReplies,
-  webText,
-} from './data.mock';
 
 describe('WebChannelHandler', () => {
   let module: TestingModule;
@@ -58,6 +44,11 @@ describe('WebChannelHandler', () => {
   const websocketGatewayMock = {
     broadcast: jest.fn(),
   } as jest.Mocked<Pick<WebsocketGateway, 'broadcast'>>;
+  const channelAttachmentServiceMock = {
+    getPublicUrl: jest
+      .fn()
+      .mockResolvedValue('http://public.url/download/filename.extension?t=any'),
+  } as jest.Mocked<Pick<ChannelAttachmentService, 'getPublicUrl'>>;
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
@@ -78,6 +69,10 @@ describe('WebChannelHandler', () => {
           useValue: attachmentServiceMock,
         },
         {
+          provide: ChannelAttachmentService,
+          useValue: channelAttachmentServiceMock,
+        },
+        {
           provide: WebsocketGateway,
           useValue: websocketGatewayMock,
         },
@@ -96,10 +91,7 @@ describe('WebChannelHandler', () => {
       SubscriberService,
       WebChannelHandler,
     ]);
-
-    jest
-      .spyOn(handler, 'getPublicUrl')
-      .mockResolvedValue('http://public.url/download/filename.extension?t=any');
+    await handler.onModuleInit();
   });
 
   afterAll(async () => {
@@ -131,7 +123,7 @@ describe('WebChannelHandler', () => {
         'https://example.com/,https://test.com,http://invalid-url',
     });
 
-    await expect(handler['validateCors'](req, res)).resolves.not.toThrow();
+    await expect(handler['ensureValidCors'](req, res)).resolves.not.toThrow();
 
     expect(res.set).toHaveBeenCalledWith(
       'Access-Control-Allow-Origin',
@@ -160,48 +152,75 @@ describe('WebChannelHandler', () => {
       set: jest.fn(),
     } as any;
 
-    await expect(handler['validateCors'](req, res)).rejects.toThrow(
+    await expect(handler['ensureValidCors'](req, res)).rejects.toThrow(
       'CORS - Domain not allowed!',
     );
 
     expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', '');
   });
 
-  it('should format text properly', () => {
-    const formatted = handler._textFormat(textMessage, {});
-    expect(formatted).toEqual(webText);
-  });
-
-  it('should format quick replies properly', () => {
-    const formatted = handler._quickRepliesFormat(quickRepliesMessage, {});
-    expect(formatted).toEqual(webQuickReplies);
-  });
-
-  it('should format buttons properly', () => {
-    const formatted = handler._buttonsFormat(buttonsMessage, {});
-    expect(formatted).toEqual(webButtons);
-  });
-
-  it('should format list properly', async () => {
-    const formatted = await handler._listFormat(contentMessage, {
-      content: contentMessage.options,
-    });
-    expect(formatted).toEqual(webList);
-  });
-
-  it('should format carousel properly', async () => {
-    const formatted = await handler._carouselFormat(contentMessage, {
-      content: {
-        ...contentMessage.options,
-        display: OutgoingMessageFormat.carousel,
+  it('sends messages through outbound formatter and broadcasts to sockets', async () => {
+    websocketGatewayMock.broadcast.mockClear();
+    const subscriber = {
+      channel: {
+        data: {
+          isSocket: true,
+        },
       },
+    } as any;
+    const event = {
+      getInitiator: () => subscriber,
+      getThreadId: () => 'thread-id',
+    } as any;
+    const response = await handler.sendMessage(
+      event,
+      {
+        format: OutgoingMessageFormat.text,
+        message: { text: 'hello world' },
+      },
+      {},
+    );
+
+    expect(response).toEqual({
+      mid: expect.any(String),
     });
-    expect(formatted).toEqual(webCarousel);
+    expect(websocketGatewayMock.broadcast).toHaveBeenCalledWith(
+      subscriber,
+      StdEventType.message,
+      expect.objectContaining({
+        type: 'text',
+        data: { text: 'hello world' },
+        author: 'chatbot',
+        thread_id: 'thread-id',
+        handover: false,
+      }),
+      [],
+    );
   });
 
-  it('should format attachment properly', async () => {
-    const formatted = await handler._attachmentFormat(attachmentMessage, {});
-    expect(formatted).toEqual(webAttachment);
+  it('rejects system envelopes in sendMessage', async () => {
+    const subscriber = {
+      channel: {
+        data: {
+          isSocket: true,
+        },
+      },
+    } as any;
+    const event = {
+      getInitiator: () => subscriber,
+      getThreadId: () => 'thread-id',
+    } as any;
+
+    await expect(
+      handler.sendMessage(
+        event,
+        {
+          format: OutgoingMessageFormat.system,
+          message: { outcome: 'noop' },
+        },
+        {},
+      ),
+    ).rejects.toBeInstanceOf(UnsupportedOutgoingFormatError);
   });
 
   it('creates a new subscriber if needed + set a new session', async () => {
@@ -402,7 +421,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['_handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res);
     });
 
     expect(emitAsyncSpy).toHaveBeenCalledWith(
@@ -467,7 +486,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['_handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res);
     });
 
     expect(websocketGatewayMock.broadcast).toHaveBeenCalled();
@@ -535,7 +554,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['_handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res);
     });
 
     expect(req.session.web?.threadId).toBeUndefined();
@@ -588,13 +607,13 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['_handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res);
     });
 
     clearMock.mockRestore();
   });
 
-  it('processes adapter fanout sequentially and keeps a single raw HTTP response body', async () => {
+  it('processes decoder fanout sequentially and keeps a single raw HTTP response body', async () => {
     const req = {
       isSocket: false,
       query: { first_name: 'Fanout', last_name: 'User' },
@@ -623,16 +642,16 @@ describe('WebChannelHandler', () => {
     };
 
     const channelAttrs = handler.getChannelAttributes(req as any);
-    const [messageEvent] = handler['inboundEventAdapter'].createEvents(
+    const [messageEvent] = handler['inboundEventDecoder'].createEvents(
       req.body,
       channelAttrs,
     );
-    const [typingEvent] = handler['inboundEventAdapter'].createEvents(
+    const [typingEvent] = handler['inboundEventDecoder'].createEvents(
       { type: 'typing' },
       channelAttrs,
     );
     const createEventsSpy = jest
-      .spyOn(handler['inboundEventAdapter'], 'createEvents')
+      .spyOn(handler['inboundEventDecoder'], 'createEvents')
       .mockReturnValueOnce([messageEvent, typingEvent]);
     const emitAsyncSpy = jest
       .spyOn(handler['eventEmitter'], 'emitAsync')
@@ -661,7 +680,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['_handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res);
     });
 
     expect(createEventsSpy).toHaveBeenCalledTimes(1);
@@ -745,7 +764,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['_handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res);
     });
 
     expect(attachmentServiceMock.store).toHaveBeenCalledWith(
@@ -828,7 +847,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['_handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res);
     });
 
     expect(attachmentServiceMock.store).toHaveBeenCalledWith(

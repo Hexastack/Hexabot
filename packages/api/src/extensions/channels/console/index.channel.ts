@@ -5,6 +5,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 
 import BaseWebChannelHandler from '../web/base-web-channel';
 
@@ -16,5 +17,14 @@ export default class ConsoleChannelHandler extends BaseWebChannelHandler<
 > {
   constructor() {
     super(CONSOLE_CHANNEL_NAME);
+  }
+
+  /**
+   * Returns a unique identifier for the subscriber
+   *
+   * @returns UUID
+   */
+  generateId(): string {
+    return 'console-' + uuidv4();
   }
 }

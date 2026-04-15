@@ -11,7 +11,7 @@ import { Web } from '../types';
 
 // Web events
 const webEventPayload: Web.Event = {
-  type: Web.IncomingMessageType.postback,
+  type: Web.InboundMessageType.postback,
   data: {
     text: 'Get Started',
     payload: 'GET_STARTED',
@@ -21,8 +21,8 @@ const webEventPayload: Web.Event = {
   read: true,
 };
 
-export const webEventText: Web.IncomingMessage<Web.IncomingTextMessage> = {
-  type: Web.IncomingMessageType.text,
+export const webEventText: Web.InboundMessage<Web.InboundTextMessage> = {
+  type: Web.InboundMessageType.text,
   data: {
     text: 'Hello',
   },
@@ -31,8 +31,8 @@ export const webEventText: Web.IncomingMessage<Web.IncomingTextMessage> = {
   read: true,
 };
 
-const webEventLocation: Web.IncomingMessage = {
-  type: Web.IncomingMessageType.location,
+const webEventLocation: Web.InboundMessage = {
+  type: Web.InboundMessageType.location,
   data: {
     coordinates: {
       lat: 2.0545,
@@ -44,7 +44,7 @@ const webEventLocation: Web.IncomingMessage = {
   read: true,
 };
 const webEventFile: Web.Event = {
-  type: Web.IncomingMessageType.file,
+  type: Web.InboundMessageType.file,
   data: {
     type: 'image/png',
     size: 500,
@@ -73,7 +73,7 @@ const fileChannelData = {
 };
 const TEST_ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
 
-export const webEvents: [string, Web.IncomingMessage, any][] = [
+export const webEvents: [string, Web.InboundMessage, any][] = [
   [
     'Payload Event',
     webEventPayload,
@@ -112,14 +112,14 @@ export const webEvents: [string, Web.IncomingMessage, any][] = [
       eventType: StdEventType.message,
       messageType: IncomingMessageType.location,
       payload: {
-        type: Web.IncomingMessageType.location,
+        type: Web.InboundMessageType.location,
         coordinates: {
           lat: webEventLocation.data.coordinates.lat,
           lon: webEventLocation.data.coordinates.lng,
         },
       },
       message: {
-        type: Web.IncomingMessageType.location,
+        type: Web.InboundMessageType.location,
         coordinates: {
           lat: webEventLocation.data.coordinates.lat,
           lon: webEventLocation.data.coordinates.lng,

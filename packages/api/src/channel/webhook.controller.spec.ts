@@ -13,17 +13,23 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
+import { ChannelDownloadService } from './services/channel-download.service';
 import { WebhookController } from './webhook.controller';
 
 describe('WebhookController', () => {
   let controller: WebhookController;
-  let channelService: jest.Mocked<Pick<ChannelService, 'handle' | 'download'>>;
+  let channelService: jest.Mocked<Pick<ChannelService, 'handle'>>;
+  let channelDownloadService: jest.Mocked<
+    Pick<ChannelDownloadService, 'download'>
+  >;
   let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
   let logger: jest.Mocked<Pick<LoggerService, 'log'>>;
 
   beforeEach(() => {
     channelService = {
       handle: jest.fn().mockResolvedValue(undefined),
+    };
+    channelDownloadService = {
       download: jest.fn(),
     };
     workflowService = {
@@ -35,6 +41,7 @@ describe('WebhookController', () => {
 
     controller = new WebhookController(
       channelService as unknown as ChannelService,
+      channelDownloadService as unknown as ChannelDownloadService,
       workflowService as unknown as WorkflowService,
       logger as unknown as LoggerService,
     );
@@ -89,11 +96,33 @@ describe('WebhookController', () => {
     );
     expect(channelService.handle).not.toHaveBeenCalled();
   });
+
+  it('delegates download requests to channel download service', async () => {
+    const req = {} as Request;
+    channelDownloadService.download.mockResolvedValue('stream' as any);
+
+    const result = await controller.handleDownload(
+      'web',
+      'file.txt',
+      'token',
+      req,
+    );
+
+    expect(channelDownloadService.download).toHaveBeenCalledWith(
+      'web',
+      'token',
+      req,
+    );
+    expect(result).toBe('stream');
+  });
 });
 
 describe('WebhookController (HTTP pipes)', () => {
   let app: INestApplication;
-  let channelService: jest.Mocked<Pick<ChannelService, 'handle' | 'download'>>;
+  let channelService: jest.Mocked<Pick<ChannelService, 'handle'>>;
+  let channelDownloadService: jest.Mocked<
+    Pick<ChannelDownloadService, 'download'>
+  >;
   let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
   let logger: jest.Mocked<Pick<LoggerService, 'log'>>;
 
@@ -102,6 +131,8 @@ describe('WebhookController (HTTP pipes)', () => {
       handle: jest.fn(async (_channel, _req, res: Response) => {
         res.status(204).send();
       }),
+    };
+    channelDownloadService = {
       download: jest.fn(),
     };
     workflowService = {
@@ -117,6 +148,7 @@ describe('WebhookController (HTTP pipes)', () => {
       controllers: [WebhookController],
       providers: [
         { provide: ChannelService, useValue: channelService },
+        { provide: ChannelDownloadService, useValue: channelDownloadService },
         { provide: WorkflowService, useValue: workflowService },
         { provide: LoggerService, useValue: logger },
       ],

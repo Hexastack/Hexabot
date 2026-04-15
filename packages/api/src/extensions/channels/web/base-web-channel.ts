@@ -10,7 +10,9 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  OnModuleInit,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { OnEvent } from '@nestjs/event-emitter';
 import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
@@ -27,33 +29,29 @@ import {
 } from '@/attachment/types';
 import ChannelHandler from '@/channel/lib/Handler';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
+import {
+  inferOutgoingMessageEnvelope,
+  UnsupportedOutgoingFormatError,
+} from '@/channel/lib/outbound';
+import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { Thread } from '@/chat/dto/thread.dto';
-import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ThreadService } from '@/chat/services/thread.service';
-import { AttachmentRef } from '@/chat/types/attachment';
-import { Button, ButtonType, PayloadType } from '@/chat/types/button';
+import { PayloadType } from '@/chat/types/button';
 import {
   AnyMessage,
-  ContentElement,
   IncomingMessage,
   OutgoingMessage,
   OutgoingMessageFormat,
   StdEventType,
-  StdOutgoingAttachmentMessage,
-  StdOutgoingButtonsMessage,
   StdOutgoingEnvelope,
-  StdOutgoingListMessage,
   StdOutgoingMessage,
-  StdOutgoingQuickRepliesMessage,
-  StdOutgoingTextMessage,
 } from '@/chat/types/message';
 import { ActionOptions } from '@/chat/types/options';
-import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
 import { SocketRequest } from '@/websocket/utils/socket-request';
@@ -63,9 +61,14 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import {
   AttachmentMessageInboundEvent,
   BaseWebInboundEvent,
-  WebInboundEventAdapter,
+  createWebInboundEventDecoder,
+  WebInboundEventDecoder,
   WebMessageInboundEvent,
-} from './inbound-events';
+} from './inbound';
+import {
+  createWebOutboundMessageEncoder,
+  WebOutboundMessageEncoder,
+} from './outbound';
 import { Web } from './types';
 import {
   WEB_CHANNEL_NAME,
@@ -87,9 +90,10 @@ const upload = multer({
 }).single('file'); // 'file' is the field name in the form
 
 @Injectable()
-export default abstract class BaseWebChannelHandler<
-  N extends ChannelName,
-> extends ChannelHandler<N> {
+export default abstract class BaseWebChannelHandler<N extends ChannelName>
+  extends ChannelHandler<N>
+  implements OnModuleInit
+{
   @Inject(SubscriberService)
   protected readonly subscriberService: SubscriberService;
 
@@ -105,19 +109,36 @@ export default abstract class BaseWebChannelHandler<
   @Inject(ThreadService)
   protected readonly threadService: ThreadService;
 
-  private readonly inboundEventAdapter: WebInboundEventAdapter<N>;
+  @Inject(ChannelAttachmentService)
+  protected readonly channelAttachmentService: ChannelAttachmentService;
+
+  @Inject(ModuleRef)
+  private readonly moduleRef: ModuleRef;
+
+  private outboundMessageEncoder!: WebOutboundMessageEncoder;
+
+  private inboundEventDecoder!: WebInboundEventDecoder<N>;
 
   constructor(name: N) {
     super(name);
-    this.inboundEventAdapter = new WebInboundEventAdapter(name);
   }
 
-  /**
-   * No init needed for the moment
-   *
-   * @returns -
-   */
-  init(): void {
+  async onModuleInit() {
+    await super.onModuleInit();
+    const OutboundMessageEncoderProvider = createWebOutboundMessageEncoder(
+      this.getName(),
+    );
+    const InboundEventDecoderProvider = createWebInboundEventDecoder(
+      this.getName(),
+    );
+    [this.outboundMessageEncoder, this.inboundEventDecoder] = await Promise.all(
+      [
+        this.moduleRef.create(OutboundMessageEncoderProvider),
+        this.moduleRef.create(InboundEventDecoderProvider) as Promise<
+          WebInboundEventDecoder<N>
+        >,
+      ],
+    );
     this.logger.debug('initialization ...');
   }
 
@@ -221,14 +242,14 @@ export default abstract class BaseWebChannelHandler<
    */
   private async formatIncomingHistoryMessage(
     incoming: IncomingMessage,
-  ): Promise<Web.IncomingMessageBase> {
+  ): Promise<Web.InboundMessageBase> {
     // Format incoming message
     if ('type' in incoming.message) {
       if (incoming.message.type === PayloadType.location) {
         const coordinates = incoming.message.coordinates;
 
         return {
-          type: Web.IncomingMessageType.location,
+          type: Web.InboundMessageType.location,
           data: {
             coordinates: {
               lat: coordinates.lat,
@@ -243,16 +264,19 @@ export default abstract class BaseWebChannelHandler<
           : incoming.message.attachment;
 
         return {
-          type: Web.IncomingMessageType.file,
+          type: Web.InboundMessageType.file,
           data: {
             type: attachmentPayload.type,
-            url: await this.getPublicUrl(attachmentPayload.payload),
+            url: await this.channelAttachmentService.getPublicUrl(
+              this.getName(),
+              attachmentPayload.payload,
+            ),
           },
         };
       }
     } else {
       return {
-        type: Web.IncomingMessageType.text,
+        type: Web.InboundMessageType.text,
         data: incoming.message,
       };
     }
@@ -266,27 +290,16 @@ export default abstract class BaseWebChannelHandler<
    */
   private async formatOutgoingHistoryMessage(
     outgoing: OutgoingMessage,
-  ): Promise<Web.OutgoingMessageBase> {
-    // Format outgoing message
-    if ('buttons' in outgoing.message) {
-      return this._buttonsFormat(outgoing.message);
-    } else if ('attachment' in outgoing.message) {
-      return this._attachmentFormat(outgoing.message);
-    } else if ('quickReplies' in outgoing.message) {
-      return this._quickRepliesFormat(outgoing.message);
-    } else if ('options' in outgoing.message) {
-      if (outgoing.message.options.display === 'carousel') {
-        return await this._carouselFormat(outgoing.message, {
-          content: outgoing.message.options,
-        });
-      } else {
-        return await this._listFormat(outgoing.message, {
-          content: outgoing.message.options,
-        });
-      }
-    } else {
-      return this._textFormat(outgoing.message);
-    }
+  ): Promise<Web.OutboundMessageBase> {
+    const envelope = inferOutgoingMessageEnvelope(outgoing.message);
+    const options: ActionOptions =
+      'options' in outgoing.message
+        ? {
+            content: outgoing.message.options,
+          }
+        : {};
+
+    return await this.outboundMessageEncoder.encode(envelope, options);
   }
 
   /**
@@ -446,7 +459,7 @@ export default abstract class BaseWebChannelHandler<
    * @param req
    * @param res
    */
-  private async validateCors(
+  private async ensureValidCors(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ) {
@@ -538,24 +551,6 @@ export default abstract class BaseWebChannelHandler<
         .json({ err: 'Web Channel Handler : Unauthorized!' });
     }
     next(req.session.web?.profile);
-  }
-
-  /**
-   * Perform all security measures on the request
-   *
-   * @param req
-   * @param res
-   */
-  protected async checkRequest(
-    req: Request | SocketRequest,
-    res: Response | SocketResponse,
-  ) {
-    try {
-      await this.validateCors(req, res);
-    } catch (err) {
-      this.logger.warn('Attempt to access from an unauthorized origin', err);
-      throw new Error('Unauthorized, invalid origin !');
-    }
   }
 
   /**
@@ -739,7 +734,7 @@ export default abstract class BaseWebChannelHandler<
    */
   async handleWsUpload(req: SocketRequest): Promise<Attachment | null> {
     try {
-      const { type, data } = req.body as Web.IncomingMessage;
+      const { type, data } = req.body as Web.InboundMessage;
 
       if (!req.session.web?.profile?.id) {
         this.logger.debug('No session');
@@ -749,7 +744,7 @@ export default abstract class BaseWebChannelHandler<
 
       // Check if any file is provided
       if (
-        type !== Web.IncomingMessageType.file ||
+        type !== Web.InboundMessageType.file ||
         !('file' in data) ||
         !data.file
       ) {
@@ -890,7 +885,7 @@ export default abstract class BaseWebChannelHandler<
    * @param req Either a HTTP Express request or a WS request (Synthetic Object)
    * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
-  _handleEvent(
+  handleEvent(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
     workflowId?: string,
@@ -916,15 +911,14 @@ export default abstract class BaseWebChannelHandler<
     this.validateSession(req, res, async (profile) => {
       const channelAttrs = this.getChannelAttributes(req);
       let events: Array<
-        BaseWebInboundEvent<N> | WebMessageInboundEvent<N, Web.IncomingMessage>
+        BaseWebInboundEvent<N> | WebMessageInboundEvent<N, Web.InboundMessage>
       >;
       try {
-        events = this.inboundEventAdapter.createEvents(
+        events = this.inboundEventDecoder.createEvents(
           req.body,
           channelAttrs,
         ) as Array<
-          | BaseWebInboundEvent<N>
-          | WebMessageInboundEvent<N, Web.IncomingMessage>
+          BaseWebInboundEvent<N> | WebMessageInboundEvent<N, Web.InboundMessage>
         >;
       } catch (err) {
         this.logger.warn('Invalid event payload', err);
@@ -957,7 +951,7 @@ export default abstract class BaseWebChannelHandler<
         if (event.getEventType() === StdEventType.message) {
           const messageEvent = event as WebMessageInboundEvent<
             N,
-            Web.IncomingMessage
+            Web.InboundMessage
           >;
 
           // Handle upload when files are provided
@@ -969,7 +963,10 @@ export default abstract class BaseWebChannelHandler<
                 messageEvent.setUploadedAttachment(attachment);
                 messageEvent.setUploadedRawData(
                   AttachmentOrmEntity.getTypeByMime(attachment.type),
-                  await this.getPublicUrl(attachment),
+                  await this.channelAttachmentService.getPublicUrl(
+                    this.getName(),
+                    attachment,
+                  ),
                 );
               }
             } catch (err) {
@@ -1075,7 +1072,7 @@ export default abstract class BaseWebChannelHandler<
   ) {
     // Web Channel messaging can be done through websockets or long-polling
     try {
-      await this.checkRequest(req, res);
+      await this.ensureValidCors(req, res);
       if (req.method === 'GET') {
         if (!this.isSocketRequest(req) && req.query._get) {
           const settings = await this.getSettings();
@@ -1115,7 +1112,7 @@ export default abstract class BaseWebChannelHandler<
         }
       } else {
         // Handle incoming messages (through POST)
-        return this._handleEvent(req, res, workflowId);
+        return this.handleEvent(req, res, workflowId);
       }
     } catch (err) {
       this.logger.warn('Request check failed', err);
@@ -1133,297 +1130,6 @@ export default abstract class BaseWebChannelHandler<
    */
   generateId(): string {
     return 'web-' + uuidv4();
-  }
-
-  /**
-   * Formats a text message that will be sent to the widget
-   *
-   * @param message - A text to be sent to the end user
-   * @param _options - might contain additional settings
-   *
-   * @returns A ready to be sent text message
-   */
-  _textFormat(
-    message: StdOutgoingTextMessage,
-    _options?: ActionOptions,
-  ): Web.OutgoingMessageBase {
-    return {
-      type: Web.OutgoingMessageType.text,
-      data: message,
-    };
-  }
-
-  /**
-   * Formats a text + quick replies message that can be sent back
-   *
-   * @param message - A text + quick replies to be sent to the end user
-   * @param _options - might contain additional settings
-   *
-   * @returns A ready to be sent text message
-   */
-  _quickRepliesFormat(
-    message: StdOutgoingQuickRepliesMessage,
-    _options?: ActionOptions,
-  ): Web.OutgoingMessageBase {
-    return {
-      type: Web.OutgoingMessageType.quick_replies,
-      data: {
-        text: message.text,
-        quick_replies: message.quickReplies,
-      },
-    };
-  }
-
-  /**
-   * Formats a text + buttons message that can be sent back
-   *
-   * @param message - A text + buttons to be sent to the end user
-   * @param _options - Might contain additional settings
-   *
-   * @returns A formatted Object understandable by the widget
-   */
-  _buttonsFormat(
-    message: StdOutgoingButtonsMessage,
-    _options?: ActionOptions,
-  ): Web.OutgoingMessageBase {
-    return {
-      type: Web.OutgoingMessageType.buttons,
-      data: {
-        text: message.text,
-        buttons: message.buttons,
-      },
-    };
-  }
-
-  /**
-   * Formats an attachment + quick replies message that can be sent to the widget
-   *
-   * @param message - An attachment + quick replies to be sent to the end user
-   * @param _options - Might contain additional settings
-   *
-   * @returns A ready to be sent attachment message
-   */
-  async _attachmentFormat(
-    message: StdOutgoingAttachmentMessage,
-    _options?: ActionOptions,
-  ): Promise<Web.OutgoingMessageBase> {
-    const payload: Web.OutgoingMessageBase = {
-      type: Web.OutgoingMessageType.file,
-      data: {
-        type: message.attachment.type,
-        url: await this.getPublicUrl(message.attachment.payload),
-      },
-    };
-    if (message.quickReplies && message.quickReplies.length > 0) {
-      return {
-        ...payload,
-        data: {
-          ...payload.data,
-          quick_replies: message.quickReplies,
-        } as Web.OutgoingFileMessageData,
-      };
-    }
-
-    return payload;
-  }
-
-  /**
-   * Formats a collection of items to be sent to the widget (carousel/list)
-   *
-   * @param data - A list of data items to be sent to the end user
-   * @param options - Might contain additional settings
-   *
-   * @returns An array of elements object
-   */
-  async _formatElements(
-    data: ContentElement[],
-    options: ActionOptions,
-  ): Promise<Web.MessageElement[]> {
-    if (!options.content || !options.content.fields) {
-      throw new Error('Content options are missing the fields');
-    }
-
-    const fields = options.content.fields;
-    const buttons: Button[] = options.content.buttons;
-    const result: Web.MessageElement[] = [];
-
-    for (const item of data) {
-      const element: Web.MessageElement = {
-        title: item[fields.title],
-        buttons: item.buttons || [],
-      };
-
-      if (fields.subtitle && item[fields.subtitle]) {
-        element.subtitle = item[fields.subtitle];
-      }
-
-      if (fields.image_url && item[fields.image_url]) {
-        const attachmentRef =
-          typeof item[fields.image_url] === 'string'
-            ? { url: item[fields.image_url] }
-            : (item[fields.image_url].payload as AttachmentRef);
-        element.image_url = await this.getPublicUrl(attachmentRef);
-      }
-
-      buttons.forEach((button: Button, index) => {
-        const btn = { ...button };
-        if (btn.type === ButtonType.web_url) {
-          // Get built-in or an external URL from custom field
-          const urlField = fields.url;
-          btn.url =
-            urlField && item[urlField]
-              ? item[urlField]
-              : ContentOrmEntity.getUrl(item);
-          if (!btn.url.startsWith('http')) {
-            btn.url = 'https://' + btn.url;
-          }
-          // Set default action the same as the first web_url button
-          if (!element.default_action) {
-            const { title: _title, ...defaultAction } = btn;
-            element.default_action = defaultAction;
-          }
-        } else {
-          if (
-            'action_payload' in fields &&
-            fields.action_payload &&
-            fields.action_payload in item
-          ) {
-            btn.payload = btn.title + ':' + item[fields.action_payload];
-          } else {
-            const postback = ContentOrmEntity.getPayload(item);
-            btn.payload = btn.title + ':' + postback;
-          }
-        }
-        // Set custom title for first button if provided
-        if (index === 0 && fields.action_title && item[fields.action_title]) {
-          btn.title = item[fields.action_title];
-        }
-        element.buttons?.push(btn);
-      });
-
-      if (Array.isArray(element.buttons) && element.buttons.length === 0) {
-        delete element.buttons;
-      }
-
-      result.push(element);
-    }
-
-    return result;
-  }
-
-  /**
-   * Format a list of elements
-   *
-   * @param message - Contains elements to be sent to the end user
-   * @param options - Might contain additional settings
-   *
-   * @returns A ready to be sent list template message
-   */
-  async _listFormat(
-    message: StdOutgoingListMessage,
-    options: ActionOptions,
-  ): Promise<Web.OutgoingMessageBase> {
-    const data = message.elements || [];
-    const pagination = message.pagination;
-    let buttons: Button[] = [],
-      elements: Web.MessageElement[] = [];
-
-    // Items count min check
-    if (!data.length) {
-      this.logger.error('Insufficient content count (must be >= 0 for list)');
-      throw new Error('Insufficient content count (list >= 0)');
-    }
-
-    // Toggle "View More" button (check if there's more items to display)
-    if (pagination.total - pagination.skip - pagination.limit > 0) {
-      buttons = [
-        {
-          type: ButtonType.postback,
-          title: this.i18n.t('View More'),
-          payload: VIEW_MORE_PAYLOAD,
-        },
-      ];
-    }
-
-    // Populate items (elements/cards) with content
-    elements = await this._formatElements(data, options);
-    const topElementStyle = options.content?.top_element_style
-      ? {
-          top_element_style: options.content?.top_element_style,
-        }
-      : {};
-
-    return {
-      type: Web.OutgoingMessageType.list,
-      data: {
-        elements,
-        buttons,
-        ...topElementStyle,
-      },
-    };
-  }
-
-  /**
-   * Format a carousel message
-   *
-   * @param message - Contains elements to be sent to the end user
-   * @param options - Might contain additional settings
-   *
-   * @returns A carousel ready to be sent as a message
-   */
-  async _carouselFormat(
-    message: StdOutgoingListMessage,
-    options: ActionOptions,
-  ): Promise<Web.OutgoingMessageBase> {
-    const data = message.elements || [];
-    // Items count min check
-    if (data.length === 0) {
-      this.logger.error(
-        'Insufficient content count (must be > 0 for carousel)',
-      );
-      throw new Error('Insufficient content count (carousel > 0)');
-    }
-
-    // Populate items (elements/cards) with content
-    const elements = await this._formatElements(data, options);
-
-    return {
-      type: Web.OutgoingMessageType.carousel,
-      data: {
-        elements,
-      },
-    };
-  }
-
-  /**
-   * Creates an widget compliant data structure for any message envelope
-   *
-   * @param envelope - The message standard envelope
-   * @param options - The action options related to the message
-   *
-   * @returns A template filled with its payload
-   */
-  async _formatMessage(
-    envelope: StdOutgoingEnvelope,
-    options: ActionOptions,
-  ): Promise<Web.OutgoingMessageBase> {
-    switch (envelope.format) {
-      case OutgoingMessageFormat.attachment:
-        return await this._attachmentFormat(envelope.message, options);
-      case OutgoingMessageFormat.buttons:
-        return this._buttonsFormat(envelope.message, options);
-      case OutgoingMessageFormat.carousel:
-        return await this._carouselFormat(envelope.message, options);
-      case OutgoingMessageFormat.list:
-        return await this._listFormat(envelope.message, options);
-      case OutgoingMessageFormat.quickReplies:
-        return this._quickRepliesFormat(envelope.message, options);
-      case OutgoingMessageFormat.text:
-        return this._textFormat(envelope.message, options);
-
-      default:
-        throw new Error('Unknown message format');
-    }
   }
 
   /**
@@ -1462,12 +1168,16 @@ export default abstract class BaseWebChannelHandler<
     envelope: StdOutgoingEnvelope,
     options: ActionOptions,
   ): Promise<{ mid: string }> {
-    const messageBase: Web.OutgoingMessageBase = await this._formatMessage(
+    if (envelope.format === OutgoingMessageFormat.system) {
+      throw new UnsupportedOutgoingFormatError(envelope.format);
+    }
+
+    const messageBase = await this.outboundMessageEncoder.encode(
       envelope,
-      options,
+      options ?? {},
     );
     const subscriber = event.getInitiator();
-    const message: Web.OutgoingMessage = {
+    const message: Web.OutboundMessage = {
       ...messageBase,
       mid: this.generateId(),
       author: 'chatbot',

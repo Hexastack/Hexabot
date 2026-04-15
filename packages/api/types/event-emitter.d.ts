@@ -44,7 +44,7 @@ import type { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import type {
   DeliveryNotificationInboundEvent,
   ReadNotificationInboundEvent,
-} from '@/extensions/channels/web/inbound-events';
+} from '@/extensions/channels/web/inbound';
 import type { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import type { TranslationOrmEntity } from '@/i18n/entities/translation.entity';
 import type { Setting } from '@/setting/dto/setting.dto';

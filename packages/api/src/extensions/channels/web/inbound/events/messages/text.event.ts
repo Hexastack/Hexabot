@@ -16,12 +16,12 @@ export class TextMessageInboundEvent<
   N extends ChannelName = ChannelName,
 > extends WebMessageInboundEvent<
   N,
-  Web.IncomingMessage<Web.IncomingTextMessage>
+  Web.InboundMessage<Web.InboundTextMessage>
 > {
   constructor(
     context: ChannelInboundEventContext<
       N,
-      Web.IncomingMessage<Web.IncomingTextMessage>,
+      Web.InboundMessage<Web.InboundTextMessage>,
       SubscriberChannelDict[N]
     >,
     private readonly text: string,

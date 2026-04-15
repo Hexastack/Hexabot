@@ -10,4 +10,4 @@ export * from './events/base-web-inbound.event';
 
 export * from './events/unsupported.event';
 
-export * from './web-inbound-event-adapter';
+export * from './web-inbound-event-decoder';

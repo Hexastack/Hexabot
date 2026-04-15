@@ -14,7 +14,7 @@ import { config } from '@/config';
 import {
   DeliveryNotificationInboundEvent,
   ReadNotificationInboundEvent,
-} from '@/extensions/channels/web/inbound-events';
+} from '@/extensions/channels/web/inbound';
 import { LoggerService } from '@/logger/logger.service';
 import { AgenticService } from '@/workflow/services/agentic.service';
 
