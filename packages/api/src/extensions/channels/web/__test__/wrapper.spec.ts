@@ -10,6 +10,7 @@ import { IncomingMessageType, StdEventType } from '@/chat/types/message';
 
 import {
   AttachmentMessageInboundEvent,
+  createWebInboundEventDecoder,
   DeliveryNotificationInboundEvent,
   LocationMessageInboundEvent,
   PostbackInboundEvent,
@@ -17,9 +18,8 @@ import {
   ReadNotificationInboundEvent,
   TextMessageInboundEvent,
   TypingNotificationInboundEvent,
-  WebInboundEventAdapter,
   WebMessageInboundEvent,
-} from '../inbound-events';
+} from '../inbound';
 import { Web } from '../types';
 import { WEB_CHANNEL_NAME } from '../web-channel.settings';
 
@@ -30,14 +30,16 @@ const channelData = {
   agent: 'browser',
 };
 
-describe('Web inbound events adapter', () => {
-  const adapter = new WebInboundEventAdapter(WEB_CHANNEL_NAME);
+describe('Web inbound events decoder', () => {
+  const InboundEventDecoderProvider =
+    createWebInboundEventDecoder(WEB_CHANNEL_NAME);
+  const adapter = new InboundEventDecoderProvider();
 
   it.each([
     [
       'text',
       {
-        type: Web.IncomingMessageType.text,
+        type: Web.InboundMessageType.text,
         data: { text: 'Hello' },
         author: 'web-user',
         mid: 'msg-1',
@@ -49,7 +51,7 @@ describe('Web inbound events adapter', () => {
     [
       'quick reply',
       {
-        type: Web.IncomingMessageType.quick_reply,
+        type: Web.InboundMessageType.quick_reply,
         data: { text: 'Choose', payload: 'CHOICE' },
         author: 'web-user',
         mid: 'msg-2',
@@ -61,7 +63,7 @@ describe('Web inbound events adapter', () => {
     [
       'postback',
       {
-        type: Web.IncomingMessageType.postback,
+        type: Web.InboundMessageType.postback,
         data: { text: 'Go', payload: 'START' },
         author: 'web-user',
         mid: 'msg-3',
@@ -73,7 +75,7 @@ describe('Web inbound events adapter', () => {
     [
       'location',
       {
-        type: Web.IncomingMessageType.location,
+        type: Web.InboundMessageType.location,
         data: { coordinates: { lat: 1.2, lng: 3.4 } },
         author: 'web-user',
         mid: 'msg-4',
@@ -85,7 +87,7 @@ describe('Web inbound events adapter', () => {
     [
       'attachment',
       {
-        type: Web.IncomingMessageType.file,
+        type: Web.InboundMessageType.file,
         data: {
           type: 'image/png',
           size: 10,
@@ -156,7 +158,7 @@ describe('Web inbound events adapter', () => {
   it('keeps message logic polymorphic and attachment state local', () => {
     const [textEvent] = adapter.createEvents(
       {
-        type: Web.IncomingMessageType.text,
+        type: Web.InboundMessageType.text,
         data: { text: 'Hello' },
         author: 'web-user',
         mid: 'msg-100',
@@ -169,7 +171,7 @@ describe('Web inbound events adapter', () => {
 
     const [attachmentEvent] = adapter.createEvents(
       {
-        type: Web.IncomingMessageType.file,
+        type: Web.InboundMessageType.file,
         data: {
           type: 'image/png',
           size: 10,
@@ -212,7 +214,7 @@ describe('Web inbound events adapter', () => {
   it('maps message payloads and normalized channel data', () => {
     const [event] = adapter.createEvents(
       {
-        type: Web.IncomingMessageType.postback,
+        type: Web.InboundMessageType.postback,
         data: {
           text: 'Get Started',
           payload: 'GET_STARTED',
@@ -248,7 +250,7 @@ describe('Web inbound events adapter', () => {
   it('keeps workflow id as transient event state', () => {
     const [event] = adapter.createEvents(
       {
-        type: Web.IncomingMessageType.text,
+        type: Web.InboundMessageType.text,
         data: { text: 'Workflow test' },
         author: 'web-user',
         mid: 'msg-300',
@@ -301,7 +303,7 @@ describe('Web inbound events adapter', () => {
     expect(() =>
       adapter.createEvents(
         {
-          type: Web.IncomingMessageType.text,
+          type: Web.InboundMessageType.text,
           data: {},
         },
         channelData,

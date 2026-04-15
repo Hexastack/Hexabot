@@ -4,21 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/dto/attachment.dto';
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -28,13 +20,10 @@ import {
 } from '@/attachment/types';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { AttachmentRef } from '@/chat/types/attachment';
-import { StdOutgoingEnvelope, StdOutgoingMessage } from '@/chat/types/message';
-import { config } from '@/config';
+import { StdOutgoingEnvelope } from '@/chat/types/message';
 import { I18nService } from '@/i18n';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
-import { buildURL } from '@/utils/helpers/URL';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
@@ -58,21 +47,11 @@ export default abstract class ChannelHandler<
   @Inject(AttachmentService)
   public readonly attachmentService: AttachmentService;
 
-  @Inject(JwtService)
-  protected readonly jwtService: JwtService;
-
   @Inject(SettingService)
   protected readonly settingService: SettingService;
 
   @Inject(ChannelService)
   protected readonly channelService: ChannelService;
-
-  protected readonly jwtSignOptions: JwtSignOptions = {
-    secret: config.parameters.signedUrl.secret,
-    expiresIn: config.parameters.signedUrl.expiresIn,
-    algorithm: 'HS256',
-    encoding: 'utf-8',
-  };
 
   constructor(name: N) {
     super(name);
@@ -88,7 +67,6 @@ export default abstract class ChannelHandler<
       this.getName(),
       this as unknown as ChannelHandler<N>,
     );
-    this.init();
   }
 
   /**
@@ -103,11 +81,6 @@ export default abstract class ChannelHandler<
   }
 
   /**
-   * Perform any initialization needed
-   */
-  abstract init(): void;
-
-  /**
    * Process incoming channel data via POST/GET methods
    *
    * @param {module:Controller.req} req
@@ -117,72 +90,6 @@ export default abstract class ChannelHandler<
     req: Request | SocketRequest,
     res: Response | SocketResponse,
     workflowId?: string,
-  ): any;
-
-  /**
-   * Format a text message that will be sent to the channel
-   *
-   * @param message - A text to be sent to the end user
-   * @param options - might contain additional settings
-   * @returns {Object} - A text message in the channel specific format
-   */
-  abstract _textFormat(message: StdOutgoingMessage, options?: any): any;
-
-  /**
-   * Format a text + quick replies message that can be sent to the channel
-   *
-   * @param message - A text + quick replies to be sent to the end user
-   * @param options - might contain additional settings
-   * @returns {Object} - A quick replies message in the channel specific format
-   */
-  abstract _quickRepliesFormat(message: StdOutgoingMessage, options?: any): any;
-
-  /**
-   * From raw buttons, construct a channel understable message containing those buttons
-   *
-   * @param message - A text + buttons to be sent to the end user
-   * @param options - Might contain additional settings
-   * @returns {Object} - A buttons message in the format required by the channel
-   */
-  abstract _buttonsFormat(
-    message: StdOutgoingMessage,
-    options?: any,
-    ...args: any
-  ): any;
-
-  /**
-   * Format an attachment + quick replies message that can be sent to the channel
-   *
-   * @param message - An attachment + quick replies to be sent to the end user
-   * @param options - Might contain additional settings
-   * @returns {Object} - An attachment message in the format required by the channel
-   */
-  abstract _attachmentFormat(message: StdOutgoingMessage, options?: any): any;
-
-  /**
-   * Format a list of elements
-   *
-   * @param message - Contains elements to be sent to the end user
-   * @param options - Might contain additional settings
-   * @returns {Object} - A ready to be sent list template message in the format required by the channel
-   */
-  abstract _listFormat(
-    message: StdOutgoingMessage,
-    options: any,
-    ...args: any
-  ): any;
-
-  /**
-   * Format a carousel message
-   * @param message - Contains elements to be sent to the end user
-   * @param options - Might contain additional settings
-   * @returns {Object} - A carousel ready to be sent in the format required by the channel
-   
-   */
-  abstract _carouselFormat(
-    message: StdOutgoingMessage,
-    options: any,
-    ...args: any
   ): any;
 
   /**
@@ -290,51 +197,6 @@ export default abstract class ChannelHandler<
   }
 
   /**
-   * Generates a signed URL for downloading an attachment.
-   *
-   * This function creates a signed URL for a given attachment using a JWT token.
-   * The signed URL includes the attachment name and a token as query parameters.
-   *
-   * @param attachment The attachment ID or object to generate a signed URL for.
-   * @return A signed URL string for downloading the specified attachment.
-   */
-  public async getPublicUrl(attachment: AttachmentRef | AttachmentOrmEntity) {
-    const [name, _suffix] = this.getName().split('-');
-    if (attachment && 'id' in attachment) {
-      if (!attachment || !attachment.id) {
-        this.logger.warn('Unable to build public URL: Empty attachment ID');
-
-        return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
-      }
-
-      const resource = await this.attachmentService.findOne(attachment.id);
-
-      if (!resource) {
-        this.logger.warn('Unable to find attachment sending fallback image');
-
-        return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
-      }
-
-      const token = this.jwtService.sign({ ...resource }, this.jwtSignOptions);
-
-      return buildURL(
-        config.apiBaseUrl,
-        `/webhook/${name}/download/${resource.name}?t=${encodeURIComponent(token)}`,
-      );
-    } else if ('url' in attachment && attachment.url) {
-      // In case the url is external
-      return attachment.url;
-    } else {
-      this.logger.warn(
-        'Unable to resolve the attachment public URL.',
-        attachment,
-      );
-
-      return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
-    }
-  }
-
-  /**
    * Checks if the request is authorized to download a given attachment file.
    * Can be overriden by the channel handler to customize, by default it shouldn't
    * allow any client to download a subscriber attachment for example.
@@ -345,42 +207,5 @@ export default abstract class ChannelHandler<
    */
   public async hasDownloadAccess(attachment: Attachment, _req: Request) {
     return attachment.access === AttachmentAccess.Public;
-  }
-
-  /**
-   * Downloads an attachment using a signed token.
-   *
-   * This function verifies the provided token and retrieves the corresponding
-   * attachment as a streamable file. If the verification fails or the attachment
-   * cannot be located, it throws a NotFoundException.
-   *
-   * @param token The signed token used to verify and locate the attachment.
-   * @param req - The HTTP express request object.
-   * @return A streamable file of the attachment.
-   */
-  public async download(token: string, req: Request) {
-    try {
-      const {
-        exp: _exp,
-        iat: _iat,
-        ...result
-      } = this.jwtService.verify(
-        token,
-        this.jwtSignOptions as JwtVerifyOptions,
-      );
-      const attachment: Attachment = result;
-      // Check access
-      const canDownload = await this.hasDownloadAccess(attachment, req);
-      if (!canDownload) {
-        throw new ForbiddenException(
-          'You are not authorized to download the attachment',
-        );
-      }
-
-      return await this.attachmentService.download(attachment);
-    } catch (err) {
-      this.logger.error('Failed to download attachment', err);
-      throw new NotFoundException('Unable to locate attachment');
-    }
   }
 }

@@ -18,7 +18,9 @@ import { ChannelService } from './channel.service';
 
 describe('ChannelService', () => {
   let service: ChannelService;
-  let webChannelHandler: { handle: jest.Mock };
+  let webChannelHandler: {
+    handle: jest.Mock;
+  };
   let consoleChannelHandler: { handle: jest.Mock };
   let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
 

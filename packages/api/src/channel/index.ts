@@ -14,7 +14,13 @@ export * from './channel.service';
 
 export * from './lib/inbound-events';
 
+export * from './lib/outbound';
+
 export * from './lib/Handler';
+
+export * from './services/channel-attachment.service';
+
+export * from './services/channel-download.service';
 
 export * from './types';
 

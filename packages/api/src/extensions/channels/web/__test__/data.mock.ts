@@ -11,12 +11,12 @@ import { ButtonType } from '@/chat/types/button';
 
 import { Web } from '../types';
 
-export const webText: Web.OutgoingMessageBase = {
-  type: Web.OutgoingMessageType.text,
+export const webText: Web.OutboundMessageBase = {
+  type: Web.OutboundMessageType.text,
   data: textMessage,
 };
 
-export const webQuickReplies: Web.OutgoingMessageBase = {
+export const webQuickReplies: Web.OutboundMessageBase = {
   data: {
     quick_replies: [
       {
@@ -30,10 +30,10 @@ export const webQuickReplies: Web.OutgoingMessageBase = {
     ],
     text: 'Choose one option',
   },
-  type: Web.OutgoingMessageType.quick_replies,
+  type: Web.OutboundMessageType.quick_replies,
 };
 
-export const webButtons: Web.OutgoingMessageBase = {
+export const webButtons: Web.OutboundMessageBase = {
   data: {
     buttons: [
       {
@@ -51,10 +51,10 @@ export const webButtons: Web.OutgoingMessageBase = {
     ],
     text: 'Hit one of these buttons :',
   },
-  type: Web.OutgoingMessageType.buttons,
+  type: Web.OutboundMessageType.buttons,
 };
 
-export const webList: Web.OutgoingMessageBase = {
+export const webList: Web.OutboundMessageBase = {
   data: {
     buttons: [
       {
@@ -90,10 +90,10 @@ export const webList: Web.OutgoingMessageBase = {
       },
     ],
   },
-  type: Web.OutgoingMessageType.list,
+  type: Web.OutboundMessageType.list,
 };
 
-export const webCarousel: Web.OutgoingMessageBase = {
+export const webCarousel: Web.OutboundMessageBase = {
   data: {
     elements: [
       {
@@ -122,10 +122,10 @@ export const webCarousel: Web.OutgoingMessageBase = {
       },
     ],
   },
-  type: Web.OutgoingMessageType.carousel,
+  type: Web.OutboundMessageType.carousel,
 };
 
-export const webAttachment: Web.OutgoingMessageBase = {
+export const webAttachment: Web.OutboundMessageBase = {
   data: {
     quick_replies: [
       {
@@ -136,5 +136,5 @@ export const webAttachment: Web.OutgoingMessageBase = {
     type: FileType.image,
     url: 'http://public.url/download/filename.extension?t=any',
   },
-  type: Web.OutgoingMessageType.file,
+  type: Web.OutboundMessageType.file,
 };

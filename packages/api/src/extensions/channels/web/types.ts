@@ -28,7 +28,7 @@ export namespace Web {
     typing = 'typing',
   }
 
-  export enum IncomingMessageType {
+  export enum InboundMessageType {
     text = 'text',
     quick_reply = 'quick_reply',
     postback = 'postback',
@@ -36,9 +36,9 @@ export namespace Web {
     file = 'file',
   }
 
-  export type EventType = Web.StatusEventType | Web.IncomingMessageType;
+  export type EventType = Web.StatusEventType | Web.InboundMessageType;
 
-  export enum OutgoingMessageType {
+  export enum OutboundMessageType {
     text = 'text',
     buttons = 'buttons',
     quick_replies = 'quick_replies',
@@ -47,7 +47,7 @@ export namespace Web {
     carousel = 'carousel',
   }
 
-  export const incomingEventMetadataSchema = z.strictObject({
+  export const inboundEventMetadataSchema = z.strictObject({
     mid: z.string().optional(),
     author: z.string().optional(),
     thread_id: z.string().optional(),
@@ -59,67 +59,65 @@ export namespace Web {
     createdAt: z.date().optional(),
   });
 
-  export type IncomingEventMetadata = z.infer<
-    typeof incomingEventMetadataSchema
-  >;
+  export type InboundEventMetadata = z.infer<typeof inboundEventMetadataSchema>;
 
-  export const incomingTextMessageDataSchema = z.strictObject({
+  export const inboundTextMessageDataSchema = z.strictObject({
     text: z.string(),
   });
 
-  export type IncomingTextMessageData = z.infer<
-    typeof incomingTextMessageDataSchema
+  export type InboundTextMessageData = z.infer<
+    typeof inboundTextMessageDataSchema
   >;
 
-  export const incomingPayloadMessageDataSchema = z.strictObject({
+  export const inboundPayloadMessageDataSchema = z.strictObject({
     text: z.string(),
     payload: z.string(), // Quick reply and button payload are the same
   });
 
-  export type IncomingPayloadMessageData = z.infer<
-    typeof incomingPayloadMessageDataSchema
+  export type InboundPayloadMessageData = z.infer<
+    typeof inboundPayloadMessageDataSchema
   >;
 
-  export const incomingLocationMessageDataSchema = z.strictObject({
+  export const inboundLocationMessageDataSchema = z.strictObject({
     coordinates: z.strictObject({
       lat: z.number(),
       lng: z.number(),
     }),
   });
 
-  export type IncomingLocationMessageData = z.infer<
-    typeof incomingLocationMessageDataSchema
+  export type InboundLocationMessageData = z.infer<
+    typeof inboundLocationMessageDataSchema
   >;
 
-  export const incomingAttachmentHistoryMessageDataSchema = z.strictObject({
+  export const inboundAttachmentHistoryMessageDataSchema = z.strictObject({
     type: z.enum(FileType),
     url: z.string(), // file download url
   });
 
-  export const incomingAttachmentUploadMessageDataSchema = z.strictObject({
+  export const inboundAttachmentUploadMessageDataSchema = z.strictObject({
     type: z.string(), // mime type
     size: z.number(), // file size
     name: z.string(),
     file: z.instanceof(Buffer).optional(),
   });
 
-  export const incomingAttachmentMessageDataSchema = z.union([
-    incomingAttachmentHistoryMessageDataSchema,
-    incomingAttachmentUploadMessageDataSchema,
+  export const inboundAttachmentMessageDataSchema = z.union([
+    inboundAttachmentHistoryMessageDataSchema,
+    inboundAttachmentUploadMessageDataSchema,
   ]);
 
-  export type IncomingAttachmentMessageData = z.infer<
-    typeof incomingAttachmentMessageDataSchema
+  export type InboundAttachmentMessageData = z.infer<
+    typeof inboundAttachmentMessageDataSchema
   >;
 
-  export const incomingMessageDataSchema = z.union([
-    incomingTextMessageDataSchema,
-    incomingPayloadMessageDataSchema,
-    incomingLocationMessageDataSchema,
-    incomingAttachmentMessageDataSchema,
+  export const inboundMessageDataSchema = z.union([
+    inboundTextMessageDataSchema,
+    inboundPayloadMessageDataSchema,
+    inboundLocationMessageDataSchema,
+    inboundAttachmentMessageDataSchema,
   ]);
 
-  export type IncomingMessageData = z.infer<typeof incomingMessageDataSchema>;
+  export type InboundMessageData = z.infer<typeof inboundMessageDataSchema>;
 
   export const statusDeliveryEventSchema = z.strictObject({
     type: z.literal(StatusEventType.delivery),
@@ -149,77 +147,77 @@ export namespace Web {
 
   export type StatusEvent = z.infer<typeof statusEventSchema>;
 
-  export const incomingTextMessageSchema = z.strictObject({
-    type: z.literal(IncomingMessageType.text),
-    data: incomingTextMessageDataSchema,
-    ...incomingEventMetadataSchema.shape,
+  export const inboundTextMessageSchema = z.strictObject({
+    type: z.literal(InboundMessageType.text),
+    data: inboundTextMessageDataSchema,
+    ...inboundEventMetadataSchema.shape,
   });
 
-  export type IncomingTextMessage = z.infer<typeof incomingTextMessageSchema>;
+  export type InboundTextMessage = z.infer<typeof inboundTextMessageSchema>;
 
-  export const incomingPostbackMessageSchema = z.strictObject({
-    type: z.literal(IncomingMessageType.postback),
-    data: incomingPayloadMessageDataSchema,
-    ...incomingEventMetadataSchema.shape,
+  export const inboundPostbackMessageSchema = z.strictObject({
+    type: z.literal(InboundMessageType.postback),
+    data: inboundPayloadMessageDataSchema,
+    ...inboundEventMetadataSchema.shape,
   });
 
-  export const incomingQuickReplyMessageSchema = z.strictObject({
-    type: z.literal(IncomingMessageType.quick_reply),
-    data: incomingPayloadMessageDataSchema,
-    ...incomingEventMetadataSchema.shape,
+  export const inboundQuickReplyMessageSchema = z.strictObject({
+    type: z.literal(InboundMessageType.quick_reply),
+    data: inboundPayloadMessageDataSchema,
+    ...inboundEventMetadataSchema.shape,
   });
 
-  export const incomingPayloadMessageSchema = z.union([
-    incomingPostbackMessageSchema,
-    incomingQuickReplyMessageSchema,
+  export const inboundPayloadMessageSchema = z.union([
+    inboundPostbackMessageSchema,
+    inboundQuickReplyMessageSchema,
   ]);
 
   export type IncomingPayloadMessage = z.infer<
-    typeof incomingPayloadMessageSchema
+    typeof inboundPayloadMessageSchema
   >;
 
-  export const incomingLocationMessageSchema = z.strictObject({
-    type: z.literal(IncomingMessageType.location),
-    data: incomingLocationMessageDataSchema,
-    ...incomingEventMetadataSchema.shape,
+  export const inboundLocationMessageSchema = z.strictObject({
+    type: z.literal(InboundMessageType.location),
+    data: inboundLocationMessageDataSchema,
+    ...inboundEventMetadataSchema.shape,
   });
 
   export type IncomingLocationMessage = z.infer<
-    typeof incomingLocationMessageSchema
+    typeof inboundLocationMessageSchema
   >;
 
-  export const incomingAttachmentMessageSchema = z.strictObject({
-    type: z.literal(IncomingMessageType.file),
-    data: incomingAttachmentMessageDataSchema,
-    ...incomingEventMetadataSchema.shape,
+  export const inboundAttachmentMessageSchema = z.strictObject({
+    type: z.literal(InboundMessageType.file),
+    data: inboundAttachmentMessageDataSchema,
+    ...inboundEventMetadataSchema.shape,
   });
 
-  export type IncomingAttachmentMessage = z.infer<
-    typeof incomingAttachmentMessageSchema
+  export type InboundAttachmentMessage = z.infer<
+    typeof inboundAttachmentMessageSchema
   >;
 
-  export const incomingMessageBaseSchema = z.union([
-    incomingTextMessageSchema,
-    incomingPayloadMessageSchema,
-    incomingLocationMessageSchema,
-    incomingAttachmentMessageSchema,
+  export const inboundMessageBaseSchema = z.union([
+    inboundTextMessageSchema,
+    inboundPayloadMessageSchema,
+    inboundLocationMessageSchema,
+    inboundAttachmentMessageSchema,
   ]);
 
-  export type IncomingMessageBase = z.infer<typeof incomingMessageBaseSchema>;
+  export type InboundMessageBase = z.infer<typeof inboundMessageBaseSchema>;
 
-  export type IncomingMessage<
-    T extends IncomingMessageBase = IncomingMessageBase,
+  export type InboundMessage<
+    T extends InboundMessageBase = InboundMessageBase,
   > = T;
 
   export const eventSchema = z.discriminatedUnion('type', [
     statusDeliveryEventSchema,
     statusReadEventSchema,
     statusTypingEventSchema,
-    incomingTextMessageSchema,
-    incomingPostbackMessageSchema,
-    incomingQuickReplyMessageSchema,
-    incomingLocationMessageSchema,
-    incomingAttachmentMessageSchema,
+    inboundTextMessageSchema,
+    inboundPostbackMessageSchema,
+    inboundQuickReplyMessageSchema,
+    inboundLocationMessageSchema,
+    inboundAttachmentMessageSchema,
   ]);
 
   export type Event = z.infer<typeof eventSchema>;
@@ -232,66 +230,66 @@ export namespace Web {
     buttons?: Button[];
   }
 
-  export type OutgoingTextMessageData = { text: string };
+  export type OutboundTextMessageData = { text: string };
 
-  export type OutgoingQuickRepliesMessageData = OutgoingTextMessageData & {
+  export type OutboundQuickRepliesMessageData = OutboundTextMessageData & {
     quick_replies: StdQuickReply[];
   };
 
-  export type OutgoingButtonsMessageData = OutgoingTextMessageData & {
+  export type OutboundButtonsMessageData = OutboundTextMessageData & {
     buttons: Button[];
   };
 
-  export type OutgoingFileMessageData = {
+  export type OutboundFileMessageData = {
     quick_replies?: StdQuickReply[];
     type: FileType;
     url: string;
   };
 
-  export type OutgoingCarouselMessageData = {
+  export type OutboundCarouselMessageData = {
     elements: MessageElement[];
   };
 
-  export type OutgoingListMessageData = OutgoingCarouselMessageData & {
+  export type OutboundListMessageData = OutboundCarouselMessageData & {
     top_element_style?: 'large' | 'compact';
     buttons: Button[];
   };
 
-  export type OutgoingMessageData =
-    | OutgoingTextMessageData
-    | OutgoingQuickRepliesMessageData
-    | OutgoingButtonsMessageData
-    | OutgoingFileMessageData
-    | OutgoingCarouselMessageData
-    | OutgoingListMessageData;
+  export type OutboundMessageData =
+    | OutboundTextMessageData
+    | OutboundQuickRepliesMessageData
+    | OutboundButtonsMessageData
+    | OutboundFileMessageData
+    | OutboundCarouselMessageData
+    | OutboundListMessageData;
 
-  export type OutgoingMessageBase =
+  export type OutboundMessageBase =
     | {
-        type: OutgoingMessageType.text;
-        data: OutgoingTextMessageData;
+        type: OutboundMessageType.text;
+        data: OutboundTextMessageData;
       }
     | {
-        type: OutgoingMessageType.quick_replies;
-        data: OutgoingQuickRepliesMessageData;
+        type: OutboundMessageType.quick_replies;
+        data: OutboundQuickRepliesMessageData;
       }
     | {
-        type: OutgoingMessageType.buttons;
-        data: OutgoingButtonsMessageData;
+        type: OutboundMessageType.buttons;
+        data: OutboundButtonsMessageData;
       }
     | {
-        type: OutgoingMessageType.file;
-        data: OutgoingFileMessageData;
+        type: OutboundMessageType.file;
+        data: OutboundFileMessageData;
       }
     | {
-        type: OutgoingMessageType.carousel;
-        data: OutgoingCarouselMessageData;
+        type: OutboundMessageType.carousel;
+        data: OutboundCarouselMessageData;
       }
     | {
-        type: OutgoingMessageType.list;
-        data: OutgoingListMessageData;
+        type: OutboundMessageType.list;
+        data: OutboundListMessageData;
       };
 
-  export type OutgoingMessage = OutgoingMessageBase & {
+  export type OutboundMessage = OutboundMessageBase & {
     mid: string;
     author: string;
     thread_id?: string;
@@ -300,5 +298,5 @@ export namespace Web {
     handover: boolean;
   };
 
-  export type Message = OutgoingMessage | IncomingMessage;
+  export type Message = OutboundMessage | InboundMessage;
 }

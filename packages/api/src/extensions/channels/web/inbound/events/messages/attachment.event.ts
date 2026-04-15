@@ -21,7 +21,7 @@ export class AttachmentMessageInboundEvent<
   N extends ChannelName = ChannelName,
 > extends WebMessageInboundEvent<
   N,
-  Web.IncomingMessage<Web.IncomingAttachmentMessage>
+  Web.InboundMessage<Web.InboundAttachmentMessage>
 > {
   private uploadedAttachment: Attachment | null = null;
 
@@ -30,7 +30,7 @@ export class AttachmentMessageInboundEvent<
   constructor(
     context: ChannelInboundEventContext<
       N,
-      Web.IncomingMessage<Web.IncomingAttachmentMessage>,
+      Web.InboundMessage<Web.InboundAttachmentMessage>,
       SubscriberChannelDict[N]
     >,
     private readonly mimeType: string,
@@ -56,8 +56,7 @@ export class AttachmentMessageInboundEvent<
   }
 
   setUploadedRawData(fileType: FileType, url: string): void {
-    const raw =
-      this.getRaw<Web.IncomingMessage<Web.IncomingAttachmentMessage>>();
+    const raw = this.getRaw<Web.InboundMessage<Web.InboundAttachmentMessage>>();
 
     raw.data = {
       type: fileType,

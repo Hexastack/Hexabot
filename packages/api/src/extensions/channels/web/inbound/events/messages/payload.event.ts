@@ -17,12 +17,12 @@ export abstract class PayloadMessageInboundEvent<
   N extends ChannelName = ChannelName,
 > extends WebMessageInboundEvent<
   N,
-  Web.IncomingMessage<Web.IncomingPayloadMessage>
+  Web.InboundMessage<Web.IncomingPayloadMessage>
 > {
   constructor(
     context: ChannelInboundEventContext<
       N,
-      Web.IncomingMessage<Web.IncomingPayloadMessage>,
+      Web.InboundMessage<Web.IncomingPayloadMessage>,
       SubscriberChannelDict[N]
     >,
     private readonly messageType:

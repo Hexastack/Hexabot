@@ -6,7 +6,7 @@
 
 export * from './channel-inbound-event';
 
-export * from './channel-inbound-event-adapter';
+export * from './channel-inbound-event-decoder';
 
 export * from './channel-inbound-event-context';
 

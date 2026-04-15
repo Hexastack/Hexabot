@@ -22,11 +22,13 @@ import { Roles } from '@/utils/decorators/roles.decorator';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
+import { ChannelDownloadService } from './services/channel-download.service';
 
 @Controller('webhook')
 export class WebhookController {
   constructor(
     private readonly channelService: ChannelService,
+    private readonly channelDownloadService: ChannelDownloadService,
     private readonly workflowService: WorkflowService,
     private readonly logger: LoggerService,
   ) {}
@@ -51,7 +53,7 @@ export class WebhookController {
   ) {
     this.logger.log('Channel download request: ', channel, name);
 
-    return await this.channelService.download(channel, token, req);
+    return await this.channelDownloadService.download(channel, token, req);
   }
 
   /**

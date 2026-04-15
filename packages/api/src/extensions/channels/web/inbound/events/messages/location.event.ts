@@ -18,12 +18,12 @@ export class LocationMessageInboundEvent<
   N extends ChannelName = ChannelName,
 > extends WebMessageInboundEvent<
   N,
-  Web.IncomingMessage<Web.IncomingLocationMessage>
+  Web.InboundMessage<Web.IncomingLocationMessage>
 > {
   constructor(
     context: ChannelInboundEventContext<
       N,
-      Web.IncomingMessage<Web.IncomingLocationMessage>,
+      Web.InboundMessage<Web.IncomingLocationMessage>,
       SubscriberChannelDict[N]
     >,
     private readonly latitude: number,
