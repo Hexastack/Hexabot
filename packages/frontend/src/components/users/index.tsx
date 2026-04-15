@@ -8,17 +8,17 @@ import { Button, Paper, Stack, Switch, Typography } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { UserPlus, Users as UsersIcon } from "lucide-react";
 
+import { Avatar } from "@/app-components/displays/Avatar";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
-import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import {
   formatLicenseQuotaUsage,
-  getQuotaUpgradeTargetPlan,
   getLicenseQuotaResource,
+  getQuotaUpgradeTargetPlan,
   isLicenseQuotaReached,
 } from "@/components/license/license-quotas";
 import LicenseGate, {
@@ -170,7 +170,7 @@ const UsersDataGrid = () => {
       sortable: false,
       resizable: false,
       disableColumnMenu: true,
-      renderCell: buildRenderPicture(EntityType.USER),
+      renderCell: ({ row }) => <Avatar subscriberId={row.id} size={36} />,
     },
     {
       flex: 1,

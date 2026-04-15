@@ -47,6 +47,7 @@ export interface ISubscriberStub
 export interface ISubscriber extends ISubscriberStub, IFormat<Format.BASIC> {
   labels: string[];
   assignedTo: string | null;
+  avatar: string | null;
 }
 
 export interface ISubscriberFull extends ISubscriberStub, IFormat<Format.FULL> {

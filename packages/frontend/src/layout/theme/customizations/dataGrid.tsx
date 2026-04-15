@@ -48,6 +48,10 @@ export const datagridCustomizations: Components<Theme> = {
             },
           },
         },
+        "& .MuiDataGrid-cell": {
+          display: "flex",
+          alignItems: "center",
+        },
         "& .MuiDataGrid-cell[data-field='actions']": {
           alignContent: "center",
           "& button": {

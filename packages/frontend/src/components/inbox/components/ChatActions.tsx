@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -15,18 +14,16 @@ import Typography from "@mui/material/Typography";
 import { Hand } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Avatar } from "@/app-components/displays/Avatar";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 
-import { getAvatarSrc } from "../helpers/mapMessages";
 import { useChat } from "../hooks/ChatContext";
 
 export const ChatActions = () => {
-  const { apiUrl } = useConfig();
   const { t } = useTranslate();
   const { subscriber: activeChat } = useChat();
   const [takeoverBy, setTakeoverBy] = useState<string>(
@@ -66,15 +63,15 @@ export const ChatActions = () => {
               <MenuItem key={chatUser.id} value={chatUser.id}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <Avatar
-                    alt={chatUser.firstName || ""}
-                    src={getAvatarSrc(apiUrl, EntityType.USER, chatUser.id)}
-                    sx={{ width: 24, height: 24 }}
+                    alt={chatUser.fullName}
+                    size={24}
+                    subscriberId={chatUser.id}
                   />
                   <Typography
                     variant="body2"
                     sx={{ textTransform: "capitalize" }}
                   >
-                    {chatUser.firstName} {chatUser.lastName}
+                    {chatUser.fullName}
                   </Typography>
                 </Stack>
               </MenuItem>

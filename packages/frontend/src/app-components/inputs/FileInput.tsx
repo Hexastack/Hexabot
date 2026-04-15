@@ -4,7 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, CircularProgress, TextField } from "@mui/material";
+import {
+  Button,
+  ButtonProps,
+  CircularProgress,
+  TextField,
+} from "@mui/material";
 import { Upload as UploadIcon } from "lucide-react";
 import { ChangeEvent, forwardRef } from "react";
 
@@ -19,10 +24,11 @@ export type FileUploadButtonProps = {
   isLoading?: boolean;
   error?: boolean;
   helperText?: string;
+  sx?: ButtonProps["sx"];
 };
 
 const FileUploadButton = forwardRef<HTMLLabelElement, FileUploadButtonProps>(
-  ({ label, accept, isLoading = true, onChange }, ref) => {
+  ({ label, accept, isLoading = true, onChange, ...rest }, ref) => {
     const config = useConfig();
     const { toast } = useToast();
     const { t } = useTranslate();
@@ -59,6 +65,7 @@ const FileUploadButton = forwardRef<HTMLLabelElement, FileUploadButtonProps>(
           startIcon={<UploadIcon />}
           endIcon={isLoading ? <CircularProgress size="1rem" /> : null}
           disabled={isLoading}
+          {...rest}
         >
           {label}
         </Button>
