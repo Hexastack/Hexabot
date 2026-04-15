@@ -7,8 +7,10 @@
 import type {
   EvaluationScope,
   ExecutionState,
+  ForEachLoopStep,
   LoopStep,
   Suspension,
+  WhileLoopStep,
 } from '../workflow-types';
 import { evaluateValue } from '../workflow-values';
 
@@ -32,6 +34,20 @@ export async function executeLoop(
   state: ExecutionState,
   path: Array<number | string>,
   startIndex = 0,
+): Promise<Suspension | void> {
+  if (step.loopType === 'for_each') {
+    return executeForEachLoop(env, step, state, path, startIndex);
+  }
+
+  return executeWhileLoop(env, step, state, path, startIndex);
+}
+
+async function executeForEachLoop(
+  env: StepExecutorEnv,
+  step: ForEachLoopStep,
+  state: ExecutionState,
+  path: Array<number | string>,
+  startIndex: number,
 ): Promise<Suspension | void> {
   const scope = {
     input: state.input,
@@ -84,7 +100,7 @@ export async function executeLoop(
             return undefined;
           }
 
-          return executeLoop(
+          return executeForEachLoop(
             env,
             step,
             {
@@ -116,6 +132,96 @@ export async function executeLoop(
     state.output = iterationState.output;
   }
 
+  finalizeAccumulatorState(step, state, accumulator);
+
+  return undefined;
+}
+
+async function executeWhileLoop(
+  env: StepExecutorEnv,
+  step: WhileLoopStep,
+  state: ExecutionState,
+  path: Array<number | string>,
+  startIndex: number,
+): Promise<Suspension | void> {
+  let accumulator = step.accumulate?.initial ?? state.accumulator;
+
+  for (let index = startIndex; ; index += 1) {
+    const conditionScope = buildScope(
+      env,
+      state,
+      { item: undefined, index },
+      accumulator,
+    );
+    const shouldContinue = await evaluateValue(step.while, conditionScope);
+    if (!Boolean(shouldContinue)) {
+      break;
+    }
+
+    const iterationState: ExecutionState = {
+      ...state,
+      iteration: { item: undefined, index },
+      accumulator,
+      iterationStack: [...state.iterationStack, index],
+    };
+    const suspension = await env.executeFlow(step.steps, iterationState, [
+      ...path,
+      index,
+    ]);
+
+    if (suspension) {
+      return {
+        ...suspension,
+        continue: async (resumeData: unknown) => {
+          const next = await suspension.continue(resumeData);
+          if (next) {
+            return next;
+          }
+
+          const postScope = buildScope(
+            env,
+            iterationState,
+            { item: undefined, index },
+            accumulator,
+          );
+          accumulator = await updateAccumulator(step, postScope, accumulator);
+
+          return executeWhileLoop(
+            env,
+            step,
+            {
+              ...iterationState,
+              accumulator,
+              iterationStack: state.iterationStack,
+            },
+            path,
+            index + 1,
+          );
+        },
+      };
+    }
+
+    const postScope = buildScope(
+      env,
+      iterationState,
+      { item: undefined, index },
+      accumulator,
+    );
+
+    accumulator = await updateAccumulator(step, postScope, accumulator);
+    state.output = iterationState.output;
+  }
+
+  finalizeAccumulatorState(step, state, accumulator);
+
+  return undefined;
+}
+
+function finalizeAccumulatorState(
+  step: LoopStep,
+  state: ExecutionState,
+  accumulator: unknown,
+): void {
   if (step.accumulate && step.name) {
     state.output[step.name] = { [step.accumulate.as]: accumulator };
   }
@@ -123,8 +229,6 @@ export async function executeLoop(
   if (step.accumulate) {
     state.accumulator = accumulator;
   }
-
-  return undefined;
 }
 
 /**
@@ -161,7 +265,7 @@ export async function shouldStopLoop(
   step: LoopStep,
   scope: LoopScope,
 ): Promise<boolean> {
-  if (!step.until) {
+  if (step.loopType !== 'for_each' || !step.until) {
     return false;
   }
 

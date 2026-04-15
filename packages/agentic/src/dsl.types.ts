@@ -71,15 +71,32 @@ export type ParallelBlock = {
   steps: FlowStep[];
 };
 
-export type LoopStep = {
+export type LoopAccumulate = {
+  as: string;
+  initial: JsonValue;
+  merge: string;
+};
+
+type BaseLoopStep = {
   name?: string;
   description?: string;
+  accumulate?: LoopAccumulate;
+  steps: FlowStep[];
+};
+
+export type ForEachLoopStep = BaseLoopStep & {
+  type: 'for_each';
   for_each: { item: string; in: string };
   max_concurrency?: number;
   until?: string;
-  accumulate?: { as: string; initial: JsonValue; merge: string };
-  steps: FlowStep[];
 };
+
+export type WhileLoopStep = BaseLoopStep & {
+  type: 'while';
+  while: string;
+};
+
+export type LoopStep = ForEachLoopStep | WhileLoopStep;
 
 export type FlowStep =
   | { do: string }
@@ -249,25 +266,34 @@ const ParallelSchema: z.ZodType<ParallelBlock> = z.strictObject({
   strategy: z.enum(['wait_all', 'wait_any']).optional(),
   steps: z.array(z.lazy(() => FlowStepSchema)),
 });
-const LoopSchema: z.ZodType<LoopStep> = z.lazy(() =>
-  z.strictObject({
-    name: z.string().optional(),
-    description: z.string().optional(),
-    for_each: z.strictObject({
-      item: z.string(),
-      in: ExpressionStringSchema,
-    }),
-    max_concurrency: z.int().positive().optional(),
-    until: ExpressionStringSchema.optional(),
-    accumulate: z
-      .strictObject({
-        as: z.string(),
-        initial: JsonValueSchema,
-        merge: ExpressionStringSchema,
-      })
-      .optional(),
-    steps: z.array(z.lazy(() => FlowStepSchema)),
+const LoopAccumulateSchema: z.ZodType<LoopAccumulate> = z.strictObject({
+  as: z.string(),
+  initial: JsonValueSchema,
+  merge: ExpressionStringSchema,
+});
+const ForEachLoopSchema = z.strictObject({
+  type: z.literal('for_each'),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  for_each: z.strictObject({
+    item: z.string(),
+    in: ExpressionStringSchema,
   }),
+  max_concurrency: z.int().positive().optional(),
+  until: ExpressionStringSchema.optional(),
+  accumulate: LoopAccumulateSchema.optional(),
+  steps: z.array(z.lazy(() => FlowStepSchema)),
+});
+const WhileLoopSchema = z.strictObject({
+  type: z.literal('while'),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  while: ExpressionStringSchema,
+  accumulate: LoopAccumulateSchema.optional(),
+  steps: z.array(z.lazy(() => FlowStepSchema)),
+});
+const LoopSchema: z.ZodType<LoopStep> = z.lazy(() =>
+  z.union([ForEachLoopSchema, WhileLoopSchema]),
 );
 
 export const FlowStepSchema: z.ZodType<FlowStep> = z.lazy(() =>

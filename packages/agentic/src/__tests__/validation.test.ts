@@ -62,6 +62,7 @@ describe('validateWorkflow', () => {
     parsed.flow = [
       {
         loop: {
+          type: 'for_each',
           for_each: {
             item: 'item',
             in: '=[]',
@@ -74,6 +75,84 @@ describe('validateWorkflow', () => {
     const result = validateWorkflow(parsed, { bindingKinds });
 
     expect(result.success).toBe(true);
+  });
+
+  it('accepts while loop steps with an empty body', () => {
+    const parsed = parseYaml(fixtureYaml) as Record<string, unknown>;
+    parsed.flow = [
+      {
+        loop: {
+          type: 'while',
+          while: '=true',
+          steps: [],
+        },
+      },
+    ];
+
+    const result = validateWorkflow(parsed, { bindingKinds });
+
+    expect(result.success).toBe(true);
+  });
+
+  it('fails while loop steps when max_concurrency is provided', () => {
+    const parsed = parseYaml(fixtureYaml) as Record<string, unknown>;
+    parsed.flow = [
+      {
+        loop: {
+          type: 'while',
+          while: '=true',
+          max_concurrency: 4,
+          steps: [],
+        },
+      },
+    ];
+
+    const result = validateWorkflow(parsed, { bindingKinds });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('fails loop schema validation when loop.type is missing', () => {
+    const parsed = parseYaml(fixtureYaml) as Record<string, unknown>;
+    parsed.flow = [
+      {
+        loop: {
+          for_each: {
+            item: 'item',
+            in: '=[]',
+          },
+          steps: [],
+        },
+      },
+    ];
+    const result = validateWorkflow(parsed, { bindingKinds });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('fails while loops when the while condition is missing', () => {
+    const parsed = parseYaml(fixtureYaml) as Record<string, unknown>;
+    parsed.flow = [
+      {
+        loop: {
+          type: 'while',
+          steps: [],
+        },
+      },
+    ];
+
+    const result = validateWorkflow(parsed, { bindingKinds });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.errors.length).toBeGreaterThan(0);
+    }
   });
 
   it('accepts parallel steps with an empty body', () => {

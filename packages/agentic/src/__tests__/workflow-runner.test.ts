@@ -257,6 +257,7 @@ describe('WorkflowRunner', () => {
         },
         {
           loop: {
+            type: 'for_each',
             name: 'collector',
             for_each: { item: 'entry', in: '=$input.items' },
             until: '=$iteration.index >= 1',
@@ -393,6 +394,7 @@ describe('WorkflowRunner', () => {
               },
               {
                 loop: {
+                  type: 'for_each',
                   name: 'inner_loop',
                   for_each: { item: 'item', in: '=["one","two"]' },
                   steps: [
@@ -452,6 +454,138 @@ describe('WorkflowRunner', () => {
     expect(
       snapshots['0.parallel.2.inner_loop.0.parallel.0:loop_task[1]']?.status,
     ).toBe('completed');
+  });
+
+  it('supports while loops with pre-check semantics and zero iterations', async () => {
+    const echoExecute = jest.fn(async ({ input }) => ({
+      message: String(input.message),
+    }));
+    const echoAction = defineAction<
+      { message?: unknown },
+      { message: string },
+      TestContext,
+      Settings
+    >({
+      name: 'echo_action',
+      inputSchema: z.object({ message: z.any() }),
+      outputSchema: z.object({ message: z.string() }),
+      execute: echoExecute,
+    });
+    const definition: WorkflowDefinition = {
+      defs: createTaskDefs({
+        loop_task: {
+          action: 'echo_action',
+          inputs: { message: '="ran"' },
+        },
+      }),
+      flow: [
+        {
+          loop: {
+            type: 'while',
+            name: 'while_loop',
+            while: '=$exists($output.loop_task)',
+            steps: [{ do: 'loop_task' }],
+          },
+        },
+      ],
+      outputs: {
+        ran: '=$exists($output.loop_task)',
+      },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: {
+        echo_action: echoAction,
+      },
+    });
+    const runner = new WorkflowRunner(compiled, {
+      runId: 'run-while-zero-iteration',
+    });
+    const context = new TestContext({});
+    const result = await runner.start({
+      inputData: {},
+      context,
+    });
+
+    expect(result.status).toBe('finished');
+    if (result.status === 'finished') {
+      expect(result.output.ran).toBe(false);
+    }
+    expect(echoExecute).not.toHaveBeenCalled();
+  });
+
+  it('supports suspension and resume in while loops', async () => {
+    const suspendAction = defineAction<
+      { prompt: string },
+      { reply: string; done: boolean },
+      TestContext,
+      Settings
+    >({
+      name: 'loop_suspend_action',
+      inputSchema: z.object({ prompt: z.string() }),
+      outputSchema: z.object({ reply: z.string(), done: z.boolean() }),
+      execute: async ({ input, context }) => {
+        const resumeData = (await context.workflow.suspend({
+          reason: 'awaiting_reply',
+          data: { prompt: input.prompt },
+        })) as { reply: string };
+
+        return {
+          reply: resumeData.reply,
+          done: resumeData.reply === 'stop',
+        };
+      },
+    });
+    const definition: WorkflowDefinition = {
+      defs: createTaskDefs({
+        wait_step: {
+          action: 'loop_suspend_action',
+          inputs: { prompt: '="Attempt " & $string($iteration.index)' },
+        },
+      }),
+      flow: [
+        {
+          loop: {
+            type: 'while',
+            name: 'wait_until_stop',
+            while:
+              '=$not($exists($output.wait_step.done) and $output.wait_step.done = true)',
+            steps: [{ do: 'wait_step' }],
+          },
+        },
+      ],
+      outputs: { reply: '=$output.wait_step.reply' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: {
+        loop_suspend_action: suspendAction,
+      },
+    });
+    const runner = new WorkflowRunner(compiled, { runId: 'run-while-suspend' });
+    const context = new TestContext({});
+    const startResult = await runner.start({ inputData: {}, context });
+
+    expect(startResult.status).toBe('suspended');
+    if (startResult.status !== 'suspended') {
+      throw new Error('Workflow did not suspend as expected');
+    }
+    expect(startResult.step.id).toBe('0.wait_until_stop.0:wait_step[0]');
+
+    const firstResume = await runner.resume({
+      resumeData: { reply: 'continue' },
+    });
+    expect(firstResume.status).toBe('suspended');
+    if (firstResume.status !== 'suspended') {
+      throw new Error('Workflow did not suspend on second iteration');
+    }
+    expect(firstResume.step.id).toBe('0.wait_until_stop.0:wait_step[1]');
+
+    const secondResume = await runner.resume({
+      resumeData: { reply: 'stop' },
+    });
+    expect(secondResume.status).toBe('finished');
+    if (secondResume.status === 'finished') {
+      expect(secondResume.output.reply).toBe('stop');
+    }
   });
 
   it('handles suspension and resumes with provided data', async () => {
@@ -870,6 +1004,7 @@ describe('WorkflowRunner', () => {
       flow: [
         {
           loop: {
+            type: 'for_each',
             name: 'iterate',
             for_each: { item: 'entry', in: '=$input.items' },
             steps: [{ do: 'wait_step' }],
