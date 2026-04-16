@@ -32,7 +32,8 @@
     "overrides": {
       "cross-spawn": "7.0.6",
       "cross-spawn>path-key": "3.1.1",
-      "react-is": "18.3.1"
+      "react-is": "18.3.1",
+      "baseline-browser-mapping": "2.10.19"
     }
   },
   "engines": {
