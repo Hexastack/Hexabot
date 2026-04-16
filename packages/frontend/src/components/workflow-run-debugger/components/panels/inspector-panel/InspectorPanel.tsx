@@ -19,19 +19,19 @@ type InspectorPanelProps = {
 
 export const InspectorPanel = ({ run, step }: InspectorPanelProps) => {
   return (
-    <Grid size={{ xs: 12, lg: 8 }}>
+    <Grid size={{ xs: 12, lg: 8 }} display="flex" overflow="auto" height="100%">
       <Paper
         variant="outlined"
         sx={{
-          p: 1,
+          pt: 1,
           display: "flex",
           flexDirection: "column",
           gap: 2,
+          flex: 1,
+          overflow: "auto",
+          height: "100%",
         }}
       >
-        {/* <Typography variant="subtitle2" fontWeight={600}>
-          {t("label.inspector")}
-        </Typography> */}
         <InspectorTabs run={run} step={step ?? null} />
       </Paper>
     </Grid>

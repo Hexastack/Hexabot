@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import Box from "@mui/material/Box";
 import { useParams } from "react-router-dom";
 
 import { WorkflowActionsProvider } from "@/contexts/workflow-actions.context";
@@ -30,7 +31,13 @@ export const WorkflowRunDebuggerPage = () => {
 
   return (
     <WorkflowActionsProvider workflowType={workflow?.type}>
-      <WorkflowRunDebugger initiatorId={initiatorId} workflow={workflow} />
+      <Box
+        display="flex"
+        minHeight="calc(100dvh - 112px)"
+        maxHeight="calc(100dvh - 112px)"
+      >
+        <WorkflowRunDebugger initiatorId={initiatorId} workflow={workflow} />
+      </Box>
     </WorkflowActionsProvider>
   );
 };
