@@ -158,12 +158,13 @@ export const InspectorTabs = ({ run, step }: InspectorTabsProps) => {
   const stepStatusLabel = step ? statusLabels[step.status] : t("label.none");
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
+    <Box display="flex" flexDirection="column" overflow="hidden" height="100%">
       <Tabs
         value={value}
         onChange={(_, nextValue) => setValue(nextValue)}
         allowScrollButtonsMobile
         aria-label={t("label.inspector")}
+        sx={{ mx: 0.75 }}
       >
         {tabs.map((tab, index) => (
           <Tab
@@ -178,9 +179,8 @@ export const InspectorTabs = ({ run, step }: InspectorTabsProps) => {
         role="tabpanel"
         id={panelId(value)}
         aria-labelledby={tabId(value)}
-        sx={{
-          pt: 1,
-        }}
+        overflow="auto"
+        height="100%"
       >
         {activeKey === "overview" ? (
           <OverviewContainer>
@@ -201,7 +201,7 @@ export const InspectorTabs = ({ run, step }: InspectorTabsProps) => {
             />
           </OverviewContainer>
         ) : (
-          <JsonViewer value={activePanel.value} autoHeight />
+          <JsonViewer value={activePanel.value} />
         )}
       </Box>
     </Box>

@@ -5,6 +5,7 @@
  */
 
 import type { StepExecutionRecord } from "@hexabot-ai/agentic";
+import { Grid } from "@mui/material";
 
 import { StepTraceEmpty } from "./StepTraceEmpty";
 import { StepTraceItem } from "./StepTraceItem";
@@ -23,7 +24,13 @@ export const StepTraceList = ({
   const steps = Object.values(stepLog ?? {});
 
   return (
-    <>
+    <Grid
+      height="100%"
+      gap={1}
+      display="flex"
+      flexDirection="column"
+      overflow="auto"
+    >
       {steps.length === 0 ? (
         <StepTraceEmpty hasTrace={Boolean(stepLog)} />
       ) : (
@@ -36,6 +43,6 @@ export const StepTraceList = ({
           />
         ))
       )}
-    </>
+    </Grid>
   );
 };

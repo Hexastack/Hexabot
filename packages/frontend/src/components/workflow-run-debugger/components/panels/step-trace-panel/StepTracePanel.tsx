@@ -27,7 +27,10 @@ export const StepTracePanel = ({
   const [includeSkipped, setIncludeSkipped] = useState(true);
 
   return (
-    <Grid size={{ xs: 12, lg: 4 }}>
+    <Grid
+      size={{ xs: 12, lg: 4 }}
+      sx={{ display: "flex", overflow: "hidden", height: "100%" }}
+    >
       <Paper
         variant="outlined"
         sx={{
@@ -35,6 +38,9 @@ export const StepTracePanel = ({
           display: "flex",
           flexDirection: "column",
           gap: 2,
+          flex: 1,
+          minHeight: 0,
+          overflow: "hidden",
           height: "100%",
         }}
       >
