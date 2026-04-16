@@ -6,8 +6,6 @@
   "Penalty factor applied to NLU confidence scoring.": "Penalty factor applied to NLU confidence scoring.",
   "Default LLM helper": "Default LLM helper",
   "Helper used by default for LLM generation tasks.": "Helper used by default for LLM generation tasks.",
-  "Default flow escape helper": "Default flow escape helper",
-  "Helper used when a conversation escapes the current flow.": "Helper used when a conversation escapes the current flow.",
   "Default storage helper": "Default storage helper",
   "Helper used to persist chatbot data by default.": "Helper used to persist chatbot data by default.",
   "License key": "License key",

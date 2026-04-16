@@ -62,20 +62,6 @@ export const chatbotSettingsSchema = z
           labelKey: 'name',
         },
       }),
-    default_flow_escape_helper: z
-      .string()
-      .default('')
-      .meta({
-        title: 'Default flow escape helper',
-        description:
-          'Helper used when a conversation escapes the current flow.',
-        'ui:widget': 'AutoCompleteWidget',
-        'ui:options': {
-          entity: 'FlowEscapeHelper',
-          valueKey: 'name',
-          labelKey: 'name',
-        },
-      }),
     default_storage_helper: z
       .string()
       .default('local-storage-helper')

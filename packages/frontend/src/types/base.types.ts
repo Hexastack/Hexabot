@@ -137,7 +137,6 @@ export const POPULATE_BY_TYPE = {
   [EntityType.HELPER]: [],
   [EntityType.NLU_HELPER]: [],
   [EntityType.LLM_HELPER]: [],
-  [EntityType.FLOW_ESCAPE_HELPER]: [],
   [EntityType.STORAGE_HELPER]: [],
   [EntityType.STATS]: [],
 } as const;
@@ -259,7 +258,6 @@ export interface IEntityMapTypes {
   [EntityType.HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
   [EntityType.NLU_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
   [EntityType.LLM_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
-  [EntityType.FLOW_ESCAPE_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
   [EntityType.STORAGE_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
 }
 

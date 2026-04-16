@@ -31,7 +31,6 @@ export enum EntityType {
   HELPER = "Helper",
   NLU_HELPER = "NluHelper",
   LLM_HELPER = "LlmHelper",
-  FLOW_ESCAPE_HELPER = "FlowEscapeHelper",
   STORAGE_HELPER = "StorageHelper",
   WORKFLOW = "Workflow",
   WORKFLOW_VERSION = "WorkflowVersion",
