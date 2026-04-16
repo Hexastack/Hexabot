@@ -7,15 +7,13 @@
 import { GridColDef } from "@mui/x-data-grid";
 import { Accessibility } from "lucide-react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteEntity } from "@/hooks/crud/useDelete";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
@@ -27,16 +25,8 @@ import { RoleFormDialog } from "./RoleFormDialog";
 
 export const Roles = () => {
   const { t } = useTranslate();
-  const { toast } = useToast();
   const dialogs = useDialogs();
-  const { mutate: deleteRole } = useDelete(EntityType.ROLE, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      toast.success(t("message.item_delete_success"));
-    },
-  });
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.ROLE);
   const actionColumns = useActionColumns<IRole>(
     EntityType.ROLE,
     [
@@ -60,13 +50,7 @@ export const Roles = () => {
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteRole(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],

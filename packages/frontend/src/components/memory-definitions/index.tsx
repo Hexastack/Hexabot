@@ -7,15 +7,13 @@
 import { GridColDef } from "@mui/x-data-grid";
 import { MemoryStick, Plus } from "lucide-react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteEntity } from "@/hooks/crud/useDelete";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { IMemoryDefinition } from "@/types/memory-definition.types";
@@ -26,18 +24,9 @@ import { MemoryDefinitionFormDialog } from "./MemoryDefinitionFormDialog";
 
 export const MemoryDefinitions = () => {
   const { t } = useTranslate();
-  const { toast } = useToast();
   const dialogs = useDialogs();
-  const { mutate: deleteMemoryDefinition } = useDelete(
+  const { confirmToDeleteEntity } = useDeleteEntity(
     EntityType.MEMORY_DEFINITION,
-    {
-      onError: () => {
-        toast.error(t("message.internal_server_error"));
-      },
-      onSuccess() {
-        toast.success(t("message.item_delete_success"));
-      },
-    },
   );
   const actionColumns = useActionColumns<IMemoryDefinition>(
     EntityType.MEMORY_DEFINITION,
@@ -55,13 +44,7 @@ export const MemoryDefinitions = () => {
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteMemoryDefinition(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],

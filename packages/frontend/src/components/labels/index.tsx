@@ -8,17 +8,14 @@ import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Tags } from "lucide-react";
 import { useState } from "react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
+import { useDeleteEntity } from "@/hooks/crud/useDelete";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ILabel } from "@/types/label.types";
@@ -29,18 +26,8 @@ import { LabelFormDialog } from "./LabelFormDialog";
 
 export const Labels = () => {
   const { t } = useTranslate();
-  const { toast } = useToast();
   const dialogs = useDialogs();
-  const options = {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      toast.success(t("message.item_delete_success"));
-    },
-  };
-  const { mutate: deleteLabel } = useDelete(EntityType.LABEL, options);
-  const { mutate: deleteLabels } = useDeleteMany(EntityType.LABEL, options);
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.LABEL);
   const actionColumns = useActionColumns<ILabel>(
     EntityType.LABEL,
     [
@@ -55,13 +42,7 @@ export const Labels = () => {
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteLabel(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -148,16 +129,8 @@ export const Labels = () => {
         },
         {
           permissionAction: PermissionAction.DELETE,
-          onClick: async () => {
-            const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-              mode: "selection",
-              count: selectedLabels.length,
-            });
-
-            if (isConfirmed) {
-              deleteLabels(selectedLabels);
-            }
-          },
+          onClick: () =>
+            confirmToDeleteEntity({ ids: selectedLabels, mode: "selection" }),
           disabled: !selectedLabels.length,
         },
       ]}

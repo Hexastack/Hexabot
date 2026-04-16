@@ -7,16 +7,14 @@
 import { GridColDef } from "@mui/x-data-grid";
 import { AlignLeft } from "lucide-react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteEntity } from "@/hooks/crud/useDelete";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { IContentType } from "@/types/content-type.types";
@@ -27,21 +25,9 @@ import { ContentTypeFormDialog } from "./ContentTypeFormDialog";
 
 export const ContentTypes = () => {
   const { t } = useTranslate();
-  const { toast } = useToast();
   const router = useAppRouter();
   const dialogs = useDialogs();
-  const options = {
-    onError: (error: Error) => {
-      toast.error(error);
-    },
-    onSuccess: () => {
-      toast.success(t("message.item_delete_success"));
-    },
-  };
-  const { mutate: deleteContentType } = useDelete(
-    EntityType.CONTENT_TYPE,
-    options,
-  );
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.CONTENT_TYPE);
   const actionColumns = useActionColumns<IContentType>(
     EntityType.CONTENT_TYPE,
     [
@@ -58,13 +44,7 @@ export const ContentTypes = () => {
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteContentType(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],

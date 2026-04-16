@@ -9,7 +9,6 @@ import { GridColDef } from "@mui/x-data-grid";
 import { AlignLeft } from "lucide-react";
 
 import { BackButton } from "@/app-components/buttons/BackButton";
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import FileUploadButton from "@/app-components/inputs/FileInput";
 import {
   ColumnActionType,
@@ -17,7 +16,7 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteEntity } from "@/hooks/crud/useDelete";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
@@ -49,11 +48,7 @@ export const Contents = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutate: deleteContent } = useDelete(EntityType.CONTENT, {
-    onSuccess: () => {
-      toast.success(t("message.item_delete_success"));
-    },
-  });
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.CONTENT);
   const getEntityFromCache = useGetFromCache(EntityType.CONTENT_TYPE);
   const actionColumns = useActionColumns<IContent>(
     EntityType.CONTENT,
@@ -70,13 +65,7 @@ export const Contents = () => {
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteContent(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],

@@ -8,14 +8,13 @@ import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Flag, Plus } from "lucide-react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteEntity } from "@/hooks/crud/useDelete";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -42,14 +41,7 @@ export const Languages = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutate: deleteLanguage } = useDelete(EntityType.LANGUAGE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      toast.success(t("message.item_delete_success"));
-    },
-  });
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.LANGUAGE);
   const queryClient = useTanstackQueryClient();
   const toggleDefault = (row: ILanguage) => {
     if (!row.isDefault) {
@@ -86,13 +78,7 @@ export const Languages = () => {
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteLanguage(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
         isDisabled: (row) => row.isDefault,
       },

@@ -8,13 +8,12 @@ import { Chip, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Languages, RefreshCw } from "lucide-react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteEntity } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useApiClientMutation } from "@/hooks/useApiClient";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -38,14 +37,7 @@ export const Translations = () => {
       hasCount: false,
     },
   );
-  const { mutate: deleteTranslation } = useDelete(EntityType.TRANSLATION, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      toast.success(t("message.item_delete_success"));
-    },
-  });
+  const { confirmToDeleteEntity } = useDeleteEntity(EntityType.TRANSLATION);
   const { mutateAsync: checkRefreshTranslations, isPending } =
     useApiClientMutation("refreshTranslations", {
       onError: () => {
@@ -67,13 +59,7 @@ export const Translations = () => {
       },
       {
         action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteTranslation(id);
-          }
-        },
+        onClick: ({ id }) => confirmToDeleteEntity({ ids: [id] }),
         requires: [PermissionAction.DELETE],
       },
     ],
