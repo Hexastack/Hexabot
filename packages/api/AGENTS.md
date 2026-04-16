@@ -54,6 +54,7 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot API.
 - Dynamic providers are resolved during bootstrap via `nestjs-dynamic-providers` before app creation.
 - Extension cleanup runs on application bootstrap in `packages/api/src/extension/extension.module.ts`.
 - Use extension settings instead of hardcoded behavior when adding new channel/action/helper behavior.
+- Channel/helper runtime setting group keys and settings hook namespaces must match the extension `name` (kebab-case).
 
 ## Coding conventions and gotchas
 - All new TS files must include the license header; ESLint `header/header` enforces it.

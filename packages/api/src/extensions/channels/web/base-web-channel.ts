@@ -69,10 +69,7 @@ import {
   WebOutboundMessageEncoder,
 } from './outbound';
 import { Web } from './types';
-import {
-  WEB_CHANNEL_NAME,
-  WEB_CHANNEL_NAMESPACE,
-} from './web-channel.settings';
+import { WEB_CHANNEL_NAME } from './web-channel.settings';
 
 // Handle multipart uploads (Long Pooling only)
 const upload = multer({
@@ -471,7 +468,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       throw new Error('CORS - Invalid origin!');
     }
 
-    const settings = await this.getSettings<typeof WEB_CHANNEL_NAMESPACE>();
+    const settings = await this.getSettings<typeof WEB_CHANNEL_NAME>();
     // Get the allowed origins
     const origins: string[] = settings.allowed_domains.split(',');
     const foundOrigin = origins

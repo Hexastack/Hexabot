@@ -6,7 +6,6 @@
 
 import {
   WEB_CHANNEL_NAME,
-  WEB_CHANNEL_NAMESPACE,
   WEB_CHANNEL_SETTINGS_SCHEMA,
 } from './web-channel.settings';
 
@@ -22,7 +21,7 @@ declare global {
 
 declare module '@nestjs/event-emitter' {
   interface IHookExtensionsOperationMap {
-    [WEB_CHANNEL_NAMESPACE]: TDefinition<
+    [WEB_CHANNEL_NAME]: TDefinition<
       object,
       SettingMapByType<typeof WEB_CHANNEL_SETTINGS_SCHEMA>
     >;

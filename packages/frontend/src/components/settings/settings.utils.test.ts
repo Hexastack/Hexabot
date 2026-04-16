@@ -18,7 +18,7 @@ describe("settings utils", () => {
   describe("resolveSettingsGroupTitle", () => {
     it("returns localized schema title when available", () => {
       const schemas: ISettingSchemasMap = {
-        web_channel: {
+        "web-channel": {
           schema: {
             title: "Web Channel",
           },
@@ -29,7 +29,7 @@ describe("settings utils", () => {
       };
       const t = vi.fn().mockReturnValue("fallback");
 
-      expect(resolveSettingsGroupTitle("web_channel", schemas, t)).toBe(
+      expect(resolveSettingsGroupTitle("web-channel", schemas, t)).toBe(
         "Web Channel",
       );
       expect(t).not.toHaveBeenCalled();

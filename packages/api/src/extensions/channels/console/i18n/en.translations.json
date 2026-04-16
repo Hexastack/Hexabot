@@ -1,5 +1,5 @@
 {
-  "console_channel": {
+  "console-channel": {
     "Admin Chat Console": "Admin Chat Console",
     "Allowed domains": "Allowed domains",
     "Comma-separated list of allowed CORS origins.": "Comma-separated list of allowed CORS origins.",

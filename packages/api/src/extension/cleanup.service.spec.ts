@@ -85,20 +85,20 @@ describe('CleanupService', () => {
   });
 
   describe('delete', () => {
-    it('should delete all the unregistered settings with a group suffix `_channel` or/and `_helper`', async () => {
-      const registeredNamespaces = [
-        ...cleanupService.getChannelNamespaces(),
-        ...cleanupService.getHelperNamespaces(),
+    it('should delete all the unregistered settings with a group suffix `-channel` or/and `-helper`', async () => {
+      const registeredGroups = [
+        ...cleanupService.getChannelGroups(),
+        ...cleanupService.getHelperGroups(),
       ];
-      expect(registeredNamespaces).toContain('local_storage_helper');
+      expect(registeredGroups).toContain('local-storage-helper');
 
       await cleanupService.pruneExtensionSettings();
       const cleanSettings = await settingService.findAll();
       const filteredSettings = initialSettings.filter(
         ({ group }) =>
-          !/_(channel|helper)$/.test(group) !==
-          registeredNamespaces.includes(
-            group as `${string}_channel` | `${string}_helper`,
+          !/-(channel|helper)$/.test(group) !==
+          registeredGroups.includes(
+            group as `${string}-channel` | `${string}-helper`,
           ),
       );
 

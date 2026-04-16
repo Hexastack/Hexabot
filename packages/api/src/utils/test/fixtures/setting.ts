@@ -67,27 +67,27 @@ export const settingFixtures: SettingCreateDto[] = [
     value: 'US',
   },
   {
-    group: `${getRandom()}_channel`,
+    group: `${getRandom()}-channel`,
     label: `${getRandom()}`,
     value: '',
   },
   {
-    group: `${getRandom()}_helper`,
+    group: `${getRandom()}-helper`,
     label: `${getRandom()}`,
     value: '',
   },
   {
-    group: `${getRandom()}_channel`,
+    group: `${getRandom()}-channel`,
     label: `${getRandom()}`,
     value: '',
   },
   {
-    group: `${getRandom()}_helper`,
+    group: `${getRandom()}-helper`,
     label: `${getRandom()}`,
     value: '',
   },
   {
-    group: 'local_storage_helper',
+    group: 'local-storage-helper',
     label: 'default storage helper label',
     value: 'local-storage-helper',
   },

@@ -5,7 +5,6 @@
  */
 
 import { AnySetting, ExtensionSetting } from '@/setting/types';
-import { HyphenToUnderscore } from '@/utils/types/extension';
 
 import BaseHelper from './lib/base-helper';
 import { BaseLlmHelper } from './lib/base-llm-helper';
@@ -88,7 +87,7 @@ export type HelperRegistry<H extends BaseHelper = BaseHelper> = Map<
 
 export type HelperSetting<N extends HelperName = HelperName> = ExtensionSetting<
   {
-    group: HyphenToUnderscore<N>;
+    group: N;
   },
   AnySetting,
   'id' | 'createdAt' | 'updatedAt' | 'group'

@@ -42,6 +42,9 @@ The API is divided into several key modules, each responsible for specific funct
 
 - Built-in extensions live in `packages/api/src/extensions` (channels, actions, helpers).
 - Additional extensions are discovered from `hexabot-channel-*`, `hexabot-action-*`, and `hexabot-helper-*` packages, plus compiled extensions in `dist/extensions`.
+- Channel/helper runtime setting group keys and settings hook namespaces are now the extension `name` (kebab-case).
+- Third-party channel/helper extensions must define settings groups and i18n namespaces with the same kebab-case extension `name`.
+
 
 ## Installation
 
