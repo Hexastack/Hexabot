@@ -32,13 +32,9 @@ export const WorkflowRunDebuggerPage = () => {
   return (
     <WorkflowActionsProvider workflowType={workflow?.type}>
       <Box
-        sx={{
-          display: "flex",
-          minHeight: "calc(100dvh - 112px)",
-          maxHeight: "calc(100dvh - 112px)",
-          width: "100%",
-        }}
-        flexDirection="column"
+        display="flex"
+        minHeight="calc(100dvh - 112px)"
+        maxHeight="calc(100dvh - 112px)"
       >
         <WorkflowRunDebugger initiatorId={initiatorId} workflow={workflow} />
       </Box>
