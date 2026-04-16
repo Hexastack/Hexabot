@@ -1,14 +1,13 @@
 # Agentic Workflow DSL
 
-This document describes the YAML DSL used in `workflow.yml` to orchestrate AI and automation workflows. It is intentionally declarative: the engine provides actions (LLMs, search, email, etc.) and the DSL wires them into a graph of tasks, branches, waits, and loops.
+This document describes the YAML DSL used in `workflow.yml` to orchestrate AI and automation workflows. It is intentionally declarative: the engine provides actions (LLMs, search, email, etc.) and the DSL wires them into a graph of task defs, branches, waits, and loops.
 
 ## File layout
 
 - `inputs`: required caller-provided payload. Each key under `schema` declares a JSON schema fragment (`type`, `enum`, `description`, `items`, …).
 - `context`: read-only values injected by the runtime (authenticated user, channel, locale, long-term state, etc.).
 - `defaults`: settings inherited by every task unless overridden (timeouts, retries, and action-specific knobs).
-- `defs`: reusable typed entities declared once and referenced by tasks through bindings.
-- `tasks`: the catalog of callable steps; each defines the action to invoke, its inputs, and per-task settings.
+- `defs`: required root registry for all definitions. Use `kind: task` for executable task defs and other kinds for binding defs.
 - `flow`: ordered execution plan composed of `do`, `parallel`, `conditional`, and `loop` blocks.
 - `outputs`: expressions that expose final artifacts from the run back to the caller.
 
@@ -26,8 +25,9 @@ This document describes the YAML DSL used in `workflow.yml` to orchestrate AI an
 
 ## Task definitions
 
-Each entry under `tasks` has:
+Each task definition is an entry under `defs` with `kind: task` and has:
 
+- `kind`: must be `task`.
 - `description`: human-readable purpose.
 - `action`: engine-specific operation to call (`call_llm`, `search_web`, `await_user_input`, etc.). The DSL does not fix action semantics; the runtime must bind them.
 - `inputs`: map of parameters passed to the action. Values can be literals or expressions (prefixed with `=`).
@@ -36,15 +36,14 @@ Each entry under `tasks` has:
 
 Task results are stored automatically under `$output.<task>` for downstream steps.
 
-Example: `tasks.understand_request` calls an LLM with a system prompt, user query, and context; its returned payload is available under `$output.understand_request`.
+Example: `defs.understand_request` calls an LLM with a system prompt, user query, and context; its returned payload is available under `$output.understand_request`.
 
 ## Defs and task bindings
 
-- `defs` is a root-level registry where each entry has:
-  - `kind`: binding kind name (`tools`, `toolset`, `mcp_server`, etc.).
-  - `description`: optional text metadata.
-  - kind-specific payload fields validated by the host-provided Zod schema.
-- `tasks.<task>.bindings` references `defs` by name, grouped per kind.
+- `defs` is a root-level registry with two entry shapes:
+  - task defs: `kind: task`, must declare `action`, and may declare `inputs`, `settings`, `bindings`, `description`.
+  - non-task defs: `kind` is a binding kind (`tools`, `toolset`, `mcp_server`, etc.), must declare `settings`, and may declare `action`, `bindings`, `description`.
+- `defs.<task>.bindings` references other `defs` by name, grouped per kind.
 - Validation rules:
   - every referenced def must exist;
   - the referenced def `kind` must exactly match the task binding key;
@@ -85,7 +84,7 @@ All branches and loop bodies can themselves contain nested `conditional` or `par
 
 ## Final outputs
 
-- Keys under the root `outputs` map expose data back to the caller. Each value is an expression evaluated after the flow completes, typically referencing `$output.*` from tasks.
+- Keys under the root `outputs` map expose data back to the caller. Each value is an expression evaluated after the flow completes, typically referencing `$output.*` from task defs.
 - Example: `missing_fields_resolved` in the example returns `true` when the classifier found no missing fields after the run.
 
 ## Execution model and error handling
@@ -112,7 +111,7 @@ Notable conventions enforced in the example:
 
 ## Authoring tips
 
-- Prefer descriptive task names; keep actions generic and reusable.
+- Prefer descriptive task def names; keep actions generic and reusable.
 - Minimize side effects inside JSONata; use expressions mainly for routing and lightweight data shaping.
 - Treat `context` as read-only; write outputs through tasks designed for persistence if needed.
 - Keep parallel blocks small and bounded with `max_concurrency` when hitting external APIs or rate limits.
