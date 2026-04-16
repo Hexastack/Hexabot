@@ -16,6 +16,14 @@ type ResolveNodeExecutionStateParams = {
   stepId?: string;
   indicator?: EIndicatorType;
 };
+const EXECUTION_STATE_PRIORITY: Record<NodeExecutionState, number> = {
+  idle: 0,
+  running: 1,
+  start: 1,
+  finish: 2,
+  suspended: 3,
+  error: 4,
+};
 
 export const resolveNodeExecutionState = ({
   executionStates,
@@ -29,6 +37,15 @@ export const resolveNodeExecutionState = ({
 
   return timeline
     .slice()
-    .sort((first, second) => first.t - second.t)
+    .sort((first, second) => {
+      if (first.t !== second.t) {
+        return first.t - second.t;
+      }
+
+      return (
+        EXECUTION_STATE_PRIORITY[first.state] -
+        EXECUTION_STATE_PRIORITY[second.state]
+      );
+    })
     .at(-1)?.state;
 };

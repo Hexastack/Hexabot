@@ -43,6 +43,19 @@ const stepSuccessEvent: SubscribeWorkflowProps = {
   workflowEvent: "step:success",
   t: 120,
 };
+const loopStepStartEvent: SubscribeWorkflowProps = {
+  ...stepStartEvent,
+  t: 130,
+  step: {
+    ...stepInfo,
+    id: "0.iterate.0:send_message[2.4]",
+  },
+};
+const loopStepSuccessEvent: SubscribeWorkflowProps = {
+  ...loopStepStartEvent,
+  workflowEvent: "step:success",
+  t: 140,
+};
 const workflowFinishEvent: SubscribeWorkflowProps = {
   workflowEvent: "workflow:finish",
   workflowId: "flow-1",
@@ -93,6 +106,40 @@ describe("workflow-execution-events.utils", () => {
         key: "0:send_message",
         state: "finish",
         delayMs: STEP_SUCCESS_FINISH_DELAY_MS,
+      },
+    ]);
+  });
+
+  it("normalizes loop iteration step ids before updating execution state", () => {
+    expect(mapWorkflowEventToExecutionActions(loopStepStartEvent)).toEqual([
+      {
+        type: "append",
+        key: EIndicatorType.WORKFLOW_START,
+        state: "finish",
+        delayMs: START_INDICATOR_FINISH_DELAY_MS,
+      },
+      {
+        type: "append",
+        key: "0.iterate.0:send_message",
+        state: "start",
+        t: 130,
+      },
+    ]);
+  });
+
+  it("applies loop step success immediately to avoid overriding next iteration state", () => {
+    expect(mapWorkflowEventToExecutionActions(loopStepSuccessEvent)).toEqual([
+      {
+        type: "append",
+        key: EIndicatorType.WORKFLOW_START,
+        state: "finish",
+        delayMs: START_INDICATOR_FINISH_DELAY_MS,
+      },
+      {
+        type: "append",
+        key: "0.iterate.0:send_message",
+        state: "finish",
+        t: 140,
       },
     ]);
   });
