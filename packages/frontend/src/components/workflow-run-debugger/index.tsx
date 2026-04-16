@@ -5,15 +5,20 @@
  */
 
 import Box from "@mui/material/Box";
+import { Bug } from "lucide-react";
 import { useParams } from "react-router-dom";
 
+import { BackButton } from "@/app-components/buttons/BackButton";
 import { WorkflowActionsProvider } from "@/contexts/workflow-actions.context";
 import { useGet } from "@/hooks/crud/useGet";
+import { useTranslate } from "@/hooks/useTranslate";
+import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
 
 import { WorkflowRunDebugger } from "./components/WorkflowRunDebugger";
 
 export const WorkflowRunDebuggerPage = () => {
+  const { t } = useTranslate();
   const { workflowId, initiatorId: initiatorId } = useParams<{
     workflowId?: string;
     initiatorId?: string;
@@ -31,10 +36,16 @@ export const WorkflowRunDebuggerPage = () => {
 
   return (
     <WorkflowActionsProvider workflowType={workflow?.type}>
+      <PageHeader
+        icon={Bug}
+        title={t("label.workflow_run_debugger")}
+        headerLeftButtons={<BackButton href="/workflow/runs" />}
+      />
       <Box
+        pt={1}
         display="flex"
-        minHeight="calc(100dvh - 112px)"
-        maxHeight="calc(100dvh - 112px)"
+        minHeight="calc(100dvh - 182px)"
+        maxHeight="calc(100dvh - 182px)"
       >
         <WorkflowRunDebugger initiatorId={initiatorId} workflow={workflow} />
       </Box>
