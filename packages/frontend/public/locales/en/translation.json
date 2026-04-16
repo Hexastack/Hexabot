@@ -616,7 +616,8 @@
     "license_badge_unknown": "FREE Community Edition",
     "license_badge_starter": "Starter Membership",
     "license_badge_pro": "PRO Membership",
-    "license_badge_unlimited": "UNLIMITED Edition"
+    "license_badge_unlimited": "UNLIMITED Edition",
+    "workflow_run_debugger": "Workflow Run Debugger"
   },
   "placeholder": {
     "your_username": "Your username",

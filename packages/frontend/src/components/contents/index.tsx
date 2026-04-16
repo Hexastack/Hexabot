@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Button, Switch, Typography } from "@mui/material";
+import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { AlignLeft, ArrowLeft } from "lucide-react";
-import { Link as RouterLink } from "react-router-dom";
+import { AlignLeft } from "lucide-react";
 
+import { BackButton } from "@/app-components/buttons/BackButton";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import FileUploadButton from "@/app-components/inputs/FileInput";
 import {
@@ -201,16 +201,7 @@ export const Contents = () => {
       }}
       headerI18nTitle="title.entities"
       headerTitleChip={contentType?.name}
-      headerLeftButtons={
-        <Button
-          component={RouterLink}
-          to="/content-types"
-          variant="text"
-          startIcon={<ArrowLeft size={18} />}
-        >
-          <Typography sx={{ fontWeight: 500 }}>{t("button.back")}</Typography>
-        </Button>
-      }
+      headerLeftButtons={<BackButton href="/content-types" />}
     />
   );
 };

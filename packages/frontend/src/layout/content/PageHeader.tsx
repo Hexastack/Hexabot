@@ -21,24 +21,20 @@ export const PageHeader = ({
   icon?: LucideIcon;
   chip?: ReactNode;
   headerLeftButtons?: React.ReactElement;
-}>) => {
-  return (
-    <Box>
-      {headerLeftButtons ? (
-        <Box alignItems="start">{headerLeftButtons}</Box>
-      ) : null}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-        }}
-      >
-        {(title || icon) && (
-          <Title title={title ?? ""} Icon={icon} chip={chip} />
-        )}
-        {children}
-      </Box>
+}>) => (
+  <Box>
+    {headerLeftButtons ? (
+      <Box alignItems="start">{headerLeftButtons}</Box>
+    ) : null}
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+      }}
+    >
+      {(title || icon) && <Title title={title ?? ""} Icon={icon} chip={chip} />}
+      {children}
     </Box>
-  );
-};
+  </Box>
+);
