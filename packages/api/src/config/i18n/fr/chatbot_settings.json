@@ -6,8 +6,6 @@
   "Penalty factor applied to NLU confidence scoring.": "Facteur de pénalité appliqué au score de confiance NLU.",
   "Default LLM helper": "Utilitaire LLM par défaut",
   "Helper used by default for LLM generation tasks.": "Utilitaire utilisé par défaut pour les tâches de génération LLM.",
-  "Default flow escape helper": "Utilitaire d'échappement de flux par défaut",
-  "Helper used when a conversation escapes the current flow.": "Utilitaire utilisé lorsqu'une conversation sort du flux en cours.",
   "Default storage helper": "Utilitaire de stockage par défaut",
   "Helper used to persist chatbot data by default.": "Utilitaire utilisé par défaut pour persister les données du chatbot.",
   "License key": "Clé de licence",

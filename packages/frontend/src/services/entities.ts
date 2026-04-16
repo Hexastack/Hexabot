@@ -254,14 +254,6 @@ export const LlmHelperEntity = new schema.Entity(
   },
 );
 
-export const FlowEscapeHelperEntity = new schema.Entity(
-  EntityType.FLOW_ESCAPE_HELPER,
-  undefined,
-  {
-    idAttribute: ({ name }) => name,
-  },
-);
-
 export const StorageHelperEntity = new schema.Entity(
   EntityType.STORAGE_HELPER,
   undefined,
@@ -382,6 +374,5 @@ export const ENTITY_MAP = {
   [EntityType.HELPER]: HelperEntity,
   [EntityType.NLU_HELPER]: NluHelperEntity,
   [EntityType.LLM_HELPER]: LlmHelperEntity,
-  [EntityType.FLOW_ESCAPE_HELPER]: FlowEscapeHelperEntity,
   [EntityType.STORAGE_HELPER]: StorageHelperEntity,
 } as const;

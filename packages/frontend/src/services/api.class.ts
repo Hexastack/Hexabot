@@ -81,7 +81,6 @@ export const ROUTES = {
   [EntityType.HELPER]: "/helper",
   [EntityType.NLU_HELPER]: "/helper/nlu",
   [EntityType.LLM_HELPER]: "/helper/llm",
-  [EntityType.FLOW_ESCAPE_HELPER]: "helper/flow_escape",
   [EntityType.STORAGE_HELPER]: "/helper/storage",
   [EntityType.WORKFLOW]: "/workflow",
   [EntityType.WORKFLOW_VERSION]: "/workflow/:id/versions",

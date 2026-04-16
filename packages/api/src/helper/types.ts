@@ -7,7 +7,6 @@
 import { AnySetting, ExtensionSetting } from '@/setting/types';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 
-import BaseFlowEscapeHelper from './lib/base-flow-escape-helper';
 import BaseHelper from './lib/base-helper';
 import { BaseLlmHelper } from './lib/base-llm-helper';
 import { BaseStorageHelper } from './lib/base-storage-helper';
@@ -66,30 +65,8 @@ export namespace LLM {
   }
 }
 
-export namespace FlowEscape {
-  export enum Action {
-    REPROMPT = 're_prompt',
-    COERCE = 'coerce_to_option',
-    NEW_CTX = 'new_context',
-  }
-
-  export type AdjudicationResult =
-    | {
-        action: Action.COERCE;
-        coercedOption: string;
-      }
-    | {
-        action: Action.REPROMPT;
-        repromptMessage?: string;
-      }
-    | {
-        action: Action.NEW_CTX;
-      };
-}
-
 export enum HelperType {
   LLM = 'llm',
-  FLOW_ESCAPE = 'flow_escape',
   STORAGE = 'storage',
   UTIL = 'util',
 }
@@ -98,7 +75,6 @@ export type HelperName = `${string}-helper`;
 
 interface HelperTypeMap {
   [HelperType.LLM]: BaseLlmHelper<HelperName>;
-  [HelperType.FLOW_ESCAPE]: BaseFlowEscapeHelper<HelperName>;
   [HelperType.STORAGE]: BaseStorageHelper<HelperName>;
   [HelperType.UTIL]: BaseHelper;
 }
