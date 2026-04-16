@@ -13,6 +13,10 @@ const monorepoRoot = path.resolve(__dirname, "../..");
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    // Avoid one-time dev-server reload when YAML editor first mounts its worker.
+    include: ["monaco-yaml", "monaco-yaml/yaml.worker.js"],
+  },
   css: {
     preprocessorOptions: {
       scss: {
