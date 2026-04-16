@@ -10,6 +10,10 @@ import { Activity, GalleryHorizontalEnd } from "lucide-react";
 import { ComponentProps, useMemo } from "react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
+import {
+  ColumnActionType,
+  useActionColumns,
+} from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { type Filter } from "@/app-components/tables/GenericFilters";
 import { WorkflowBadgeWithTitle } from "@/app-components/workflow/WorkflowBadgeWithTitle";
@@ -19,6 +23,7 @@ import {
   WORKFLOW_TYPES,
 } from "@/constants/workflow.constants";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useQueryState } from "@/hooks/useQueryState";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
@@ -32,100 +37,115 @@ export const WorkflowRuns = ({
   hidedColumns?: string[];
 } & Partial<ComponentProps<typeof GenericDataGrid>>) => {
   const { t } = useTranslate();
+  const router = useAppRouter();
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
-  const columns: GridColDef<IWorkflowRunFull>[] = useMemo(
-    () => [
-      { field: "id", headerName: "ID", width: 100 },
+  const actionColumns = useActionColumns<IWorkflowRunFull>(
+    EntityType.WORKFLOW_RUN,
+    [
       {
-        minWidth: 140,
-        field: "createdAt",
-        headerName: t("label.triggered_at"),
-        disableColumnMenu: true,
-        resizable: false,
-        headerAlign: "left",
-        valueGetter: (value) =>
-          t("datetime.created_at", getDateTimeFormatter(value)),
-      },
-      {
-        flex: 1,
-        minWidth: 200,
-        field: "workflow.name",
-        resizable: true,
-        headerName: t("label.workflow"),
-        disableColumnMenu: true,
-        headerAlign: "left",
-        renderCell: ({ row }) => {
-          const workflowId = String(row.workflow);
-          const workflow = getWorkflowFromCache(workflowId);
-
-          if (!workflow) {
-            return "-";
-          }
-
-          return (
-            <Box height="100%" display="flex" alignItems="center">
-              <WorkflowBadgeWithTitle workflow={workflow} />
-            </Box>
-          );
-        },
-      },
-      {
-        flex: 1,
-        minWidth: 150,
-        sortable: false,
-        field: "triggeredBy",
-        resizable: true,
-        headerName: t("label.triggered_by"),
-        disableColumnMenu: true,
-        headerAlign: "left",
-        renderCell: ({ row }) => {
-          const subscriberId = String(row.triggeredBy);
-
-          return (
-            <ChipEntity
-              id={subscriberId}
-              key={subscriberId}
-              field="fullName"
-              entity={EntityType.SUBSCRIBER}
-            />
-          );
-        },
-      },
-      {
-        maxWidth: 120,
-        field: "status",
-        headerName: t("label.status"),
-        disableColumnMenu: true,
-        headerAlign: "left",
-        renderCell: ({ row }) => (
-          <Box height="100%" display="flex" alignItems="center">
-            <WorkflowRunStatusBadge workflowRun={row} />
-          </Box>
-        ),
-      },
-      {
-        maxWidth: 100,
-        field: "duration",
-        headerName: t("label.duration"),
-        sortable: false,
-        disableColumnMenu: true,
-        headerAlign: "left",
-        valueGetter: (_value, row) => formatDurationMs(row.duration),
-      },
-      {
-        flex: 1,
-        minWidth: 200,
-        field: "error",
-        headerName: t("label.error"),
-        sortable: false,
-        disableColumnMenu: true,
-        headerAlign: "left",
-        valueGetter: (_value, row) => row.error || "-",
+        action: ColumnActionType.View,
+        onClick: (row) =>
+          router.push(`/workflow/${row.workflow}/runs/${row.triggeredBy}`),
       },
     ],
+    t("label.operations"),
+  );
+  const columns = useMemo(
+    () =>
+      [
+        { field: "id", headerName: "ID", width: 100 },
+        {
+          minWidth: 140,
+          field: "createdAt",
+          headerName: t("label.triggered_at"),
+          disableColumnMenu: true,
+          resizable: false,
+          headerAlign: "left",
+          valueGetter: (value) =>
+            t("datetime.created_at", getDateTimeFormatter(value)),
+        },
+        {
+          flex: 1,
+          minWidth: 200,
+          field: "workflow.name",
+          resizable: true,
+          headerName: t("label.workflow"),
+          disableColumnMenu: true,
+          headerAlign: "left",
+          renderCell: ({ row }) => {
+            const workflowId = String(row.workflow);
+            const workflow = getWorkflowFromCache(workflowId);
+
+            if (!workflow) {
+              return "-";
+            }
+
+            return (
+              <Box height="100%" display="flex" alignItems="center">
+                <WorkflowBadgeWithTitle workflow={workflow} />
+              </Box>
+            );
+          },
+        },
+        {
+          flex: 1,
+          minWidth: 150,
+          sortable: false,
+          field: "triggeredBy",
+          resizable: true,
+          headerName: t("label.triggered_by"),
+          disableColumnMenu: true,
+          headerAlign: "left",
+          renderCell: ({ row }) => {
+            const subscriberId = String(row.triggeredBy);
+
+            return (
+              <ChipEntity
+                id={subscriberId}
+                key={subscriberId}
+                field="fullName"
+                entity={EntityType.SUBSCRIBER}
+              />
+            );
+          },
+        },
+        {
+          maxWidth: 120,
+          field: "status",
+          headerName: t("label.status"),
+          disableColumnMenu: true,
+          headerAlign: "left",
+          renderCell: ({ row }) => (
+            <Box height="100%" display="flex" alignItems="center">
+              <WorkflowRunStatusBadge workflowRun={row} />
+            </Box>
+          ),
+        },
+        {
+          maxWidth: 100,
+          field: "duration",
+          headerName: t("label.duration"),
+          sortable: false,
+          disableColumnMenu: true,
+          headerAlign: "left",
+          valueGetter: (_value, row) => formatDurationMs(row.duration),
+        },
+        {
+          flex: 1,
+          minWidth: 200,
+          field: "error",
+          headerName: t("label.error"),
+          sortable: false,
+          disableColumnMenu: true,
+          headerAlign: "left",
+          valueGetter: (_value, row) => row.error || "-",
+        },
+        actionColumns,
+      ] satisfies GridColDef<IWorkflowRunFull>[],
     [t],
   );
   const [name, setName] = useQueryState("name");
+  const [subscriber, setSubscriber] = useQueryState("subscriber");
   const [type, setType, defaultType] = useQueryState("type", "all");
   const [workflowRunStatus, setWorkflowRunStatus, defaultWorkflowRunStatus] =
     useQueryState("status", "all");
@@ -146,6 +166,15 @@ export const WorkflowRuns = ({
         },
         typeInfo: WORKFLOW_TYPES,
         onChange: setName,
+      },
+      {
+        entity: EntityType.SUBSCRIBER,
+        type: "entitySelectFilter",
+        field: "id",
+        labelKey: "fullName",
+        value: subscriber,
+        label: t("title.subscribers"),
+        onChange: setSubscriber,
       },
       {
         entity: EntityType.WORKFLOW,
@@ -180,7 +209,7 @@ export const WorkflowRuns = ({
         onChange: setWorkflowRunStatus,
       },
     ],
-    [setName, setType, setWorkflowRunStatus],
+    [setName, setType, setWorkflowRunStatus, setSubscriber],
   );
 
   return (
@@ -202,6 +231,7 @@ export const WorkflowRuns = ({
             status: workflowRunStatus,
             "workflow.name": name,
             "workflow.type": type,
+            "triggeredBy.id": subscriber,
           },
         ],
       }}

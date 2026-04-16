@@ -13,6 +13,7 @@ import {
   GridValidRowModel,
 } from "@mui/x-data-grid";
 import {
+  Eye,
   FileText,
   LucideProps,
   Pencil,
@@ -42,6 +43,7 @@ export enum ColumnActionType {
   Annotate = "Annotate",
   Test = "Test",
   Tools = "Tools",
+  View = "View",
 }
 
 const COLUMN_ACTION_CONFIG_MAP: Record<
@@ -75,6 +77,7 @@ const COLUMN_ACTION_CONFIG_MAP: Record<
   [ColumnActionType.Annotate]: { label: "button.annotate", icon: RefreshCw },
   [ColumnActionType.Test]: { label: "button.test_connection", icon: TestTube },
   [ColumnActionType.Tools]: { label: "button.tools", icon: Wrench },
+  [ColumnActionType.View]: { label: "button.view", icon: Eye },
 } as const;
 
 export interface ActionColumn<T extends GridValidRowModel> {
