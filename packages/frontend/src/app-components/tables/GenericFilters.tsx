@@ -4,7 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Box, Grid, MenuItem, TextField, TextFieldProps } from "@mui/material";
+import {
+  Box,
+  Grid,
+  MenuItem,
+  TextField,
+  TextFieldProps,
+  Typography,
+} from "@mui/material";
 import type { Path, PathValue } from "react-hook-form";
 
 import type { FlowTypeInfo } from "@/components/visual-editor/v4/components/main/FlowsDrawer/types";
@@ -71,7 +78,7 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
       format = Format.BASIC,
       entity,
       sortKey,
-      labelKey,
+      labelKey = "",
       typeInfo,
       defaultOption = {},
       onChange,
@@ -121,34 +128,37 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
           </Grid>
         );
       } else if (rest.type === "entitySelectFilter") {
+        const RenderedItem = ({ entity }: { entity: any }) =>
+          typeInfo ? (
+            <BadgeWithTitle
+              {...typeInfo?.[entity["type"]]}
+              title={entity["name"]}
+              {...{ width, height, padding }}
+            />
+          ) : (
+            <Typography noWrap>{entity[labelKey]}</Typography>
+          );
+
         return (
           <Grid key={field} flex={1} minWidth="180px">
             <AutoCompleteEntitySelect<any, string, false>
               idKey={idKey?.toString()}
               sortKey={sortKey?.toString()}
-              labelKey={labelKey?.toString() || ""}
+              labelKey={labelKey}
               entity={entity}
               format={format}
               value={value}
               searchFields={rest.searchFields || []}
               size="medium"
               multiple={false}
-              renderValue={(workflow) => (
+              renderValue={(entity) => (
                 <Box p="2px">
-                  <BadgeWithTitle
-                    {...typeInfo?.[workflow.type]}
-                    title={workflow.name}
-                    {...{ width, height, padding }}
-                  />
+                  <RenderedItem entity={entity} />
                 </Box>
               )}
-              renderOption={(props, workflow) => (
+              renderOption={(props, entity) => (
                 <li {...props}>
-                  <BadgeWithTitle
-                    {...typeInfo?.[workflow.type]}
-                    title={workflow.name}
-                    {...{ width, height, padding }}
-                  />
+                  <RenderedItem entity={entity} />
                 </li>
               )}
               onChange={(e, value) => {
