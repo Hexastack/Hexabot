@@ -1168,6 +1168,7 @@ describe("buildNodesAndEdges", () => {
       id: "0:loop",
       label: "loop",
       type: StepType.Loop,
+      loopType: "for_each",
       forEach: {
         item: "item",
         in: { kind: "literal", value: [] },
@@ -1239,6 +1240,7 @@ describe("buildNodesAndEdges", () => {
       id: "0:loop",
       label: "loop",
       type: StepType.Loop,
+      loopType: "for_each",
       forEach: {
         item: "item",
         in: { kind: "literal", value: [] },

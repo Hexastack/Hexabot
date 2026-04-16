@@ -290,6 +290,7 @@ describe('workflow definition path helpers', () => {
                   steps: [
                     {
                       loop: {
+                        type: 'for_each',
                         for_each: {
                           item: 'item',
                           in: '=[]',
@@ -332,6 +333,7 @@ describe('workflow definition path helpers', () => {
                 steps: [
                   {
                     loop: {
+                      type: 'for_each',
                       for_each: {
                         item: 'item',
                         in: '=[]',

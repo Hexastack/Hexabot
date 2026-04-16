@@ -6,7 +6,7 @@ Typed runtime and YAML DSL for orchestrating multi-step AI/automation workflows.
 - Declarative workflow DSL in YAML or JS objects with JSONata expressions (prefixed by `=`) and clear scopes (`$input`, `$context`, `$output`, `$iteration`, `$accumulator`).
 - Type-safe actions built with `defineAction`, Zod-validated IO, and merged settings (timeouts, retries, plus action-specific options) inherited from workflow defaults.
 - Resumable execution via `WorkflowRunner` and `context.workflow.suspend`, plus snapshots for persistence and replay.
-- Flow primitives: sequential `do`, `parallel` blocks (`wait_all`/`wait_any`), `conditional` branches, and `loop` with accumulators and early-exit conditions.
+- Flow primitives: sequential `do`, `parallel` blocks (`wait_all`/`wait_any`), `conditional` branches, and two loop variants: `loop.type: for_each` (iterables) and `loop.type: while` (pre-check condition).
 - Event emitter hooks for observability (`hook:workflow:start|finish|failure|suspended`, `hook:step:start|success|error|suspended|skipped`).
 
 ## Installation
@@ -35,6 +35,7 @@ A workflow is a single YAML (or object) that declares inputs, context, defaults,
 - `defs.<name>.bindings`: optional kind-based refs on any def (`<kind>: [<defName>...]` for `multiple: true`, `<kind>: <defName>` for `multiple: false`).
 - `flow`: ordered list of steps combining `do`, `parallel`, `conditional`, `loop`.
 - `outputs`: expressions evaluated after the flow finishes.
+- `loop`: must declare `type` (`for_each` or `while`). Legacy loops without `type` are invalid.
 
 Task results are stored automatically under `$output.<task>` for downstream expressions.
 
@@ -214,8 +215,9 @@ Attach listeners to stream logs, emit metrics, or capture snapshots for debuggin
 ## Examples and scripts
 
 - Full DSL walkthrough and runnable demo: `packages/agentic/DSL.md`, `packages/agentic/examples/full/workflow.yml`, `packages/agentic/examples/full/workflow.ts`, with mock actions in `packages/agentic/examples/full/actions/*`.
+- Loop quickstart (`while` loop + suspend/resume): `packages/agentic/examples/loop/workflow.yml` and `packages/agentic/examples/loop/workflow.ts`.
 - Suspend/resume quickstart: `packages/agentic/examples/suspend-resume/workflow.yml` and `packages/agentic/examples/suspend-resume/workflow.ts` show pausing a run and resuming with reply data.
-- Run the demos with ts-node: `pnpm dlx ts-node packages/agentic/examples/full/workflow.ts` or `pnpm dlx ts-node packages/agentic/examples/suspend-resume/workflow.ts`.
+- Run the demos with ts-node: `pnpm dlx ts-node packages/agentic/examples/full/workflow.ts`, `pnpm dlx ts-node packages/agentic/examples/loop/workflow.ts`, or `pnpm dlx ts-node packages/agentic/examples/suspend-resume/workflow.ts`.
 
 ## Development
 

@@ -15,6 +15,7 @@ export const START_INDICATOR_FINISH_DELAY_MS = 1000;
 export const STEP_SUCCESS_FINISH_DELAY_MS = 800;
 export const WORKFLOW_FINISH_DELAY_MS = 1000;
 export const WORKFLOW_RESET_DELAY_MS = 1200;
+const LOOP_ITERATION_SUFFIX_PATTERN = /\[(?:\d+(?:\.\d+)*)\]$/;
 
 type AppendExecutionStateAction = {
   type: "append";
@@ -54,6 +55,12 @@ export const isStepWorkflowEvent = (
   const step = (event as { step?: { id?: unknown } }).step;
 
   return typeof step?.id === "string" && step.id.length > 0;
+};
+const toExecutionStepKey = (stepId: string) => {
+  return stepId.replace(LOOP_ITERATION_SUFFIX_PATTERN, "");
+};
+const hasLoopIterationSuffix = (stepId: string) => {
+  return LOOP_ITERATION_SUFFIX_PATTERN.test(stepId);
 };
 
 export const mapWorkflowEventToExecutionActions = (
@@ -95,6 +102,8 @@ export const mapWorkflowEventToExecutionActions = (
     return [];
   }
 
+  const stepExecutionKey = toExecutionStepKey(event.step.id);
+  const isLoopIterationStep = hasLoopIterationSuffix(event.step.id);
   const stepActions: ExecutionStateUpdateAction[] = [
     {
       type: "append",
@@ -107,7 +116,7 @@ export const mapWorkflowEventToExecutionActions = (
   if (event.workflowEvent === "step:start") {
     stepActions.push({
       type: "append",
-      key: event.step.id,
+      key: stepExecutionKey,
       state: "start",
       t: event.t,
     });
@@ -116,7 +125,7 @@ export const mapWorkflowEventToExecutionActions = (
   if (event.workflowEvent === "step:error") {
     stepActions.push({
       type: "append",
-      key: event.step.id,
+      key: stepExecutionKey,
       state: "error",
       t: event.t,
     });
@@ -125,16 +134,18 @@ export const mapWorkflowEventToExecutionActions = (
   if (event.workflowEvent === "step:success") {
     stepActions.push({
       type: "append",
-      key: event.step.id,
+      key: stepExecutionKey,
       state: "finish",
-      delayMs: STEP_SUCCESS_FINISH_DELAY_MS,
+      ...(isLoopIterationStep
+        ? { t: event.t }
+        : { delayMs: STEP_SUCCESS_FINISH_DELAY_MS }),
     });
   }
 
   if (event.workflowEvent === "step:suspended") {
     stepActions.push({
       type: "append",
-      key: event.step.id,
+      key: stepExecutionKey,
       state: "suspended",
       t: event.t,
     });

@@ -313,6 +313,7 @@ flow:
 
   # Step 8: loop example showcasing for-each fan-out with an accumulator and early exit.
   - loop:
+      type: for_each
       name: notify_stakeholders                      # Optional: name surfaces $output.notify_stakeholders.*
       description: "Fan out FYI updates to profile stakeholders until one acknowledges."
       for_each:

@@ -81,17 +81,29 @@ export type ConditionalStep = BaseStep & {
   branches: ConditionalBranch[];
 };
 
-/** Loop over items with optional accumulator and break condition. */
-export type LoopStep = BaseStep & {
+type BaseLoopStep = BaseStep & {
   type: StepType.Loop;
   name?: string;
   description?: string;
-  forEach: { item: string; in: CompiledValue };
-  maxConcurrency?: number;
-  until?: CompiledValue;
   accumulate?: { as: string; initial: unknown; merge: CompiledValue };
   steps: CompiledStep[];
 };
+
+/** Loop over items with optional post-iteration break condition. */
+export type ForEachLoopStep = BaseLoopStep & {
+  loopType: 'for_each';
+  forEach: { item: string; in: CompiledValue };
+  maxConcurrency?: number;
+  until?: CompiledValue;
+};
+
+/** Classic while-loop evaluated before each iteration. */
+export type WhileLoopStep = BaseLoopStep & {
+  loopType: 'while';
+  while: CompiledValue;
+};
+
+export type LoopStep = ForEachLoopStep | WhileLoopStep;
 
 /** Scope passed to value evaluators, reflecting the live runtime state. */
 export type EvaluationScope = {

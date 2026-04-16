@@ -21,7 +21,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 ## DSL essentials (YAML or JS object)
 - Workflow parts: optional `inputs.schema`, `context`, `defaults.settings`, required `defs`, `flow`, `outputs`. Long-term state should be stored on the workflow context.
 - Expressions: any string starting with `=` is JSONata; everything else is literal. Scopes: `$input`, `$context`, `$output`, `$iteration` (`item`, `index`), `$accumulator`, `$result` (only inside `defs.<task>.outputs` for `kind: task` defs).
-- Flow primitives: `do` (single task def reference), `parallel` (`strategy: wait_all|wait_any`), `conditional` (first truthy branch wins; optional `else`), `loop` (`for_each`, optional `until`, `accumulate`, `max_concurrency` hint).
+- Flow primitives: `do` (single task def reference), `parallel` (`strategy: wait_all|wait_any`), `conditional` (first truthy branch wins; optional `else`), `loop` with required `type` discriminator (`for_each` or `while`), optional `accumulate`, and `max_concurrency` hint on `for_each` loops.
 - Defs: `defs.<name>` is the only root registry. `kind: task` defs execute actions (`action`, optional `inputs`/`outputs`/`settings`/`bindings`), non-task defs require `settings` and may also declare nested `bindings`.
 - Bindings: any def may declare `bindings`; validation is recursive and enforces cardinality, kind matching, duplicates, cycles, and allowlists from `action.supportedBindings` or `kind.supportedBindings`.
 - Outputs: required map evaluated after the flow; values are expressions that usually reference `$output.<task>.*`.
@@ -34,7 +34,10 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Events: runners can emit to any `emit`/`on`-compatible emitter (`WorkflowEventEmitter` is the built-in helper) with `hook:workflow:start|finish|failure|suspended` and `hook:step:start|success|error|suspended|skipped`.
 - Evaluation order: task-def inputs are evaluated before marking a step as running; outputs are mapped via `evaluateMapping` (falls back to raw result when no outputs map is provided). Final workflow outputs are evaluated only after the flow completes.
 - Parallel semantics: executed sequentially for determinism; `wait_any` short-circuits after the first completed child, `wait_all` waits for all.
-- Loop semantics: iterates over evaluated `for_each.in` (arrays only), threads `$iteration` and accumulator; `until` is checked after each iteration; accumulated values are exposed under `$output.<loop_name>.<accumulator_alias>` when `name` is set.
+- Loop semantics:
+  - `type: for_each`: iterates over evaluated `for_each.in` (arrays only), threads `$iteration` and accumulator, and optionally checks `until` after each iteration.
+  - `type: while`: evaluates `while` before each iteration and then executes loop steps.
+  - Accumulated values are exposed under `$output.<loop_name>.<accumulator_alias>` when `name` is set.
 
 ## Actions and settings
 - Create actions with `defineAction` (or extend `AbstractAction`): provide `name` (snake_case), optional `description`, `inputSchema`, `outputSchema`, optional `settingSchema`, and an async `execute`.
@@ -48,7 +51,8 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Root `tasks` is invalid; use `defs` only.
 - Non-task defs must include `settings` (empty object is valid).
 - If compile-time `actions` are provided, any def declaring `action` must resolve to a known action.
-- `max_concurrency` in loops is accepted in the DSL but not yet enforced by the in-process runner (treat it as a hint for now).
+- `max_concurrency` is available only on `loop.type: for_each`, and is not yet enforced by the in-process runner (treat it as metadata/hint for now).
+- Legacy loop blocks without `loop.type` are invalid and must be migrated.
 - `timeout_ms: 0` disables timeouts. Default retries come from `DEFAULT_RETRY_SETTINGS` (3 attempts, exponential backoff starting at 25ms, capped at 10s, no jitter).
 - Outputs mapping is optional; when omitted the entire raw action result is stored under `$output.<task>`.
 - `BaseWorkflowContext.workflow` is attached only while running; don’t hold references beyond execution.
@@ -62,4 +66,5 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 ## Quick reference: examples
 - Annotated YAML DSL: `packages/agentic/examples/full/workflow.yml` shows a realistic flow with human-in-the-loop pauses, branching, and a loop accumulator.
 - Runnable script: `packages/agentic/examples/full/workflow.ts` builds a workflow from YAML, registers actions, attaches an event emitter, and demonstrates `WorkflowRunner.start`.
+- While-loop demo: `packages/agentic/examples/loop/workflow.yml|ts` shows a `loop.type: while` validation loop with suspend/resume replies.
 - Suspend/resume minimal demo: `packages/agentic/examples/suspend-resume/workflow.yml|ts` shows pausing a run until `resume` is called with a reply payload.

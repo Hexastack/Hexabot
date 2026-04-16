@@ -165,6 +165,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     const baseDefinition = definition ?? createBaseDefinition();
     const loopStep: FlowStep = {
       loop: {
+        type: "for_each",
         for_each: {
           item: "item",
           in: "=[]",

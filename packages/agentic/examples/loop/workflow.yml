@@ -1,0 +1,66 @@
+defaults:
+  settings:
+    timeout_ms: 0
+    retries:
+      enabled: false
+      max_attempts: 3
+      backoff_ms: 25
+      max_delay_ms: 10000
+      jitter: 0
+      multiplier: 2
+
+defs:
+  ask_phone_number:
+    kind: task
+    description: Ask the subscriber for their phone number.
+    action: send_text_message
+    inputs:
+      text: Please enter your phone number in 8 digits.
+    settings:
+      typing: 0
+
+  ask_phone_number_again:
+    kind: task
+    description: Ask again when the provided value is invalid.
+    action: send_text_message
+    inputs:
+      text: Invalid phone number. Please enter exactly 8 digits.
+    settings:
+      typing: 0
+
+  confirm_phone_number:
+    kind: task
+    description: Confirm that the phone number was captured.
+    action: send_text_message
+    inputs:
+      text: Well received.
+    settings:
+      typing: 0
+
+  await_phone_reply:
+    kind: task
+    description: Suspend the workflow until a subscriber reply is received.
+    action: await_reply
+
+flow:
+  - do: ask_phone_number
+
+  - loop:
+      type: while
+      name: capture_phone_number
+      description: Keep waiting for a valid 8-digit phone number.
+      while: =$not($exists($output.await_phone_reply.text) and $exists($match($trim($output.await_phone_reply.text), /^\d{8}$/)))
+      steps:
+        - do: await_phone_reply
+        - conditional:
+            when:
+              - condition: =$exists($match($trim($output.await_phone_reply.text), /^\d{8}$/))
+                steps:
+                  - do: confirm_phone_number
+              - else: true
+                steps:
+                  - do: ask_phone_number_again
+
+outputs:
+  phone_number: =$trim($output.await_phone_reply.text)
+  result: =$trim($output.await_phone_reply.text)

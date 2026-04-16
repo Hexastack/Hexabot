@@ -958,12 +958,27 @@
           "label": "Description",
           "helper": "Optional loop description."
         },
+        "type": {
+          "label": "Loop type",
+          "for_each": {
+            "label": "For each",
+            "description": "Iterate over each item from an input collection."
+          },
+          "while": {
+            "label": "While",
+            "description": "Repeat while a JSONata condition evaluates to true."
+          }
+        },
         "for_each": {
           "section": "For each",
           "item_label": "Item variable",
           "item_helper": "Variable available in the loop as $iteration.item.",
           "in_label": "Input expression",
           "in_helper": "JSONata expression that returns the collection (must start with '=')."
+        },
+        "while": {
+          "label": "While condition",
+          "helper": "Required JSONata expression evaluated before each iteration."
         },
         "max_concurrency": {
           "label": "Max concurrency",

@@ -64,12 +64,17 @@ The `flow` array defines the run order. Each item is exactly one of the followin
 - `conditional`: branching table evaluated top-to-bottom. Keys:
   - `when`: list of branches with `condition` (JSONata boolean) and `steps` to run on match.
   - `else`: optional branch with `steps` when nothing matches.
-- `loop`: fan-out over a collection with optional short-circuit and accumulation:
-  - `for_each`: `{ item: <alias>, in: <expression> }` defines the iterable. Inside the loop body, `$iteration.item` and `$iteration.index` are available.
-  - `max_concurrency`: throttle parallel loop iterations.
-  - `until`: stop condition checked after each iteration; if `true`, the loop exits early.
-  - `accumulate`: maintains reducer-style state with `as` (name), `initial` (seed value), and `merge` (JSONata expression that receives `$accumulator` and current outputs).
-  - `steps`: the same flow blocks allowed in the root flow (usually a series of `do` steps).
+- `loop`: explicit loop block with a required discriminator `type`.
+  - `type: for_each`:
+    - `for_each`: `{ item: <alias>, in: <expression> }` defines the iterable.
+    - `until`: optional stop condition checked after each iteration; if `true`, the loop exits early.
+    - `max_concurrency`: optional throttle hint (runner currently treats this as metadata).
+  - `type: while`:
+    - `while`: condition evaluated before each iteration (classic while semantics).
+  - shared fields for both variants:
+    - `accumulate`: reducer-style state with `as` (name), `initial` (seed value), and `merge` (JSONata expression that receives `$accumulator` and current outputs).
+    - `steps`: nested flow blocks (`do`, `parallel`, `conditional`, `loop`).
+  - Breaking change: legacy loops without `type` are invalid.
 
 All branches and loop bodies can themselves contain nested `conditional` or `parallel` blocks.
 

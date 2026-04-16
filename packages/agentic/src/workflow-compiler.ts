@@ -256,19 +256,12 @@ const compileFlowSteps = (
 
     const loop = step.loop;
     const label = loop.name ?? 'loop';
-
-    return {
+    const commonLoop = {
       type: StepType.Loop,
       id: buildStepId(stepPath, label),
       label,
       name: loop.name,
       description: loop.description,
-      forEach: {
-        item: loop.for_each.item,
-        in: compileValue(loop.for_each.in, options),
-      },
-      maxConcurrency: loop.max_concurrency,
-      until: loop.until ? compileValue(loop.until, options) : undefined,
       accumulate: loop.accumulate
         ? {
             as: loop.accumulate.as,
@@ -281,6 +274,25 @@ const compileFlowSteps = (
         [...stepPath, loop.name ?? 'loop'],
         options,
       ),
+    } as const;
+
+    if (loop.type === 'for_each') {
+      return {
+        ...commonLoop,
+        loopType: 'for_each',
+        forEach: {
+          item: loop.for_each.item,
+          in: compileValue(loop.for_each.in, options),
+        },
+        maxConcurrency: loop.max_concurrency,
+        until: loop.until ? compileValue(loop.until, options) : undefined,
+      } as LoopStep;
+    }
+
+    return {
+      ...commonLoop,
+      loopType: 'while',
+      while: compileValue(loop.while, options),
     } as LoopStep;
   });
 

@@ -291,6 +291,7 @@ describe('rebuildSuspension', () => {
     const loopStep: CompiledStep = {
       type: StepType.Loop,
       id: '0:collector',
+      loopType: 'for_each',
       label: 'collector',
       name: 'collector',
       forEach: { item: 'entry', in: { kind: 'literal', value: [] } },

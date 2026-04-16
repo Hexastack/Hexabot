@@ -112,6 +112,7 @@ describe('compileWorkflow', () => {
         },
         {
           loop: {
+            type: 'for_each',
             name: 'looping',
             description: 'loop desc',
             for_each: { item: 'item', in: '=$input.items' },
@@ -160,6 +161,10 @@ describe('compileWorkflow', () => {
 
     const loop = compiled.flow[2];
     if (loop.type === 'loop') {
+      expect(loop.loopType).toBe('for_each');
+      if (loop.loopType !== 'for_each') {
+        throw new Error('Expected for_each loop step');
+      }
       expect(loop.forEach.in).toMatchObject({
         kind: 'expression',
         source: '=$input.items',
@@ -204,6 +209,46 @@ describe('compileWorkflow', () => {
         >,
       }),
     ).toThrow(/No action implementation provided for "unknown_action"/);
+  });
+
+  it('compiles while loops with a pre-check condition', () => {
+    const { action } = createAction();
+    const definition: WorkflowDefinition = {
+      defs: createTaskDefs({
+        worker_task: {
+          action: 'worker_action',
+        },
+      }),
+      flow: [
+        {
+          loop: {
+            type: 'while',
+            name: 'until_valid',
+            while: '=$not($exists($output.worker_task.done))',
+            steps: [{ do: 'worker_task' }],
+          },
+        },
+      ],
+      outputs: { final: '=$output.worker_task' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { worker_action: action },
+    });
+    const loop = compiled.flow[0];
+
+    if (loop.type !== 'loop') {
+      throw new Error('Expected loop step');
+    }
+
+    expect(loop.loopType).toBe('while');
+    if (loop.loopType !== 'while') {
+      throw new Error('Expected while loop step');
+    }
+    expect(loop.while).toMatchObject({
+      kind: 'expression',
+      source: '=$not($exists($output.worker_task.done))',
+    });
+    expect('maxConcurrency' in loop).toBe(false);
   });
 
   it('mounts task bindings from defs using parsed binding payloads', () => {

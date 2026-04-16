@@ -956,12 +956,27 @@
           "label": "Description",
           "helper": "Description optionnelle de la boucle."
         },
+        "type": {
+          "label": "Type de boucle",
+          "for_each": {
+            "label": "Pour chaque",
+            "description": "Itérer sur chaque élément d'une collection en entrée."
+          },
+          "while": {
+            "label": "Tant que",
+            "description": "Répéter tant qu'une condition JSONata est vraie."
+          }
+        },
         "for_each": {
           "section": "Pour chaque",
           "item_label": "Variable d'élément",
           "item_helper": "Variable disponible dans la boucle comme $iteration.item.",
           "in_label": "Expression d'entrée",
           "in_helper": "Expression JSONata qui retourne la collection (doit commencer par '=')."
+        },
+        "while": {
+          "label": "Condition tant que",
+          "helper": "Expression JSONata requise, évaluée avant chaque itération."
         },
         "max_concurrency": {
           "label": "Concurrence max",
