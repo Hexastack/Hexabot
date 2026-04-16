@@ -34,17 +34,15 @@ export const StepTracePanel = ({
       <Paper
         variant="outlined"
         sx={{
-          p: 1,
           display: "flex",
           flexDirection: "column",
-          gap: 2,
+          gap: 1,
           flex: 1,
           minHeight: 0,
           overflow: "hidden",
           height: "100%",
         }}
       >
-        {/* <StepTraceHeader /> */}
         <StepTraceFilters
           includeSkipped={includeSkipped}
           onIncludeSkippedChange={setIncludeSkipped}
