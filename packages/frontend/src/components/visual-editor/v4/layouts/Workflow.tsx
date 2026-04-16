@@ -259,7 +259,13 @@ export const Workflow = () => {
       setPendingInsertPath(insertPath ?? null);
       setActionsDrawerOpen(true);
     },
-    [addConditionalStep, addLoopStep, addParallelStep],
+    [
+      addConditionalStep,
+      addLoopStep,
+      addParallelStep,
+      definition,
+      setGraphSelection,
+    ],
   );
   const handleRootInsert = useCallback(
     (insertType: EdgeInsertType = "step") => {
