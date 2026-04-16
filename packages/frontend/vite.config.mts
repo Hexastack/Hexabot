@@ -13,6 +13,16 @@ const monorepoRoot = path.resolve(__dirname, "../..");
 
 export default defineConfig({
   plugins: [react()],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: "modern-compiler",
+      },
+      sass: {
+        api: "modern-compiler",
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
