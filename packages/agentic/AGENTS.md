@@ -20,9 +20,9 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 
 ## DSL essentials (YAML or JS object)
 - Workflow parts: optional `inputs.schema`, `context`, `defaults.settings`, required `defs`, `flow`, `outputs`. Long-term state should be stored on the workflow context.
-- Expressions: any string starting with `=` is JSONata; everything else is literal. Scopes: `$input`, `$context`, `$output`, `$iteration` (`item`, `index`), `$accumulator`, `$result` (only inside `defs.<task>.outputs` for `kind: task` defs).
+- Expressions: any string starting with `=` is JSONata; everything else is literal. Scopes: `$input`, `$context`, `$output`, `$iteration` (`item`, `index`), `$accumulator`.
 - Flow primitives: `do` (single task def reference), `parallel` (`strategy: wait_all|wait_any`), `conditional` (first truthy branch wins; optional `else`), `loop` with required `type` discriminator (`for_each` or `while`), optional `accumulate`, and `max_concurrency` hint on `for_each` loops.
-- Defs: `defs.<name>` is the only root registry. `kind: task` defs execute actions (`action`, optional `inputs`/`outputs`/`settings`/`bindings`), non-task defs require `settings` and may also declare nested `bindings`.
+- Defs: `defs.<name>` is the only root registry. `kind: task` defs execute actions (`action`, optional `inputs`/`settings`/`bindings`), non-task defs require `settings` and may also declare nested `bindings`.
 - Bindings: any def may declare `bindings`; validation is recursive and enforces cardinality, kind matching, duplicates, cycles, and allowlists from `action.supportedBindings` or `kind.supportedBindings`.
 - Outputs: required map evaluated after the flow; values are expressions that usually reference `$output.<task>.*`.
 
@@ -32,7 +32,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Step ids: generated from the flow path (e.g., `0.branch.1:conditional`); loop iterations append `[i.j]` suffixes.
 - Snapshots: every start/resume returns `{ status, snapshot }` with `WorkflowSnapshot.actions` capturing per-step status (`pending|running|suspended|completed|failed|skipped`).
 - Events: runners can emit to any `emit`/`on`-compatible emitter (`WorkflowEventEmitter` is the built-in helper) with `hook:workflow:start|finish|failure|suspended` and `hook:step:start|success|error|suspended|skipped`.
-- Evaluation order: task-def inputs are evaluated before marking a step as running; outputs are mapped via `evaluateMapping` (falls back to raw result when no outputs map is provided). Final workflow outputs are evaluated only after the flow completes.
+- Evaluation order: task-def inputs are evaluated before marking a step as running; task results are stored raw under `$output.<task>`. Final workflow outputs are evaluated only after the flow completes.
 - Parallel semantics: executed sequentially for determinism; `wait_any` short-circuits after the first completed child, `wait_all` waits for all.
 - Loop semantics:
   - `type: for_each`: iterates over evaluated `for_each.in` (arrays only), threads `$iteration` and accumulator, and optionally checks `until` after each iteration.
@@ -48,13 +48,12 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 ## Conventions and gotchas
 - Expressions must start with `=`; validation will parse JSONata and fail early on syntax errors.
 - Task/action names are enforced as `snake_case` by `assertSnakeCaseName`.
-- Root `tasks` is invalid; use `defs` only.
 - Non-task defs must include `settings` (empty object is valid).
 - If compile-time `actions` are provided, any def declaring `action` must resolve to a known action.
 - `max_concurrency` is available only on `loop.type: for_each`, and is not yet enforced by the in-process runner (treat it as metadata/hint for now).
 - Legacy loop blocks without `loop.type` are invalid and must be migrated.
 - `timeout_ms: 0` disables timeouts. Default retries come from `DEFAULT_RETRY_SETTINGS` (3 attempts, exponential backoff starting at 25ms, capped at 10s, no jitter).
-- Outputs mapping is optional; when omitted the entire raw action result is stored under `$output.<task>`.
+- Task-level output mapping is not supported; the entire raw action result is always stored under `$output.<task>`.
 - `BaseWorkflowContext.workflow` is attached only while running; don’t hold references beyond execution.
 
 ## When extending the package
