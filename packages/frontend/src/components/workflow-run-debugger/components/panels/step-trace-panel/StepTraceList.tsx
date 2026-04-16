@@ -24,7 +24,7 @@ export const StepTraceList = ({
   const steps = Object.values(stepLog ?? {});
 
   return (
-    <Grid gap={1} display="flex" flexDirection="column" overflow="auto">
+    <Grid px={1} gap={1} display="flex" flexDirection="column" overflow="auto">
       {steps.length === 0 ? (
         <StepTraceEmpty hasTrace={Boolean(stepLog)} />
       ) : (

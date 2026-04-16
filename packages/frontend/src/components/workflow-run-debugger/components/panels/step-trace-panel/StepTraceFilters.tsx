@@ -32,7 +32,7 @@ export const StepTraceFilters = ({
   const { t } = useTranslate();
 
   return (
-    <Box display="flex" gap={1} alignItems="center">
+    <Box display="flex" gap={1} alignItems="center" p={1} pb={0}>
       <ToggleButtonGroup
         exclusive
         size="small"
