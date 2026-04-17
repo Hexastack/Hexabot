@@ -82,8 +82,6 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     (user: IUser) => {
       void updateLanguage(user.language);
       queryClient.setQueryData([QueryType.item, "getCurrentSession"], user);
-
-      void refetch();
     },
     [queryClient, refetch, updateLanguage],
   );
