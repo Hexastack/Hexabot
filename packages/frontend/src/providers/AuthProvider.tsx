@@ -5,7 +5,6 @@
  */
 
 import { type ReactNode, useCallback, useEffect } from "react";
-import { useRoutes } from "react-router-dom";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { runtimeConfig } from "@/config/runtime";
@@ -21,10 +20,8 @@ import { useAppRouter } from "@/hooks/useAppRouter";
 import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
-import { routes } from "@/routes";
-import { EntityType, QueryType, RouterType } from "@/services/types";
+import { EntityType, QueryType } from "@/services/types";
 import { type IUser } from "@/types/user.types";
-import { hasPublicPath, isLoginPath } from "@/utils/URL";
 
 export interface AuthProviderProps {
   children: ReactNode;
@@ -32,9 +29,6 @@ export interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useAppRouter();
-  const element = useRoutes(routes);
-  const { match } = element?.props;
-  const { handle } = match.route;
   const { i18n } = useTranslate();
   const queryClient = useTanstackQueryClient();
   const updateLanguage = useCallback(
@@ -65,31 +59,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     await updateLanguage(runtimeConfig.lang.default);
     logoutSession();
   };
-  const authRedirection = async (isAuthenticated: boolean) => {
-    if (isAuthenticated && handle?.isPublicRoute) {
-      await router.push(RouterType.HOME);
-    }
-
-    if (isAuthenticated && isLoginPath(router.pathname)) {
-      const rawRedirect = router.query.redirect;
-      const redirectUrl = Array.isArray(rawRedirect)
-        ? rawRedirect.at(-1)
-        : rawRedirect;
-
-      if (redirectUrl?.startsWith("/") && !hasPublicPath(redirectUrl)) {
-        await router.push(redirectUrl);
-      } else {
-        await router.push(RouterType.HOME);
-      }
-    }
-  };
   const { apiClient } = useApiClient();
   const { data, error, isLoading, refetch } = useTanstackQuery<IUser, Error>({
     queryFn: () => apiClient.getCurrentSession(),
     queryKey: [CURRENT_USER_KEY],
-    onSuccess: (sessionUser) => {
-      authRedirection(!!sessionUser.id);
-    },
   });
   const { data: user } = useGet(
     data?.id || "",
@@ -115,7 +88,6 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
 
     return result.data;
   }, [refetch]);
-  const isAuthenticated = !!user;
 
   useSubscribeBroadcastChannel("login", () => {
     router.reload();
@@ -133,7 +105,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!isAuthenticated,
+        isAuthenticated: !!user,
         error,
         setUser,
         authenticate,

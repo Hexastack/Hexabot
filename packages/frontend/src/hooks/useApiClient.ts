@@ -14,6 +14,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { ApiClient, EntityApiClient } from "@/services/api.class";
 import { QueryType, TMutationOptions } from "@/services/types";
 import { THook } from "@/types/base.types";
+import { isLoginPath } from "@/utils/URL";
 
 import { useTanstackMutation, useTanstackQuery } from "./crud/useTanstack";
 import { useLogoutRedirection } from "./useAuth";
@@ -69,8 +70,14 @@ export const useAxiosInstance = () => {
           return Promise.reject(new Error("Network error"));
         }
 
-        if (error.response.status === 401) {
-          await logoutRedirection(true);
+        if (
+          error.response.status === 401 &&
+          !isLoginPath(window.location.pathname)
+        ) {
+          await logoutRedirection(
+            `${window.location.pathname}${window.location.search}`,
+            true,
+          );
         }
 
         return Promise.reject(error.response.data);
