@@ -15,9 +15,7 @@ import { Adornment } from "@/app-components/inputs/Adornment";
 import AvatarInput from "@/app-components/inputs/AvatarInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { PasswordStrengthInput } from "@/app-components/inputs/PasswordStrengthInput";
-import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useApiClientMutation } from "@/hooks/useApiClient";
-import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
@@ -28,7 +26,6 @@ type ProfileFormProps = { user: IUser };
 
 export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
   const { t } = useTranslate();
-  const queryClient = useTanstackQueryClient();
   const { toast } = useToast();
   const { mutate: updateProfile, isPending } = useApiClientMutation(
     "updateProfile",
@@ -36,22 +33,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
       onError: () => {
         toast.error(t("message.internal_server_error"));
       },
-      onSuccess: (data) => {
-        queryClient.setQueryData<IUser>(
-          [CURRENT_USER_KEY],
-          (previousSessionUser) => {
-            if (!previousSessionUser) {
-              return data as IUser;
-            }
-
-            return {
-              ...previousSessionUser,
-              ...data,
-              // `updateProfile` payload may omit license fields.
-              license: data.license ?? previousSessionUser.license,
-            };
-          },
-        );
+      onSuccess: () => {
         toast.success(t("message.account_update_success"));
       },
     },
