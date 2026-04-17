@@ -10,10 +10,13 @@ import React from "react";
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { DashboardHeader } from "@/app-components/menus/DashboardSidebar/DashboardHeader";
 import { DashboardSidebar } from "@/app-components/menus/DashboardSidebar/DashboardSidebar";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
 import { useConfig } from "@/hooks/useConfig";
 import { useEntityMutationSubscription } from "@/hooks/useEntityMutationSubscription";
+import { RouterType } from "@/services/types";
 import { getMenuItems } from "@/utils/menu.util";
+import { hasPublicPath, isLoginPath } from "@/utils/URL";
 import { useSocketGetQuery } from "@/websocket/socket-hooks";
 
 import { LayoutProps } from ".";
@@ -22,7 +25,7 @@ import { theme } from "./theme";
 
 export const AuthenticatedLayout: React.FC<
   LayoutProps & { hasNoPadding?: boolean }
-> = ({ children, hasNoPadding }) => {
+> = ({ children, hasNoPadding, isPublicRoute }) => {
   useSocketGetQuery("/workflow/subscribe/");
   useEntityMutationSubscription();
 
@@ -44,6 +47,27 @@ export const AuthenticatedLayout: React.FC<
   const { ssoEnabled } = useConfig();
   const menuItems = getMenuItems(ssoEnabled);
   const availableMenuItems = useAvailableMenuItems(menuItems);
+  const router = useAppRouter();
+  const authRedirection = async () => {
+    if (isLoginPath(router.pathname)) {
+      const rawRedirect = router.query.redirect;
+      const redirectUrl = Array.isArray(rawRedirect)
+        ? rawRedirect.at(-1)
+        : rawRedirect;
+
+      if (redirectUrl?.startsWith("/") && !hasPublicPath(redirectUrl)) {
+        return await router.push(redirectUrl);
+      }
+    }
+
+    await router.push(RouterType.HOME);
+  };
+
+  if (isPublicRoute) {
+    authRedirection();
+
+    return;
+  }
 
   return (
     <Box display="flex">

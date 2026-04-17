@@ -6,6 +6,10 @@
 
 import Grid from "@mui/material/Grid";
 
+import { useAppRouter } from "@/hooks/useAppRouter";
+import { useLogoutRedirection } from "@/hooks/useAuth";
+import { isLoginPath } from "@/utils/URL";
+
 import { LayoutProps } from ".";
 
 import { Content } from "./content";
@@ -15,11 +19,22 @@ export const AnonymousLayout: React.FC<LayoutProps> = ({
   children,
   sxContent,
   ...rest
-}) => (
-  <Grid container>
-    <Header />
-    <Content sx={sxContent} {...rest}>
-      {children}
-    </Content>
-  </Grid>
-);
+}) => {
+  const { logoutRedirection } = useLogoutRedirection();
+  const router = useAppRouter();
+
+  if (!rest.isPublicRoute && !isLoginPath(router.pathname)) {
+    logoutRedirection(router.pathname);
+
+    return;
+  }
+
+  return (
+    <Grid container>
+      <Header />
+      <Content sx={sxContent} {...rest}>
+        {children}
+      </Content>
+    </Grid>
+  );
+};

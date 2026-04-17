@@ -17,6 +17,7 @@ import {
   useTanstackQueryClient,
 } from "../crud/useTanstack";
 import { useApiClient } from "../useApiClient";
+import { useAppRouter } from "../useAppRouter";
 import { useAuth, useLogoutRedirection } from "../useAuth";
 import { useToast } from "../useToast";
 import { useTranslate } from "../useTranslate";
@@ -54,6 +55,7 @@ export const useLogout = (
   const { toast } = useToast();
   const { t } = useTranslate();
   const { postMessage } = useBroadcastChannel();
+  const router = useAppRouter();
 
   return useTanstackMutation({
     ...options,
@@ -65,7 +67,7 @@ export const useLogout = (
     onSuccess: async () => {
       queryClient.clear();
       postMessage({ event: "logout" });
-      await logoutRedirection();
+      await logoutRedirection(router.asPath);
       toast.success(t("message.logout_success"));
     },
     onError: () => {

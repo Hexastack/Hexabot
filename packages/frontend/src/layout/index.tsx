@@ -6,6 +6,7 @@
 
 import { BoxProps } from "@mui/material";
 
+import { useAuth } from "@/hooks/useAuth";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 
@@ -22,14 +23,12 @@ export type LayoutProps = IContentPaddingProps & {
   isPublicRoute?: boolean;
   requiredPermissions?: [EntityType, PermissionAction][];
 };
-export const Layout: React.FC<LayoutProps> = ({
-  children,
-  isPublicRoute,
-  ...rest
-}) => {
-  return isPublicRoute ? (
-    <AnonymousLayout {...rest}>{children}</AnonymousLayout>
-  ) : (
+export const Layout: React.FC<LayoutProps> = ({ children, ...rest }) => {
+  const { isAuthenticated } = useAuth();
+
+  return isAuthenticated ? (
     <AuthenticatedLayout {...rest}>{children}</AuthenticatedLayout>
+  ) : (
+    <AnonymousLayout {...rest}>{children}</AnonymousLayout>
   );
 };

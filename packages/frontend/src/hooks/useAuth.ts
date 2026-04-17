@@ -7,9 +7,10 @@
 import { useContext } from "react";
 
 import { AuthContext } from "@/contexts/auth.context";
-import { useAppRouter } from "@/hooks/useAppRouter";
 import { RouterType } from "@/services/types";
 import { hasPublicPath } from "@/utils/URL";
+
+import { useAppRouter } from "./useAppRouter";
 
 export const CURRENT_USER_KEY = "current-user";
 export const PUBLIC_PATHS = [
@@ -31,10 +32,13 @@ export const useAuth = () => {
 
 export const useLogoutRedirection = () => {
   const router = useAppRouter();
-  const logoutRedirection = async (fullReload: boolean = false) => {
-    if (!hasPublicPath(router.pathname)) {
+  const logoutRedirection = async (
+    pathname: string,
+    fullReload: boolean = false,
+  ) => {
+    if (!hasPublicPath(pathname)) {
       const redirectUrl = `/${RouterType.LOGIN}?redirect=${encodeURIComponent(
-        router.asPath,
+        pathname,
       )}`;
 
       if (fullReload) {
