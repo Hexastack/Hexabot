@@ -299,6 +299,16 @@ export const useEntityMutationSubscription = () => {
         }
       } else {
         affectedEntityTypes.forEach((affectedEntityType) => {
+          if (
+            "label" in data &&
+            data.label === "license_key" &&
+            affectedEntityType === EntityType.SETTING
+          ) {
+            queryClient.invalidateQueries({
+              queryKey: [QueryType.item, "getCurrentSession"],
+            });
+          }
+
           queryClient.setQueriesData(
             {
               predicate({ queryKey }) {
