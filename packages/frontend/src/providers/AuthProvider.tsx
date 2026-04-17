@@ -4,20 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { type ReactNode, useCallback, useEffect } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { runtimeConfig } from "@/config/runtime";
 import { AuthContext } from "@/contexts/auth.context";
 import { useGet } from "@/hooks/crud/useGet";
-import {
-  useTanstackQuery,
-  useTanstackQueryClient,
-} from "@/hooks/crud/useTanstack";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useLogout } from "@/hooks/entities/auth-hooks";
-import { useApiClient } from "@/hooks/useApiClient";
+import { useApiClientQuery } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
-import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, QueryType } from "@/services/types";
@@ -59,15 +55,22 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     await updateLanguage(runtimeConfig.lang.default);
     logoutSession();
   };
-  const { apiClient } = useApiClient();
-  const { data, error, isLoading, refetch } = useTanstackQuery<IUser, Error>({
-    queryFn: () => apiClient.getCurrentSession(),
-    queryKey: [CURRENT_USER_KEY],
-  });
+  const {
+    data: me,
+    error,
+    isLoading,
+    refetch,
+  } = useApiClientQuery("getCurrentSession");
   const { data: user } = useGet(
-    data?.id || "",
+    me?.id || "",
     { entity: EntityType.USER },
-    { enabled: !!data?.id },
+    {
+      enabled: !!me?.id,
+    },
+  );
+  const userWithLicense = useMemo(
+    () => ({ ...user, license: me?.license }) as typeof me,
+    [me, user],
   );
 
   useEffect(() => {
@@ -75,13 +78,8 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
       void updateLanguage(user.language);
     }
   }, [updateLanguage, user?.language]);
-
-  const setUser = (data?: IUser) => {
-    queryClient.setQueryData([CURRENT_USER_KEY], data);
-  };
   const authenticate = (user: IUser) => {
     void updateLanguage(user.language);
-    setUser(user);
   };
   const refetchUser = useCallback(async () => {
     const result = await refetch();
@@ -97,17 +95,16 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     router.reload();
   });
 
-  if (isLoading) {
+  if (isLoading || !userWithLicense) {
     return <Progress />;
   }
 
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: userWithLicense,
         isAuthenticated: !!user,
         error,
-        setUser,
         authenticate,
         refetchUser,
         logout,

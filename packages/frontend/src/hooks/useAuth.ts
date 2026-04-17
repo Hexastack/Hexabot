@@ -12,7 +12,6 @@ import { hasPublicPath } from "@/utils/URL";
 
 import { useAppRouter } from "./useAppRouter";
 
-export const CURRENT_USER_KEY = "current-user";
 export const PUBLIC_PATHS = [
   "/login",
   "/login/:token",
