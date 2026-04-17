@@ -6,7 +6,6 @@
 
 import {
   CONSOLE_CHANNEL_NAME,
-  CONSOLE_CHANNEL_NAMESPACE,
   CONSOLE_CHANNEL_SETTINGS_SCHEMA,
 } from './console-channel.settings';
 
@@ -22,7 +21,7 @@ declare global {
 
 declare module '@nestjs/event-emitter' {
   interface IHookExtensionsOperationMap {
-    [CONSOLE_CHANNEL_NAMESPACE]: TDefinition<
+    [CONSOLE_CHANNEL_NAME]: TDefinition<
       object,
       SettingMapByType<typeof CONSOLE_CHANNEL_SETTINGS_SCHEMA>
     >;

@@ -26,9 +26,7 @@ describe('ChannelMiddleware', () => {
 
     await middleware.use(req, {} as Response, next);
 
-    expect(channelService.getChannelHandler).toHaveBeenCalledWith(
-      'facebook-channel',
-    );
+    expect(channelService.getChannelHandler).toHaveBeenCalledWith('facebook');
     expect(channel.middleware).toHaveBeenCalled();
     expect(next).toHaveBeenCalled();
   });
@@ -50,9 +48,7 @@ describe('ChannelMiddleware', () => {
 
     await middleware.use(req, {} as Response, next);
 
-    expect(channelService.getChannelHandler).toHaveBeenCalledWith(
-      'facebook-channel',
-    );
+    expect(channelService.getChannelHandler).toHaveBeenCalledWith('facebook');
     expect(channel.middleware).toHaveBeenCalled();
     expect(next).toHaveBeenCalled();
   });

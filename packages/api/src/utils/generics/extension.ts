@@ -8,7 +8,7 @@ import { Inject, OnModuleInit } from '@nestjs/common';
 
 import { LoggerService } from '@/logger/logger.service';
 
-import { ExtensionName, HyphenToUnderscore } from '../types/extension';
+import { ExtensionName } from '../types/extension';
 
 export abstract class Extension implements OnModuleInit {
   @Inject(LoggerService)
@@ -18,10 +18,6 @@ export abstract class Extension implements OnModuleInit {
 
   getName() {
     return this.name;
-  }
-
-  getNamespace<N extends ExtensionName = ExtensionName>() {
-    return this.name.replaceAll('-', '_') as HyphenToUnderscore<N>;
   }
 
   async onModuleInit() {}

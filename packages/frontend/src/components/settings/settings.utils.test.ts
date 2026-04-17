@@ -18,20 +18,18 @@ describe("settings utils", () => {
   describe("resolveSettingsGroupTitle", () => {
     it("returns localized schema title when available", () => {
       const schemas: ISettingSchemasMap = {
-        web_channel: {
+        web: {
           schema: {
             title: "Web Channel",
           },
           scope: "extension",
           extensionType: "channel",
-          extensionName: "web-channel",
+          extensionName: "web",
         },
       };
       const t = vi.fn().mockReturnValue("fallback");
 
-      expect(resolveSettingsGroupTitle("web_channel", schemas, t)).toBe(
-        "Web Channel",
-      );
+      expect(resolveSettingsGroupTitle("web", schemas, t)).toBe("Web Channel");
       expect(t).not.toHaveBeenCalled();
     });
 

@@ -4,27 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ExtensionName, HyphenToUnderscore } from '@/utils/types/extension';
+import { ChannelName } from '@/channel/types';
+import { HelperName } from '@/helper/types';
 
-export type TExtensionName = Extract<ExtensionName, `${string}-${string}`>;
+export type TExtension = 'channel' | 'helper';
 
-export type TExtension = TExtensionName extends `${string}-${infer S}`
-  ? `${S}`
-  : never;
+export type TExtractGroup<T extends TExtension> = T extends 'channel'
+  ? ChannelName
+  : HelperName;
 
-export type TNamespace = HyphenToUnderscore<TExtensionName>;
-
-export type TExtractNamespace<
-  T extends TExtension = TExtension,
-  M extends TExtensionName = TExtensionName,
-> = M extends `${string}${T}` ? HyphenToUnderscore<M> : never;
-
-export type TExtractExtension<
-  T extends TExtension = TExtension,
-  M extends TExtensionName = TExtensionName,
-> = M extends `${string}${T}` ? M : never;
-
-export type TCriteria = {
-  suffix: `_${TExtension}`;
-  namespaces: TNamespace[];
+export type TCriteria<T extends TExtension = TExtension> = {
+  extensionType: T;
+  groups: TExtractGroup<T>[];
 };

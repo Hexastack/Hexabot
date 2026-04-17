@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ChatWidget
       {...{
         apiUrl: "http://localhost:3000/api",
-        channel: "web-channel",
+        channel: "web",
         language: "en",
         primaryColor: "#1BA089",
       }}

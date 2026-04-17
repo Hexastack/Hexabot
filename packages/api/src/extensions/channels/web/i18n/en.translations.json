@@ -1,5 +1,5 @@
 {
-  "web_channel": {
+  "web": {
     "Web Channel": "Web Channel",
     "Allowed domains": "Allowed domains",
     "Comma-separated list of allowed CORS origins.": "Comma-separated list of allowed CORS origins.",

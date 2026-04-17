@@ -55,9 +55,7 @@ describe('ChannelDownloadService', () => {
 
     const result = await service.download('web', token, req);
 
-    expect(channelService.getChannelHandler).toHaveBeenCalledWith(
-      'web-channel',
-    );
+    expect(channelService.getChannelHandler).toHaveBeenCalledWith('web');
     expect(channelAttachmentService.download).toHaveBeenCalledWith(
       token,
       req,

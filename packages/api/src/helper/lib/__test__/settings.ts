@@ -6,13 +6,11 @@
 
 import { HelperSetting } from '@/helper/types';
 
-export const TEST_HELPER_NAME = 'test-helper';
-
-export const TEST_HELPER_NAMESPACE = 'test_helper';
+export const TEST_HELPER_NAME = 'test';
 
 export default [
   {
-    group: TEST_HELPER_NAMESPACE,
+    group: TEST_HELPER_NAME,
     label: 'test',
     value: 'test',
   },

@@ -104,7 +104,7 @@ describe('WebChannelHandler', () => {
 
   it('should have correct name', () => {
     expect(handler).toBeDefined();
-    expect(handler.getName()).toEqual('web-channel');
+    expect(handler.getName()).toEqual('web');
   });
 
   it('should allow the request if the origin is in the allowed domains', async () => {
@@ -240,7 +240,7 @@ describe('WebChannelHandler', () => {
       assignedAt: null,
       assignedTo: null,
       channel: {
-        name: 'web-channel',
+        name: 'web',
         data: {
           agent: req.headers['user-agent'],
           isSocket: false,

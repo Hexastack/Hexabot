@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { In, Like } from 'typeorm';
+import { In } from 'typeorm';
 import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { ChannelService } from '@/channel/channel.service';
@@ -13,7 +13,7 @@ import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
-import { TCriteria, TExtractExtension, TExtractNamespace } from './types';
+import { TCriteria, TExtractGroup } from './types';
 
 @Injectable()
 export class CleanupService {
@@ -28,28 +28,28 @@ export class CleanupService {
    * Deletes unused settings with the specified criteria.
    *
    * @param criteria - An array of criteria objects containing:
-   *                   - suffix: Regex pattern to match setting groups
-   *                   - namespaces: Array of namespaces to exclude from deletion
+   *                   - extensionType: Extension type marker stored in setting subgroup
+   *                   - groups: Array of groups to exclude from deletion
    * @returns A promise that resolves to the result of the deletion operation.
    */
-  private async deleteManyBySuffixAndNamespaces(
+  private async deleteManyBySubgroupAndGroups(
     criteria: TCriteria[],
   ): Promise<DeleteResult> {
     const groupsToDelete = new Set<string>();
 
-    for (const { suffix, namespaces } of criteria) {
+    for (const { extensionType, groups } of criteria) {
       const matchingSettings = await this.settingService.find({
-        where: { group: Like(`%${suffix}`) },
+        where: { subgroup: extensionType },
       });
 
       if (!matchingSettings.length) {
         continue;
       }
 
-      const namespacesSet = new Set<string>(namespaces);
+      const groupsSet = new Set<string>(groups);
 
       matchingSettings.forEach(({ group }) => {
-        if (!namespacesSet.has(group)) {
+        if (!groupsSet.has(group)) {
           groupsToDelete.add(group);
         }
       });
@@ -65,25 +65,25 @@ export class CleanupService {
   }
 
   /**
-   * Retrieves a list of channel Namespaces.
+   * Retrieves a list of channel setting groups.
    *
-   * @returns An array of channel Namespaces.
+   * @returns An array of channel groups.
    */
-  public getChannelNamespaces(): TExtractNamespace<'channel'>[] {
+  public getChannelGroups(): TExtractGroup<'channel'>[] {
     return this.channelService
       .getAll()
-      .map((channel) => channel.getNamespace<TExtractExtension<'channel'>>());
+      .map((channel) => channel.getName() as TExtractGroup<'channel'>);
   }
 
   /**
-   * Retrieves a list of helper Namespaces.
+   * Retrieves a list of helper setting groups.
    *
-   * @returns An array of helper Namespaces.
+   * @returns An array of helper groups.
    */
-  public getHelperNamespaces(): TExtractNamespace<'helper'>[] {
+  public getHelperGroups(): TExtractGroup<'helper'>[] {
     return this.helperService
       .getAll()
-      .map((helper) => helper.getNamespace<TExtractExtension<'helper'>>());
+      .map((helper) => helper.getName() as TExtractGroup<'helper'>);
   }
 
   /**
@@ -91,11 +91,11 @@ export class CleanupService {
    *
    */
   public async pruneExtensionSettings(): Promise<void> {
-    const channels = this.getChannelNamespaces();
-    const helpers = this.getHelperNamespaces();
-    const { deletedCount } = await this.deleteManyBySuffixAndNamespaces([
-      { suffix: '_channel', namespaces: channels },
-      { suffix: '_helper', namespaces: helpers },
+    const channels = this.getChannelGroups();
+    const helpers = this.getHelperGroups();
+    const { deletedCount } = await this.deleteManyBySubgroupAndGroups([
+      { extensionType: 'channel', groups: channels },
+      { extensionType: 'helper', groups: helpers },
     ]);
 
     if (deletedCount > 0) {

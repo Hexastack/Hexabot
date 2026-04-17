@@ -9,7 +9,6 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { z, type ZodType } from 'zod';
 
 import { RuntimeBindings } from '@/bindings/runtime-bindings';
-import { HyphenToUnderscore } from '@/utils/types/extension';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { WorkflowType } from '@/workflow/types';
 
@@ -68,10 +67,6 @@ export abstract class BaseAction<
 
   getName(): ActionName {
     return this.name as ActionName;
-  }
-
-  getNamespace<N extends ActionName = ActionName>() {
-    return this.getName().replaceAll('-', '_') as HyphenToUnderscore<N>;
   }
 
   async onModuleInit() {

@@ -469,6 +469,7 @@
     "ttl_seconds": "TTL (seconds)",
     "global": "Global",
     "workflow": "Workflow",
+    "thread": "Thread",
     "run": "Run",
     "textarea": "Text Area",
     "checkbox": "Checkbox",

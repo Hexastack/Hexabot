@@ -57,7 +57,7 @@ describe('ChannelService', () => {
     jest.clearAllMocks();
   });
 
-  it('forwards websocket web-channel requests without workflow id', async () => {
+  it('forwards websocket web requests without workflow id', async () => {
     const req = {
       method: 'GET',
       query: {},
@@ -70,7 +70,7 @@ describe('ChannelService', () => {
     expect(webChannelHandler.handle).toHaveBeenCalledWith(req, res, undefined);
   });
 
-  it('validates and forwards workflow id for websocket web-channel requests', async () => {
+  it('validates and forwards workflow id for websocket web requests', async () => {
     const workflowId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
     const req = {
       method: 'POST',
@@ -85,7 +85,7 @@ describe('ChannelService', () => {
     expect(webChannelHandler.handle).toHaveBeenCalledWith(req, res, workflowId);
   });
 
-  it('throws 404 for websocket web-channel requests with unknown workflow id', async () => {
+  it('throws 404 for websocket web requests with unknown workflow id', async () => {
     const workflowId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
     const req = {
       method: 'POST',
@@ -102,7 +102,7 @@ describe('ChannelService', () => {
     expect(webChannelHandler.handle).not.toHaveBeenCalled();
   });
 
-  it('validates and forwards workflow id for websocket console-channel requests', async () => {
+  it('validates and forwards workflow id for websocket console requests', async () => {
     const workflowId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
     const req = {
       method: 'POST',

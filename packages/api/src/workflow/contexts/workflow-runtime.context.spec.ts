@@ -29,7 +29,7 @@ class TestEventWrapper extends TriggerEventWrapper {
 
   getContextData(): Record<string, unknown> {
     return {
-      channel: { name: 'web-channel' },
+      channel: { name: 'web' },
       initiator: this.getInitiator(),
     };
   }
@@ -112,7 +112,7 @@ describe('WorkflowRuntimeContext', () => {
     expect(context.state).toMatchObject({
       locale: 'en',
       channel: {
-        name: 'web-channel',
+        name: 'web',
       },
       initiator: {
         id: 'owner-1',

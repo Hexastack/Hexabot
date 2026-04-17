@@ -19,7 +19,7 @@ export class ChannelDownloadService {
   ) {}
 
   async download(channel: string, token: string, req: Request) {
-    const handler = this.channelService.getChannelHandler(`${channel}-channel`);
+    const handler = this.channelService.getChannelHandler(channel);
 
     return await this.channelAttachmentService.download(
       token,

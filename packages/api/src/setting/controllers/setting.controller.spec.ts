@@ -28,7 +28,7 @@ import { SettingController } from './setting.controller';
 
 const expectedSettings = settingFixtures.map((setting) => ({
   ...setting,
-  subgroup: null,
+  subgroup: setting.subgroup || null,
 }));
 
 describe('SettingController', () => {

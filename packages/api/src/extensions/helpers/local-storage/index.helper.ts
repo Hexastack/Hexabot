@@ -31,9 +31,7 @@ import {
 import { config } from '@/config';
 import { BaseStorageHelper } from '@/helper/lib/base-storage-helper';
 
-export const LOCAL_STORAGE_HELPER_NAME = 'local-storage-helper' as const;
-
-export const LOCAL_STORAGE_HELPER_NAMESPACE = 'local_storage_helper' as const;
+export const LOCAL_STORAGE_HELPER_NAME = 'local-storage' as const;
 
 @Injectable()
 export default class LocalStorageHelper

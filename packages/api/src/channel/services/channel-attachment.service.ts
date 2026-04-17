@@ -70,11 +70,10 @@ export class ChannelAttachmentService {
       }
 
       const token = this.jwtService.sign({ ...resource }, this.jwtSignOptions);
-      const channelRoute = this.getChannelRouteName(channelName);
 
       return buildURL(
         config.apiBaseUrl,
-        `/webhook/${channelRoute}/download/${resource.name}?t=${encodeURIComponent(token)}`,
+        `/webhook/${channelName}/download/${resource.name}?t=${encodeURIComponent(token)}`,
       );
     }
 
@@ -129,16 +128,7 @@ export class ChannelAttachmentService {
     }
   }
 
-  private getChannelRouteName(channelName: string): string {
-    const [name] = channelName.split('-');
-
-    return name;
-  }
-
   private buildNotFoundUrl(channelName: string): string {
-    return buildURL(
-      config.apiBaseUrl,
-      `/webhook/${this.getChannelRouteName(channelName)}/not-found`,
-    );
+    return buildURL(config.apiBaseUrl, `/webhook/${channelName}/not-found`);
   }
 }

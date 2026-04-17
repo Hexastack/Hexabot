@@ -1,5 +1,5 @@
 {
-  "console_channel": {
+  "console": {
     "Admin Chat Console": "Testeur Live Chat",
     "Allowed domains": "Domaines autorisés",
     "Comma-separated list of allowed CORS origins.": "Liste séparée par des virgules des origines CORS autorisées.",

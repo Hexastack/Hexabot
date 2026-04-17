@@ -25,7 +25,7 @@ export const chatbotSettingsSchema = z
     }),
     default_nlu_helper: z
       .string()
-      .default('llm-nlu-helper')
+      .default('llm-nlu')
       .meta({
         title: 'Default NLU helper',
         description: 'Helper used by default to run NLU tasks.',
@@ -51,7 +51,7 @@ export const chatbotSettingsSchema = z
       }),
     default_llm_helper: z
       .string()
-      .default('ollama-helper')
+      .default('ollama')
       .meta({
         title: 'Default LLM helper',
         description: 'Helper used by default for LLM generation tasks.',
@@ -64,7 +64,7 @@ export const chatbotSettingsSchema = z
       }),
     default_storage_helper: z
       .string()
-      .default('local-storage-helper')
+      .default('local-storage')
       .meta({
         title: 'Default storage helper',
         description: 'Helper used to persist chatbot data by default.',

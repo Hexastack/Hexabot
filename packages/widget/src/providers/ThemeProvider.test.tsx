@@ -79,7 +79,7 @@ describe("ThemeProvider", () => {
     });
     mockUseConfig.mockReturnValue({
       apiUrl: "https://example.com/api",
-      channel: "console-channel",
+      channel: "console",
       language: "en",
       maxUploadSize: 10,
       theme: { mode: "system" },
@@ -122,7 +122,7 @@ describe("ThemeProvider", () => {
   it("uses the top-level config mode over nested theme mode", async () => {
     mockUseConfig.mockReturnValue({
       apiUrl: "https://example.com/api",
-      channel: "console-channel",
+      channel: "console",
       language: "en",
       maxUploadSize: 10,
       mode: "light",

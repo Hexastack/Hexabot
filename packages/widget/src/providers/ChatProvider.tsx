@@ -478,7 +478,7 @@ const ChatProvider: React.FC<{
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
     setProfile(profile);
 
-    if (config.channel === "console-channel" && !profile) {
+    if (config.channel === "console" && !profile) {
       handleSubscription();
     }
 

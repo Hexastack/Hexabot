@@ -25,7 +25,6 @@ import { StdOutgoingEnvelope } from '@/chat/types/message';
 import { I18nService } from '@/i18n';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
-import { HyphenToUnderscore } from '@/utils/types/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
@@ -81,11 +80,11 @@ export default abstract class ChannelHandler<
    * Returns the channel's settings
    * @returns Channel's settings
    */
-  async getSettings<S extends string = HyphenToUnderscore<N>>() {
+  async getSettings<S extends string = N>() {
     const settings = await this.settingService.getSettings();
 
     // @ts-expect-error workaround typing
-    return settings[this.getNamespace() as keyof Settings] as Settings[S];
+    return settings[this.getName() as keyof Settings] as Settings[S];
   }
 
   /**

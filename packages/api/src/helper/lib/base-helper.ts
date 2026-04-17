@@ -8,7 +8,6 @@ import { Inject, OnModuleInit } from '@nestjs/common';
 
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
-import { HyphenToUnderscore } from '@/utils/types/extension';
 
 import { HelperService } from '../helper.service';
 import { HelperName, HelperType } from '../types';
@@ -48,10 +47,10 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
    *
    * @returns Helper's settings
    */
-  async getSettings<S extends string = HyphenToUnderscore<N>>() {
+  async getSettings<S extends string = N>() {
     const settings = await this.settingService.getSettings();
 
     // @ts-expect-error workaround typing
-    return settings[this.getNamespace() as keyof Settings] as Settings[S];
+    return settings[this.getName() as keyof Settings] as Settings[S];
   }
 }

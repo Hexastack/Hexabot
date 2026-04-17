@@ -5,13 +5,12 @@
  */
 
 import { AnySetting, ExtensionSetting } from '@/setting/types';
-import { HyphenToUnderscore } from '@/utils/types/extension';
 
-export type ChannelName = `${string}-channel`;
+export type ChannelName = string;
 
 export type ChannelSetting<N extends string = string> = ExtensionSetting<
   {
-    group: HyphenToUnderscore<N>;
+    group: N;
   },
   AnySetting,
   'id' | 'createdAt' | 'updatedAt' | 'group'

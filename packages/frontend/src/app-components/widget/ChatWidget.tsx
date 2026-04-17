@@ -62,7 +62,7 @@ const ChatWidgetComponent = ({
   const widgetConfig = useMemo(
     () => ({
       apiUrl,
-      channel: "console-channel",
+      channel: "console",
       language: i18n.language,
       primaryColor,
       mode: resolvedMode,
