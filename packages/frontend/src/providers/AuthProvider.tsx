@@ -78,9 +78,15 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
       void updateLanguage(user.language);
     }
   }, [updateLanguage, user?.language]);
-  const authenticate = (user: IUser) => {
-    void updateLanguage(user.language);
-  };
+  const authenticate = useCallback(
+    (user: IUser) => {
+      void updateLanguage(user.language);
+      queryClient.setQueryData([QueryType.item, "getCurrentSession"], user);
+
+      void refetch();
+    },
+    [queryClient, refetch, updateLanguage],
+  );
   const refetchUser = useCallback(async () => {
     const result = await refetch();
 
