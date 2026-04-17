@@ -9,8 +9,8 @@ import { z } from 'zod';
 import { ChannelName } from '@/channel/types';
 
 // @todo : rename
-export type SubscriberChannelData<C extends ChannelName = 'unknown-channel'> =
-  C extends 'unknown-channel'
+export type SubscriberChannelData<C extends ChannelName = 'unknown'> =
+  C extends 'unknown'
     ? { name: ChannelName }
     : {
         name: C;
@@ -22,7 +22,7 @@ export type SubscriberChannelData<C extends ChannelName = 'unknown-channel'> =
       };
 
 export const channelDataSchema = z.looseObject({
-  name: z.string().regex(/-channel$/) as z.ZodType<ChannelName>,
+  name: z.string().min(1) as z.ZodType<ChannelName>,
 });
 
 export type Channel = z.infer<typeof channelDataSchema>;

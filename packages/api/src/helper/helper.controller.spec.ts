@@ -27,14 +27,14 @@ describe('HelperController', () => {
   it('maps legacy nlu type to llm', () => {
     helperService.getAllByType.mockReturnValue([
       {
-        getName: () => 'llm-helper',
+        getName: () => 'llm',
       } as any,
     ]);
 
     const result = controller.getHelpers('nlu');
 
     expect(helperService.getAllByType).toHaveBeenCalledWith(HelperType.LLM);
-    expect(result).toEqual([{ name: 'llm-helper' }]);
+    expect(result).toEqual([{ name: 'llm' }]);
   });
 
   it('throws for unknown helper type', () => {

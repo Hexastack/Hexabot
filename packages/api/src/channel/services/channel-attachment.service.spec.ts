@@ -55,7 +55,7 @@ describe('ChannelAttachmentService', () => {
     jwtService.sign.mockReturnValue('signed-token');
     attachmentService.findOne.mockResolvedValue(resource as any);
 
-    const url = await service.getPublicUrl('web-channel', { id: resource.id });
+    const url = await service.getPublicUrl('web', { id: resource.id });
 
     expect(attachmentService.findOne).toHaveBeenCalledWith(resource.id);
     expect(jwtService.sign).toHaveBeenCalledWith(
@@ -74,7 +74,7 @@ describe('ChannelAttachmentService', () => {
   });
 
   it('returns external URLs as-is', async () => {
-    const url = await service.getPublicUrl('web-channel', {
+    const url = await service.getPublicUrl('web', {
       url: 'https://example.com/file.png',
     });
 
@@ -83,7 +83,7 @@ describe('ChannelAttachmentService', () => {
   });
 
   it('returns the not-found URL for attachments without an ID', async () => {
-    const url = await service.getPublicUrl('web-channel', { id: null });
+    const url = await service.getPublicUrl('web', { id: null });
 
     expect(url).toBe(buildURL(config.apiBaseUrl, '/webhook/web/not-found'));
     expect(logger.warn).toHaveBeenCalledWith(
@@ -94,7 +94,7 @@ describe('ChannelAttachmentService', () => {
   it('returns the not-found URL when an internal attachment cannot be resolved', async () => {
     attachmentService.findOne.mockResolvedValue(null);
 
-    const url = await service.getPublicUrl('web-channel', {
+    const url = await service.getPublicUrl('web', {
       id: 'missing-attachment',
     });
 

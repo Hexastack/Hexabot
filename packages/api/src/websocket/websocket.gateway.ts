@@ -214,7 +214,7 @@ export class WebsocketGateway
           next();
         } else if (
           // Or, the WS connection is established with a chat widget using the web channel (subscriber)
-          searchParams.get('channel') === 'web-channel'
+          searchParams.get('channel') === 'web'
         ) {
           session.anonymous =
             typeof session.anonymous === 'undefined' ? true : session.anonymous;

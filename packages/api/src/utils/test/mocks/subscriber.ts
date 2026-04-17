@@ -23,7 +23,7 @@ export const subscriberInstance: Subscriber = {
   lastvisit: new Date(),
   retainedFrom: new Date(),
   channel: {
-    name: 'web-channel',
+    name: 'web',
   },
   labels: [],
   avatar: null,

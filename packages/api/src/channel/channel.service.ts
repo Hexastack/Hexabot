@@ -105,7 +105,7 @@ export class ChannelService {
     res: Response,
     workflowId?: string,
   ): Promise<void> {
-    const handler = this.getChannelHandler(`${channel}-channel`);
+    const handler = this.getChannelHandler(channel);
     handler.handle(req, res, workflowId);
   }
 

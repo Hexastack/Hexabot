@@ -107,7 +107,7 @@ describe('localizeSchemaMetadata', () => {
     const schemaSnapshot = JSON.parse(JSON.stringify(schema)) as typeof schema;
     const localized = localizeSchemaMetadata(schema, {
       i18n,
-      ns: 'web-channel',
+      ns: 'web',
     });
 
     expect(schema).toEqual(schemaSnapshot);

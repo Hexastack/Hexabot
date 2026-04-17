@@ -42,7 +42,7 @@ describe('WebsocketGateway', () => {
       createSocket('admin-1'), // Admin user 1
       createSocket('admin-2'), // Admin user 2
       createSocket('admin-3'), // Admin user 3
-      createSocket('subscriber', { channel: 'web-channel' }), // Subscriber
+      createSocket('subscriber', { channel: 'web' }), // Subscriber
     ];
 
     await app.listen(3000);

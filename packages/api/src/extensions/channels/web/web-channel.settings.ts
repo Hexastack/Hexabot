@@ -11,7 +11,7 @@ import { config } from '@/config';
 import { createSettingGroup } from '@/setting/create-setting-group';
 import { buildSettingSeedsFromSchema } from '@/setting/runtime-settings.seed';
 
-export const WEB_CHANNEL_NAME = 'web-channel' as const;
+export const WEB_CHANNEL_NAME = 'web' as const;
 
 const WEB_ALLOWED_UPLOAD_TYPES =
   'audio/mpeg,audio/x-ms-wma,audio/vnd.rn-realaudio,audio/x-wav,image/gif,image/jpeg,image/png,image/tiff,image/vnd.microsoft.icon,image/vnd.djvu,image/svg+xml,text/css,text/csv,text/html,text/plain,text/xml,video/mpeg,video/mp4,video/quicktime,video/x-ms-wmv,video/x-msvideo,video/x-flv,video/web,application/msword,application/vnd.ms-powerpoint,application/pdf,application/vnd.ms-excel,application/vnd.oasis.opendocument.presentation,application/vnd.oasis.opendocument.tex,application/vnd.oasis.opendocument.spreadsheet,application/vnd.oasis.opendocument.graphics,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -97,6 +97,9 @@ export const WebChannelSettingsGroup = createSettingGroup({
 export const WEB_CHANNEL_SETTINGS = buildSettingSeedsFromSchema(
   WEB_CHANNEL_NAME,
   WEB_CHANNEL_SETTINGS_SCHEMA,
+  {
+    subgroup: 'channel',
+  },
 ) as ChannelSetting<typeof WEB_CHANNEL_NAME>[];
 
 export default WebChannelSettingsGroup;

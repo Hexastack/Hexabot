@@ -71,13 +71,13 @@ describe('ExtensionJsonLoader', () => {
     await writeJsonFile(
       path.join(helpersPath, 'local-storage', 'i18n', 'en.translations.json'),
       {
-        'local-storage-helper': { 'Local Storage': 'Local Storage' },
+        'local-storage': { 'Local Storage': 'Local Storage' },
       },
     );
     await writeJsonFile(
       path.join(channelsPath, 'web', 'i18n', 'en.translations.json'),
       {
-        'web-channel': { 'Web Channel': 'Web Channel' },
+        web: { 'Web Channel': 'Web Channel' },
       },
     );
 
@@ -93,8 +93,8 @@ describe('ExtensionJsonLoader', () => {
         messages: { hello: 'Hello' },
         http_request: { 'Request URL': 'Request URL' },
         send_text_message: { 'Message to send': 'Message to send' },
-        'local-storage-helper': { 'Local Storage': 'Local Storage' },
-        'web-channel': { 'Web Channel': 'Web Channel' },
+        'local-storage': { 'Local Storage': 'Local Storage' },
+        web: { 'Web Channel': 'Web Channel' },
       },
       fr: {
         messages: { hello: 'Bonjour' },

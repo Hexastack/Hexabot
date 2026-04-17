@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { In, Like } from 'typeorm';
+import { In } from 'typeorm';
 import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { ChannelService } from '@/channel/channel.service';
@@ -28,18 +28,18 @@ export class CleanupService {
    * Deletes unused settings with the specified criteria.
    *
    * @param criteria - An array of criteria objects containing:
-   *                   - suffix: Regex pattern to match setting groups
+   *                   - extensionType: Extension type marker stored in setting subgroup
    *                   - groups: Array of groups to exclude from deletion
    * @returns A promise that resolves to the result of the deletion operation.
    */
-  private async deleteManyBySuffixAndGroups(
+  private async deleteManyBySubgroupAndGroups(
     criteria: TCriteria[],
   ): Promise<DeleteResult> {
     const groupsToDelete = new Set<string>();
 
-    for (const { suffix, groups } of criteria) {
+    for (const { extensionType, groups } of criteria) {
       const matchingSettings = await this.settingService.find({
-        where: { group: Like(`%${suffix}`) },
+        where: { subgroup: extensionType },
       });
 
       if (!matchingSettings.length) {
@@ -93,9 +93,9 @@ export class CleanupService {
   public async pruneExtensionSettings(): Promise<void> {
     const channels = this.getChannelGroups();
     const helpers = this.getHelperGroups();
-    const { deletedCount } = await this.deleteManyBySuffixAndGroups([
-      { suffix: '-channel', groups: channels },
-      { suffix: '-helper', groups: helpers },
+    const { deletedCount } = await this.deleteManyBySubgroupAndGroups([
+      { extensionType: 'channel', groups: channels },
+      { extensionType: 'helper', groups: helpers },
     ]);
 
     if (deletedCount > 0) {

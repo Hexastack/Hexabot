@@ -10,11 +10,14 @@ import { SettingCreateDto } from '@/setting/dto/setting.dto';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { getRandom } from '@/utils/helpers/safeRandom';
 
+const UNUSED_CHANNEL_GROUP = String(getRandom());
+const UNUSED_HELPER_GROUP = String(getRandom());
+
 export const settingFixtures: SettingCreateDto[] = [
   {
     group: 'chatbot_settings',
     label: 'default_storage_helper',
-    value: 'local-storage-helper',
+    value: 'local-storage',
   },
   {
     group: 'contact',
@@ -67,29 +70,22 @@ export const settingFixtures: SettingCreateDto[] = [
     value: 'US',
   },
   {
-    group: `${getRandom()}-channel`,
+    group: UNUSED_CHANNEL_GROUP,
+    subgroup: 'channel',
     label: `${getRandom()}`,
     value: '',
   },
   {
-    group: `${getRandom()}-helper`,
+    group: UNUSED_HELPER_GROUP,
+    subgroup: 'helper',
     label: `${getRandom()}`,
     value: '',
   },
   {
-    group: `${getRandom()}-channel`,
-    label: `${getRandom()}`,
-    value: '',
-  },
-  {
-    group: `${getRandom()}-helper`,
-    label: `${getRandom()}`,
-    value: '',
-  },
-  {
-    group: 'local-storage-helper',
+    group: 'local-storage',
+    subgroup: 'helper',
     label: 'default storage helper label',
-    value: 'local-storage-helper',
+    value: 'local-storage',
   },
 ];
 

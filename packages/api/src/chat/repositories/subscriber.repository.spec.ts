@@ -95,7 +95,7 @@ describe('SubscriberRepository (TypeORM)', () => {
       language: 'en',
       country: 'FR',
       timezone: 0,
-      channel: { name: 'web-channel' },
+      channel: { name: 'web' },
       lastvisit: new Date(),
       retainedFrom: new Date(),
       labels: existingLabels.slice(0, 2).map(

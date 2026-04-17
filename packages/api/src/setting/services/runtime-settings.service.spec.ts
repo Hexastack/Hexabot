@@ -55,7 +55,7 @@ describe('RuntimeSettingsService', () => {
       schema,
       scope: 'extension',
       extensionType: 'channel',
-      extensionName: 'test-channel',
+      extensionName: 'test',
     });
 
     const fieldSchema = runtimeSettingsService.getSchemaFor(group, 'enabled');
@@ -66,7 +66,7 @@ describe('RuntimeSettingsService', () => {
     expect(definitions[group]).toBeDefined();
     expect(definitions[group]?.scope).toBe('extension');
     expect(definitions[group]?.extensionType).toBe('channel');
-    expect(definitions[group]?.extensionName).toBe('test-channel');
+    expect(definitions[group]?.extensionName).toBe('test');
     expect(definitions[group]?.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
     );
@@ -164,7 +164,7 @@ describe('RuntimeSettingsService', () => {
       schema: customSchema,
       scope: 'extension',
       extensionType: 'helper',
-      extensionName: 'test-helper',
+      extensionName: 'test',
     });
 
     moduleRef = await Test.createTestingModule({
@@ -183,7 +183,7 @@ describe('RuntimeSettingsService', () => {
     expect(definitions[customGroup]).toBeDefined();
     expect(definitions[customGroup]?.scope).toBe('extension');
     expect(definitions[customGroup]?.extensionType).toBe('helper');
-    expect(definitions[customGroup]?.extensionName).toBe('test-helper');
+    expect(definitions[customGroup]?.extensionName).toBe('test');
     expect(definitions[customGroup]?.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
     );

@@ -9,10 +9,10 @@ import { SettingService } from '@/setting';
 export const SettingServiceProvider = {
   provide: SettingService,
   useValue: {
-    default_nlu_helper: 'llm-nlu-helper',
+    default_nlu_helper: 'llm-nlu',
     getSettings: jest.fn().mockResolvedValue({
       chatbot_settings: {
-        default_nlu_helper: 'llm-nlu-helper',
+        default_nlu_helper: 'llm-nlu',
         global_fallback: true,
         fallback_message: ['Global fallback message'],
       },

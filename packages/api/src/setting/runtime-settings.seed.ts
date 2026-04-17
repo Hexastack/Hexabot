@@ -46,9 +46,14 @@ const resolveGroupDefaultValues = (
   return parsed.data;
 };
 
+type BuildSettingSeedsFromSchemaOptions = {
+  subgroup?: string;
+};
+
 export const buildSettingSeedsFromSchema = (
   group: string,
   schema: RuntimeSettingGroupSchema,
+  options?: BuildSettingSeedsFromSchemaOptions,
 ): SettingCreateDto[] => {
   const defaults = resolveGroupDefaultValues(schema, group);
 
@@ -61,6 +66,7 @@ export const buildSettingSeedsFromSchema = (
 
     return {
       group,
+      ...(options?.subgroup ? { subgroup: options.subgroup } : {}),
       label,
       value,
     };
@@ -71,9 +77,17 @@ export const buildSettingSeedsFromRegistry = (
   registry: RuntimeSettingRegistryMap,
 ): SettingCreateDto[] => {
   return Object.entries(registry).flatMap(([group, definition]) => {
+    const subgroup =
+      definition.scope === 'extension' &&
+      (definition.extensionType === 'channel' ||
+        definition.extensionType === 'helper')
+        ? definition.extensionType
+        : undefined;
+
     return buildSettingSeedsFromSchema(
       group,
       definition.schema as RuntimeSettingGroupSchema,
+      subgroup ? { subgroup } : undefined,
     );
   });
 };

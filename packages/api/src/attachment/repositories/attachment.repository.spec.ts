@@ -117,7 +117,7 @@ describe('AttachmentRepository (TypeORM)', () => {
         createdByRef: AttachmentCreatedByRef.User,
         createdBy: CREATOR_UUID,
         channel: {
-          'web-channel': { id: 'channel-id' },
+          web: { id: 'channel-id' },
         },
         ...overrides,
       };

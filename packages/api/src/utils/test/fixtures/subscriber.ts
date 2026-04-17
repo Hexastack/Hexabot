@@ -39,7 +39,7 @@ const subscribers: TSubscriberFixtures['values'][] = [
     gender: 'male',
     country: 'FR',
     channel: {
-      name: 'messenger-channel',
+      name: 'messenger',
     },
     labels: [],
     lastvisit: new Date('2020-01-01T20:40:03.249Z'),
@@ -54,7 +54,7 @@ const subscribers: TSubscriberFixtures['values'][] = [
     gender: 'male',
     country: 'US',
     channel: {
-      name: 'web-channel',
+      name: 'web',
     },
     labels: [],
     lastvisit: new Date('2021-01-01T20:40:03.249Z'),
@@ -69,7 +69,7 @@ const subscribers: TSubscriberFixtures['values'][] = [
     gender: 'male',
     country: 'US',
     channel: {
-      name: 'web-channel',
+      name: 'web',
     },
     labels: [],
     lastvisit: new Date('2022-01-01T20:40:03.249Z'),
@@ -84,7 +84,7 @@ const subscribers: TSubscriberFixtures['values'][] = [
     gender: 'male',
     country: 'US',
     channel: {
-      name: 'web-channel',
+      name: 'web',
     },
     labels: [],
     lastvisit: new Date('2024-01-01T20:40:03.249Z'),

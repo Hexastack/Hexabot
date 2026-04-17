@@ -6,7 +6,7 @@
 
 import { AnySetting, ExtensionSetting } from '@/setting/types';
 
-export type ChannelName = `${string}-channel`;
+export type ChannelName = string;
 
 export type ChannelSetting<N extends string = string> = ExtensionSetting<
   {

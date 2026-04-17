@@ -6,7 +6,7 @@
 
 import { HelperSetting } from '@/helper/types';
 
-export const TEST_HELPER_NAME = 'test-helper';
+export const TEST_HELPER_NAME = 'test';
 
 export default [
   {

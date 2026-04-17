@@ -70,7 +70,7 @@ export enum HelperType {
   UTIL = 'util',
 }
 
-export type HelperName = `${string}-helper`;
+export type HelperName = string;
 
 interface HelperTypeMap {
   [HelperType.LLM]: BaseLlmHelper<HelperName>;

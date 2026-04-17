@@ -38,9 +38,7 @@ export class ChannelMiddleware implements NestMiddleware {
       const channelName = this.resolveChannelName(req);
 
       if (channelName) {
-        const channel = this.channelService.getChannelHandler(
-          `${channelName}-channel`,
-        );
+        const channel = this.channelService.getChannelHandler(channelName);
         if (channel) {
           return await channel.middleware(req, res, next);
         }
