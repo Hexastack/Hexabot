@@ -17,9 +17,8 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useApiClientMutation } from "@/hooks/useApiClient";
+import { useApiClientMutation, useApiClientQuery } from "@/hooks/useApiClient";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
@@ -81,22 +80,10 @@ export const McpServers = () => {
     isLoading: isToolsLoading,
     isFetching: isToolsFetching,
     error: toolsError,
-  } = useFind(
-    {
-      entity: EntityType.MCP_SERVER_TOOL,
-    },
-    {
-      hasCount: false,
-    },
-    {
-      enabled: drawerMode === "tools" && !!selectedToolsServer?.id,
-      routeParams: selectedToolsServer
-        ? {
-            id: selectedToolsServer.id,
-          }
-        : undefined,
-    },
-  );
+  } = useApiClientQuery("getMcpTools", {
+    enabled: drawerMode === "tools" && !!selectedToolsServer?.id,
+    params: selectedToolsServer?.id ? [selectedToolsServer.id] : undefined,
+  });
   const closeDrawer = () => {
     setDrawerMode(null);
     setTestDrawerState(INITIAL_DRAWER_STATE);

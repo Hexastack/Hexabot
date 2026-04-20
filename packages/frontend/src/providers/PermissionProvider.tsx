@@ -8,8 +8,7 @@ import { type ReactNode, useCallback, useMemo } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { PermissionContext } from "@/contexts/permission.context";
-import { useTanstackQuery } from "@/hooks/crud/useTanstack";
-import { useApiClient } from "@/hooks/useApiClient";
+import { useApiClientQuery } from "@/hooks/useApiClient";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
@@ -19,12 +18,9 @@ interface PermissionProviderProps {
 }
 
 export const useUserPermissions = () => {
-  const { apiClient } = useApiClient();
   const { isAuthenticated } = useAuth();
 
-  return useTanstackQuery({
-    queryKey: ["readonly-user-permissions"],
-    queryFn: () => apiClient.getUserPermissions(),
+  return useApiClientQuery("getUserPermissions", {
     enabled: isAuthenticated,
   });
 };

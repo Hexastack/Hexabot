@@ -6,8 +6,7 @@
 
 import { PropsWithChildren, createContext, useContext, useMemo } from "react";
 
-import { useFind } from "@/hooks/crud/useFind";
-import { EntityType } from "@/services/types";
+import { useApiClientQuery } from "@/hooks/useApiClient";
 import type { IAction } from "@/types/action.types";
 
 type WorkflowActionsCatalogContextValue = {
@@ -34,14 +33,18 @@ export const WorkflowActionsProvider = ({
     isLoading,
     isFetching,
     isError,
-  } = useFind(
-    { entity: EntityType.WORKFLOW_ACTIONS },
-    { hasCount: false },
-    {
-      routeParams: workflowType ? { type: workflowType } : undefined,
-      enabled: Boolean(workflowType),
-    },
-  );
+  } = useApiClientQuery("getActions", {
+    params: workflowType ? [workflowType] : undefined,
+    enabled: !!workflowType,
+    select: (actions) =>
+      actions.map((action) => ({
+        ...action,
+        title: action.name
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (char: string) => char.toUpperCase()),
+        parseSettings: (payload) => payload,
+      })),
+  });
   const actionsByName = useMemo(
     () =>
       new Map<string, IAction>(actions.map((action) => [action.name, action])),

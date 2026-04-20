@@ -9,8 +9,7 @@ import type { JSONSchema } from "monaco-yaml";
 import { PropsWithChildren, createContext, useContext, useMemo } from "react";
 import { z } from "zod";
 
-import { useTanstackQuery } from "@/hooks/crud/useTanstack";
-import { useApiClient } from "@/hooks/useApiClient";
+import { useApiClientQuery } from "@/hooks/useApiClient";
 
 export type WorkflowBindingDefinition = {
   schema: JSONSchema;
@@ -21,7 +20,7 @@ export type WorkflowBindingDefinition = {
   actionPolicy?: "forbidden" | "optional" | "required";
 };
 
-type WorkflowBindingsCatalog = Record<string, WorkflowBindingDefinition>;
+export type WorkflowBindingsCatalog = Record<string, WorkflowBindingDefinition>;
 type WorkflowBindingsCatalogContextValue = {
   bindings: WorkflowBindingsCatalog;
   bindingsByName: Map<string, WorkflowBindingDefinition>;
@@ -34,17 +33,11 @@ const WorkflowBindingsCatalogContext =
   createContext<WorkflowBindingsCatalogContextValue | null>(null);
 
 export const WorkflowBindingsProvider = ({ children }: PropsWithChildren) => {
-  const { apiClient } = useApiClient();
   const {
     data: bindings = {},
     isLoading,
     isFetching,
-  } = useTanstackQuery({
-    queryKey: ["workflow-bindings"],
-    queryFn: async () => {
-      return await apiClient.getWorkflowBindings<WorkflowBindingsCatalog>();
-    },
-  });
+  } = useApiClientQuery("getWorkflowBindings");
   const bindingsByName = useMemo(
     () =>
       new Map<string, WorkflowBindingDefinition>(

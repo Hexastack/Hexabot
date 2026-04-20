@@ -7,9 +7,9 @@
 import type { IconName } from "lucide-react/dynamic";
 import type { JSONSchema } from "monaco-yaml";
 
-import { EntityType, Format } from "@/services/types";
+import { Format } from "@/services/types";
 
-import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import type { IBaseSchema, IFormat } from "./base.types";
 
 export interface IActionAttributes {
   name: string;
@@ -24,8 +24,17 @@ export interface IActionAttributes {
   outputSchema: JSONSchema;
 }
 
-export interface IActionStub
-  extends IBaseSchema,
-    OmitPopulate<IActionAttributes, EntityType.WORKFLOW_ACTIONS> {}
+export interface IActionStub extends IBaseSchema {}
 
-export interface IAction extends IActionStub, IFormat<Format.BASIC> {}
+export interface IAction extends IActionStub, IFormat<Format.BASIC> {
+  name: string;
+  title: string;
+  icon?: IconName;
+  color: string;
+  group: string;
+  description: string;
+  supportedBindings: string[];
+  inputSchema: JSONSchema;
+  settingSchema: JSONSchema;
+  outputSchema: JSONSchema;
+}
