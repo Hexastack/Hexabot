@@ -20,11 +20,11 @@ interface PermissionProviderProps {
 
 export const useUserPermissions = () => {
   const { apiClient } = useApiClient();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   return useTanstackQuery({
     queryKey: ["readonly-user-permissions"],
-    queryFn: () => apiClient.getUserPermissions(user?.id!),
+    queryFn: () => apiClient.getUserPermissions(),
     enabled: isAuthenticated,
   });
 };

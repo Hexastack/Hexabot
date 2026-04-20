@@ -165,9 +165,9 @@ export class ApiClient {
     return data;
   }
 
-  async getUserPermissions(id: string) {
+  async getUserPermissions() {
     const { data } = await this.request.get<IUserPermissions>(
-      `${ROUTES.USER_PERMISSIONS}/${id}`,
+      ROUTES.USER_PERMISSIONS,
     );
 
     return data;
