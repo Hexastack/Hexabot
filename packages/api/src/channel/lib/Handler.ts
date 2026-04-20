@@ -7,7 +7,7 @@
 import { Inject, Injectable, OnModuleInit, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -186,21 +186,6 @@ export default abstract class ChannelHandler<
     );
 
     event.setPersistedAttachments(attachments);
-  }
-
-  /**
-   * Custom channel middleware
-   * @param req
-   * @param res
-   * @param next
-   */
-  async middleware(
-    _req: Request,
-    _res: Response,
-    next: NextFunction,
-  ): Promise<unknown> {
-    // Do nothing, override in channel
-    return next();
   }
 
   /**

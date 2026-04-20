@@ -10,6 +10,7 @@ export const DEFAULT_CONFIG: Config = {
   apiUrl: "http://localhost:3000/api",
   channel: "console",
   language: "en",
+  transport: "ws",
   maxUploadSize: 20 * 1024 * 1024, // 20 MB in bytes
   theme: {
     mode: "system",

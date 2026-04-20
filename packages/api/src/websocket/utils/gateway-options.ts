@@ -53,6 +53,7 @@ export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
     }),
     ...(config.sockets.cookie && { cookie: config.sockets.cookie }),
     cors: {
+      credentials: true,
       origin: async (origin, cb) => {
         if (config.env === 'test') {
           cb(null, true);

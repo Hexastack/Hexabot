@@ -276,123 +276,77 @@ export class WebsocketGateway
     return { event: 'event', data: 'OK' };
   }
 
-  @SubscribeMessage('get')
-  handleGet(
-    @MessageBody(new IOMessagePipe()) payload: IOIncomingMessage,
-    @ConnectedSocket() client: Socket,
+  private async dispatchSocketMessage(
+    method: 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options' | 'head',
+    payload: IOIncomingMessage,
+    client: Socket,
   ) {
-    const request = new SocketRequest(client, 'get', payload);
+    const request = new SocketRequest(client, method, payload);
     const response = new SocketResponse();
-    this.socketEventDispatcherService.handleEvent(
-      'get',
+    await this.socketEventDispatcherService.handleEvent(
+      method,
       payload.url,
       request,
       response,
     );
 
-    return response.getPromise();
+    return await response.getPromise();
+  }
+
+  @SubscribeMessage('get')
+  async handleGet(
+    @MessageBody(new IOMessagePipe()) payload: IOIncomingMessage,
+    @ConnectedSocket() client: Socket,
+  ) {
+    return await this.dispatchSocketMessage('get', payload, client);
   }
 
   @SubscribeMessage('post')
-  handlePost(
+  async handlePost(
     @MessageBody(new IOMessagePipe()) payload: IOIncomingMessage,
     @ConnectedSocket() client: Socket,
   ) {
-    const request = new SocketRequest(client, 'post', payload);
-    const response = new SocketResponse();
-    this.socketEventDispatcherService.handleEvent(
-      'post',
-      payload.url,
-      request,
-      response,
-    );
-
-    return response.getPromise();
+    return await this.dispatchSocketMessage('post', payload, client);
   }
 
   @SubscribeMessage('put')
-  handlePut(
+  async handlePut(
     @MessageBody(new IOMessagePipe()) payload: IOIncomingMessage,
     @ConnectedSocket() client: Socket,
   ) {
-    const request = new SocketRequest(client, 'put', payload);
-    const response = new SocketResponse();
-    this.socketEventDispatcherService.handleEvent(
-      'put',
-      payload.url,
-      request,
-      response,
-    );
-
-    return response.getPromise();
+    return await this.dispatchSocketMessage('put', payload, client);
   }
 
   @SubscribeMessage('patch')
-  handlePatch(
+  async handlePatch(
     @MessageBody(new IOMessagePipe()) payload: IOIncomingMessage,
     @ConnectedSocket() client: Socket,
   ) {
-    const request = new SocketRequest(client, 'patch', payload);
-    const response = new SocketResponse();
-    this.socketEventDispatcherService.handleEvent(
-      'patch',
-      payload.url,
-      request,
-      response,
-    );
-
-    return response.getPromise();
+    return await this.dispatchSocketMessage('patch', payload, client);
   }
 
   @SubscribeMessage('delete')
-  handleDelete(
+  async handleDelete(
     @MessageBody(new IOMessagePipe()) payload: IOIncomingMessage,
     @ConnectedSocket() client: Socket,
   ) {
-    const request = new SocketRequest(client, 'delete', payload);
-    const response = new SocketResponse();
-    this.socketEventDispatcherService.handleEvent(
-      'delete',
-      payload.url,
-      request,
-      response,
-    );
-
-    return response.getPromise();
+    return await this.dispatchSocketMessage('delete', payload, client);
   }
 
   @SubscribeMessage('options')
-  handleOptions(
+  async handleOptions(
     @MessageBody(new IOMessagePipe()) payload: IOIncomingMessage,
     @ConnectedSocket() client: Socket,
   ) {
-    const request = new SocketRequest(client, 'options', payload);
-    const response = new SocketResponse();
-    this.socketEventDispatcherService.handleEvent(
-      'options',
-      payload.url,
-      request,
-      response,
-    );
-
-    return response.getPromise();
+    return await this.dispatchSocketMessage('options', payload, client);
   }
 
   @SubscribeMessage('head')
-  handleHead(
+  async handleHead(
     @MessageBody(new IOMessagePipe()) payload: IOIncomingMessage,
     @ConnectedSocket() client: Socket,
   ) {
-    const request = new SocketRequest(client, 'head', payload);
-    const response = new SocketResponse();
-    this.socketEventDispatcherService.handleEvent(
-      'head',
-      payload.url,
-      request,
-      response,
-    );
-
-    return response.getPromise();
+    return await this.dispatchSocketMessage('head', payload, client);
   }
 
   /**

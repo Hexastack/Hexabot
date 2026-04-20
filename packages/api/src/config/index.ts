@@ -82,7 +82,7 @@ export const config: Config = {
   sockets: {
     path: '/socket.io',
     // transports to allow connections to (e.g. ['polling', 'websocket'])
-    transports: ['websocket'],
+    transports: ['websocket', 'polling'],
     beforeConnect(_handshake: any): boolean {
       // `true` allows the socket to connect.
       // (`false` would reject the connection)

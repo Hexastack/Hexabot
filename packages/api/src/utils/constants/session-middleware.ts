@@ -21,7 +21,8 @@ export const getSessionMiddleware = () => {
       name: config.session.name,
       secret: config.session.secret,
       proxy: config.security.trustProxy,
-      resave: true,
+      // Avoid race-condition overwrites with concurrent long-polling requests.
+      resave: false,
       saveUninitialized: false,
       store: getSessionStore(),
       cookie: {

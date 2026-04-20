@@ -80,9 +80,6 @@ export type TRequestSession = {
   web?: {
     profile: ISubscriber;
     isSocket: boolean;
-    // @TODO : not sure why we added messageQuery (long pooling ?)
-    messageQueue: never[];
-    polling: boolean;
   };
 };
 
