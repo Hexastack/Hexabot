@@ -23,6 +23,11 @@ import { useAppRouter } from "./useAppRouter";
 import { useConfig } from "./useConfig";
 import { useToast } from "./useToast";
 
+type IsEmptyArray<T> = T extends any[]
+  ? T["length"] extends 0
+    ? true
+    : false
+  : false;
 export const useAxiosInstance = () => {
   const { apiUrl } = useConfig();
   const router = useAppRouter();
@@ -126,14 +131,17 @@ export const useApiClientQuery = <
   F extends ApiClient[N],
 >(
   methodName: N,
-  options?: UseQueryOptions<Awaited<ReturnType<F>>, Error>,
+  options: Omit<UseQueryOptions<Awaited<ReturnType<F>>, Error>, "queryKey"> & {
+    params?: IsEmptyArray<Parameters<F>> extends true ? [void] : Parameters<F>;
+  } = {},
 ) => {
   const { apiClient } = useApiClient();
+  const { params = [], ...rest } = options;
 
   return useTanstackQuery({
-    ...options,
+    ...rest,
     queryKey: [QueryType.item, methodName],
-    queryFn: () => (apiClient[methodName] as Function)(),
+    queryFn: () => (apiClient[methodName] as Function)(...params),
   });
 };
 

@@ -6,12 +6,17 @@
 
 import { AxiosInstance, AxiosResponse } from "axios";
 
+import { WorkflowBindingsCatalog } from "@/contexts/workflow-bindings.context";
+import { IAction } from "@/types/action.types";
 import { AttachmentResourceRef } from "@/types/attachment.types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import { IUserPermissions } from "@/types/auth/permission.types";
 import { THook } from "@/types/base.types";
 import { ICsrf } from "@/types/csrf.types";
-import { IMcpServerDiagnostics } from "@/types/mcp-server.types";
+import {
+  IMcpServerDiagnostics,
+  IMcpToolSummary,
+} from "@/types/mcp-server.types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
 import { ISettingSchemasMap } from "@/types/setting.types";
 import { StatsSummary } from "@/types/stat.types";
@@ -58,7 +63,11 @@ export const ROUTES = {
   WORKFLOW_PUBLISH: "/workflow/:id/publish",
   WORKFLOW_UNPUBLISH: "/workflow/:id/unpublish",
   WORKFLOW_BINDINGS: "/workflow/bindings",
+  WORKFLOW_ACTIONS: "/workflow/actions/:type",
   MCP_SERVER_TEST: "/mcpserver/:id/test",
+  MCP_TOOLS: "/mcpserver/:id/tools",
+  SETTING_SCHEMAS: "setting/schemas",
+
   // Entities
   [EntityType.SUBSCRIBER]: "/subscriber",
   [EntityType.LABEL]: "/label",
@@ -84,16 +93,43 @@ export const ROUTES = {
   [EntityType.STORAGE_HELPER]: "/helper/storage",
   [EntityType.WORKFLOW]: "/workflow",
   [EntityType.WORKFLOW_VERSION]: "/workflow/:id/versions",
-  [EntityType.WORKFLOW_ACTIONS]: "/workflow/actions/:type",
   [EntityType.WORKFLOW_RUN]: "/workflowrun",
   [EntityType.MCP_SERVER]: "/mcpserver",
-  [EntityType.MCP_SERVER_TOOL]: "/mcpserver/:id/tools",
   [EntityType.MEMORY_DEFINITION]: "/memorydefinition",
   [EntityType.THREAD]: "/thread",
 } as const;
 
-export class ApiClient {
+export class TranslatableMethods {
   constructor(protected readonly request: AxiosInstance) {}
+
+  async getWorkflowBindings() {
+    const { data } = await this.request.get<WorkflowBindingsCatalog>(
+      ROUTES.WORKFLOW_BINDINGS,
+    );
+
+    return data;
+  }
+
+  async getSettingSchemas() {
+    const { data } = await this.request.get<ISettingSchemasMap>(
+      ROUTES.SETTING_SCHEMAS,
+    );
+
+    return data;
+  }
+
+  async getActions(type: string) {
+    const route = resolveRoute(ROUTES.WORKFLOW_ACTIONS, { type });
+    const { data } = await this.request.get<IAction[]>(route);
+
+    return data;
+  }
+}
+
+export class ApiClient extends TranslatableMethods {
+  constructor(protected readonly request: AxiosInstance) {
+    super(request);
+  }
 
   async getCsrf() {
     const { data } = await this.request.get<ICsrf>(ROUTES.CSRF, {
@@ -216,26 +252,19 @@ export class ApiClient {
     return data;
   }
 
-  async getWorkflowBindings<T = Record<string, unknown>>() {
-    const { data } = await this.request.get<T>(ROUTES.WORKFLOW_BINDINGS);
-
-    return data;
-  }
-
-  async getSettingSchemas() {
-    const { data } = await this.request.get<ISettingSchemasMap>(
-      `${ROUTES[EntityType.SETTING]}/schemas`,
-    );
-
-    return data;
-  }
-
   async testMcpServer(id: string) {
     const { _csrf } = await this.getCsrf();
     const route = resolveRoute(ROUTES.MCP_SERVER_TEST, { id });
     const { data } = await this.request.post<IMcpServerDiagnostics>(route, {
       _csrf,
     });
+
+    return data;
+  }
+
+  async getMcpTools(id: string) {
+    const route = resolveRoute(ROUTES.MCP_TOOLS, { id });
+    const { data } = await this.request.get<IMcpToolSummary[]>(route);
 
     return data;
   }

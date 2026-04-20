@@ -155,15 +155,6 @@ export const McpServerEntity = new schema.Entity(
   },
 );
 
-export const McpServerToolEntity = new schema.Entity(
-  EntityType.MCP_SERVER_TOOL,
-  undefined,
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
-  },
-);
-
 export const MenuLeafEntity = new schema.Entity(EntityType.MENU, undefined, {
   idAttribute: ({ id }) => id,
   processStrategy: processCommonStrategy,
@@ -298,23 +289,6 @@ WorkflowVersionEntity.define({
   createdBy: UserEntity,
 });
 
-export const WorkflowActionEntity = new schema.Entity(
-  EntityType.WORKFLOW_ACTIONS,
-  undefined,
-  {
-    idAttribute: ({ name }) => name,
-    processStrategy: (entity) => {
-      return {
-        ...entity,
-        title: entity.name
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, (char: string) => char.toUpperCase()),
-        parseSettings: (payload) => payload,
-      };
-    },
-  },
-);
-
 export const WorkflowRunEntity = new schema.Entity(
   EntityType.WORKFLOW_RUN,
   {
@@ -347,10 +321,8 @@ export const WorkflowRunEntity = new schema.Entity(
 export const ENTITY_MAP = {
   [EntityType.WORKFLOW]: WorkflowEntity,
   [EntityType.WORKFLOW_VERSION]: WorkflowVersionEntity,
-  [EntityType.WORKFLOW_ACTIONS]: WorkflowActionEntity,
   [EntityType.WORKFLOW_RUN]: WorkflowRunEntity,
   [EntityType.MCP_SERVER]: McpServerEntity,
-  [EntityType.MCP_SERVER_TOOL]: McpServerToolEntity,
   [EntityType.MEMORY_DEFINITION]: MemoryDefinitionEntity,
   [EntityType.THREAD]: ThreadEntity,
   [EntityType.SUBSCRIBER]: SubscriberEntity,

@@ -6,7 +6,8 @@
 
 import { useCallback } from "react";
 
-import { EntityType, QueryType } from "@/services/types";
+import { TranslatableMethods } from "@/services/api.class";
+import { QueryType } from "@/services/types";
 
 import { useTanstackQueryClient } from "./crud/useTanstack";
 import { useTranslate } from "./useTranslate";
@@ -23,17 +24,18 @@ export const useI18n = () => {
       }
 
       await i18n.changeLanguage(lang);
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: [QueryType.item, "getSettingSchemas"],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: [QueryType.collection, EntityType.WORKFLOW_ACTIONS],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["workflow-bindings"],
-        }),
-      ]);
+
+      queryClient.invalidateQueries({
+        predicate: ({ queryKey }) => {
+          const [queryType, queryEntity] = queryKey;
+
+          return (
+            queryType === QueryType.item &&
+            typeof queryEntity === "string" &&
+            TranslatableMethods.prototype[queryEntity]
+          );
+        },
+      });
     },
     [i18n],
   );

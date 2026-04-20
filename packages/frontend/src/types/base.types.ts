@@ -9,7 +9,6 @@ import { Path, PathValue } from "react-hook-form";
 
 import { EntityType, Format, TPopulateTypeFromFormat } from "@/services/types";
 
-import { IAction, IActionAttributes } from "./action.types";
 import {
   IAttachment,
   IAttachmentAttributes,
@@ -32,8 +31,6 @@ import {
   IMcpServer,
   IMcpServerAttributes,
   IMcpServerFull,
-  IMcpServerTool,
-  IMcpServerToolAttributes,
 } from "./mcp-server.types";
 import {
   IMemoryDefinition,
@@ -105,7 +102,6 @@ export interface IFormat<F = Format> {
 export const POPULATE_BY_TYPE = {
   [EntityType.WORKFLOW]: ["currentVersion", "publishedVersion"],
   [EntityType.WORKFLOW_VERSION]: ["parentVersion", "createdBy"],
-  [EntityType.WORKFLOW_ACTIONS]: [],
   [EntityType.WORKFLOW_RUN]: [
     "workflow",
     "workflowVersion",
@@ -113,7 +109,6 @@ export const POPULATE_BY_TYPE = {
     "thread",
   ],
   [EntityType.MCP_SERVER]: ["credential"],
-  [EntityType.MCP_SERVER_TOOL]: [],
   [EntityType.MEMORY_DEFINITION]: [],
   [EntityType.THREAD]: ["subscriber"],
   [EntityType.ROLE]: ["users", "permissions"],
@@ -176,7 +171,6 @@ export interface IEntityMapTypes {
     never,
     IWorkflowVersionFull
   >;
-  [EntityType.WORKFLOW_ACTIONS]: IEntityTypes<IAction, IActionAttributes>;
   [EntityType.WORKFLOW_RUN]: IEntityTypes<
     IWorkflowRun,
     IWorkflowRunAttributes,
@@ -188,10 +182,6 @@ export interface IEntityMapTypes {
     IMcpServerAttributes,
     never,
     IMcpServerFull
-  >;
-  [EntityType.MCP_SERVER_TOOL]: IEntityTypes<
-    IMcpServerTool,
-    IMcpServerToolAttributes
   >;
   [EntityType.MEMORY_DEFINITION]: IEntityTypes<
     IMemoryDefinition,
