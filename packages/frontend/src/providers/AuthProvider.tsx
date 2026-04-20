@@ -4,20 +4,31 @@
  * Full terms: see LICENSE.md.
  */
 
-import { type ReactNode, useCallback, useEffect, useMemo } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { runtimeConfig } from "@/config/runtime";
 import { AuthContext } from "@/contexts/auth.context";
+import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
+import { useAuthRedirection } from "@/hooks/auth/useAuthRedirection";
 import { useGet } from "@/hooks/crud/useGet";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
-import { useLogout } from "@/hooks/entities/auth-hooks";
-import { useApiClientQuery } from "@/hooks/useApiClient";
+import { useApiClientMutation, useApiClientQuery } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
+import { useConfig } from "@/hooks/useConfig";
+import { useI18n } from "@/hooks/useI18n";
 import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
+import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, QueryType } from "@/services/types";
-import { type IUser } from "@/types/user.types";
+import { IUser } from "@/types/user.types";
+import { useSocket } from "@/websocket/socket-hooks";
 
 export interface AuthProviderProps {
   children: ReactNode;
@@ -25,36 +36,52 @@ export interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useAppRouter();
-  const { i18n } = useTranslate();
+  const { hasUserSession } = useConfig();
+  const [isAuthenticated, setIsAuthenticated] = useState(hasUserSession);
+  const { updateI18nLanguage } = useI18n();
+  const { t } = useTranslate();
+  const { logoutRedirection, loginRedirection } = useAuthRedirection();
+  const { postMessage } = useBroadcastChannel();
+  const { socket } = useSocket();
+  const { toast } = useToast();
   const queryClient = useTanstackQueryClient();
-  const updateLanguage = useCallback(
-    async (lang: string) => {
-      const activeLanguage = i18n.resolvedLanguage || i18n.language;
-
-      if (!lang || activeLanguage === lang) {
-        return;
-      }
-
-      await i18n.changeLanguage(lang);
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: [QueryType.item, EntityType.SETTING, "schemas"],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: [QueryType.collection, EntityType.WORKFLOW_ACTIONS],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["workflow-bindings"],
-        }),
-      ]);
-    },
-    [i18n, queryClient],
-  );
-  const { mutate: logoutSession } = useLogout();
-  const logout = async () => {
-    await updateLanguage(runtimeConfig.lang.default);
-    logoutSession();
+  const postLogin = async (data: IUser) => {
+    if (data.state) {
+      setIsAuthenticated(true);
+      queryClient.setQueryData([QueryType.item, "getCurrentSession"], data);
+      await loginRedirection();
+      postMessage({ event: "login" });
+    } else {
+      toast.error(t("message.account_disabled"));
+    }
   };
+  const loginMutation = useApiClientMutation("login", {
+    async onSuccess(data) {
+      await postLogin(data);
+    },
+  });
+  const preLogout = useCallback(async () => {
+    socket?.disconnect();
+    setIsAuthenticated(false);
+    await updateI18nLanguage(runtimeConfig.lang.default);
+  }, [updateI18nLanguage, socket]);
+  const postLogout = useCallback(async () => {
+    queryClient.clear();
+    await logoutRedirection(router.asPath);
+    postMessage({ event: "logout" });
+  }, [logoutRedirection, postMessage, queryClient, router.asPath]);
+  const logoutMutation = useApiClientMutation("logout", {
+    async onMutate() {
+      await preLogout();
+    },
+    async onSuccess() {
+      await postLogout();
+      toast.success(t("message.logout_success"));
+    },
+    onError: () => {
+      toast.error(t("message.logout_failed"));
+    },
+  });
   const {
     data: me,
     error,
@@ -66,6 +93,13 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     { entity: EntityType.USER },
     {
       enabled: !!me?.id,
+      onSuccess(data) {
+        setIsAuthenticated(!!data);
+        queryClient.setQueryData(
+          [QueryType.item, EntityType.SUBSCRIBER, data?.id],
+          data,
+        );
+      },
     },
   );
   const userWithLicense = useMemo(
@@ -75,28 +109,25 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
 
   useEffect(() => {
     if (user?.language) {
-      void updateLanguage(user.language);
+      void updateI18nLanguage(user.language);
     }
-  }, [updateLanguage, user?.language]);
-  const authenticate = useCallback(
-    (user: IUser) => {
-      void updateLanguage(user.language);
-      queryClient.setQueryData([QueryType.item, "getCurrentSession"], user);
-    },
-    [queryClient, refetch, updateLanguage],
-  );
+  }, [updateI18nLanguage, user?.language]);
   const refetchUser = useCallback(async () => {
-    const result = await refetch();
+    const { data } = await refetch();
 
-    return result.data;
+    return data;
   }, [refetch]);
 
   useSubscribeBroadcastChannel("login", () => {
-    router.reload();
+    if (!isAuthenticated) {
+      router.reload();
+    }
   });
 
   useSubscribeBroadcastChannel("logout", () => {
-    router.reload();
+    if (isAuthenticated) {
+      router.reload();
+    }
   });
 
   if (isLoading || !userWithLicense) {
@@ -107,11 +138,12 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     <AuthContext.Provider
       value={{
         user: userWithLicense,
-        isAuthenticated: !!user,
+        isAuthenticated,
         error,
-        authenticate,
         refetchUser,
-        logout,
+        loginMutation,
+        logoutMutation,
+        setIsAuthenticated,
       }}
     >
       {children}

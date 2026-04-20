@@ -26,8 +26,8 @@ import {
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
   formatLicenseQuotaUsage,
-  getQuotaUpgradeTargetPlan,
   getLicenseQuotaResource,
+  getQuotaUpgradeTargetPlan,
   isLicenseQuotaReached,
 } from "@/components/license/license-quotas";
 import LicenseGate from "@/components/license/LicenseGate";

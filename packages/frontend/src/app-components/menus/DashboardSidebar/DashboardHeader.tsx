@@ -36,7 +36,8 @@ export const DashboardHeader = ({
   menuOpen,
   onToggleMenu,
 }: DashboardHeaderProps) => {
-  const { user, logout } = useAuth();
+  const { user, logoutMutation } = useAuth();
+  const { mutate: logout } = logoutMutation;
   const { ssoEnabled } = useConfig();
   const { t } = useTranslate();
   const anchorRef = React.useRef(null);
@@ -107,7 +108,12 @@ export const DashboardHeader = ({
               anchorEl={anchorRef.current}
               onClose={() => setIsMenuPopoverOpen(false)}
               handleClose={() => setIsMenuPopoverOpen(false)}
-              logout={{ text: t("menu.logout"), onClick: logout }}
+              logout={{
+                text: t("menu.logout"),
+                onClick: () => {
+                  logout([]);
+                },
+              }}
               links={[
                 { text: t("menu.home"), href: "/" },
                 ...(!ssoEnabled

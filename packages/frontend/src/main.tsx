@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import "@hexabot-ai/graph/workflow.css";
 import { loader } from "@monaco-editor/react";
 import { CssBaseline } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import "@hexabot-ai/graph/workflow.css";
 import * as monaco from "monaco-editor";
 import { SnackbarProvider } from "notistack";
 import ReactDOM from "react-dom/client";
@@ -70,8 +70,8 @@ ReactDOM.createRoot(rootElement).render(
           )}
         >
           <QueryClientProvider client={queryClient}>
-            <ApiClientProvider>
-              <BroadcastChannelProvider channelName="main-channel">
+            <BroadcastChannelProvider channelName="main-channel">
+              <ApiClientProvider>
                 <AuthProvider>
                   <PermissionProvider>
                     <SettingsProvider>
@@ -85,8 +85,8 @@ ReactDOM.createRoot(rootElement).render(
                     </SettingsProvider>
                   </PermissionProvider>
                 </AuthProvider>
-              </BroadcastChannelProvider>
-            </ApiClientProvider>
+              </ApiClientProvider>
+            </BroadcastChannelProvider>
             <ReactQueryDevtools
               initialIsOpen={false}
               buttonPosition="bottom-left"
