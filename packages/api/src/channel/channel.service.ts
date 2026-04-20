@@ -172,9 +172,6 @@ export class ChannelService {
       // Update session (end user is both a user + subscriber)
       req.session.web = {
         profile,
-        isSocket: true,
-        messageQueue: [],
-        polling: false,
       };
     }
 

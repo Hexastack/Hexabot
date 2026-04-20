@@ -6,11 +6,14 @@
 
 import { ThemeMode, ThemeOverrides } from "../theme/theme.types";
 
+export type ConfigTransport = "ws" | "polling";
+
 export type Config = {
   apiUrl: string;
   channel: string;
   language: string;
   maxUploadSize: number;
+  transport?: ConfigTransport;
   workflowId?: string;
   instanceId?: string;
   mode?: ThemeMode;

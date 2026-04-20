@@ -113,7 +113,7 @@ describe('WebChannelHandler', () => {
         origin: 'https://example.com',
       },
       method: 'GET',
-    } as unknown as Request;
+    } as unknown as SocketRequest;
     const res = {
       set: jest.fn(),
     } as any;
@@ -141,7 +141,7 @@ describe('WebChannelHandler', () => {
         origin: 'https://notallowed.com',
       },
       method: 'GET',
-    } as unknown as Request;
+    } as unknown as SocketRequest;
 
     jest.spyOn(handler, 'getSettings').mockResolvedValue({
       allowed_domains:
@@ -157,6 +157,33 @@ describe('WebChannelHandler', () => {
     );
 
     expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', '');
+  });
+
+  it('rejects direct HTTP webhook requests for web channel', async () => {
+    const req = {
+      method: 'GET',
+      query: { _get: 'polling' },
+      headers: {
+        origin: 'https://example.com',
+      },
+      session: {},
+    } as unknown as Request;
+    const res = {
+      set: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    } as any;
+
+    jest.spyOn(handler, 'getSettings').mockResolvedValue({
+      allowed_domains: 'https://example.com',
+    });
+
+    await handler.handle(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({
+      err: 'Web Channel Handler : Unauthorized!',
+    });
   });
 
   it('sends messages through outbound formatter and broadcasts to sockets', async () => {
@@ -225,12 +252,15 @@ describe('WebChannelHandler', () => {
 
   it('creates a new subscriber if needed + set a new session', async () => {
     const req = {
-      isSocket: false,
+      isSocket: true,
       query: { first_name: 'New', last_name: 'Subscriber' },
       session: {},
       headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+      },
       user: {},
-    } as any as Request;
+    } as any as SocketRequest;
     const generatedId = 'web-test';
     const clearMock = jest
       .spyOn(handler, 'generateId')
@@ -243,8 +273,8 @@ describe('WebChannelHandler', () => {
         name: 'web',
         data: {
           agent: req.headers['user-agent'],
-          isSocket: false,
-          ipAddress: '0.0.0.0',
+          isSocket: true,
+          ipAddress: '127.0.0.1',
         },
       },
       country: '',
@@ -264,9 +294,6 @@ describe('WebChannelHandler', () => {
     expect(subscriberAttrs).toEqual(expectedAttrs);
     expect(req.session).toEqual({
       web: {
-        isSocket: false,
-        messageQueue: [],
-        polling: false,
         profile: subscriber,
       },
     });
@@ -277,9 +304,6 @@ describe('WebChannelHandler', () => {
     expect(subscriber2nd.id).toBe(subscriber.id);
     expect(req.session).toEqual({
       web: {
-        isSocket: false,
-        messageQueue: [],
-        polling: false,
         profile: subscriber2nd,
       },
     });
@@ -299,9 +323,6 @@ describe('WebChannelHandler', () => {
       session: {
         cookie: { originalMaxAge: 0 },
         web: {
-          isSocket: true,
-          messageQueue: [],
-          polling: false,
           profile: subscriber,
         },
       },
@@ -336,12 +357,16 @@ describe('WebChannelHandler', () => {
 
   it('subscribes a fresh session with no thread and returns empty history', async () => {
     const req = {
-      isSocket: false,
+      isSocket: true,
       query: { first_name: 'Fresh', last_name: 'User' },
       session: {},
       headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+        join: (_foreignId: string) => {},
+      },
       user: {},
-    } as any as Request;
+    } as any as SocketRequest;
     const generatedId = `web-empty-${Date.now()}`;
     const clearMock = jest
       .spyOn(handler, 'generateId')
@@ -366,12 +391,15 @@ describe('WebChannelHandler', () => {
 
   it('returns thread id in first incoming message response and stores it in session', async () => {
     const req = {
-      isSocket: false,
+      isSocket: true,
       query: { first_name: 'Realtime', last_name: 'User' },
       session: {},
       headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+      },
       user: {},
-    } as any as Request;
+    } as any as SocketRequest;
     const generatedId = `web-realtime-${Date.now()}`;
     const clearMock = jest
       .spyOn(handler, 'generateId')
@@ -389,9 +417,6 @@ describe('WebChannelHandler', () => {
     req.session.web = {
       ...req.session.web,
       profile,
-      isSocket: false,
-      messageQueue: [],
-      polling: false,
     };
 
     const emitAsyncSpy = jest
@@ -461,9 +486,6 @@ describe('WebChannelHandler', () => {
     req.session.web = {
       ...req.session.web,
       profile,
-      isSocket: true,
-      messageQueue: [],
-      polling: false,
     };
 
     const emitAsyncSpy = jest
@@ -505,12 +527,15 @@ describe('WebChannelHandler', () => {
 
   it('rejects chatbot sync before first user message when no thread exists', async () => {
     const req = {
-      isSocket: false,
+      isSocket: true,
       query: { first_name: 'Sync', last_name: 'User' },
       session: {},
       headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+      },
       user: {},
-    } as any as Request;
+    } as any as SocketRequest;
     const generatedId = `web-sync-${Date.now()}`;
     const clearMock = jest
       .spyOn(handler, 'generateId')
@@ -530,9 +555,6 @@ describe('WebChannelHandler', () => {
     req.session.web = {
       ...req.session.web,
       profile,
-      isSocket: false,
-      messageQueue: [],
-      polling: false,
     };
 
     await new Promise<void>((resolve, reject) => {
@@ -563,12 +585,15 @@ describe('WebChannelHandler', () => {
 
   it('returns 400 for invalid incoming event payload', async () => {
     const req = {
-      isSocket: false,
+      isSocket: true,
       query: { first_name: 'Invalid', last_name: 'Payload' },
       session: {},
       headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+      },
       user: {},
-    } as any as Request;
+    } as any as SocketRequest;
     const generatedId = `web-invalid-${Date.now()}`;
     const clearMock = jest
       .spyOn(handler, 'generateId')
@@ -583,9 +608,6 @@ describe('WebChannelHandler', () => {
     req.session.web = {
       ...req.session.web,
       profile,
-      isSocket: false,
-      messageQueue: [],
-      polling: false,
     };
 
     await new Promise<void>((resolve, reject) => {
@@ -615,12 +637,15 @@ describe('WebChannelHandler', () => {
 
   it('processes decoder fanout sequentially and keeps a single raw HTTP response body', async () => {
     const req = {
-      isSocket: false,
+      isSocket: true,
       query: { first_name: 'Fanout', last_name: 'User' },
       session: {},
       headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+      },
       user: {},
-    } as any as Request;
+    } as any as SocketRequest;
     const generatedId = `web-fanout-${Date.now()}`;
     const clearMock = jest
       .spyOn(handler, 'generateId')
@@ -636,9 +661,6 @@ describe('WebChannelHandler', () => {
     req.session.web = {
       ...req.session.web,
       profile,
-      isSocket: false,
-      messageQueue: [],
-      polling: false,
     };
 
     const channelAttrs = handler.getChannelAttributes(req as any);
@@ -735,9 +757,6 @@ describe('WebChannelHandler', () => {
     req.session.web = {
       ...req.session.web,
       profile,
-      isSocket: true,
-      messageQueue: [],
-      polling: false,
     };
 
     await new Promise<void>((resolve, reject) => {
@@ -778,70 +797,54 @@ describe('WebChannelHandler', () => {
     clearMock.mockRestore();
   });
 
-  it('accepts multipart file metadata events without binary payload in body', async () => {
+  it('rejects file metadata events when binary payload is missing', async () => {
+    attachmentServiceMock.store.mockClear();
     const req = {
-      isSocket: false,
-      query: { first_name: 'Http', last_name: 'Upload' },
+      isSocket: true,
+      query: { first_name: 'Ws', last_name: 'Upload' },
       session: {},
       headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+      },
       user: {},
-    } as any as Request;
-    const generatedId = `web-http-upload-${Date.now()}`;
+    } as any as SocketRequest;
+    const generatedId = `web-ws-upload-no-file-${Date.now()}`;
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
     const profile = await handler['getOrCreateSession'](req as any);
-    const reqFile = {
-      originalname: 'multipart-file.png',
-      size: 12,
-      mimetype: 'image/png',
-      buffer: Buffer.from('multipart'),
-    };
-    attachmentServiceMock.store.mockResolvedValueOnce({
-      id: 'http-attachment-id',
-      type: 'image/png',
-      name: reqFile.originalname,
-      size: reqFile.size,
-    } as any);
 
     req.body = {
       type: 'file',
       data: {
         type: 'image/png',
-        size: reqFile.size,
-        name: reqFile.originalname,
+        size: 12,
+        name: 'metadata-only.png',
       },
     };
     req.query = {};
     req.session.web = {
       ...req.session.web,
       profile,
-      isSocket: false,
-      messageQueue: [],
-      polling: false,
     };
-    (req as any).file = reqFile;
 
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(
-          new Error('Timed out waiting for multipart metadata upload response'),
+          new Error('Timed out waiting for metadata-only upload response'),
         );
       }, 2000);
       const res = {
         status: (code: number) => {
-          expect(code).toEqual(200);
+          expect(code).toEqual(403);
 
           return res;
         },
         json: (payload: any) => {
           clearTimeout(timeout);
-          expect(payload.type).toEqual('file');
-          expect(payload.data).toEqual(
-            expect.objectContaining({
-              type: 'image',
-              url: expect.any(String),
-            }),
+          expect(payload.err).toEqual(
+            'Web Channel Handler : File upload failed!',
           );
           resolve();
         },
@@ -850,14 +853,7 @@ describe('WebChannelHandler', () => {
       handler['handleEvent'](req as any, res);
     });
 
-    expect(attachmentServiceMock.store).toHaveBeenCalledWith(
-      reqFile,
-      expect.objectContaining({
-        name: reqFile.originalname,
-        size: reqFile.size,
-        type: reqFile.mimetype,
-      }),
-    );
+    expect(attachmentServiceMock.store).not.toHaveBeenCalled();
     clearMock.mockRestore();
   });
 });

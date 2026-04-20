@@ -76,6 +76,7 @@ Once the widget is built, you can easily embed it into any webpage. Here's an ex
     el(HexabotWidget, {
       apiUrl: 'https://api.yourdomain.com',
       channel: 'web',
+      transport: 'ws', // or "polling"
       token: 'token123',
       primaryColor: '#1ba089',
     }),
@@ -85,6 +86,7 @@ Once the widget is built, you can easily embed it into any webpage. Here's an ex
 ```
 
 Replace the values in `apiUrl`, `token`, and `primaryColor` with your configuration details.
+`transport` is optional and accepts `ws` (default) or `polling`.
 
 To prevent the website css from conflicting with the chat widget css, we can leverage the shadow dom:
 
@@ -114,6 +116,7 @@ To prevent the website css from conflicting with the chat widget css, we can lev
     React.createElement(HexabotWidget, {
       apiUrl: 'https://api.yourdomain.com',
       channel: 'web',
+      transport: 'ws', // or "polling"
       token: 'token123',
       primaryColor: '#1ba089',
     }),

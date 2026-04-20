@@ -6,7 +6,7 @@
 
 import { io, ManagerOptions, Socket, SocketOptions } from "socket.io-client";
 
-import { Config } from "../types/config.types";
+import { Config, ConfigTransport } from "../types/config.types";
 import {
   IOIncomingMessage,
   IOOutgoingMessage,
@@ -20,6 +20,20 @@ type SocketIoEventHandlers = {
   onConnect?: () => void;
   onDisconnect?: (reason: string, details: unknown) => void;
   onConnectError?: (error: Error) => void;
+};
+
+const TRANSPORTS_BY_MODE: Record<
+  ConfigTransport,
+  NonNullable<SocketOptions["transports"]>
+> = {
+  ws: ["websocket"],
+  polling: ["polling"],
+};
+
+export const resolveSocketIoTransports = (
+  transport: ConfigTransport = "ws",
+): NonNullable<SocketOptions["transports"]> => {
+  return TRANSPORTS_BY_MODE[transport];
 };
 
 export class SocketIoClient {
@@ -47,7 +61,7 @@ export class SocketIoClient {
     addTrailingSlash: true, // eg: https://domain.path/ => https://domain.path/
     // autoUnref:false, //  firefox only option
     // path: "/socket.io", // This is the socket path in the server, leave it as default unless changed manually in server
-    transports: ["websocket", "polling"], // ["websocket","polling", "websocket"]
+    transports: resolveSocketIoTransports("ws"),
     upgrade: true,
     withCredentials: true,
   };
@@ -289,6 +303,7 @@ export const getSocketIoClient = (
         query: {
           channel: config.channel,
         },
+        transports: resolveSocketIoTransports(config.transport ?? "ws"),
       },
       handlers,
     );

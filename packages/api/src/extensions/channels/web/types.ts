@@ -16,9 +16,6 @@ export namespace Web {
     web?: {
       profile: SubscriberFull;
       threadId?: string;
-      isSocket: boolean;
-      messageQueue: any[];
-      polling: boolean;
     };
   };
 

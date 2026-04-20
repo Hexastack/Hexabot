@@ -5,7 +5,6 @@
  */
 
 import {
-  BadRequestException,
   HttpException,
   HttpStatus,
   Inject,
@@ -13,9 +12,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import bodyParser from 'body-parser';
-import { NextFunction, Request, Response } from 'express';
-import multer, { diskStorage, memoryStorage } from 'multer';
+import { Request, Response } from 'express';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -70,20 +67,6 @@ import {
 } from './outbound';
 import { Web } from './types';
 import { WEB_CHANNEL_NAME } from './web-channel.settings';
-
-// Handle multipart uploads (Long Pooling only)
-const upload = multer({
-  limits: {
-    fileSize: config.parameters.maxUploadSize,
-  },
-  storage: (() => {
-    if (config.parameters.storageMode === 'memory') {
-      return memoryStorage();
-    } else {
-      return diskStorage({});
-    }
-  })(),
-}).single('file'); // 'file' is the field name in the form
 
 @Injectable()
 export default abstract class BaseWebChannelHandler<N extends ChannelName>
@@ -165,9 +148,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         client.request.session.web = {
           profile: currentWebSession?.profile,
           threadId,
-          isSocket: currentWebSession?.isSocket ?? true,
-          messageQueue: currentWebSession?.messageQueue ?? [],
-          polling: currentWebSession?.polling ?? false,
         };
         if (thread) {
           const messagesHistory =
@@ -353,25 +333,21 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     return value.length > 0 ? value : undefined;
   }
 
-  private getThreadIdFromQuery(
-    req: Request | SocketRequest,
-  ): string | undefined {
+  private getThreadIdFromQuery(req: SocketRequest): string | undefined {
     const raw = req.query.thread_id;
     const candidate = Array.isArray(raw) ? raw[0] : raw;
 
     return this.normalizeThreadId(candidate);
   }
 
-  private getThreadIdFromBody(
-    req: Request | SocketRequest,
-  ): string | undefined {
+  private getThreadIdFromBody(req: SocketRequest): string | undefined {
     const body = req.body as { thread_id?: unknown } | undefined;
 
     return this.normalizeThreadId(body?.thread_id);
   }
 
   private async resolveThreadForHistory(
-    req: Request | SocketRequest,
+    req: SocketRequest,
   ): Promise<Thread | null> {
     const profile = req.session.web?.profile;
     if (!profile?.id) {
@@ -401,7 +377,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * Fetches the last 'n' messages for the session profile up to the given date.
    */
   protected async fetchHistory(
-    req: Request | SocketRequest,
+    req: SocketRequest,
     until: Date = new Date(),
     n: number = 30,
   ): Promise<Web.Message[]> {
@@ -420,40 +396,13 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   }
 
   /**
-   * Poll new messages by a given start datetime
-   * @param req - HTTP Express Request
-   * @param since - Date after which to fetch
-   * @param n - Number of messages to fetch
-   * @returns Promise resolving to an array of messages.
-   * Fetches the last 'n' new messages for the session profile since the given date.
-   */
-  private async pollMessages(
-    req: Request,
-    since: Date = new Date(10e14),
-    n: number = 30,
-  ): Promise<Web.Message[]> {
-    const thread = await this.resolveThreadForHistory(req);
-    if (thread) {
-      const messages = await this.messageService.findHistorySinceDate(
-        thread,
-        since,
-        n,
-      );
-
-      return await this.formatMessages(messages as AnyMessage[]);
-    }
-
-    return [];
-  }
-
-  /**
    * Verify the origin against whitelisted domains.
    *
    * @param req
    * @param res
    */
   private async ensureValidCors(
-    req: Request | SocketRequest,
+    req: SocketRequest,
     res: Response | SocketResponse,
   ) {
     // Check if we have an origin header...
@@ -519,25 +468,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * @param res
    */
   private validateSession(
-    req: Request | SocketRequest,
+    req: SocketRequest,
     res: Response | SocketResponse,
     next: <S extends Subscriber>(profile: S) => void,
   ) {
     if (!req.session.web?.profile?.id) {
       this.logger.warn('No session ID to be found!', req.session);
-
-      return res
-        .status(403)
-        .json({ err: 'Web Channel Handler : Unauthorized!' });
-    } else if (
-      (this.isSocketRequest(req) &&
-        !!req.isSocket !== req.session.web.isSocket) ||
-      !Array.isArray(req.session.web.messageQueue)
-    ) {
-      this.logger.warn(
-        'Mixed channel request or invalid session data!',
-        req.session,
-      );
 
       return res
         .status(403)
@@ -553,9 +489,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    *
    * @returns Subscriber's profile
    */
-  protected async getOrCreateSession(
-    req: Request | SocketRequest,
-  ): Promise<Subscriber> {
+  protected async getOrCreateSession(req: SocketRequest): Promise<Subscriber> {
     const data = req.query;
     // Subscriber has already a session
     const sessionProfile = req.session.web?.profile;
@@ -600,80 +534,9 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
     req.session.web = {
       profile,
-      isSocket: this.isSocketRequest(req),
-      messageQueue: [],
-      polling: false,
     };
 
     return profile;
-  }
-
-  /**
-   * Return message queue (using by long polling case only)
-   *
-   * @param req HTTP Express Request
-   * @param res HTTP Express Response
-   */
-  private getMessageQueue(req: Request, res: Response) {
-    // Polling not authorized when using websockets
-    if (this.isSocketRequest(req)) {
-      this.logger.warn('Polling not authorized when using websockets');
-
-      return res
-        .status(403)
-        .json({ err: 'Polling not authorized when using websockets' });
-    }
-    // Session must be active
-    if (!(req.session && req.session.web && req.session.web?.profile?.id)) {
-      this.logger.warn('Must be connected to poll messages');
-
-      return res
-        .status(403)
-        .json({ err: 'Polling not authorized : Must be connected' });
-    }
-
-    // Can only request polling once at a time
-    if (req.session && req.session.web && req.session.web.polling) {
-      this.logger.warn('Poll rejected ... already requested');
-
-      return res
-        .status(403)
-        .json({ err: 'Poll rejected ... already requested' });
-    }
-
-    req.session.web.polling = true;
-
-    const fetchMessages = async (req: Request, res: Response, retrials = 1) => {
-      try {
-        if (!req.query.since)
-          throw new BadRequestException(`QueryParam 'since' is missing`);
-
-        const since = new Date(req.query.since.toString());
-        const messages = await this.pollMessages(req, since);
-        if (messages.length === 0 && retrials <= 5) {
-          // No messages found, retry after 5 sec
-          setTimeout(async () => {
-            await fetchMessages(req, res, retrials * 2);
-          }, retrials * 1000);
-        } else if (req.session.web) {
-          req.session.web.polling = false;
-
-          return res.status(200).json(messages.map((msg) => ['message', msg]));
-        } else {
-          this.logger.error('Polling failed .. no session data');
-
-          return res.status(500).json({ err: 'No session data' });
-        }
-      } catch (err) {
-        if (req.session.web) {
-          req.session.web.polling = false;
-        }
-        this.logger.error('Polling failed', err);
-
-        return res.status(500).json({ err: 'Polling failed' });
-      }
-    };
-    fetchMessages(req, res);
   }
 
   /**
@@ -683,25 +546,20 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * @param res
    */
   protected async subscribe(
-    req: Request | SocketRequest,
+    req: SocketRequest,
     res: Response | SocketResponse,
   ) {
-    this.logger.debug('subscribe (isSocket=' + this.isSocketRequest(req) + ')');
+    this.logger.debug('subscribe (isSocket=true)');
     try {
       const profile = await this.getOrCreateSession(req);
-      // Join socket room when using websocket
-      if (this.isSocketRequest(req)) {
-        try {
-          await req.socket.join(profile.foreignId);
-        } catch (err) {
-          this.logger.error('Unable to subscribe via websocket', err);
-        }
+      try {
+        await req.socket.join(profile.foreignId);
+      } catch (err) {
+        this.logger.error('Unable to subscribe via websocket', err);
       }
       // Fetch message history
       const criteria =
-        'since' in req.query
-          ? req.query.since // Long polling case
-          : req.body?.since || undefined; // Websocket case
+        'since' in req.query ? req.query.since : req.body?.since || undefined;
       const messages = await this.fetchHistory(req, criteria);
 
       return res.status(200).json({
@@ -736,14 +594,13 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       }
 
       // Check if any file is provided
-      if (
-        type !== Web.InboundMessageType.file ||
-        !('file' in data) ||
-        !data.file
-      ) {
+      if (type !== Web.InboundMessageType.file) {
         this.logger.debug('No files provided');
 
         return null;
+      }
+      if (!('file' in data) || !data.file) {
+        throw new Error('File payload is missing');
       }
 
       const size = Buffer.byteLength(data.file);
@@ -768,58 +625,14 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   }
 
   /**
-   * Handles file upload via HTTP multipart/form-data requests.
-   *
-   * @param req - The Express HTTP request.
-   * @param _res - The Express HTTP response.
-   * @returns A Promise that resolves to the stored `Attachment`, or `null`/`undefined`
-   *          if the session is invalid or no file is provided.
-   * @throws Error when storing the uploaded file fails.
-   */
-  async handleWebUpload(
-    req: Request,
-    _res: Response,
-  ): Promise<Attachment | null | undefined> {
-    try {
-      if (!req.session.web?.profile?.id) {
-        this.logger.debug('Upload denied, no session is defined');
-
-        return null;
-      }
-
-      // Check if any file is provided
-      if (!req.file) {
-        this.logger.debug('No files provided');
-
-        return null;
-      }
-
-      return await this.attachmentService.store(req.file, {
-        name: req.file.originalname,
-        size: req.file.size,
-        type: req.file.mimetype,
-        resourceRef: AttachmentResourceRef.MessageAttachment,
-        access: AttachmentAccess.Private,
-        createdByRef: AttachmentCreatedByRef.Subscriber,
-        createdBy: req.session.web.profile.id,
-      });
-    } catch (err) {
-      this.logger.error('Unable to store uploaded file', err);
-      throw err;
-    }
-  }
-
-  /**
    * Upload file as attachment if provided
    *
-   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
-   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
-   * @returns A Promise that resolves to the uploaded Attachment, or `null`/`undefined` if no file is uploaded.
+   * @param req The websocket request object.
+   * @returns A Promise that resolves to the uploaded Attachment, or `null` if no file is uploaded.
    * @throws Error Propagated from underlying upload handlers.
    */
   async handleUpload(
-    req: Request | SocketRequest,
-    res: Response | SocketResponse,
+    req: SocketRequest,
   ): Promise<Attachment | null | undefined> {
     // Check if any file is provided
     if (!req.session.web) {
@@ -828,11 +641,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       return null;
     }
 
-    if (this.isSocketRequest(req)) {
-      return this.handleWsUpload(req);
-    } else {
-      return this.handleWebUpload(req, res as Response);
-    }
+    return this.handleWsUpload(req);
   }
 
   /**
@@ -842,17 +651,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    *
    * @returns IP Address
    */
-  protected getIpAddress(req: Request | SocketRequest): string {
-    if (this.isSocketRequest(req)) {
-      return req.socket.handshake.address;
-    } else if (Array.isArray(req.ips) && req.ips.length > 0) {
-      // If config.http.trustProxy is enabled, this variable contains the IP addresses
-      // in this request's "X-Forwarded-For" header as an array of the IP address strings.
-      // Otherwise an empty array is returned.
-      return req.ips.join(',');
-    } else {
-      return req.ip || '0.0.0.0';
-    }
+  protected getIpAddress(req: SocketRequest): string {
+    return req.socket.handshake.address;
   }
 
   /**
@@ -863,10 +663,10 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * @returns The subscriber channel's attributes
    */
   getChannelAttributes(
-    req: Request | SocketRequest,
+    req: SocketRequest,
   ): SubscriberChannelDict[typeof WEB_CHANNEL_NAME] {
     return {
-      isSocket: this.isSocketRequest(req),
+      isSocket: true,
       ipAddress: this.getIpAddress(req),
       agent: req.headers['user-agent'] || 'browser',
     };
@@ -879,7 +679,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
   handleEvent(
-    req: Request | SocketRequest,
+    req: SocketRequest,
     res: Response | SocketResponse,
     workflowId?: string,
   ): void {
@@ -950,7 +750,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           // Handle upload when files are provided
           if (messageEvent instanceof AttachmentMessageInboundEvent) {
             try {
-              const attachment = await this.handleUpload(req, res);
+              const attachment = await this.handleUpload(req);
 
               if (attachment) {
                 messageEvent.setUploadedAttachment(attachment);
@@ -1063,39 +863,20 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     res: Response | SocketResponse,
     workflowId?: string,
   ) {
-    // Web Channel messaging can be done through websockets or long-polling
+    if (!this.isSocketRequest(req)) {
+      this.logger.warn(
+        'Web channel over HTTP is no longer supported. Use Socket.IO transport.',
+      );
+
+      return res
+        .status(403)
+        .json({ err: 'Web Channel Handler : Unauthorized!' });
+    }
+
     try {
       await this.ensureValidCors(req, res);
       if (req.method === 'GET') {
-        if (!this.isSocketRequest(req) && req.query._get) {
-          const settings = await this.getSettings();
-          switch (req.query._get) {
-            case 'settings':
-              this.logger.debug('connected .. sending settings');
-              try {
-                const menu = await this.menuService.getTree();
-
-                return res.status(200).json({
-                  menu,
-                  server_date: new Date().toISOString(),
-                  ...settings,
-                });
-              } catch (err) {
-                this.logger.warn('Unable to retrieve menu ', err);
-
-                return res.status(500).json({ err: 'Unable to retrieve menu' });
-              }
-            case 'polling':
-              // Handle polling when user is not connected via websocket
-              return this.getMessageQueue(req, res as Response);
-            default:
-              this.logger.error('Webhook received unknown command');
-
-              return res
-                .status(500)
-                .json({ err: 'Webhook received unknown command' });
-          }
-        } else if (req.query._disconnect) {
+        if (req.query._disconnect) {
           req.session.web = undefined;
 
           return res.status(200).json({ _disconnect: true });
@@ -1139,12 +920,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     content: any,
     excludedRooms: string[] = [],
   ): void {
-    const channelData = subscriber.channel;
-    if (channelData.data?.isSocket) {
-      this.websocketGateway.broadcast(subscriber, type, content, excludedRooms);
-    } else {
-      // Do nothing, messages will be retrieved via polling
-    }
+    this.websocketGateway.broadcast(subscriber, type, content, excludedRooms);
   }
 
   /**
@@ -1282,37 +1058,5 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         attachment.id,
       );
     }
-  }
-
-  /**
-   * Web channel middleware
-   *
-   * @param req Express Request
-   * @param res Express Response
-   * @param next Callback function
-   */
-  async middleware(req: Request, res: Response, next: NextFunction) {
-    if (!this.isSocketRequest(req)) {
-      if (req.headers['content-type']?.includes('multipart/form-data')) {
-        // Handle multipart uploads (Long Pooling only)
-        return upload(req, res, next);
-      } else if (req.headers['content-type']?.includes('text/plain')) {
-        // Handle plain text payloads as JSON (retro-compatibility)
-        const textParser = bodyParser.text({ type: 'text/plain' });
-
-        return textParser(req, res, () => {
-          try {
-            req.body =
-              typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-            next();
-          } catch (err) {
-            next(err);
-          }
-        });
-      }
-    }
-
-    // Do nothing
-    next();
   }
 }

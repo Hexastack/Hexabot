@@ -5,13 +5,7 @@
  */
 
 import { HttpModule } from '@nestjs/axios';
-import {
-  forwardRef,
-  Global,
-  MiddlewareConsumer,
-  Module,
-  RequestMethod,
-} from '@nestjs/common';
+import { forwardRef, Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
@@ -21,7 +15,6 @@ import { CmsModule } from '@/cms/cms.module';
 import { WorkflowModule } from '@/workflow/workflow.module';
 
 import { ChannelController } from './channel.controller';
-import { ChannelMiddleware } from './channel.middleware';
 import { ChannelService } from './channel.service';
 import { ChannelAttachmentService } from './services/channel-attachment.service';
 import { ChannelDownloadService } from './services/channel-download.service';
@@ -53,10 +46,4 @@ export interface ChannelModuleOptions {
   providers: [ChannelService, ChannelAttachmentService, ChannelDownloadService],
   exports: [ChannelService],
 })
-export class ChannelModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(ChannelMiddleware)
-      .forRoutes({ path: 'webhook/*path', method: RequestMethod.ALL });
-  }
-}
+export class ChannelModule {}
