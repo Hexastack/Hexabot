@@ -12,7 +12,6 @@ import { Controller, useForm } from "react-hook-form";
 import { WithEntityButton } from "@/app-components/buttons/entities/WithEntityButton";
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntityDistinctSelect from "@/app-components/inputs/AutoCompleteEntityDistinctSelect";
-import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { isCountOrCollectionQuery } from "@/hooks/useEntityMutationSubscription";
 import { useToast } from "@/hooks/useToast";
@@ -30,8 +29,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const queryClient = useTanstackQueryClient();
-  const { mutateAsync: updateSubscriber } = useUpdate(EntityType.SUBSCRIBER, {
+  const { mutate: updateSubscriber } = useUpdate(EntityType.SUBSCRIBER, {
     onError: () => {
       rest.onError?.();
       toast.error(t("message.internal_server_error"));
@@ -47,15 +45,19 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
     formState: { errors },
     handleSubmit,
   } = useForm<ISubscriberAttributes>();
-  const onSubmitForm = async (params: ISubscriberAttributes) => {
-    if (subscriber?.id) {
-      await updateSubscriber({ id: subscriber.id, params });
-
-      queryClient.refetchQueries({
-        predicate: ({ queryKey }) =>
-          isCountOrCollectionQuery(queryKey, EntityType.SUBSCRIBER),
-      });
-    }
+  const onSubmitForm = (params: ISubscriberAttributes) => {
+    if (subscriber?.id)
+      updateSubscriber(
+        { id: subscriber.id, params },
+        {
+          onSuccess(_d, _v, _o, context) {
+            context.client.refetchQueries({
+              predicate: ({ queryKey }) =>
+                isCountOrCollectionQuery(queryKey, EntityType.SUBSCRIBER),
+            });
+          },
+        },
+      );
   };
 
   useEffect(() => {
