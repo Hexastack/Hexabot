@@ -10,22 +10,26 @@ import { stringify } from "qs";
 import { useContext, useMemo } from "react";
 
 import { ApiClientContext } from "@/contexts/apiClient.context";
+import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
 import { useTranslate } from "@/hooks/useTranslate";
 import { ApiClient, EntityApiClient } from "@/services/api.class";
 import { QueryType, TMutationOptions } from "@/services/types";
 import { THook } from "@/types/base.types";
 import { isLoginPath } from "@/utils/URL";
 
+import { useAuthRedirection } from "./auth/useAuthRedirection";
 import { useTanstackMutation, useTanstackQuery } from "./crud/useTanstack";
-import { useLogoutRedirection } from "./useAuth";
+import { useAppRouter } from "./useAppRouter";
 import { useConfig } from "./useConfig";
 import { useToast } from "./useToast";
 
 export const useAxiosInstance = () => {
   const { apiUrl } = useConfig();
-  const { logoutRedirection } = useLogoutRedirection();
+  const router = useAppRouter();
+  const { logoutRedirection } = useAuthRedirection();
   const { toast } = useToast();
   const { i18n, t } = useTranslate();
+  const { postMessage } = useBroadcastChannel();
   const axiosInstance = useMemo(() => {
     const instance = axios.create({
       baseURL: apiUrl,
@@ -70,14 +74,9 @@ export const useAxiosInstance = () => {
           return Promise.reject(new Error("Network error"));
         }
 
-        if (
-          error.response.status === 401 &&
-          !isLoginPath(window.location.pathname)
-        ) {
-          await logoutRedirection(
-            `${window.location.pathname}${window.location.search}`,
-            true,
-          );
+        if (error.response.status === 401 && !isLoginPath(router.pathname)) {
+          await logoutRedirection(router.asPath, true);
+          postMessage({ event: "logout" });
         }
 
         return Promise.reject(error.response.data);

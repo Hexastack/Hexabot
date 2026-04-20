@@ -6,7 +6,6 @@
 
 import { matchPath } from "react-router-dom";
 
-import { PUBLIC_PATHS } from "@/hooks/useAuth";
 import { RouterType } from "@/services/types";
 
 export const buildURL = (baseUrl: string, relativePath: string): string => {
@@ -82,6 +81,8 @@ export const isLoginPath = (pathname: string) => {
     ? true
     : false;
 };
+
+const PUBLIC_PATHS = ["/login", "/login/:token", "/reset", "/reset/:token"];
 
 export const hasPublicPath = (pathname: string) => {
   const normalizedPath = normalizePath(pathname);

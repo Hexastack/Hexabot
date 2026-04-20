@@ -7,7 +7,9 @@
 import { createContext, ReactNode } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
-import { useLoadSettings } from "@/hooks/entities/auth-hooks";
+import { useFind } from "@/hooks/crud/useFind";
+import { useAuth } from "@/hooks/useAuth";
+import { EntityType } from "@/services/types";
 import { ISetting } from "@/types/setting.types";
 
 export const SettingsContext = createContext<{
@@ -19,6 +21,32 @@ SettingsContext.displayName = "SettingsContext";
 interface SettingsProviderProps {
   children: ReactNode;
 }
+
+export const useLoadSettings = () => {
+  const { isAuthenticated } = useAuth();
+  const { data: settings, ...rest } = useFind(
+    { entity: EntityType.SETTING },
+    {
+      hasCount: false,
+    },
+    {
+      enabled: isAuthenticated,
+    },
+  );
+
+  return {
+    ...rest,
+    data:
+      settings?.reduce((acc, curr) => {
+        const group = acc[curr.group] || [];
+
+        group.push(curr);
+        acc[curr.group] = group;
+
+        return acc;
+      }, {}) || {},
+  };
+};
 
 export const SettingsProvider = ({
   children,
