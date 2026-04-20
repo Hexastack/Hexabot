@@ -458,6 +458,66 @@ describe('WebChannelHandler', () => {
     emitAsyncSpy.mockRestore();
   });
 
+  it('rehydrates a missing web session from message author foreign id', async () => {
+    const subscriber =
+      await subscriberService.findOneByForeignIdAndPopulate('foreign-id-web-1');
+    if (!subscriber) {
+      throw new Error('Expected fixture subscriber "foreign-id-web-1"');
+    }
+
+    const req = {
+      isSocket: true,
+      query: {},
+      session: {},
+      headers: { 'user-agent': 'browser' },
+      socket: {
+        handshake: { address: '127.0.0.1' },
+      },
+      body: {
+        type: 'text',
+        author: subscriber.foreignId,
+        data: {
+          text: 'Recover my session',
+        },
+      },
+      user: {},
+    } as any as SocketRequest;
+    const emitAsyncSpy = jest
+      .spyOn(handler['eventEmitter'], 'emitAsync')
+      .mockResolvedValue([]);
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timed out waiting for recovered-session response'));
+      }, 2000);
+      const res = {
+        status: (code: number) => {
+          expect(code).toEqual(200);
+
+          return res;
+        },
+        json: (payload: any) => {
+          clearTimeout(timeout);
+          expect(payload).toEqual(
+            expect.objectContaining({
+              type: 'text',
+            }),
+          );
+          resolve();
+        },
+      } as any as SocketResponse;
+
+      handler['handleEvent'](req as any, res);
+    });
+
+    expect(req.session.web?.profile?.id).toBe(subscriber.id);
+    expect(emitAsyncSpy).toHaveBeenCalledWith(
+      'hook:chatbot:message',
+      expect.anything(),
+    );
+    emitAsyncSpy.mockRestore();
+  });
+
   it('broadcasts incoming user messages before async handlers finish', async () => {
     websocketGatewayMock.broadcast.mockClear();
     const req = {

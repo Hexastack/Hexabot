@@ -467,19 +467,53 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * @param req
    * @param res
    */
-  private validateSession(
+  private async validateSession(
     req: SocketRequest,
     res: Response | SocketResponse,
-    next: <S extends Subscriber>(profile: S) => void,
-  ) {
-    if (!req.session.web?.profile?.id) {
-      this.logger.warn('No session ID to be found!', req.session);
-
-      return res
-        .status(403)
-        .json({ err: 'Web Channel Handler : Unauthorized!' });
+  ): Promise<Subscriber | null> {
+    if (req.session.web?.profile?.id) {
+      return req.session.web.profile;
     }
-    next(req.session.web?.profile);
+
+    const body = req.body as { author?: unknown; data?: unknown } | undefined;
+    const authorForeignId =
+      typeof body?.author === 'string' && body.author.trim().length > 0
+        ? body.author.trim()
+        : undefined;
+
+    if (authorForeignId) {
+      try {
+        const subscriber =
+          await this.subscriberService.findOneByForeignId(authorForeignId);
+        if (subscriber) {
+          const thread = await this.threadService.resolveThread({
+            subscriberId: subscriber.id,
+            explicitThreadId:
+              this.getThreadIdFromBody(req) ?? this.getThreadIdFromQuery(req),
+          });
+          req.session.web = {
+            profile: subscriber,
+            threadId: thread?.id,
+          };
+
+          this.logger.debug(
+            `Recovered missing web session from author ${authorForeignId}`,
+          );
+
+          return subscriber;
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Unable to recover missing session from author ${authorForeignId}`,
+          error,
+        );
+      }
+    }
+
+    this.logger.warn('No session ID to be found!', req.session);
+    res.status(403).json({ err: 'Web Channel Handler : Unauthorized!' });
+
+    return null;
   }
 
   /**
@@ -678,11 +712,11 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * @param req Either a HTTP Express request or a WS request (Synthetic Object)
    * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
-  handleEvent(
+  async handleEvent(
     req: SocketRequest,
     res: Response | SocketResponse,
     workflowId?: string,
-  ): void {
+  ): Promise<void> {
     if (!req.body) {
       this.logger.debug('Empty body');
       res.status(400).json({ err: 'Web Channel Handler : Bad Request!' });
@@ -701,145 +735,144 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           : payload.data;
     }
 
-    this.validateSession(req, res, async (profile) => {
-      const channelAttrs = this.getChannelAttributes(req);
-      let events: Array<
+    const profile = await this.validateSession(req, res);
+    if (!profile) {
+      return;
+    }
+    const channelAttrs = this.getChannelAttributes(req);
+    let events: Array<
+      BaseWebInboundEvent<N> | WebMessageInboundEvent<N, Web.InboundMessage>
+    >;
+    try {
+      events = this.inboundEventDecoder.createEvents(
+        req.body,
+        channelAttrs,
+      ) as Array<
         BaseWebInboundEvent<N> | WebMessageInboundEvent<N, Web.InboundMessage>
       >;
-      try {
-        events = this.inboundEventDecoder.createEvents(
-          req.body,
-          channelAttrs,
-        ) as Array<
-          BaseWebInboundEvent<N> | WebMessageInboundEvent<N, Web.InboundMessage>
+    } catch (err) {
+      this.logger.warn('Invalid event payload', err);
+
+      return void res
+        .status(400)
+        .json({ err: 'Web Channel Handler : Bad Request!' });
+    }
+
+    if (!events.length) {
+      return void res
+        .status(400)
+        .json({ err: 'Web Channel Handler : Bad Request!' });
+    }
+
+    const explicitThreadId =
+      this.getThreadIdFromBody(req) ??
+      this.getThreadIdFromQuery(req) ??
+      req.session.web?.threadId;
+    const responseBody = events[0].getRaw();
+
+    for (const event of events) {
+      event.setHandler(this);
+      if (explicitThreadId) {
+        event.setThreadId(explicitThreadId);
+      }
+      event.setInitiator(profile);
+      event.setWorkflowId(workflowId);
+
+      if (event.getEventType() === StdEventType.message) {
+        const messageEvent = event as WebMessageInboundEvent<
+          N,
+          Web.InboundMessage
         >;
-      } catch (err) {
-        this.logger.warn('Invalid event payload', err);
 
-        return res
-          .status(400)
-          .json({ err: 'Web Channel Handler : Bad Request!' });
-      }
+        // Handle upload when files are provided
+        if (messageEvent instanceof AttachmentMessageInboundEvent) {
+          try {
+            const attachment = await this.handleUpload(req);
 
-      if (!events.length) {
-        return res
-          .status(400)
-          .json({ err: 'Web Channel Handler : Bad Request!' });
-      }
+            if (attachment) {
+              messageEvent.setUploadedAttachment(attachment);
+              messageEvent.setUploadedRawData(
+                AttachmentOrmEntity.getTypeByMime(attachment.type),
+                await this.channelAttachmentService.getPublicUrl(
+                  this.getName(),
+                  attachment,
+                ),
+              );
+            }
+          } catch (err) {
+            this.logger.warn('Unable to upload file ', err);
 
-      const explicitThreadId =
-        this.getThreadIdFromBody(req) ??
-        this.getThreadIdFromQuery(req) ??
-        req.session.web?.threadId;
-      const responseBody = events[0].getRaw();
-
-      for (const event of events) {
-        event.setHandler(this);
-        if (explicitThreadId) {
-          event.setThreadId(explicitThreadId);
+            return void res
+              .status(403)
+              .json({ err: 'Web Channel Handler : File upload failed!' });
+          }
         }
-        event.setInitiator(profile);
-        event.setWorkflowId(workflowId);
 
-        if (event.getEventType() === StdEventType.message) {
-          const messageEvent = event as WebMessageInboundEvent<
-            N,
-            Web.InboundMessage
-          >;
-
-          // Handle upload when files are provided
-          if (messageEvent instanceof AttachmentMessageInboundEvent) {
-            try {
-              const attachment = await this.handleUpload(req);
-
-              if (attachment) {
-                messageEvent.setUploadedAttachment(attachment);
-                messageEvent.setUploadedRawData(
-                  AttachmentOrmEntity.getTypeByMime(attachment.type),
-                  await this.channelAttachmentService.getPublicUrl(
-                    this.getName(),
-                    attachment,
-                  ),
-                );
-              }
-            } catch (err) {
-              this.logger.warn('Unable to upload file ', err);
-
-              return res
-                .status(403)
-                .json({ err: 'Web Channel Handler : File upload failed!' });
-            }
-          }
-
-          // Handle sync message sent by chatbot
-          if (messageEvent.isSyncFromChatbot()) {
-            const thread = await this.threadService.resolveThread({
-              subscriberId: profile.id,
-              explicitThreadId,
+        // Handle sync message sent by chatbot
+        if (messageEvent.isSyncFromChatbot()) {
+          const thread = await this.threadService.resolveThread({
+            subscriberId: profile.id,
+            explicitThreadId,
+          });
+          if (!thread) {
+            return void res.status(409).json({
+              err: 'Web Channel Handler : No thread available before first user message',
             });
-            if (!thread) {
-              return res.status(409).json({
-                err: 'Web Channel Handler : No thread available before first user message',
-              });
-            }
-
-            messageEvent.setThreadId(thread.id);
-            if (req.session.web) {
-              req.session.web.threadId = thread.id;
-            }
-            const sentMessage: MessageCreateDto = {
-              mid: messageEvent.getId(),
-              message: messageEvent.getMessage() as StdOutgoingMessage,
-              recipient: profile.id,
-              thread: thread.id,
-              read: true,
-              delivery: true,
-            };
-            this.eventEmitter.emit(
-              'hook:chatbot:sent',
-              sentMessage,
-              messageEvent,
-            );
-
-            continue;
           }
 
-          // Generate unique ID and handle message
-          messageEvent.setMessageId(this.generateId());
-          // Force author id from session
-          messageEvent.setAuthorForeignId(profile.foreignId);
-          // Use a server-side timestamp so realtime clients can sort deterministically.
-          messageEvent.setCreatedAt(new Date());
-
-          this.broadcast(profile, StdEventType.message, messageEvent.getRaw());
-          await this.eventEmitter.emitAsync(
-            'hook:chatbot:message',
+          messageEvent.setThreadId(thread.id);
+          if (req.session.web) {
+            req.session.web.threadId = thread.id;
+          }
+          const sentMessage: MessageCreateDto = {
+            mid: messageEvent.getId(),
+            message: messageEvent.getMessage() as StdOutgoingMessage,
+            recipient: profile.id,
+            thread: thread.id,
+            read: true,
+            delivery: true,
+          };
+          this.eventEmitter.emit(
+            'hook:chatbot:sent',
+            sentMessage,
             messageEvent,
           );
-          const resolvedThreadId = messageEvent.getThreadId();
-
-          if (resolvedThreadId) {
-            messageEvent.setThreadIdOnRaw(resolvedThreadId);
-            if (req.session.web) {
-              req.session.web.threadId = resolvedThreadId;
-            }
-          }
 
           continue;
         }
 
-        const type = event.getEventType();
-        const threadId = event.getThreadId();
+        // Generate unique ID and handle message
+        messageEvent.setMessageId(this.generateId());
+        // Force author id from session
+        messageEvent.setAuthorForeignId(profile.foreignId);
+        // Use a server-side timestamp so realtime clients can sort deterministically.
+        messageEvent.setCreatedAt(new Date());
 
-        if (threadId) {
-          event.setThreadIdOnRaw(threadId);
+        this.broadcast(profile, StdEventType.message, messageEvent.getRaw());
+        await this.eventEmitter.emitAsync('hook:chatbot:message', messageEvent);
+        const resolvedThreadId = messageEvent.getThreadId();
+
+        if (resolvedThreadId) {
+          messageEvent.setThreadIdOnRaw(resolvedThreadId);
+          if (req.session.web) {
+            req.session.web.threadId = resolvedThreadId;
+          }
         }
-        this.broadcast(profile, type, event.getRaw());
-        this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+
+        continue;
       }
 
-      res.status(200).json(responseBody);
-    });
+      const type = event.getEventType();
+      const threadId = event.getThreadId();
+
+      if (threadId) {
+        event.setThreadIdOnRaw(threadId);
+      }
+      this.broadcast(profile, type, event.getRaw());
+      this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+    }
+
+    res.status(200).json(responseBody);
   }
 
   /**

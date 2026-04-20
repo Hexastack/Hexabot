@@ -76,4 +76,19 @@ describe("ConfigProvider", () => {
     expect(probeNode?.getAttribute("data-primary")).toBe("#111827");
     expect(probeNode?.getAttribute("data-transport")).toBe("ws");
   });
+
+  it("falls back to ws transport when transport is not provided", async () => {
+    await act(async () => {
+      root = createRoot(container);
+      root.render(
+        <ConfigProvider>
+          <ConfigProbe />
+        </ConfigProvider>,
+      );
+    });
+
+    const probeNode = container.querySelector("[data-config-probe='1']");
+
+    expect(probeNode?.getAttribute("data-transport")).toBe("ws");
+  });
 });
