@@ -621,7 +621,14 @@
     "license_badge_starter": "Abonnement Starter",
     "license_badge_pro": "Abonnement PRO",
     "license_badge_unlimited": "Édition UNLIMITED",
-    "workflow_run_debugger": "Débogueur d’exécution de workflow"
+    "workflow_run_debugger": "Débogueur d’exécution de workflow",
+    "workflow_run_status": {
+      "failed": "Échouée",
+      "finished": "Terminée",
+      "idle": "Inactive",
+      "running": "En cours d'exécution",
+      "suspended": "Suspendue"
+    }
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",

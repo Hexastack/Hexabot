@@ -618,7 +618,14 @@
     "license_badge_starter": "Starter Membership",
     "license_badge_pro": "PRO Membership",
     "license_badge_unlimited": "UNLIMITED Edition",
-    "workflow_run_debugger": "Workflow Run Debugger"
+    "workflow_run_debugger": "Workflow Run Debugger",
+    "workflow_run_status": {
+      "failed": "Failed",
+      "finished": "Finished",
+      "idle": "Idle",
+      "running": "Running",
+      "suspended": "Suspended"
+    }
   },
   "placeholder": {
     "your_username": "Your username",
