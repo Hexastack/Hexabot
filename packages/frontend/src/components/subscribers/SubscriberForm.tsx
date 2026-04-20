@@ -12,7 +12,9 @@ import { Controller, useForm } from "react-hook-form";
 import { WithEntityButton } from "@/app-components/buttons/entities/WithEntityButton";
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntityDistinctSelect from "@/app-components/inputs/AutoCompleteEntityDistinctSelect";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { isCountOrCollectionQuery } from "@/hooks/useEntityMutationSubscription";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -28,7 +30,8 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutate: updateSubscriber } = useUpdate(EntityType.SUBSCRIBER, {
+  const queryClient = useTanstackQueryClient();
+  const { mutateAsync: updateSubscriber } = useUpdate(EntityType.SUBSCRIBER, {
     onError: () => {
       rest.onError?.();
       toast.error(t("message.internal_server_error"));
@@ -44,9 +47,14 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
     formState: { errors },
     handleSubmit,
   } = useForm<ISubscriberAttributes>();
-  const onSubmitForm = (params: ISubscriberAttributes) => {
+  const onSubmitForm = async (params: ISubscriberAttributes) => {
     if (subscriber?.id) {
-      updateSubscriber({ id: subscriber.id, params });
+      await updateSubscriber({ id: subscriber.id, params });
+
+      queryClient.refetchQueries({
+        predicate: ({ queryKey }) =>
+          isCountOrCollectionQuery(queryKey, EntityType.SUBSCRIBER),
+      });
     }
   };
 
@@ -97,7 +105,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                             onChange(selected.map(({ id }) => id))
                           }
                           label={t("label.labels")}
-                          labelKey="name"
+                          labelKey="title"
                           sortKey="group"
                           groupKey="name"
                           defaultGroupTitle={t("title.default_group")}
