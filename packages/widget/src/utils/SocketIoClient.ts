@@ -24,7 +24,7 @@ type SocketIoEventHandlers = {
 
 const TRANSPORTS_BY_MODE: Record<
   ConfigTransport,
-  NonNullable<SocketOptions["transports"]>
+  NonNullable<ManagerOptions["transports"]>
 > = {
   ws: ["websocket"],
   polling: ["polling"],
@@ -32,7 +32,7 @@ const TRANSPORTS_BY_MODE: Record<
 
 export const resolveSocketIoTransports = (
   transport: ConfigTransport = "ws",
-): NonNullable<SocketOptions["transports"]> => {
+): NonNullable<ManagerOptions["transports"]> => {
   return TRANSPORTS_BY_MODE[transport];
 };
 
