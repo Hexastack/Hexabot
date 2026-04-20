@@ -15,7 +15,6 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 
-import { useLogin } from "@/hooks/entities/auth-hooks";
 import { useApiClientMutation } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -39,18 +38,8 @@ export const Login = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const router = useAppRouter();
-  const { authenticate } = useAuth();
-  const { mutate: login, isPending } = useLogin({
-    onSuccess: (data) => {
-      if (data.state) authenticate(data);
-      else {
-        toast.error(t("message.account_disabled"));
-      }
-    },
-    onError() {
-      toast.error(t("message.login_failure"));
-    },
-  });
+  const { loginMutation } = useAuth();
+  const { mutate: login, isPending } = loginMutation;
   const { mutate: confirmAccount } = useApiClientMutation("confirmAccount", {
     onSuccess: () => {
       toast.success(t("message.reset_confirm_success"));
@@ -79,7 +68,7 @@ export const Login = () => {
     },
   };
   const onSubmitForm = (data: ILoginAttributes) => {
-    login(data);
+    login([data]);
   };
 
   useEffect(() => {

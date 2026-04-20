@@ -24,11 +24,12 @@ export class AppController {
 
   @Roles('public')
   @Get('config')
-  getConfig() {
+  getConfig(@Req() req: Request) {
     return {
       apiUrl: config.apiBaseUrl,
       ssoEnabled: config.ssoEnabled,
       maxUploadSize: config.parameters.maxUploadSize,
+      hasUserSession: !!req.session.passport?.user,
     };
   }
 

@@ -19,7 +19,6 @@ export const useSubscribeBroadcastChannel = (
   const { subscribe } = useBroadcastChannel();
 
   useEffect(() => {
-    subscribe(event, callback);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subscribe]);
+    return subscribe(event, callback);
+  }, [callback, event, subscribe]);
 };

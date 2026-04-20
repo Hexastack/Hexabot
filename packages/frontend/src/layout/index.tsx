@@ -25,10 +25,12 @@ export type LayoutProps = IContentPaddingProps & {
 };
 export const Layout: React.FC<LayoutProps> = ({ children, ...rest }) => {
   const { isAuthenticated } = useAuth();
+  const publicContent = rest.isPublicRoute ? children : <></>;
+  const protectedContent = rest.isPublicRoute ? <></> : children;
 
   return isAuthenticated ? (
-    <AuthenticatedLayout {...rest}>{children}</AuthenticatedLayout>
+    <AuthenticatedLayout {...rest}>{protectedContent}</AuthenticatedLayout>
   ) : (
-    <AnonymousLayout {...rest}>{children}</AnonymousLayout>
+    <AnonymousLayout {...rest}>{publicContent}</AnonymousLayout>
   );
 };

@@ -10,13 +10,11 @@ import React from "react";
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { DashboardHeader } from "@/app-components/menus/DashboardSidebar/DashboardHeader";
 import { DashboardSidebar } from "@/app-components/menus/DashboardSidebar/DashboardSidebar";
-import { useAppRouter } from "@/hooks/useAppRouter";
+import { useAuthRedirection } from "@/hooks/auth/useAuthRedirection";
 import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
 import { useConfig } from "@/hooks/useConfig";
 import { useEntityMutationSubscription } from "@/hooks/useEntityMutationSubscription";
-import { RouterType } from "@/services/types";
 import { getMenuItems } from "@/utils/menu.util";
-import { hasPublicPath, isLoginPath } from "@/utils/URL";
 import { useSocketGetQuery } from "@/websocket/socket-hooks";
 
 import { LayoutProps } from ".";
@@ -47,26 +45,16 @@ export const AuthenticatedLayout: React.FC<
   const { ssoEnabled } = useConfig();
   const menuItems = getMenuItems(ssoEnabled);
   const availableMenuItems = useAvailableMenuItems(menuItems);
-  const router = useAppRouter();
-  const authRedirection = async () => {
-    if (isLoginPath(router.pathname)) {
-      const rawRedirect = router.query.redirect;
-      const redirectUrl = Array.isArray(rawRedirect)
-        ? rawRedirect.at(-1)
-        : rawRedirect;
+  const { loginRedirection } = useAuthRedirection();
 
-      if (redirectUrl?.startsWith("/") && !hasPublicPath(redirectUrl)) {
-        return await router.push(redirectUrl);
-      }
+  React.useEffect(() => {
+    if (isPublicRoute) {
+      void loginRedirection();
     }
-
-    await router.push(RouterType.HOME);
-  };
+  }, [isPublicRoute, loginRedirection]);
 
   if (isPublicRoute) {
-    authRedirection();
-
-    return;
+    return null;
   }
 
   return (

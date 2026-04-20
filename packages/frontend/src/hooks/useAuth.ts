@@ -7,17 +7,6 @@
 import { useContext } from "react";
 
 import { AuthContext } from "@/contexts/auth.context";
-import { RouterType } from "@/services/types";
-import { hasPublicPath } from "@/utils/URL";
-
-import { useAppRouter } from "./useAppRouter";
-
-export const PUBLIC_PATHS = [
-  "/login",
-  "/login/:token",
-  "/reset",
-  "/reset/:token",
-];
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -27,26 +16,4 @@ export const useAuth = () => {
   }
 
   return context;
-};
-
-export const useLogoutRedirection = () => {
-  const router = useAppRouter();
-  const logoutRedirection = async (
-    pathname: string,
-    fullReload: boolean = false,
-  ) => {
-    if (!hasPublicPath(pathname)) {
-      const redirectUrl = `/${RouterType.LOGIN}?redirect=${encodeURIComponent(
-        pathname,
-      )}`;
-
-      if (fullReload) {
-        window.location.replace(redirectUrl);
-      } else {
-        await router.replace(redirectUrl);
-      }
-    }
-  };
-
-  return { logoutRedirection };
 };

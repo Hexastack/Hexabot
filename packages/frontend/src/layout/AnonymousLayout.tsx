@@ -5,10 +5,10 @@
  */
 
 import Grid from "@mui/material/Grid";
+import { useEffect } from "react";
 
+import { useAuthRedirection } from "@/hooks/auth/useAuthRedirection";
 import { useAppRouter } from "@/hooks/useAppRouter";
-import { useLogoutRedirection } from "@/hooks/useAuth";
-import { isLoginPath } from "@/utils/URL";
 
 import { LayoutProps } from ".";
 
@@ -18,16 +18,17 @@ import { Header } from "./Header";
 export const AnonymousLayout: React.FC<LayoutProps> = ({
   children,
   sxContent,
+  isPublicRoute,
   ...rest
 }) => {
-  const { logoutRedirection } = useLogoutRedirection();
   const router = useAppRouter();
+  const { logoutRedirection } = useAuthRedirection();
 
-  if (!rest.isPublicRoute && !isLoginPath(router.pathname)) {
-    logoutRedirection(router.pathname);
-
-    return;
-  }
+  useEffect(() => {
+    if (!isPublicRoute) {
+      void logoutRedirection(router.asPath);
+    }
+  }, [isPublicRoute, logoutRedirection, router.asPath]);
 
   return (
     <Grid container>

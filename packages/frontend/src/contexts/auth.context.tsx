@@ -4,27 +4,52 @@
  * Full terms: see LICENSE.md.
  */
 
-import { createContext } from "react";
+import { UseMutationResult } from "@tanstack/react-query";
+import { createContext, Dispatch, SetStateAction } from "react";
 
-import { UseMutateFunction } from "@/types/tanstack.types";
+import { ILoginAttributes } from "@/types/auth/login.types";
 import { IUser } from "@/types/user.types";
 
 export interface AuthContextValue {
   user: IUser | undefined;
   isAuthenticated: boolean;
-  authenticate: (user: IUser) => void;
   refetchUser: () => Promise<IUser | undefined>;
-  logout: UseMutateFunction;
+  loginMutation: UseMutationResult<
+    IUser,
+    Error,
+    [payload: ILoginAttributes],
+    unknown
+  >;
+  logoutMutation: UseMutationResult<
+    {
+      status: "ok";
+    },
+    Error,
+    [],
+    unknown
+  >;
   error: Error | null;
+  setIsAuthenticated: Dispatch<SetStateAction<boolean>>;
 }
 
 export const AuthContext = createContext<AuthContextValue>({
   user: undefined,
   isAuthenticated: false,
-  authenticate: () => {},
   refetchUser: async () => undefined,
-  logout: () => {},
+  loginMutation: {} as UseMutationResult<
+    IUser,
+    Error,
+    [payload: ILoginAttributes],
+    unknown
+  >,
+  logoutMutation: {} as UseMutationResult<
+    {
+      status: "ok";
+    },
+    Error,
+    [],
+    unknown
+  >,
   error: null,
+  setIsAuthenticated: () => {},
 });
-
-AuthContext.displayName = "AuthContext";

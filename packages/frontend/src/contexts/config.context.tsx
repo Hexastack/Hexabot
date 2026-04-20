@@ -20,6 +20,7 @@ const defaultConfig: IConfig = {
     import.meta.env.VITE_UPLOAD_MAX_SIZE_IN_BYTES,
     20 * MB,
   ),
+  hasUserSession: false,
 };
 
 export const ConfigContext = createContext<IConfig | null>(defaultConfig);
@@ -28,6 +29,7 @@ export interface IConfig {
   apiUrl: string;
   ssoEnabled: boolean;
   maxUploadSize: number;
+  hasUserSession: boolean;
 }
 
 let timer;
