@@ -99,7 +99,7 @@ type QueryParams = {
   where?: Record<string, unknown>;
 };
 // Matches count/collection queries for the targeted entity.
-const isCountOrCollectionQuery = (
+export const isCountOrCollectionQuery = (
   queryKey: readonly unknown[],
   entity: EntityType,
 ) => {

@@ -18,7 +18,7 @@ import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { UuidParam } from '@/utils';
+import { TFilterNestedKeysOfType, UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { generateInitialsAvatar } from '@/utils/helpers/avatar';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -31,6 +31,16 @@ import {
 } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { SubscriberService } from '../services/subscriber.service';
+
+export const SUBSCRIBER_ALLOWED_FILTER_FIELDS: TFilterNestedKeysOfType<SubscriberOrmEntity>[] =
+  [
+    'firstName',
+    'lastName',
+    'assignedTo.id',
+    'channel.name',
+    // TODO : type need to be enhanced to include 'labels'
+    'labels' as any,
+  ];
 
 @Controller('subscriber')
 export class SubscriberController extends BaseOrmController<SubscriberOrmEntity> {
@@ -56,14 +66,7 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
     @Query(
       new TypeOrmSearchFilterPipe<SubscriberOrmEntity>({
         // TODO : Check if the field email should be added to Subscriber schema
-        allowedFields: [
-          'firstName',
-          'lastName',
-          'assignedTo.id',
-          'channel.name',
-          // TODO : type need to be enhanced to include 'labels'
-          'labels' as any,
-        ],
+        allowedFields: SUBSCRIBER_ALLOWED_FILTER_FIELDS,
         defaultSort: ['createdAt', 'desc'],
       }),
     )
@@ -82,12 +85,7 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
   async filterCount(
     @Query(
       new TypeOrmSearchFilterPipe<SubscriberOrmEntity>({
-        allowedFields: [
-          'firstName',
-          'lastName',
-          'assignedTo.id',
-          'channel.name',
-        ],
+        allowedFields: SUBSCRIBER_ALLOWED_FILTER_FIELDS,
       }),
     )
     options: FindManyOptions<SubscriberOrmEntity> = {},

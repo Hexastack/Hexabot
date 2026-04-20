@@ -13,6 +13,7 @@ import { WithEntityButton } from "@/app-components/buttons/entities/WithEntityBu
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntityDistinctSelect from "@/app-components/inputs/AutoCompleteEntityDistinctSelect";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { isCountOrCollectionQuery } from "@/hooks/useEntityMutationSubscription";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -45,9 +46,18 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
     handleSubmit,
   } = useForm<ISubscriberAttributes>();
   const onSubmitForm = (params: ISubscriberAttributes) => {
-    if (subscriber?.id) {
-      updateSubscriber({ id: subscriber.id, params });
-    }
+    if (subscriber?.id)
+      updateSubscriber(
+        { id: subscriber.id, params },
+        {
+          onSuccess(_d, _v, _o, context) {
+            context.client.refetchQueries({
+              predicate: ({ queryKey }) =>
+                isCountOrCollectionQuery(queryKey, EntityType.SUBSCRIBER),
+            });
+          },
+        },
+      );
   };
 
   useEffect(() => {
@@ -97,7 +107,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                             onChange(selected.map(({ id }) => id))
                           }
                           label={t("label.labels")}
-                          labelKey="name"
+                          labelKey="title"
                           sortKey="group"
                           groupKey="name"
                           defaultGroupTitle={t("title.default_group")}
