@@ -64,7 +64,7 @@ type EntityFilterType = Omit<
 };
 
 export type Filter = ({
-  typeInfo?: Record<any, Omit<FlowTypeInfo, "labelKey">>;
+  typeInfo?: Record<any, FlowTypeInfo>;
   defaultOption?: BadgeWithTitleProps & { defaultValue?: string };
 } & EntityField[keyof EntityField]) &
   (EnumFilterType | EntityFilterType);

@@ -23,34 +23,36 @@ import { WorkflowType } from "@/types/workfow.types";
 import type { FlowTypeInfo } from "../components/visual-editor/v4/components/main/FlowsDrawer/types";
 import { WORKFLOW_STEP_GRAPH_THEME } from "../components/visual-editor/v4/constants/workflow-graph-theme.constants";
 
-export const WORKFLOW_STATUS: Record<
-  EWorkflowRunStatus,
-  Omit<FlowTypeInfo, "labelKey">
-> = {
+export const WORKFLOW_STATUS: Record<EWorkflowRunStatus, FlowTypeInfo> = {
   [EWorkflowRunStatus.FAILED]: {
     key: WorkflowType.conversational,
     icon: X,
     color: theme.palette.error.main,
+    labelKey: "label.workflow_run_status.failed",
   },
   [EWorkflowRunStatus.FINISHED]: {
     key: WorkflowType.conversational,
     icon: Check,
     color: theme.palette.success.main,
+    labelKey: "label.workflow_run_status.finished",
   },
   [EWorkflowRunStatus.IDLE]: {
     key: WorkflowType.conversational,
     icon: WORKFLOW_STEP_GRAPH_THEME.Icon,
     color: WORKFLOW_STEP_GRAPH_THEME.color,
+    labelKey: "label.workflow_run_status.idle",
   },
   [EWorkflowRunStatus.RUNNING]: {
     key: WorkflowType.conversational,
     icon: Play,
     color: theme.palette.success.main,
+    labelKey: "label.workflow_run_status.running",
   },
   [EWorkflowRunStatus.SUSPENDED]: {
     key: WorkflowType.conversational,
     icon: Pause,
     color: theme.palette.warning.main,
+    labelKey: "label.workflow_run_status.suspended",
   },
 };
 

@@ -7,6 +7,9 @@
 import { Box, Tooltip, Typography } from "@mui/material";
 import { LoaderCircle, LucideIcon } from "lucide-react";
 
+import { useTranslate } from "@/hooks/useTranslate";
+import { TTranslationKeys } from "@/i18n/i18n.types";
+
 export type BadgeWithTitleProps = {
   title?: string;
   icon?: LucideIcon;
@@ -18,16 +21,19 @@ export type BadgeWithTitleProps = {
   disableTooltip?: boolean;
   padding?: string;
   isLoading?: boolean;
+  labelKey?: TTranslationKeys;
 };
 
 export const BadgeWithTitle = ({ title, ...rest }: BadgeWithTitleProps) => {
+  const { t } = useTranslate();
+
   return (
     <Box gap={1} display="flex" alignItems="stretch">
       <Box display="flex" alignItems="center" justifyContent="center">
         <Badge {...rest} />
       </Box>
       <Typography variant="subtitle2" textTransform="capitalize">
-        {title}
+        {rest.labelKey ? t(rest.labelKey, { defaultValue: title }) : title}
       </Typography>
     </Box>
   );
