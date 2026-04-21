@@ -622,7 +622,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       const { type, data } = req.body as Web.InboundMessage;
 
       if (!req.session.web?.profile?.id) {
-        this.logger.debug('No session');
+        this.logger.debug('No session provided');
 
         return null;
       }
@@ -656,26 +656,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       this.logger.error('Unable to store uploaded file', err);
       throw new Error('Unable to upload file!');
     }
-  }
-
-  /**
-   * Upload file as attachment if provided
-   *
-   * @param req The websocket request object.
-   * @returns A Promise that resolves to the uploaded Attachment, or `null` if no file is uploaded.
-   * @throws Error Propagated from underlying upload handlers.
-   */
-  async handleUpload(
-    req: SocketRequest,
-  ): Promise<Attachment | null | undefined> {
-    // Check if any file is provided
-    if (!req.session.web) {
-      this.logger.debug('No session provided');
-
-      return null;
-    }
-
-    return this.handleWsUpload(req);
   }
 
   /**
@@ -787,7 +767,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         // Handle upload when files are provided
         if (messageEvent instanceof AttachmentMessageInboundEvent) {
           try {
-            const attachment = await this.handleUpload(req);
+            const attachment = await this.handleWsUpload(req);
 
             if (attachment) {
               messageEvent.setUploadedAttachment(attachment);
