@@ -11,10 +11,6 @@ import { printBanner } from './ui/banner.js';
 
 const cliArgs = process.argv.slice(2);
 
-if (process.env.HEXABOT_CLI !== '1') {
-  process.exit(0);
-}
-
 printBanner();
 checkPrerequisites({ silent: true });
 
