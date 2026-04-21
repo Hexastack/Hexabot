@@ -98,11 +98,7 @@ export const useWorkflowViewport = <TNode extends Node = Node>({
     [setViewport, viewportSyncKey],
   );
   const centerGraphAtCurrentZoom = useCallback(() => {
-    if (
-      graphNodes.length === 0 ||
-      workflowWidth <= 0 ||
-      workflowHeight <= 0
-    ) {
+    if (graphNodes.length === 0 || workflowWidth <= 0 || workflowHeight <= 0) {
       return;
     }
 

@@ -138,6 +138,8 @@ describe("workflow-selection.utils", () => {
     };
 
     expect(isSameWorkflowSelection(baseSelection, sameSelection)).toBe(true);
-    expect(isSameWorkflowSelection(baseSelection, changedSelection)).toBe(false);
+    expect(isSameWorkflowSelection(baseSelection, changedSelection)).toBe(
+      false,
+    );
   });
 });

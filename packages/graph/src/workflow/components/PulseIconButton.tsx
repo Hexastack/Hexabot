@@ -16,7 +16,7 @@ type PulseIconButtonProps = Omit<
 export const PulseIconButton = ({
   size = 64,
   className,
-  type = 'button',
+  type = "button",
   style,
   ...props
 }: PulseIconButtonProps) => {
@@ -24,11 +24,11 @@ export const PulseIconButton = ({
     <button
       {...props}
       type={type}
-      className={`workflow-pulse-icon-button${className ? ` ${className}` : ''}`}
+      className={`workflow-pulse-icon-button${className ? ` ${className}` : ""}`}
       style={
         {
           ...style,
-          '--workflow-pulse-size': `${size}px`,
+          "--workflow-pulse-size": `${size}px`,
         } as CSSProperties
       }
     />

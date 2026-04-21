@@ -27,8 +27,7 @@ export const GenericNodeDeleteButton = () => {
     ownerBindingKind,
     bindingKind,
     bindingName,
-  } =
-    useWorkflowNode();
+  } = useWorkflowNode();
   const isStepRemovable =
     !!stepPath &&
     typeof type === "string" &&
@@ -49,7 +48,13 @@ export const GenericNodeDeleteButton = () => {
       if (isBindingRemovable) {
         const resolvedBindingKind = ownerBindingKind ?? bindingKind;
 
-        if (!stepPath || !stepId || !ownerDefName || !bindingName || !resolvedBindingKind) {
+        if (
+          !stepPath ||
+          !stepId ||
+          !ownerDefName ||
+          !bindingName ||
+          !resolvedBindingKind
+        ) {
           return;
         }
 

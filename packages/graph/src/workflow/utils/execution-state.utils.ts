@@ -31,8 +31,9 @@ export const resolveNodeExecutionState = ({
   stepId,
   indicator,
 }: ResolveNodeExecutionStateParams): NodeExecutionState | undefined => {
-  const uniqueKeys = [...new Set([nodeId, stepId, indicator])]
-    .filter((key): key is string => typeof key === "string" && key.length > 0);
+  const uniqueKeys = [...new Set([nodeId, stepId, indicator])].filter(
+    (key): key is string => typeof key === "string" && key.length > 0,
+  );
   const timeline = uniqueKeys.flatMap((key) => executionStates[key] ?? []);
 
   return timeline

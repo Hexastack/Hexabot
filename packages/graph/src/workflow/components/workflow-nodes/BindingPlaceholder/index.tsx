@@ -10,10 +10,7 @@ import { useCallback, type FC, type MouseEvent } from "react";
 
 import { useWorkflowGraphHost } from "../../../contexts/workflow-graph-host.context";
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
-import {
-  ENodeType,
-  type GraphNode,
-} from "../../../types/workflow-node.types";
+import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { PulseIconButton } from "../../PulseIconButton";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodePorts } from "../GenericNodePorts";

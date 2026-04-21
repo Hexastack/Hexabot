@@ -28,7 +28,10 @@ import {
   createPlaceholderNodeId,
   createStepNodeId,
 } from "./graph-builder/id-factory";
-import { buildNodesAndEdges, getWorkflowDefaultConfig } from "./workflow-node.utils";
+import {
+  buildNodesAndEdges,
+  getWorkflowDefaultConfig,
+} from "./workflow-node.utils";
 
 const taskStep = (id: string, taskName: string): CompiledStep => {
   return {
@@ -189,7 +192,9 @@ describe("buildNodesAndEdges", () => {
       actionCatalog: createActionCatalog({
         worker_action: ["model"],
       }),
-      bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
+      bindingCatalog: createBindingCatalog([
+        { kind: "model", multiple: false },
+      ]),
     });
     const taskNodeId = createStepNodeId("0:worker", "task");
 
@@ -213,7 +218,9 @@ describe("buildNodesAndEdges", () => {
       actionCatalog: createActionCatalog({
         agent_action: ["model"],
       }),
-      bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
+      bindingCatalog: createBindingCatalog([
+        { kind: "model", multiple: false },
+      ]),
     });
     const taskNode = graph.nodes.find(
       (node) => node.id === createStepNodeId("0:agent", "task"),
@@ -222,7 +229,10 @@ describe("buildNodesAndEdges", () => {
       (node) => node.type === ENodeType.BINDING_SINGLE,
     );
     const taskStyle = taskNode?.style as Record<string, string | undefined>;
-    const bindingStyle = bindingNode?.style as Record<string, string | undefined>;
+    const bindingStyle = bindingNode?.style as Record<
+      string,
+      string | undefined
+    >;
 
     expect(taskStyle["--workflow-node-padding-x"]).toBe("16px");
     expect(taskStyle["--workflow-node-padding-y"]).toBe("16px");
@@ -260,15 +270,17 @@ describe("buildNodesAndEdges", () => {
       actionCatalog: createActionCatalog({
         agent_action: ["model"],
       }),
-      bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
+      bindingCatalog: createBindingCatalog([
+        { kind: "model", multiple: false },
+      ]),
     });
     const bindingNode = graph?.nodes.find(
       (node) => node.type === ENodeType.BINDING_SINGLE,
     );
 
-    expect((bindingNode?.data as { description?: string } | undefined)?.description).toBe(
-      "Primary model used by this task",
-    );
+    expect(
+      (bindingNode?.data as { description?: string } | undefined)?.description,
+    ).toBe("Primary model used by this task");
   });
 
   it("falls back to legacy dimensions when nodeMetrics is omitted", async () => {
@@ -299,8 +311,12 @@ describe("buildNodesAndEdges", () => {
       (node) => node.id === createStepNodeId("0:worker", "task"),
     );
 
-    expect(taskNode?.width).toBe(defaultConfig.dimensions?.[ENodeType.TASK]?.width);
-    expect(taskNode?.height).toBe(defaultConfig.dimensions?.[ENodeType.TASK]?.height);
+    expect(taskNode?.width).toBe(
+      defaultConfig.dimensions?.[ENodeType.TASK]?.width,
+    );
+    expect(taskNode?.height).toBe(
+      defaultConfig.dimensions?.[ENodeType.TASK]?.height,
+    );
     expect(taskNode?.style).toBeUndefined();
   });
 
@@ -340,7 +356,9 @@ describe("buildNodesAndEdges", () => {
       }),
       bindingCatalog: createBindingCatalog(["tools"]),
     });
-    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
+    const toolNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_MULTI,
+    );
 
     expect(toolNodes).toHaveLength(2);
     expect(new Set(toolNodes.map((node) => node.id)).size).toBe(2);
@@ -369,7 +387,9 @@ describe("buildNodesAndEdges", () => {
       bindingCatalog: createBindingCatalog(["tools"]),
     });
     const agentNodeId = createStepNodeId("0:agent", "task");
-    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
+    const toolNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_MULTI,
+    );
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
@@ -377,7 +397,9 @@ describe("buildNodesAndEdges", () => {
     expect(toolNodes).toHaveLength(1);
     expect((toolNodes[0].data as { title?: string }).title).toBe("search");
     expect(placeholderNodes).toHaveLength(1);
-    expect((placeholderNodes[0].data as { title?: string }).title).toBe("tools");
+    expect((placeholderNodes[0].data as { title?: string }).title).toBe(
+      "tools",
+    );
     expect(
       graph.edges.some(
         (edge) =>
@@ -413,7 +435,9 @@ describe("buildNodesAndEdges", () => {
       ]),
     });
     const agentNodeId = createStepNodeId("0:agent", "task");
-    const memoryNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
+    const memoryNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_MULTI,
+    );
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
@@ -486,7 +510,9 @@ describe("buildNodesAndEdges", () => {
         { kind: "model", multiple: false },
       ]),
     });
-    const toolNode = graph.nodes.find((node) => getNodeTitle(node) === "search_tool");
+    const toolNode = graph.nodes.find(
+      (node) => getNodeTitle(node) === "search_tool",
+    );
     const nestedMemoryNode = graph.nodes.find(
       (node) => getNodeTitle(node) === "profile_memory",
     );
@@ -504,7 +530,9 @@ describe("buildNodesAndEdges", () => {
   });
 
   it("positions nested binding placeholders below their owner binding node", async () => {
-    const flow: CompiledStep[] = [taskStep("0:ai_generate_reply", "ai_generate_reply")];
+    const flow: CompiledStep[] = [
+      taskStep("0:ai_generate_reply", "ai_generate_reply"),
+    ];
     const tasks: TestTaskDefinitions = {
       ai_generate_reply: {
         action: "ai_generate_reply_action",
@@ -602,7 +630,9 @@ describe("buildNodesAndEdges", () => {
         { kind: "model", multiple: false },
       ]),
     });
-    const toolNode = graph.nodes.find((node) => getNodeTitle(node) === "search_tool");
+    const toolNode = graph.nodes.find(
+      (node) => getNodeTitle(node) === "search_tool",
+    );
     const nestedPlaceholder = graph.nodes.find(
       (node) =>
         node.type === ENodeType.BINDING_PLACEHOLDER &&
@@ -652,7 +682,9 @@ describe("buildNodesAndEdges", () => {
         { kind: "model", multiple: false },
       ]),
     });
-    const toolNode = graph.nodes.find((node) => getNodeTitle(node) === "search_tool");
+    const toolNode = graph.nodes.find(
+      (node) => getNodeTitle(node) === "search_tool",
+    );
     const nestedPlaceholder = graph.nodes.find(
       (node) =>
         node.type === ENodeType.BINDING_PLACEHOLDER &&
@@ -662,7 +694,9 @@ describe("buildNodesAndEdges", () => {
 
     expect(toolNode).toBeDefined();
     expect(getNodePorts(toolNode).includes("bindingOut-0-1-model")).toBe(true);
-    expect(getNodePorts(toolNode).includes("bindingOut-0-1-memory")).toBe(false);
+    expect(getNodePorts(toolNode).includes("bindingOut-0-1-memory")).toBe(
+      false,
+    );
     expect(nestedPlaceholder).toBeDefined();
   });
 
@@ -700,7 +734,9 @@ describe("buildNodesAndEdges", () => {
         { kind: "memory", multiple: true },
       ]),
     });
-    const toolNode = graph.nodes.find((node) => getNodeTitle(node) === "search_tool");
+    const toolNode = graph.nodes.find(
+      (node) => getNodeTitle(node) === "search_tool",
+    );
     const nestedPlaceholders = graph.nodes.filter(
       (node) =>
         node.type === ENodeType.BINDING_PLACEHOLDER &&
@@ -740,14 +776,17 @@ describe("buildNodesAndEdges", () => {
         },
       ]),
     });
-    const memoryNode = graph.nodes.find((node) => node.type === ENodeType.BINDING_MULTI);
+    const memoryNode = graph.nodes.find(
+      (node) => node.type === ENodeType.BINDING_MULTI,
+    );
     const placeholderNode = graph.nodes.find(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
 
     expect(memoryNode).toBeDefined();
     expect(
-      (memoryNode?.data as { theme?: { borderColor?: string; icon?: string } }).theme,
+      (memoryNode?.data as { theme?: { borderColor?: string; icon?: string } })
+        .theme,
     ).toMatchObject({
       borderColor: "#0ea5e9",
       icon: "Database",
@@ -777,16 +816,22 @@ describe("buildNodesAndEdges", () => {
       actionCatalog: createActionCatalog({
         worker_action: ["model"],
       }),
-      bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
+      bindingCatalog: createBindingCatalog([
+        { kind: "model", multiple: false },
+      ]),
     });
     const agentNodeId = createStepNodeId("0:worker", "task");
-    const modelNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_SINGLE);
+    const modelNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_SINGLE,
+    );
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
 
     expect(modelNodes).toHaveLength(1);
-    expect((modelNodes[0].data as { title?: string }).title).toBe("openai_chatgpt");
+    expect((modelNodes[0].data as { title?: string }).title).toBe(
+      "openai_chatgpt",
+    );
     expect(placeholderNodes).toHaveLength(0);
     expect(
       graph.edges.some(
@@ -811,17 +856,23 @@ describe("buildNodesAndEdges", () => {
       actionCatalog: createActionCatalog({
         worker_action: ["model"],
       }),
-      bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
+      bindingCatalog: createBindingCatalog([
+        { kind: "model", multiple: false },
+      ]),
     });
     const agentNodeId = createStepNodeId("0:worker", "task");
-    const modelNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_SINGLE);
+    const modelNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_SINGLE,
+    );
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
 
     expect(modelNodes).toHaveLength(0);
     expect(placeholderNodes).toHaveLength(1);
-    expect((placeholderNodes[0].data as { title?: string }).title).toBe("model");
+    expect((placeholderNodes[0].data as { title?: string }).title).toBe(
+      "model",
+    );
     expect(
       graph.edges.some(
         (edge) =>
@@ -848,9 +899,13 @@ describe("buildNodesAndEdges", () => {
       actionCatalog: createActionCatalog({
         worker_action: ["model"],
       }),
-      bindingCatalog: createBindingCatalog([{ kind: "model", multiple: false }]),
+      bindingCatalog: createBindingCatalog([
+        { kind: "model", multiple: false },
+      ]),
     });
-    const modelNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_SINGLE);
+    const modelNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_SINGLE,
+    );
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
@@ -889,7 +944,9 @@ describe("buildNodesAndEdges", () => {
     );
 
     expect(singleBindingNodes).toHaveLength(1);
-    expect((singleBindingNodes[0].data as { title?: string }).title).toBe("kb_main");
+    expect((singleBindingNodes[0].data as { title?: string }).title).toBe(
+      "kb_main",
+    );
     expect(placeholderNodes).toHaveLength(0);
     expect(
       graph.edges.some(
@@ -958,7 +1015,9 @@ describe("buildNodesAndEdges", () => {
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
-    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
+    const toolNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_MULTI,
+    );
 
     expect(taskNode).toBeDefined();
     expect(
@@ -991,7 +1050,9 @@ describe("buildNodesAndEdges", () => {
     const placeholderNodes = graph.nodes.filter(
       (node) => node.type === ENodeType.BINDING_PLACEHOLDER,
     );
-    const toolNodes = graph.nodes.filter((node) => node.type === ENodeType.BINDING_MULTI);
+    const toolNodes = graph.nodes.filter(
+      (node) => node.type === ENodeType.BINDING_MULTI,
+    );
 
     expect(placeholderNodes).toHaveLength(1);
     expect(toolNodes).toHaveLength(0);
@@ -1036,13 +1097,15 @@ describe("buildNodesAndEdges", () => {
     expect(
       graph.edges.some(
         (edge) =>
-          edge.source === operatorNodeId && edge.sourceHandle === "operatorOut-0-2",
+          edge.source === operatorNodeId &&
+          edge.sourceHandle === "operatorOut-0-2",
       ),
     ).toBe(true);
     expect(
       graph.edges.some(
         (edge) =>
-          edge.source === operatorNodeId && edge.sourceHandle === "operatorOut-1-2",
+          edge.source === operatorNodeId &&
+          edge.sourceHandle === "operatorOut-1-2",
       ),
     ).toBe(true);
 
@@ -1050,7 +1113,8 @@ describe("buildNodesAndEdges", () => {
       (edge) => edge.source === firstPlaceholder && edge.target === afterNodeId,
     );
     const secondToAfter = graph.edges.find(
-      (edge) => edge.source === secondPlaceholder && edge.target === afterNodeId,
+      (edge) =>
+        edge.source === secondPlaceholder && edge.target === afterNodeId,
     );
 
     expect(firstToAfter).toBeDefined();
@@ -1096,7 +1160,10 @@ describe("buildNodesAndEdges", () => {
       flow: [outerConditional],
       tasks: {},
     });
-    const outerOperatorNodeId = createStepNodeId(outerConditional.id, "operator");
+    const outerOperatorNodeId = createStepNodeId(
+      outerConditional.id,
+      "operator",
+    );
     const nestedGroupId = createGroupId(nestedConditional.id);
     const firstBranchPlaceholderId = createPlaceholderNodeId(
       outerConditional.id,
@@ -1139,24 +1206,39 @@ describe("buildNodesAndEdges", () => {
     ];
     const tasks = baseTasks(["parallel_one", "parallel_two", "after_parallel"]);
     const graph = await buildGraph({ flow, tasks });
-    const firstBranchNodeId = createStepNodeId("0.parallel.0:parallel_one", "task");
-    const secondBranchNodeId = createStepNodeId("0.parallel.1:parallel_two", "task");
-    const joinPlaceholderId = createPlaceholderNodeId(parallelStep.id, "parallel", 2);
+    const firstBranchNodeId = createStepNodeId(
+      "0.parallel.0:parallel_one",
+      "task",
+    );
+    const secondBranchNodeId = createStepNodeId(
+      "0.parallel.1:parallel_two",
+      "task",
+    );
+    const joinPlaceholderId = createPlaceholderNodeId(
+      parallelStep.id,
+      "parallel",
+      2,
+    );
     const afterNodeId = createStepNodeId("1:after_parallel", "task");
 
     expect(
       graph.edges.some(
-        (edge) => edge.source === firstBranchNodeId && edge.target === joinPlaceholderId,
+        (edge) =>
+          edge.source === firstBranchNodeId &&
+          edge.target === joinPlaceholderId,
       ),
     ).toBe(true);
     expect(
       graph.edges.some(
-        (edge) => edge.source === secondBranchNodeId && edge.target === joinPlaceholderId,
+        (edge) =>
+          edge.source === secondBranchNodeId &&
+          edge.target === joinPlaceholderId,
       ),
     ).toBe(true);
 
     const joinToAfter = graph.edges.find(
-      (edge) => edge.source === joinPlaceholderId && edge.target === afterNodeId,
+      (edge) =>
+        edge.source === joinPlaceholderId && edge.target === afterNodeId,
     );
 
     expect(joinToAfter).toBeDefined();
@@ -1187,12 +1269,14 @@ describe("buildNodesAndEdges", () => {
 
     expect(
       graph.edges.some(
-        (edge) => edge.source === loopTaskId && edge.target === loopPlaceholderId,
+        (edge) =>
+          edge.source === loopTaskId && edge.target === loopPlaceholderId,
       ),
     ).toBe(true);
 
     const placeholderToAfter = graph.edges.find(
-      (edge) => edge.source === loopPlaceholderId && edge.target === afterNodeId,
+      (edge) =>
+        edge.source === loopPlaceholderId && edge.target === afterNodeId,
     );
 
     expect(placeholderToAfter).toBeDefined();
@@ -1204,14 +1288,14 @@ describe("buildNodesAndEdges", () => {
     const graph = await buildGraph({ flow, tasks: baseTasks(["single"]) });
     const singleNodeId = createStepNodeId("0:single", "task");
     const endEdge = graph.edges.find(
-      (edge) => edge.source === singleNodeId && edge.target === END_INDICATOR_ID,
+      (edge) =>
+        edge.source === singleNodeId && edge.target === END_INDICATOR_ID,
     );
 
     expect(endEdge).toBeDefined();
-    expect((endEdge?.data as { insertPath?: unknown[] } | undefined)?.insertPath).toEqual([
-      "flow",
-      1,
-    ]);
+    expect(
+      (endEdge?.data as { insertPath?: unknown[] } | undefined)?.insertPath,
+    ).toEqual(["flow", 1]);
   });
 
   it("creates nested group nodes and deduplicates overlay group edges", async () => {
@@ -1247,7 +1331,10 @@ describe("buildNodesAndEdges", () => {
       },
       steps: [nestedConditional],
     };
-    const flow: CompiledStep[] = [loopStep, taskStep("1:after_group", "after_group")];
+    const flow: CompiledStep[] = [
+      loopStep,
+      taskStep("1:after_group", "after_group"),
+    ];
     const tasks = baseTasks(["conditional_inner_task", "after_group"]);
     const graph = await buildGraph({ flow, tasks });
     const outerGroupId = createGroupId(loopStep.id);
@@ -1257,7 +1344,8 @@ describe("buildNodesAndEdges", () => {
     expect(graph.nodes.some((node) => node.id === innerGroupId)).toBe(true);
 
     const groupOverlayEdges = graph.edges.filter(
-      (edge) => edge.source === outerGroupId && edge.target.includes("after_group"),
+      (edge) =>
+        edge.source === outerGroupId && edge.target.includes("after_group"),
     );
 
     expect(groupOverlayEdges.length).toBe(1);
@@ -1294,12 +1382,20 @@ describe("buildNodesAndEdges", () => {
         taskStep("1.parallel.1:p2", "p2"),
       ],
     };
-    const flow: CompiledStep[] = [conditionalStep, parallelStep, taskStep("2:end", "end")];
+    const flow: CompiledStep[] = [
+      conditionalStep,
+      parallelStep,
+      taskStep("2:end", "end"),
+    ];
     const tasks = baseTasks(["branch_yes", "branch_else", "p1", "p2", "end"]);
     const graph = await buildGraph({ flow, tasks });
 
-    expect(new Set(graph.nodes.map((node) => node.id)).size).toBe(graph.nodes.length);
-    expect(new Set(graph.edges.map((edge) => edge.id)).size).toBe(graph.edges.length);
+    expect(new Set(graph.nodes.map((node) => node.id)).size).toBe(
+      graph.nodes.length,
+    );
+    expect(new Set(graph.edges.map((edge) => edge.id)).size).toBe(
+      graph.edges.length,
+    );
   });
 
   it("returns undefined for empty flow", async () => {

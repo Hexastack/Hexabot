@@ -10,18 +10,18 @@ import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import {
   ENodeType,
   TNodeCardContentVariant,
-} from '../../types/workflow-node.types';
+} from "../../types/workflow-node.types";
 
 import { GenericNodeDeleteButton } from "./GenericNodeDeleteButton";
 
 export const GenericNodeRightContent = <T extends ENodeType = ENodeType>({
   children,
-  variant = 'title-only',
+  variant = "title-only",
 }: PropsWithChildren<{ variant?: TNodeCardContentVariant }>) => {
   const { bgColor, borderColor } = useWorkflowNodeTheme<T>();
   const style = {
-    '--workflow-node-bg-color': bgColor,
-    '--workflow-node-border-color': borderColor,
+    "--workflow-node-bg-color": bgColor,
+    "--workflow-node-border-color": borderColor,
   } as CSSProperties;
 
   return (

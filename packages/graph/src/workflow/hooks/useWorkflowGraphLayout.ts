@@ -82,13 +82,7 @@ export const useWorkflowGraphLayout = ({
     return () => {
       cancelled = true;
     };
-  }, [
-    actionCatalog,
-    bindingCatalog,
-    compiledFlow,
-    defs,
-    layoutDirection,
-  ]);
+  }, [actionCatalog, bindingCatalog, compiledFlow, defs, layoutDirection]);
 
   return {
     graphData,

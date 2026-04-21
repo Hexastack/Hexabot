@@ -38,12 +38,15 @@ export const getWorkflowNodeMetrics = (
 export const getWorkflowNodeDimensions = (
   nodeType: ENodeType,
   config?: INodeConfig,
-) => getWorkflowNodeMetrics(nodeType, config)?.dimensions ?? DEFAULT_NODE_DIMENSIONS;
+) =>
+  getWorkflowNodeMetrics(nodeType, config)?.dimensions ??
+  DEFAULT_NODE_DIMENSIONS;
 
 export const getWorkflowNodeCardMetrics = (
   nodeType: ENodeType,
   config?: INodeConfig,
-): TNodeCardMetrics | undefined => getWorkflowNodeMetrics(nodeType, config)?.card;
+): TNodeCardMetrics | undefined =>
+  getWorkflowNodeMetrics(nodeType, config)?.card;
 
 export const getWorkflowNodeCardStyleVariables = (
   card: TNodeCardMetrics | undefined,

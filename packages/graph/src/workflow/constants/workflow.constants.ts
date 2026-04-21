@@ -122,7 +122,7 @@ const TITLE_WITH_DESCRIPTION_CARD_METRICS = {
   contentVariant: "title-with-description",
 } satisfies TNodeCardMetrics;
 
-export const NODE_METRICS: Exclude<INodeConfig['nodeMetrics'], undefined> = {
+export const NODE_METRICS: Exclude<INodeConfig["nodeMetrics"], undefined> = {
   [ENodeType.BINDING_SINGLE]: {
     dimensions: { width: 200, height: 76 },
     card: BINDING_CARD_METRICS,

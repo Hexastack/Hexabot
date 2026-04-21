@@ -161,7 +161,9 @@ const toElk = (nodes: GraphNode[], edges: Edge[], ctx: LayoutContext) => {
     }
 
     if (preferredHandle) {
-      const handlePort = ports.find((port) => port.handleId === preferredHandle);
+      const handlePort = ports.find(
+        (port) => port.handleId === preferredHandle,
+      );
 
       if (handlePort) {
         return handlePort.elkId;
@@ -282,7 +284,10 @@ const addExtraNodes = (
     const targetNode = nodesById.get(target);
 
     if (sourceNode && targetNode) {
-      adjacencyMap.set(source, [...(adjacencyMap.get(source) ?? []), targetNode]);
+      adjacencyMap.set(source, [
+        ...(adjacencyMap.get(source) ?? []),
+        targetNode,
+      ]);
       incomingAttachmentCounts.set(
         target,
         (incomingAttachmentCounts.get(target) ?? 0) + 1,
@@ -298,7 +303,9 @@ const addExtraNodes = (
     string,
     Pick<GraphNode, "position" | "targetPosition" | "sourcePosition">
   >();
-  const resolvedPositions = new Map(nodes.map((node) => [node.id, node.position]));
+  const resolvedPositions = new Map(
+    nodes.map((node) => [node.id, node.position]),
+  );
   const remainingIncoming = new Map(incomingAttachmentCounts);
   const sourceIds = [...adjacencyMap.keys()];
   const queue = sourceIds.filter(
@@ -334,8 +341,12 @@ const addExtraNodes = (
       return;
     }
 
-    const sourcePosition = resolvedPositions.get(sourceId) ?? sourceNode.position;
-    const sourceDimensions = getWorkflowNodeDimensions(sourceNode.type, ctx.config);
+    const sourcePosition =
+      resolvedPositions.get(sourceId) ?? sourceNode.position;
+    const sourceDimensions = getWorkflowNodeDimensions(
+      sourceNode.type,
+      ctx.config,
+    );
     const targetsWithDimensions = targets.map((target) => ({
       node: target,
       dimensions: getWorkflowNodeDimensions(target.type, ctx.config),
@@ -343,7 +354,8 @@ const addExtraNodes = (
     const totalBreadth =
       targetsWithDimensions.reduce(
         (sum, target) =>
-          sum + (isHorizontal ? target.dimensions.width : target.dimensions.height),
+          sum +
+          (isHorizontal ? target.dimensions.width : target.dimensions.height),
         0,
       ) +
       EXTRA_NODE_GAP * (targets.length - 1);
@@ -369,7 +381,8 @@ const addExtraNodes = (
         sourcePosition: isHorizontal ? Position.Bottom : Position.Left,
       });
       resolvedPositions.set(node.id, position);
-      cursor += (isHorizontal ? dimensions.width : dimensions.height) + EXTRA_NODE_GAP;
+      cursor +=
+        (isHorizontal ? dimensions.width : dimensions.height) + EXTRA_NODE_GAP;
 
       const nextRemainingIncoming = (remainingIncoming.get(node.id) ?? 0) - 1;
 

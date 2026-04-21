@@ -6,7 +6,10 @@
 
 import type { SemanticEdge, SemanticNode } from "./types";
 
-const mergeEdge = (existing: SemanticEdge, incoming: SemanticEdge): SemanticEdge => {
+const mergeEdge = (
+  existing: SemanticEdge,
+  incoming: SemanticEdge,
+): SemanticEdge => {
   return {
     ...existing,
     ...incoming,

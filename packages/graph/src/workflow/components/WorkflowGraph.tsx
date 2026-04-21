@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { CompiledStep, WorkflowDefinition } from '@hexabot-ai/agentic';
+import type { CompiledStep, WorkflowDefinition } from "@hexabot-ai/agentic";
 import {
   Background,
   type Node,
@@ -12,7 +12,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   type Viewport,
-} from '@xyflow/react';
+} from "@xyflow/react";
 import type { ResizeControlDirection } from "@xyflow/system";
 import {
   forwardRef,
@@ -23,7 +23,7 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'react';
+} from "react";
 
 import "@xyflow/react/dist/style.css";
 
@@ -33,9 +33,9 @@ import type {
 } from "../contexts/workflow-graph-host.context";
 import { WorkflowGraphHostContext } from "../contexts/workflow-graph-host.context";
 import { useFocusNode } from "../hooks/useFocusNode";
-import { useInsertMenuBindings } from '../hooks/useInsertMenuBindings';
-import { useWorkflowGraphLayout } from '../hooks/useWorkflowGraphLayout';
-import { useWorkflowSelectionController } from '../hooks/useWorkflowSelectionController';
+import { useInsertMenuBindings } from "../hooks/useInsertMenuBindings";
+import { useWorkflowGraphLayout } from "../hooks/useWorkflowGraphLayout";
+import { useWorkflowSelectionController } from "../hooks/useWorkflowSelectionController";
 import {
   useWorkflowViewport,
   type ViewportState,
@@ -49,15 +49,13 @@ import {
   type WorkflowBindingCatalog,
   type WorkflowBindingRemovePayload,
   type WorkflowExecutionStateMap,
-} from '../types/workflow-node.types';
+} from "../types/workflow-node.types";
 import type {
   EdgeInsertType,
   FlowStepPath,
-} from '../types/workflow-path.types';
-import type {
-  WorkflowSelectionSnapshot,
-} from "../types/workflow-selection.types";
-import { isSameViewport } from '../utils/workflow-graph.utils';
+} from "../types/workflow-path.types";
+import type { WorkflowSelectionSnapshot } from "../types/workflow-selection.types";
+import { isSameViewport } from "../utils/workflow-graph.utils";
 
 import { WorkflowControls } from "./WorkflowControls";
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
@@ -94,7 +92,7 @@ export type WorkflowGraphCallbacks = {
   onRemoveStep: (stepPath: FlowStepPath, nodeId?: string) => void;
   onAddBinding?: (payload: WorkflowBindingAddPayload) => void;
   onRemoveBinding?: (payload: WorkflowBindingRemovePayload) => void;
-  onRotate: (nextDirection: 'horizontal' | 'vertical') => Promise<boolean>;
+  onRotate: (nextDirection: "horizontal" | "vertical") => Promise<boolean>;
 };
 
 export type WorkflowGraphColorMode = "light" | "dark" | "system";
@@ -117,15 +115,16 @@ export type WorkflowGraphHandle = {
 
 const SYSTEM_DARK_QUERY = "(prefers-color-scheme: dark)";
 const resolveSystemColorMode = (): "light" | "dark" => {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+  if (
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function"
+  ) {
     return "light";
   }
 
   return window.matchMedia(SYSTEM_DARK_QUERY).matches ? "dark" : "light";
 };
-const resolveColorMode = (
-  mode: WorkflowGraphColorMode,
-): "light" | "dark" => {
+const resolveColorMode = (mode: WorkflowGraphColorMode): "light" | "dark" => {
   if (mode === "system") {
     return resolveSystemColorMode();
   }
@@ -146,9 +145,9 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
     },
     ref,
   ) => {
-    const [resolvedColorMode, setResolvedColorMode] = useState<"light" | "dark">(
-      () => resolveColorMode(colorMode),
-    );
+    const [resolvedColorMode, setResolvedColorMode] = useState<
+      "light" | "dark"
+    >(() => resolveColorMode(colorMode));
     const lastViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
     const { graphData, isEmptyWorkflow } = useWorkflowGraphLayout({
       compiledFlow: model.compiledFlow,
@@ -243,7 +242,10 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
         return;
       }
 
-      if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      if (
+        typeof window === "undefined" ||
+        typeof window.matchMedia !== "function"
+      ) {
         setResolvedColorMode("light");
 
         return;
@@ -317,7 +319,7 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
   },
 );
 
-WorkflowGraphCanvas.displayName = 'WorkflowGraphCanvas';
+WorkflowGraphCanvas.displayName = "WorkflowGraphCanvas";
 
 export const WorkflowGraph = forwardRef<
   WorkflowGraphHandle,
@@ -330,4 +332,4 @@ export const WorkflowGraph = forwardRef<
   );
 });
 
-WorkflowGraph.displayName = 'WorkflowGraph';
+WorkflowGraph.displayName = "WorkflowGraph";

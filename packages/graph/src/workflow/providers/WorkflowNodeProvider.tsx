@@ -36,9 +36,7 @@ export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
     indicator?: unknown;
   };
   const actionName =
-    typeof nodeData.actionName === "string"
-      ? nodeData.actionName
-      : undefined;
+    typeof nodeData.actionName === "string" ? nodeData.actionName : undefined;
   const stepId =
     typeof nodeData.stepId === "string" ? nodeData.stepId : undefined;
   const indicator =

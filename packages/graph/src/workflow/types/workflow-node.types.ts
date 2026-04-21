@@ -32,10 +32,7 @@ import { Indicator } from "../components/workflow-nodes/Indicator";
 import { Operator } from "../components/workflow-nodes/Operator";
 import { Task } from "../components/workflow-nodes/Task";
 
-import type {
-  FlowStepPath,
-  OnOpenInsertMenu,
-} from "./workflow-path.types";
+import type { FlowStepPath, OnOpenInsertMenu } from "./workflow-path.types";
 
 export type WorkflowIcon = JSXElementConstructor<any>;
 
@@ -60,7 +57,10 @@ export type WorkflowExecutionState = {
   t: number;
 };
 
-export type WorkflowExecutionStateMap = Record<string, WorkflowExecutionState[]>;
+export type WorkflowExecutionStateMap = Record<
+  string,
+  WorkflowExecutionState[]
+>;
 export type WorkflowBindingSchema = unknown;
 export type WorkflowBindingDefinition = {
   schema: WorkflowBindingSchema;
@@ -118,14 +118,16 @@ export type IndicatorData = CommonNodeData<ENodeType.INDICATOR> & {
   indicator?: EIndicatorType;
 };
 
-export type BranchPlaceholderData = CommonNodeData<ENodeType.BRANCH_PLACEHOLDER> & {
-  insertPath?: FlowStepPath;
-  onOpenInsertMenu?: OnOpenInsertMenu;
-};
-export type BindingPlaceholderData = CommonNodeData<ENodeType.BINDING_PLACEHOLDER> & {
-  ownerDefName?: string;
-  bindingKind?: string;
-};
+export type BranchPlaceholderData =
+  CommonNodeData<ENodeType.BRANCH_PLACEHOLDER> & {
+    insertPath?: FlowStepPath;
+    onOpenInsertMenu?: OnOpenInsertMenu;
+  };
+export type BindingPlaceholderData =
+  CommonNodeData<ENodeType.BINDING_PLACEHOLDER> & {
+    ownerDefName?: string;
+    bindingKind?: string;
+  };
 
 export type WorkflowBindingBasePayload = {
   stepId?: string;
@@ -193,9 +195,13 @@ export type ConditionalOperatorOutPort =
 export type BindingOutPort =
   `${ELinkType.BINDING_OUT}-${number}-${number}-${string}`;
 
-export type WorkflowPort = ELinkType | ConditionalOperatorOutPort | BindingOutPort;
+export type WorkflowPort =
+  | ELinkType
+  | ConditionalOperatorOutPort
+  | BindingOutPort;
 
-type WorkflowPortPrefix<P extends string> = P extends ENodeType.TASK
+type WorkflowPortPrefix<P extends string> = P extends
+  | ENodeType.TASK
   | ENodeType.BINDING_MULTI
   | ENodeType.BINDING_SINGLE
   ? P | "bindingOut"
@@ -209,7 +215,9 @@ export type WorkflowPortObject<P extends string> = {
   id: Port<P>;
   label?: string;
 };
-export type WorkflowNodePort<P extends string> = Port<P> | WorkflowPortObject<P>;
+export type WorkflowNodePort<P extends string> =
+  | Port<P>
+  | WorkflowPortObject<P>;
 
 export const getWorkflowPortId = <P extends string>(
   port: WorkflowNodePort<P>,

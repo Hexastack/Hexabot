@@ -85,7 +85,9 @@ const buildStepPath = (
   index: number,
   pathIndex?: number,
 ): FlowStepPath => [...path, pathIndex ?? index];
-const getNextInsertPath = (stepPath: FlowStepPath): FlowStepPath | undefined => {
+const getNextInsertPath = (
+  stepPath: FlowStepPath,
+): FlowStepPath | undefined => {
   const tail = stepPath[stepPath.length - 1];
 
   if (typeof tail !== "number") {
@@ -481,7 +483,9 @@ const getBindingNodeDescription = ({
 }) => {
   const def = defs?.[bindingName] as { description?: unknown } | undefined;
 
-  return typeof def?.description === "string" ? def.description.trim() : undefined;
+  return typeof def?.description === "string"
+    ? def.description.trim()
+    : undefined;
 };
 const addDefAttachments = (
   state: TraverseState,
@@ -672,7 +676,10 @@ const walkParallelSteps = (
 ): TraversalExit[] => {
   const parallelStepsPath: FlowStepPath = [...stepPath, "parallel", "steps"];
   const parallelSteps = Array.isArray(step.steps) ? step.steps : [];
-  const joinInsertPath: FlowStepPath = [...parallelStepsPath, parallelSteps.length];
+  const joinInsertPath: FlowStepPath = [
+    ...parallelStepsPath,
+    parallelSteps.length,
+  ];
   const joinPlaceholderId = addPlaceholderNode(state, {
     stepId: step.id,
     scope: "parallel",
@@ -741,7 +748,10 @@ const walkConditionalBranches = (
       branchIndex,
       "steps",
     ];
-    const insertPath: FlowStepPath = [...conditionalStepsPath, branchSteps.length];
+    const insertPath: FlowStepPath = [
+      ...conditionalStepsPath,
+      branchSteps.length,
+    ];
     const branchExits =
       branchSteps.length > 0
         ? walkSteps({
@@ -928,21 +938,21 @@ const walkStep = ({
 
   const ports: WorkflowNodePort<ENodeType.OPERATOR>[] =
     operatorType === StepType.Conditional
-      ? (
-          step as CompiledConditionalStep
-        ).branches.map((branch, branchIndex, branches) => ({
-          id: buildConditionalOperatorOutPort(branchIndex, branches.length),
-          label: getConditionalBranchLabel(branch),
-        }))
+      ? (step as CompiledConditionalStep).branches.map(
+          (branch, branchIndex, branches) => ({
+            id: buildConditionalOperatorOutPort(branchIndex, branches.length),
+            label: getConditionalBranchLabel(branch),
+          }),
+        )
       : operatorType === StepType.Parallel &&
           (step as CompiledParallelStep).strategy
         ? operatorBaseData.ports.map((portDef) => {
             if (portDef === ELinkType.OPERATOR_OUT) {
               return {
                 id: ELinkType.OPERATOR_OUT,
-                label: `visual_editor.parallel_drawer.form.strategy.${(
-                  step as CompiledParallelStep
-                ).strategy}.label`,
+                label: `visual_editor.parallel_drawer.form.strategy.${
+                  (step as CompiledParallelStep).strategy
+                }.label`,
               };
             }
 
@@ -952,9 +962,9 @@ const walkStep = ({
             ) {
               return {
                 ...portDef,
-                label: `visual_editor.parallel_drawer.form.strategy.${(
-                  step as CompiledParallelStep
-                ).strategy}.label`,
+                label: `visual_editor.parallel_drawer.form.strategy.${
+                  (step as CompiledParallelStep).strategy
+                }.label`,
               };
             }
 

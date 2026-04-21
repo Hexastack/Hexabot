@@ -12,7 +12,7 @@ import {
   Port,
   WorkflowNodePort,
 } from "../../types/workflow-node.types";
-import { GenericHandle } from '../handles/GenericHandle';
+import { GenericHandle } from "../handles/GenericHandle";
 
 export const GenericNodePorts = <T extends ENodeType = ENodeType>({
   getDisabled,
@@ -37,12 +37,7 @@ export const GenericNodePorts = <T extends ENodeType = ENodeType>({
     const label = typeof portDef === "string" ? undefined : portDef.label;
 
     return (
-      <GenericHandle
-        key={port}
-        id={port}
-        label={label}
-        hidden={isHidden}
-      />
+      <GenericHandle key={port} id={port} label={label} hidden={isHidden} />
     );
   });
 };

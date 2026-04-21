@@ -26,7 +26,9 @@ const getRequiredChromeHeight = (nodeType: ENodeType): number => {
   }
 
   const descriptionHeight =
-    card.contentVariant === "title-with-description" ? DESCRIPTION_MIN_HEIGHT : 0;
+    card.contentVariant === "title-with-description"
+      ? DESCRIPTION_MIN_HEIGHT
+      : 0;
 
   return (
     card.paddingY * 2 +
@@ -52,7 +54,9 @@ describe("workflow node metrics", () => {
 
   it("derives NODE_DIMENSIONS from NODE_METRICS dimensions", () => {
     Object.entries(NODE_METRICS).forEach(([nodeType, nodeMetrics]) => {
-      expect(NODE_DIMENSIONS[nodeType as ENodeType]).toEqual(nodeMetrics.dimensions);
+      expect(NODE_DIMENSIONS[nodeType as ENodeType]).toEqual(
+        nodeMetrics.dimensions,
+      );
     });
   });
 });
