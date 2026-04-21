@@ -11,10 +11,8 @@ import {
   NotFoundException,
   Patch,
   Query,
-  Req,
   StreamableFile,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { FindManyOptions } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
@@ -147,9 +145,8 @@ export class SubscriberController extends BaseOrmController<SubscriberOrmEntity>
   async updateOne(
     @UuidParam('id') id: string,
     @Body() subscriberUpdate: SubscriberUpdateDto,
-    @Req() req: Request,
   ) {
-    const profile = req.session.web?.profile;
+    const profile = await this.subscriberService.findOne(id);
 
     if ('assignedTo' in subscriberUpdate && profile) {
       if (subscriberUpdate.assignedTo) {
