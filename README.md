@@ -132,10 +132,10 @@ npm install -g @hexabot-ai/cli
    This starts the required services in development mode.
 
 
-UI Admin Panel is accessible via http://localhost:8080, the default credentials are :
-
-- **Username:** admin@admin.admin
-- **Password:** adminadmin
+UI Admin Panel is accessible via http://localhost:8080.
+When you run `hexabot create`, the CLI prompts for admin first name, last name,
+email, and password, then stores them in `.env` as `SEED_ADMIN_*` values used
+by the initial API seed.
 
 ## Documentation
 

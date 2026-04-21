@@ -88,3 +88,65 @@ export const resolveEnvExample = (
 
   return defaultExample;
 };
+
+const ENV_BARE_VALUE = /^[A-Za-z0-9._/:@-]*$/;
+const formatEnvValue = (value: string) => {
+  if (ENV_BARE_VALUE.test(value)) {
+    return value;
+  }
+
+  return `"${value
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')}"`;
+};
+const escapeRegExp = (value: string) => {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
+export const upsertEnvVariables = (
+  projectRoot: string,
+  envFile: string,
+  values: Record<string, string>,
+) => {
+  const envPath = path.join(projectRoot, envFile);
+  if (!fs.existsSync(envPath)) {
+    throw new Error(`Env file "${envFile}" is missing.`);
+  }
+
+  const source = fs.readFileSync(envPath, 'utf-8');
+  let lines = source.length > 0 ? source.split(/\r?\n/) : [];
+
+  // Remove trailing blank line to avoid repetitive gaps after writes.
+  while (lines.length > 0 && lines[lines.length - 1] === '') {
+    lines.pop();
+  }
+
+  for (const [key, rawValue] of Object.entries(values)) {
+    const keyPattern = new RegExp(`^\\s*${escapeRegExp(key)}\\s*=`);
+    const nextLine = `${key}=${formatEnvValue(rawValue)}`;
+    let updated = false;
+    const nextLines: string[] = [];
+
+    for (const line of lines) {
+      if (!keyPattern.test(line)) {
+        nextLines.push(line);
+        continue;
+      }
+
+      if (!updated) {
+        nextLines.push(nextLine);
+        updated = true;
+      }
+      // Skip duplicate declarations for the same key.
+    }
+
+    if (!updated) {
+      nextLines.push(nextLine);
+    }
+
+    lines = nextLines;
+  }
+
+  fs.writeFileSync(envPath, `${lines.join('\n')}\n`, 'utf-8');
+};

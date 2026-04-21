@@ -7,11 +7,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { input, password } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { Command } from 'commander';
 
 import { ensureProjectConfig, loadProjectConfig } from '../core/config.js';
-import { bootstrapEnvFile } from '../core/env.js';
+import { bootstrapEnvFile, upsertEnvVariables } from '../core/env.js';
 import {
   detectPackageManager,
   installDependencies,
@@ -31,6 +32,13 @@ interface CreateCommandOptions {
   dev?: boolean;
   docker?: boolean;
   force?: boolean;
+}
+
+interface AdminSeedCredentials {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
 }
 
 export const registerCreateCommand = (program: Command) => {
@@ -96,6 +104,14 @@ const createProject = async (
         { quiet: true },
       );
     }
+
+    const adminCredentials = await promptSeedAdminCredentials();
+    upsertEnvVariables(projectPath, config.env.local, {
+      SEED_ADMIN_FIRST_NAME: adminCredentials.firstName,
+      SEED_ADMIN_LAST_NAME: adminCredentials.lastName,
+      SEED_ADMIN_EMAIL: adminCredentials.email,
+      SEED_ADMIN_PASSWORD: adminCredentials.password,
+    });
 
     if (options.noInstall) {
       console.log(
@@ -169,6 +185,68 @@ const fetchLatestReleaseTag = async (templateRepo: string) => {
 
   return data.tag_name;
 };
+const requireValue = (label: string) => {
+  return (value: string) => {
+    if (!value.trim()) {
+      return `${label} is required.`;
+    }
+
+    return true;
+  };
+};
+const validateEmail = (value: string) => {
+  if (!value.trim()) {
+    return 'Email is required.';
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(value.trim())) {
+    return 'Enter a valid email address.';
+  }
+
+  return true;
+};
+const assertInteractiveTerminal = () => {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error(
+      'hexabot create requires an interactive terminal to capture admin credentials.',
+    );
+  }
+};
+const promptSeedAdminCredentials = async (): Promise<AdminSeedCredentials> => {
+  assertInteractiveTerminal();
+
+  const firstName = (
+    await input({
+      message: 'Admin first name',
+      validate: requireValue('First name'),
+    })
+  ).trim();
+  const lastName = (
+    await input({
+      message: 'Admin last name',
+      validate: requireValue('Last name'),
+    })
+  ).trim();
+  const email = (
+    await input({
+      message: 'Admin email',
+      validate: validateEmail,
+    })
+  ).trim();
+  const adminPassword = await password({
+    message: 'Admin password',
+    mask: '*',
+    validate: requireValue('Password'),
+  });
+
+  return {
+    firstName,
+    lastName,
+    email,
+    password: adminPassword,
+  };
+};
 const logSuccessMessage = (
   projectName: string,
   options: { docker?: boolean },
@@ -176,7 +254,7 @@ const logSuccessMessage = (
   console.log('\n');
   console.log(chalk.green(`🎉 Project ${projectName} created successfully.`));
   console.log('\n');
-  console.log(chalk.bgYellow.black(`Next steps:`));
+  console.log(chalk.bgYellow(`Next steps:`));
   console.log(chalk.gray(`1. Navigate to the project folder:`));
   console.log(chalk.yellow(`   cd ${projectName}`));
   if (options.docker) {
@@ -192,10 +270,6 @@ const logSuccessMessage = (
   }
   console.log(chalk.gray(`3. Explore docker helpers if needed:`));
   console.log(chalk.yellow(`   hexabot docker up --services postgres`));
-  console.log(
-    chalk.gray(
-      `Need env files? Run ${chalk.white('hexabot env init --docker')}`,
-    ),
-  );
+  console.log(chalk.gray(`Need env files? Run hexabot env init --docker`));
   console.log('\n');
 };
