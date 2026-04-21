@@ -10,7 +10,12 @@ import * as path from 'path';
 
 import { jest } from '@jest/globals';
 
-import { bootstrapEnvFile, listEnvStatus, resolveEnvExample } from '../env.js';
+import {
+  bootstrapEnvFile,
+  listEnvStatus,
+  resolveEnvExample,
+  upsertEnvVariables,
+} from '../env.js';
 
 describe('env helpers', () => {
   let tempDir: string;
@@ -93,5 +98,34 @@ describe('env helpers', () => {
     expect(resolveEnvExample(tempDir, '.missing', defaultExample)).toBe(
       defaultExample,
     );
+  });
+
+  it('upserts env variables without duplicating existing keys', () => {
+    fs.writeFileSync(
+      path.join(tempDir, '.env'),
+      [
+        'PORT=3000',
+        'SEED_ADMIN_EMAIL=old@example.com',
+        'SEED_ADMIN_EMAIL=legacy@example.com',
+      ].join('\n'),
+    );
+
+    upsertEnvVariables(tempDir, '.env', {
+      SEED_ADMIN_EMAIL: 'new@example.com',
+      SEED_ADMIN_PASSWORD: 'P@ss "word"',
+    });
+
+    const nextEnv = fs.readFileSync(path.join(tempDir, '.env'), 'utf-8');
+    const emailMatches = nextEnv.match(/^SEED_ADMIN_EMAIL=/gm) || [];
+    expect(emailMatches).toHaveLength(1);
+    expect(nextEnv).toContain('SEED_ADMIN_EMAIL=new@example.com');
+    expect(nextEnv).toContain('SEED_ADMIN_PASSWORD="P@ss \\"word\\""');
+    expect(nextEnv.endsWith('\n')).toBe(true);
+  });
+
+  it('throws when attempting to upsert a missing env file', () => {
+    expect(() =>
+      upsertEnvVariables(tempDir, '.missing', { KEY: 'value' }),
+    ).toThrow('Env file ".missing" is missing.');
   });
 });
