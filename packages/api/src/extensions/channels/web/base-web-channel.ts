@@ -916,7 +916,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * @returns UUID
    */
   generateId(): string {
-    return 'web-' + uuidv4();
+    return `${this.name}-${uuidv4()}`;
   }
 
   /**
