@@ -16,6 +16,7 @@ This guide is for the current v3 development line.
 Do not open public GitHub issues for security vulnerabilities.
 
 Report vulnerabilities privately to `hello@hexabot.ai` (see `SECURITY.md`) with:
+
 - affected component/version,
 - reproduction steps,
 - impact,
@@ -120,7 +121,7 @@ This section is a contributor summary, not legal advice. Always consult license 
 
 ### License map in this monorepo (v3/dev)
 
-Root workspace and most packages (`api`, `frontend`, `widget`, `graph`, `agentic`, `cli`) declare `FCL-1.0-ALv2`.
+Root workspace and all current workspace packages (`api`, `frontend`, `widget`, `graph`, `agentic`, `cli`) declare `FCL-1.0-ALv2`.
 
 ### FCL-1.0-ALv2 (summary)
 
