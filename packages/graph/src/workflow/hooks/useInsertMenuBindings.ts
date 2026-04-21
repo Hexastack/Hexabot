@@ -83,7 +83,9 @@ export const useInsertMenuBindings = ({
       return graphData.edges;
     }
 
-    return graphData.edges.map((edge) => withInsertMenuHandler(edge, openInsertMenu));
+    return graphData.edges.map((edge) =>
+      withInsertMenuHandler(edge, openInsertMenu),
+    );
   }, [graphData.edges, onInsertAtPath, openInsertMenu]);
   const nodes = useMemo(() => {
     if (!onInsertAtPath) {

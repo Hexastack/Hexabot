@@ -70,17 +70,14 @@ export const resolveWorkflowStepTheme = ({
 }: WorkflowThemeInput): ResolvedWorkflowTheme => {
   const isDarkMode = mode === "dark";
   const stateConfig = getWorkflowStateConfig(status);
-  const borderColor = stateConfig?.color ?? baseTheme?.borderColor ?? action?.color;
+  const borderColor =
+    stateConfig?.color ?? baseTheme?.borderColor ?? action?.color;
   const iconName = baseTheme?.icon ?? action?.icon;
   const namedIcon =
     iconName && iconName in Icons
       ? (Icons[iconName as keyof typeof Icons] as WorkflowIcon)
       : undefined;
-  const Icon =
-    stateConfig?.icon ??
-    namedIcon ??
-    baseTheme?.Icon ??
-    Icons.Zap;
+  const Icon = stateConfig?.icon ?? namedIcon ?? baseTheme?.Icon ?? Icons.Zap;
 
   return {
     Icon,

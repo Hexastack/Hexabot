@@ -8,20 +8,16 @@ import type { NodeProps } from "@xyflow/react";
 import type { FC } from "react";
 
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
-import {
-  ENodeType,
-  type GraphNode,
-} from "../../../types/workflow-node.types";
+import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodeDescription } from "../GenericNodeDescription";
 import { GenericNodePorts } from "../GenericNodePorts";
 import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
-export const BindingSingle: FC<NodeProps<GraphNode<ENodeType.BINDING_SINGLE>>> = ({
-  id,
-  data,
-}) => {
+export const BindingSingle: FC<
+  NodeProps<GraphNode<ENodeType.BINDING_SINGLE>>
+> = ({ id, data }) => {
   const hasDescription = Boolean(data?.description?.trim());
 
   return (

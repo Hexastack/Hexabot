@@ -22,8 +22,12 @@ describe("handle.utils", () => {
       index: 1,
       total: 3,
     });
-    expect(getConditionalOperatorOutHandleMeta("operatorOut-4-3")).toBeUndefined();
-    expect(getConditionalOperatorOutHandleMeta("operatorOut-x-y")).toBeUndefined();
+    expect(
+      getConditionalOperatorOutHandleMeta("operatorOut-4-3"),
+    ).toBeUndefined();
+    expect(
+      getConditionalOperatorOutHandleMeta("operatorOut-x-y"),
+    ).toBeUndefined();
   });
 
   it("parses dynamic binding handle metadata", () => {
@@ -61,7 +65,10 @@ describe("handle.utils", () => {
   });
 
   it("keeps port resolution consistent for render and layout rules", () => {
-    const rule = resolveWorkflowPortRule(ELinkType.BINDING_MULTI_IN, "horizontal");
+    const rule = resolveWorkflowPortRule(
+      ELinkType.BINDING_MULTI_IN,
+      "horizontal",
+    );
     const handle = getHandleConfig(ELinkType.BINDING_MULTI_IN, "horizontal");
 
     expect(rule.type).toBe(handle.type);

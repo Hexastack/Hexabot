@@ -50,12 +50,12 @@ export const createWorkflowSelectionNode = (
     operatorType: isOperatorType(nodeData.operatorType)
       ? nodeData.operatorType
       : undefined,
-    taskName: node.type === ENodeType.TASK
-      ? toStringValue(nodeData.title)
-      : undefined,
-    actionName: node.type === ENodeType.TASK
-      ? toStringValue(nodeData.actionName)
-      : undefined,
+    taskName:
+      node.type === ENodeType.TASK ? toStringValue(nodeData.title) : undefined,
+    actionName:
+      node.type === ENodeType.TASK
+        ? toStringValue(nodeData.actionName)
+        : undefined,
   };
 };
 
@@ -96,7 +96,9 @@ const isSameStepPath = (
     return false;
   }
 
-  return leftStepPath.every((pathPart, index) => pathPart === rightStepPath[index]);
+  return leftStepPath.every(
+    (pathPart, index) => pathPart === rightStepPath[index],
+  );
 };
 
 export const isSameWorkflowSelectionNode = (

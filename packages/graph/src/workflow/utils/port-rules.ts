@@ -158,7 +158,10 @@ type PortRule = {
     horizontal: Position;
     vertical: Position;
   };
-  style?: (id: WorkflowPort, direction: ResizeControlDirection) => CSSProperties | undefined;
+  style?: (
+    id: WorkflowPort,
+    direction: ResizeControlDirection,
+  ) => CSSProperties | undefined;
 };
 
 const PORT_RULES: Partial<Record<LinkType, PortRule>> = {

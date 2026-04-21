@@ -27,7 +27,9 @@ export const getTaskDescription = (
   taskName: string,
   defs?: DefDefinitions,
 ): string => {
-  return getTaskDefinition(taskName, defs)?.description ?? "No description provided.";
+  return (
+    getTaskDefinition(taskName, defs)?.description ?? "No description provided."
+  );
 };
 
 export const getTaskAction = (taskName: string, defs?: DefDefinitions) => {

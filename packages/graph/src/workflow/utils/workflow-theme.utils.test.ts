@@ -7,7 +7,10 @@
 import * as Icons from "lucide-react";
 import { describe, expect, it } from "vitest";
 
-import { getWorkflowStateConfig, resolveWorkflowStepTheme } from "./workflow-theme.utils";
+import {
+  getWorkflowStateConfig,
+  resolveWorkflowStepTheme,
+} from "./workflow-theme.utils";
 
 type IconProbeResult = { props: { className?: string } };
 
