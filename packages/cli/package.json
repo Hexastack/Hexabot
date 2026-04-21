@@ -24,7 +24,7 @@
   },
   "keywords": [],
   "author": "Hexastack",
-  "license": "AGPL-3.0-only",
+  "license": "FCL-1.0-ALv2",
   "lint-staged": {
     "*.{ts}": "eslint --fix --config eslint.config-staged.cjs"
   },
