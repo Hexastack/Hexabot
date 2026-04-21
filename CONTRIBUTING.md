@@ -1,70 +1,148 @@
-## How to contribute to Hexabot
+# Contributing to Hexabot (v3)
 
-#### **Did you find a bug?**
+Thanks for your interest in contributing.
 
-* **Do not open up a GitHub issue if the bug is a security vulnerability
-  in Hexabot**, and instead send us an email to community@hexabot.ai.
+This guide is for the current v3 development line.
 
-* **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/hexastack/hexabot/issues).
+## Branch and CI model
 
-* If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/hexastack/hexabot/issues/new). Be sure to include a **title and clear description**, as much relevant information as possible, and a **code sample** or an **executable test case** demonstrating the expected behavior that is not occurring.
+- `dev` is the active v3 branch. Open v3 pull requests against `dev`.
+- `main` tracks the v2 stable/maintenance line.
+- v3 pull requests targeting `dev` trigger `.github/workflows/v3-dev-ci.yml`.
+- The v3 CI gate runs: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`.
 
-#### **Did you write a patch that fixes a bug?**
+## Security vulnerabilities
 
-* Open a new GitHub pull request with the patch.
+Do not open public GitHub issues for security vulnerabilities.
 
-* Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
+Report vulnerabilities privately to `community@hexabot.ai` (see `SECURITY.md`) with:
+- affected component/version,
+- reproduction steps,
+- impact,
+- proposed mitigation (if available).
 
-#### **Did you fix whitespace, format code, or make a purely cosmetic patch?**
+## Development prerequisites
 
-Changes that are cosmetic in nature and do not add anything substantial to the stability, functionality, or testability of Hexabot will generally not be accepted. Why ?
-- Someone need to spend the time to review the patch. However trivial the changes might seem, there might be some subtle reasons the original code are written this way and any tiny changes have the possibility of altering behaviour and introducing bugs.
-- It creates noise. Many poeple could be watching this repo at the time of writing – these people will get an email from github everytime someone opens a new issue, comment on a ticket, etc. They do this (probably) because they want to watch out for PRs and issues that they care about, and these PRs will further lower the signal-to-noise ratio in these notification emails.
-- It pollutes the git history. When someone need to investigate a bug and git blame these lines in the future, they'll hit this "refactor" commit which is not very useful.
-- It makes backporting bug fixes harder.
-Theses are just some examples of the hidden costs that are not so apparent from the surface.
+- Node.js `^20.18.1`
+- PNPM `9.12.0` (via Corepack)
+- Git
 
-#### **Do you intend to add a new feature or change an existing one?**
+From the repository root:
 
-* Suggest your change in our [Discord Channel](https://discord.gg/rNb9t2MFkG) and start writing code.
+```bash
+corepack enable pnpm@9.12.0
+pnpm install
+```
 
-* Do not open an issue on GitHub until you have collected positive feedback about the change. GitHub issues are primarily intended for bug reports and fixes.
+## Contribution workflow
 
+1. Sync and branch from `dev`.
 
-#### **How can i create my first contribution ?**
+```bash
+git checkout dev
+git pull
+git checkout -b feat/short-description
+```
 
-- **Find an Issue:**
-  Start by finding an issue to work on. You can either create a new GitHub issue or pick one that has been assigned to you.
+2. Make focused changes.
+- Avoid unrelated refactors.
+- Keep pull requests small and reviewable.
+- Update docs when behavior or contracts change.
 
-- **Create a Branch:**
-  Create a new branch for your work. Use a descriptive name that reflects the issue or feature you're addressing (e.g., fix/login-bug or add/feature-x).
+3. Run relevant checks locally.
 
-- **Make Changes:**
-  Write or fix the code in your branch. Ensure your changes align with the project's coding standards and guidelines.
+Package-scoped checks (recommended while iterating):
 
-- **Push Changes:**
-  Once your changes are ready, push your branch to GitHub.
+```bash
+pnpm --filter <workspace-name> typecheck
+pnpm --filter <workspace-name> lint
+pnpm --filter <workspace-name> test
+pnpm --filter <workspace-name> build
+```
 
-- **Open a Pull Request (PR):**
-  Create a pull request (PR) from your branch. Include a clear and concise description of your changes, explaining what the PR does and why it’s needed. Make sure to reference the related issue (e.g., "Fixes #123").
-  Note: At least two reviewers are required to approve the PR before it can be merged.
+Full v3 gate before opening/updating a PR:
 
-- **Review Process:**
-  Team members will review your code, provide feedback, and suggest improvements. Be open to constructive criticism and ready to iterate on your work.
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+```
 
-- **Address Feedback:**
-  Make any necessary changes based on the feedback. Once you’ve addressed the comments, tag the reviewers to let them know your updates are ready for another review.
+4. Commit using Conventional Commit style (commitlint is enforced).
 
-- **Merge:**
-  Once your PR is approved by at least two reviewers, it will be merged into the main project. Congratulations, your code is now part of the project!
+Examples:
+- `fix(api): handle null tool bindings in workflow parser`
+- `feat(frontend): add workflow run timeline widget`
+- `docs: update v3 contribution guide`
 
-#### **Do you have questions about the source code?**
+5. Open a pull request to `dev`.
+- Fill the PR template.
+- Link related issues (for example: `Fixes #123`).
+- Include test evidence and screenshots/logs when relevant.
 
-* Ask any question about how to use Hexabot in our [Discord Channel](https://discord.gg/rNb9t2MFkG).
+## Reporting bugs and requesting features
 
+- Bugs: open a GitHub bug issue with clear reproduction steps and logs.
+- Features: open a feature request issue, or discuss early on Discord before large changes.
+- Questions/support: use Discord: <https://discord.gg/rNb9t2MFkG>
 
-Hexabot's Community Edition is a volunteer effort. We encourage you to pitch in and join us!
+## For Coding Agents (AI Contributors)
 
-Thanks! :heart:
+Read this section as an operational checklist.
 
-Hexastack Team
+1. Instruction precedence
+- Read the closest `AGENTS.md` for every file you edit.
+- Nearest `AGENTS.md` overrides broader instructions.
+- For cross-package changes, follow root `AGENTS.md` plus each package-level `AGENTS.md`.
+
+2. Package manager and dependency rules
+- Use PNPM only for workspace work.
+- Do not use `npm install` or `yarn` for monorepo dependency updates.
+- Add dependencies from repo root with filters:
+  - `pnpm add <pkg> --filter <workspace-name>`
+  - `pnpm add -D <pkg> --filter <workspace-name>`
+- Do not hand-edit `pnpm-lock.yaml`.
+
+3. Change guardrails
+- Keep diffs scoped to the task.
+- Do not edit generated artifacts (`dist/`, `coverage/`, build output).
+- Preserve required license headers in source files.
+- Do not run release/version scripts unless explicitly requested.
+
+4. Validation expectations
+- Run `typecheck`, `lint`, `test`, and `build` for touched workspaces.
+- For shared contracts or cross-package changes, run full workspace checks from root.
+
+## License and contribution terms
+
+This section is a contributor summary, not legal advice. Always consult license files directly.
+
+### License map in this monorepo (v3/dev)
+
+- Root workspace and all current workspace packages (`api`, `frontend`, `widget`, `graph`, `agentic`, `cli`) declare `FCL-1.0-ALv2`.
+
+### FCL-1.0-ALv2 (summary)
+
+For components under `FCL-1.0-ALv2`:
+- Future license: Apache-2.0 becomes available per version on the second anniversary of that version's availability.
+- License-key protections must not be removed, disabled, or circumvented.
+- Competing use is restricted until the Apache-2.0 change date for that version.
+- Redistribution must keep applicable notices and license terms.
+
+### Source of truth
+
+When there is any ambiguity, treat these as authoritative:
+- `LICENSE.md`
+- each package's `package.json` `license` field
+- package-level notices/headers where applicable
+
+By submitting a contribution, you agree that your changes are provided under the license terms applicable to the files/packages you modify.
+
+## Community standards
+
+- Follow our [Code of Conduct](./CODE_OF_CONDUCT.md).
+- Be respectful in reviews and discussions.
+- Prefer constructive, evidence-based feedback.
+
+Thanks for contributing to Hexabot.
