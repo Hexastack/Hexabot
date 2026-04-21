@@ -22,6 +22,7 @@ import {
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { StdOutgoingEnvelope } from '@/chat/types/message';
+import type { ActionOptions } from '@/chat/types/options';
 import { I18nService } from '@/i18n';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
@@ -110,7 +111,7 @@ export default abstract class ChannelHandler<
   abstract sendMessage(
     event: MessageInboundEvent<N>,
     envelope: StdOutgoingEnvelope,
-    options: any,
+    options: ActionOptions,
   ): Promise<{ mid: string }>;
 
   /**
