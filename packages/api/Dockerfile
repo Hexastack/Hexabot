@@ -13,6 +13,7 @@ WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml turbo.json pnpm-lock.yaml .npmrc ./
 COPY packages/api/package.json packages/api/package.json
+COPY packages/types/package.json packages/types/package.json
 COPY packages/frontend/package.json packages/frontend/package.json
 COPY packages/widget/package.json packages/widget/package.json
 
@@ -21,9 +22,11 @@ RUN pnpm install --filter @hexabot-ai/api... --prod=false
 FROM deps AS build
 
 COPY packages/api ./packages/api
+COPY packages/types ./packages/types
 COPY packages/frontend ./packages/frontend
 COPY packages/widget ./packages/widget
 
+RUN pnpm --filter @hexabot-ai/types run build
 RUN pnpm --filter @hexabot-ai/api run build
 
 FROM base AS development
@@ -44,6 +47,7 @@ WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml turbo.json pnpm-lock.yaml .npmrc ./
 COPY packages/api/package.json packages/api/package.json
+COPY packages/types/package.json packages/types/package.json
 COPY packages/frontend/package.json packages/frontend/package.json
 COPY packages/widget/package.json packages/widget/package.json
 
