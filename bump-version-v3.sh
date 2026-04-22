@@ -11,7 +11,7 @@ fi
 RELEASE_TYPE=$1
 ROOT_DIR=$(pwd)
 TARGET_BRANCH="dev"
-PUBLISH_PACKAGES=("@hexabot-ai/api" "@hexabot-ai/cli" "@hexabot-ai/widget")
+PUBLISH_PACKAGES=("@hexabot-ai/agentic" "@hexabot-ai/api" "@hexabot-ai/cli" "@hexabot-ai/widget")
 BUMP_ONLY_PACKAGES=("@hexabot-ai/frontend")
 VERSION_PACKAGES=("${PUBLISH_PACKAGES[@]}" "${BUMP_ONLY_PACKAGES[@]}")
 ALLOWED_RELEASE_TYPES=("prepatch" "preminor" "prerelease")
