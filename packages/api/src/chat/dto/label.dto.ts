@@ -4,8 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  labelFullSchema,
+  labelSchema,
+  labelStubSchema,
+  type Label,
+  type LabelFull,
+  type LabelStub,
+} from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsObject,
@@ -15,50 +22,11 @@ import {
 } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
-import { LabelGroup } from './label-group.dto';
-import { Subscriber } from './subscriber.dto';
+export { labelFullSchema, labelSchema, labelStubSchema };
 
-@Exclude()
-export class LabelStub extends BaseStub {
-  @Expose()
-  title!: string;
-
-  @Expose()
-  name!: string;
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
-  label_id?: Record<string, any> | null;
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
-  description?: string | null;
-
-  @Expose()
-  builtin!: boolean;
-}
-
-@Exclude()
-export class Label extends LabelStub {
-  @Expose({ name: 'groupId' })
-  group?: string | null;
-
-  @Exclude()
-  users?: never;
-}
-
-@Exclude()
-export class LabelFull extends LabelStub {
-  @Expose()
-  @Type(() => Subscriber)
-  users?: Subscriber[];
-
-  @Expose()
-  @Type(() => LabelGroup)
-  group?: LabelGroup | null;
-}
+export type { Label, LabelFull, LabelStub };
 
 export class LabelCreateDto {
   @ApiProperty({ description: 'Label title', type: String })
@@ -97,8 +65,8 @@ export class LabelUpdateDto extends PartialType(LabelCreateDto) {}
 
 export type LabelDto = TDto<
   {
-    plain: typeof Label;
-    full: typeof LabelFull;
+    plain: typeof labelSchema;
+    full: typeof labelFullSchema;
   },
   {
     create: LabelCreateDto;

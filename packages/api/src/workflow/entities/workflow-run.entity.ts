@@ -21,9 +21,9 @@ import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
-  WorkflowRun,
+  workflowRunFullSchema,
+  workflowRunSchema,
   WorkflowRunDto,
-  WorkflowRunFull,
 } from '../dto/workflow-run.dto';
 
 import { WorkflowVersionOrmEntity } from './workflow-version.entity';
@@ -39,9 +39,9 @@ export const WORKFLOW_RUN_STATUSES: WorkflowRunStatus[] = [
 
 @Entity({ name: 'workflow_runs' })
 export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunDto> {
-  plainCls = WorkflowRun;
+  plainCls = workflowRunSchema;
 
-  fullCls = WorkflowRunFull;
+  fullCls = workflowRunFullSchema;
 
   /** Workflow definition executed by this run. */
   @ManyToOne(() => WorkflowOrmEntity, {

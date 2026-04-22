@@ -4,9 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { coerceAttachment, type Attachment } from '@hexabot-ai/types';
+import {
+  subscriberFullSchema,
+  subscriberSchema,
+  subscriberStubSchema,
+  type Subscriber,
+  type SubscriberFull,
+  type SubscriberStub,
+} from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -17,72 +23,16 @@ import {
 } from 'class-validator';
 
 import { ChannelName } from '@/channel/types';
-import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
-import {
-  UserProfileCreateDto,
-  UserProfileStub,
-} from '@/user/dto/user-profile.dto';
+import { UserProfileCreateDto } from '@/user/dto/user-profile.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
 import { channelDataSchema, SubscriberChannelData } from '../types/channel';
 
-import { Label } from './label.dto';
+export { subscriberFullSchema, subscriberSchema, subscriberStubSchema };
 
-@Exclude()
-export class SubscriberStub extends UserProfileStub {
-  @Expose()
-  locale: string | null;
-
-  @Expose()
-  gender: string | null;
-
-  @Expose()
-  country: string | null;
-
-  @Expose()
-  foreignId: string;
-
-  @Expose()
-  assignedAt: Date | null;
-
-  @Expose()
-  lastvisit: Date | null;
-
-  @Expose()
-  retainedFrom: Date | null;
-
-  @Expose()
-  channel!: SubscriberChannelData<ChannelName>;
-}
-
-@Exclude()
-export class Subscriber extends SubscriberStub {
-  @Expose({ name: 'labelIds' })
-  labels!: string[];
-
-  @Expose({ name: 'assignedToId' })
-  assignedTo: string | null;
-
-  @Expose({ name: 'avatarId' })
-  avatar: string | null;
-}
-
-@Exclude()
-export class SubscriberFull extends SubscriberStub {
-  @Expose()
-  @Type(() => Label)
-  labels!: Label[];
-
-  @Expose()
-  @Type(() => UserProfileAssignedStub)
-  assignedTo: UserProfileAssignedStub | null;
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? value : coerceAttachment(value)))
-  avatar: Attachment | null;
-}
+export type { Subscriber, SubscriberFull, SubscriberStub };
 
 export class SubscriberCreateDto extends UserProfileCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber locale', type: String })
@@ -113,7 +63,7 @@ export class SubscriberCreateDto extends UserProfileCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber foreign id', type: String })
   @IsOptional()
   @IsString()
-  foreignId: string;
+  foreignId: string | null;
 
   @ApiProperty({ description: 'Subscriber labels', type: Array })
   @IsArray()
@@ -178,8 +128,8 @@ export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}
 
 export type SubscriberDto = TDto<
   {
-    plain: typeof Subscriber;
-    full: typeof SubscriberFull;
+    plain: typeof subscriberSchema;
+    full: typeof subscriberFullSchema;
   },
   {
     create: SubscriberCreateDto;

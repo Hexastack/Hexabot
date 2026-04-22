@@ -270,9 +270,15 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    return await this.workflowService.updateOne(id, {
+    const updated = await this.workflowService.updateOne(id, {
       publishedVersion: null,
     });
+
+    return {
+      ...updated,
+      currentVersion: updated.currentVersion ?? workflow.currentVersion,
+      publishedVersion: null,
+    };
   }
 
   /**

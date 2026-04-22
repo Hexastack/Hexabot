@@ -23,9 +23,9 @@ import { TDto } from '@/utils';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
-  Subscriber,
+  subscriberFullSchema,
   SubscriberDto,
-  SubscriberFull,
+  subscriberSchema,
 } from '../dto/subscriber.dto';
 
 import { LabelOrmEntity } from './label.entity';
@@ -43,10 +43,10 @@ export class SubscriberOrmEntity<
   Dto extends TDto = SubscriberDto,
 > extends UserProfileOrmEntity<Dto> {
   plainCls: Dto['transformers']['plain'] =
-    Subscriber as Dto['transformers']['plain'];
+    subscriberSchema as Dto['transformers']['plain'];
 
   fullCls: Dto['transformers']['full'] =
-    SubscriberFull as Dto['transformers']['full'];
+    subscriberFullSchema as Dto['transformers']['full'];
 
   @Column({ type: 'varchar', length: 5, nullable: true })
   locale: string | null;

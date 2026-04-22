@@ -11,7 +11,7 @@ import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { Thread, ThreadDto, ThreadFull } from '../dto/thread.dto';
+import { threadFullSchema, ThreadDto, threadSchema } from '../dto/thread.dto';
 
 import { SubscriberOrmEntity } from './subscriber.entity';
 
@@ -25,9 +25,9 @@ export type ThreadCloseReason = (typeof THREAD_CLOSE_REASONS)[number];
 
 @Entity({ name: 'threads' })
 export class ThreadOrmEntity extends BaseOrmEntity<ThreadDto> {
-  plainCls = Thread;
+  plainCls = threadSchema;
 
-  fullCls = ThreadFull;
+  fullCls = threadFullSchema;
 
   @ManyToOne(() => SubscriberOrmEntity, {
     nullable: false,

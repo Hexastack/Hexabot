@@ -579,6 +579,9 @@ describe('SubscriberService (TypeORM)', () => {
 
       expect(updatedSubscriber.assignedTo).not.toBeNull();
       expect(updatedSubscriber.assignedAt).not.toBeNull();
+      if (!profile.foreignId) {
+        throw new Error('Expected fixture subscriber to have a foreignId');
+      }
 
       const updated = await subscriberService.handBackByForeignId(
         profile.foreignId,

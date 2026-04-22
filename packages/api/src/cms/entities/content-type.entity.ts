@@ -11,9 +11,9 @@ import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import {
-  ContentType,
+  contentTypeFullSchema,
+  contentTypeSchema,
   ContentTypeDto,
-  ContentTypeFull,
 } from '../dto/contentType.dto';
 
 import { ContentOrmEntity } from './content.entity';
@@ -21,9 +21,9 @@ import { ContentOrmEntity } from './content.entity';
 @Entity({ name: 'content_types' })
 @Index(['name'], { unique: true })
 export class ContentTypeOrmEntity extends BaseOrmEntity<ContentTypeDto> {
-  plainCls = ContentType;
+  plainCls = contentTypeSchema;
 
-  fullCls = ContentTypeFull;
+  fullCls = contentTypeFullSchema;
 
   @Column({ unique: true })
   name!: string;

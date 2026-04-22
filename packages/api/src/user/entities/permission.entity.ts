@@ -18,9 +18,9 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
-  Permission,
   PermissionDto,
-  PermissionFull,
+  permissionFullSchema,
+  permissionSchema,
 } from '../dto/permission.dto';
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';
@@ -31,9 +31,9 @@ import { RoleOrmEntity } from './role.entity';
 @Entity({ name: 'permissions' })
 @Index(['model', 'action', 'role', 'relation'], { unique: true })
 export class PermissionOrmEntity extends BaseOrmEntity<PermissionDto> {
-  plainCls = Permission;
+  plainCls = permissionSchema;
 
-  fullCls = PermissionFull;
+  fullCls = permissionFullSchema;
 
   @ManyToOne(() => ModelOrmEntity, (model) => model.permissions, {
     onDelete: 'CASCADE',

@@ -4,15 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { coerceUser, type User } from '@hexabot-ai/types';
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
-  Exclude,
-  Expose,
-  plainToInstance,
-  Transform,
-  Type,
-} from 'class-transformer';
+  memoryRecordFullSchema,
+  memoryRecordSchema,
+  memoryRecordStubSchema,
+  type MemoryRecord,
+  type MemoryRecordFull,
+  type MemoryRecordStub,
+} from '@hexabot-ai/types';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsDate,
   IsDefined,
@@ -22,91 +23,14 @@ import {
   Min,
 } from 'class-validator';
 
-import { Subscriber } from '@/chat/dto/subscriber.dto';
-import { Thread } from '@/chat/dto/thread.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import type { MemoryValue } from '../types';
 
-import { MemoryDefinition } from './memory-definition.dto';
-import { WorkflowRun } from './workflow-run.dto';
-import { Workflow } from './workflow.dto';
+export { memoryRecordFullSchema, memoryRecordSchema, memoryRecordStubSchema };
 
-const toOwnerProfile = (value: unknown): Subscriber | User => {
-  if (
-    value &&
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    ('username' in value ||
-      'email' in value ||
-      'sendEmail' in value ||
-      'roles' in value ||
-      'roleIds' in value)
-  ) {
-    return coerceUser(value);
-  }
-
-  return plainToInstance(Subscriber, value, {
-    exposeUnsetFields: false,
-  });
-};
-
-@Exclude()
-export class MemoryRecordStub extends BaseStub {
-  @Expose()
-  value!: MemoryValue;
-
-  @Expose()
-  ttlSeconds?: number | null;
-
-  @Expose()
-  expiresAt?: Date | null;
-}
-
-@Exclude()
-export class MemoryRecord extends MemoryRecordStub {
-  @Expose({ name: 'definitionId' })
-  definition!: string;
-
-  @Expose({ name: 'ownerId' })
-  owner!: string;
-
-  @Expose({ name: 'workflowId' })
-  @Transform(({ value }) => (value == null ? undefined : value))
-  workflow?: string | null;
-
-  @Expose({ name: 'runId' })
-  @Transform(({ value }) => (value == null ? undefined : value))
-  run?: string | null;
-
-  @Expose({ name: 'threadId' })
-  @Transform(({ value }) => (value == null ? undefined : value))
-  thread?: string | null;
-}
-
-@Exclude()
-export class MemoryRecordFull extends MemoryRecordStub {
-  @Expose()
-  @Type(() => MemoryDefinition)
-  definition!: MemoryDefinition;
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? value : toOwnerProfile(value)))
-  owner!: Subscriber | User;
-
-  @Expose()
-  @Type(() => Workflow)
-  workflow?: Workflow | null;
-
-  @Expose()
-  @Type(() => WorkflowRun)
-  run?: WorkflowRun | null;
-
-  @Expose()
-  @Type(() => Thread)
-  thread?: Thread | null;
-}
+export type { MemoryRecord, MemoryRecordFull, MemoryRecordStub };
 
 export class MemoryRecordCreateDto {
   @ApiProperty({
@@ -182,8 +106,8 @@ export class MemoryRecordUpdateDto extends PartialType(MemoryRecordCreateDto) {}
 
 export type MemoryRecordDto = TDto<
   {
-    plain: typeof MemoryRecord;
-    full: typeof MemoryRecordFull;
+    plain: typeof memoryRecordSchema;
+    full: typeof memoryRecordFullSchema;
   },
   {
     create: MemoryRecordCreateDto;

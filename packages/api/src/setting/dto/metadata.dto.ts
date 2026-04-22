@@ -4,23 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  metadataFullSchema,
+  metadataSchema,
+  metadataStubSchema,
+  type Metadata,
+  type MetadataFull,
+  type MetadataStub,
+} from '@hexabot-ai/types';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
-@Exclude()
-export class MetadataStub extends BaseStub {
-  @Expose()
-  name!: string;
+export { metadataFullSchema, metadataSchema, metadataStubSchema };
 
-  @Expose()
-  value!: any;
-}
-
-@Exclude()
-export class Metadata extends MetadataStub {}
+export type { Metadata, MetadataFull, MetadataStub };
 
 export class MetadataCreateDto {
   @ApiProperty({ description: 'Metadata name', type: String })
@@ -37,8 +36,8 @@ export class MetadataUpdateDto extends PartialType(MetadataCreateDto) {}
 
 export type MetadataDto = TDto<
   {
-    plain: typeof Metadata;
-    full: typeof Metadata;
+    plain: typeof metadataSchema;
+    full: typeof metadataFullSchema;
   },
   {
     create: MetadataCreateDto;

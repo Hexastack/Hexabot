@@ -4,15 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowDefinition } from '@hexabot-ai/agentic';
-import { coerceUser, type User } from '@hexabot-ai/types';
+import {
+  createWorkflowFullSchema as createTypesWorkflowFullSchema,
+  workflowSchema,
+  workflowStubSchema,
+  type Workflow,
+  type WorkflowFull,
+  type WorkflowStub,
+} from '@hexabot-ai/types';
 import {
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
   PartialType,
 } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -27,100 +32,23 @@ import { z } from 'zod';
 
 import { Validate } from '@/utils';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
 import { NestCronSchema } from '../schemas/workflow-schemas';
 import { DirectionType, WorkflowType } from '../types';
 
-import { WorkflowVersion } from './workflow-version.dto';
+export const workflowFullSchema = createTypesWorkflowFullSchema({
+  parseDefinition: parseWorkflowDefinition,
+});
+
+export { createTypesWorkflowFullSchema as createWorkflowFullSchema };
+
+export { workflowSchema, workflowStubSchema };
+
+export type { Workflow, WorkflowFull, WorkflowStub };
 
 const WorkflowInputSchemaValidator = z.looseObject({});
-
-@Exclude()
-export class WorkflowStub extends BaseStub {
-  @Expose()
-  name!: string;
-
-  @Expose()
-  description?: string | null;
-
-  @Expose()
-  type!: WorkflowType;
-
-  @Expose()
-  schedule?: string | null;
-
-  @Expose()
-  inputSchema!: JsonSchema;
-
-  @Expose()
-  builtin!: boolean;
-
-  @Expose()
-  x!: number;
-
-  @Expose()
-  y!: number;
-
-  @Expose()
-  zoom!: number;
-
-  @Expose()
-  direction: DirectionType;
-}
-
-@Exclude()
-export class Workflow extends WorkflowStub {
-  @Expose({ name: 'currentVersionId' })
-  currentVersion: string | null;
-
-  @Expose({ name: 'publishedVersionId' })
-  publishedVersion: string | null;
-
-  @Expose({ name: 'createdById' })
-  createdBy!: string;
-
-  @Expose({ name: 'runAfterMs' })
-  runAfterMs!: number;
-}
-
-@Exclude()
-export class WorkflowFull extends WorkflowStub {
-  @Expose()
-  @Type(() => WorkflowVersion)
-  currentVersion!: WorkflowVersion | null;
-
-  @Expose()
-  @Type(() => WorkflowVersion)
-  publishedVersion!: WorkflowVersion | null;
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? value : coerceUser(value)))
-  createdBy!: User;
-
-  @Expose()
-  @Transform(({ obj }) => {
-    const definitionYml = obj?.currentVersion?.definitionYml;
-    if (typeof definitionYml !== 'string' || definitionYml.trim() === '') {
-      return undefined;
-    }
-
-    return definitionYml;
-  })
-  definitionYml?: string;
-
-  @Expose()
-  @Transform(({ obj }) => {
-    const definitionYml = obj?.currentVersion?.definitionYml;
-    if (typeof definitionYml !== 'string' || definitionYml.trim() === '') {
-      return undefined;
-    }
-
-    return parseWorkflowDefinition(definitionYml);
-  })
-  definition?: WorkflowDefinition;
-}
 
 export class WorkflowCreateDto {
   @ApiProperty({ description: 'Workflow name', type: String })
@@ -231,8 +159,8 @@ export class WorkflowUpdateDto extends PartialType(
 
 export type WorkflowDto = TDto<
   {
-    plain: typeof Workflow;
-    full: typeof WorkflowFull;
+    plain: typeof workflowSchema;
+    full: typeof workflowFullSchema;
   },
   {
     create: WorkflowCreateDto;

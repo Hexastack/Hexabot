@@ -137,7 +137,11 @@ export abstract class WorkflowRuntimeContext<
     // Hydrate persisted state first, then merge transient event context.
     await this.hydrate(run.context);
     await this.hydrate(event.getContextData());
-    this.initiatorId = run.triggeredBy.id;
+    const triggeredById = run.triggeredBy?.id;
+    if (!triggeredById) {
+      throw new Error(`Workflow run ${run.id} is missing triggeredBy`);
+    }
+    this.initiatorId = triggeredById;
     this.workflowId = run.workflow.id;
     this.workflowRunId = run.id;
     this.threadId = run.thread?.id ?? event.getThreadId() ?? null;

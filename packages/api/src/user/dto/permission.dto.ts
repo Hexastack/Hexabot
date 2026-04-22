@@ -4,47 +4,26 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  permissionFullSchema,
+  permissionSchema,
+  permissionStubSchema,
+  type Permission,
+  type PermissionFull,
+  type PermissionStub,
+} from '@hexabot-ai/types';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';
 
-import { Model } from './model.dto';
-import { Role } from './role.dto';
+export { permissionFullSchema, permissionSchema, permissionStubSchema };
 
-@Exclude()
-export class PermissionStub extends BaseStub {
-  @Expose()
-  action: string;
-
-  @Expose()
-  relation: TRelation;
-}
-
-@Exclude()
-export class Permission extends PermissionStub {
-  @Expose({ name: 'modelId' })
-  model: string;
-
-  @Expose({ name: 'roleId' })
-  role: string;
-}
-
-@Exclude()
-export class PermissionFull extends PermissionStub {
-  @Expose()
-  @Type(() => Model)
-  model: Model;
-
-  @Expose()
-  @Type(() => Role)
-  role: Role;
-}
+export type { Permission, PermissionFull, PermissionStub };
 
 export class PermissionCreateDto {
   @ApiProperty({ description: 'Id of the model', type: String })
@@ -75,8 +54,8 @@ export class PermissionCreateDto {
 
 export type PermissionDto = TDto<
   {
-    plain: typeof Permission;
-    full: typeof PermissionFull;
+    plain: typeof permissionSchema;
+    full: typeof permissionFullSchema;
   },
   {
     create: PermissionCreateDto;

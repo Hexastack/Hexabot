@@ -143,9 +143,12 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     }
 
     const channelData = subscriber.channel;
-
-    if (!this.channelService.findChannel(channelData.name)) {
+    const channelName = channelData.name;
+    if (!channelName || !this.channelService.findChannel(channelName)) {
       throw new BadRequestException(`Subscriber channel not found`);
+    }
+    if (!subscriber.foreignId) {
+      throw new BadRequestException(`Subscriber foreign ID is missing`);
     }
 
     const envelope: StdOutgoingEnvelope = {
@@ -160,14 +163,15 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
             1,
           )
         ).at(0)?.mid;
-    const channelName = channelData.name as ChannelName;
-    const channelHandler = this.channelService.getChannelHandler(channelName);
+    const typedChannelName = channelName as ChannelName;
+    const channelHandler =
+      this.channelService.getChannelHandler(typedChannelName);
     const eventContext = new ChannelInboundEventContext<
       ChannelName,
       Record<string, unknown>,
       Record<string, unknown>
     >(
-      channelName,
+      typedChannelName,
       {
         source: 'message-controller',
       },

@@ -80,6 +80,10 @@ export class WebsocketGateway
     content: any,
     excludedRooms: string[] = [],
   ) {
+    if (!subscriber.foreignId) {
+      return;
+    }
+
     this.io.to(subscriber.foreignId).except(excludedRooms).emit(type, content);
   }
 

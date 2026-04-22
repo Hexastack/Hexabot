@@ -20,7 +20,7 @@ import { EnumColumn } from '@/database';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation, TDto } from '@/utils';
 
-import { UserProfileDto, UserProfileStub } from '../dto/user-profile.dto';
+import { UserProfileDto, userProfileStubSchema } from '../dto/user-profile.dto';
 
 export enum EUserProfileType {
   SubscriberOrmEntity = 'SubscriberOrmEntity',
@@ -37,10 +37,10 @@ export class UserProfileOrmEntity<
   Dto extends TDto = UserProfileDto,
 > extends BaseOrmEntity<Dto> {
   plainCls: Dto['transformers']['plain'] =
-    UserProfileStub as Dto['transformers']['plain'];
+    userProfileStubSchema as Dto['transformers']['plain'];
 
   fullCls: Dto['transformers']['full'] =
-    UserProfileStub as Dto['transformers']['full'];
+    userProfileStubSchema as Dto['transformers']['full'];
 
   @Column()
   firstName: string;

@@ -13,13 +13,17 @@ import {
 } from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { Language, LanguageDto } from '../dto/language.dto';
+import {
+  languageFullSchema,
+  LanguageDto,
+  languageSchema,
+} from '../dto/language.dto';
 
 @Entity({ name: 'languages' })
 export class LanguageOrmEntity extends BaseOrmEntity<LanguageDto> {
-  plainCls = Language;
+  plainCls = languageSchema;
 
-  fullCls = Language;
+  fullCls = languageFullSchema;
 
   @Column({ unique: true })
   @Index()

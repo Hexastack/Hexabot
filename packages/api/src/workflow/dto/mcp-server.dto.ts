@@ -4,8 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  mcpServerFullSchema,
+  mcpServerSchema,
+  mcpServerStubSchema,
+  type McpServer,
+  type McpServerFull,
+  type McpServerStub,
+} from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -17,49 +24,14 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-import { Credential } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import { McpServerTransport } from '../types';
 
-@Exclude()
-export class McpServerStub extends BaseStub {
-  @Expose()
-  name!: string;
+export { mcpServerFullSchema, mcpServerSchema, mcpServerStubSchema };
 
-  @Expose()
-  enabled!: boolean;
-
-  @Expose()
-  transport!: McpServerTransport;
-
-  @Expose()
-  url!: string | null;
-
-  @Expose()
-  command!: string | null;
-
-  @Expose()
-  args!: string[] | null;
-
-  @Expose()
-  cwd!: string | null;
-}
-
-@Exclude()
-export class McpServer extends McpServerStub {
-  @Expose({ name: 'credentialId' })
-  @Transform(({ value }) => value ?? null)
-  credential!: string | null;
-}
-
-@Exclude()
-export class McpServerFull extends McpServerStub {
-  @Expose()
-  @Type(() => Credential)
-  credential?: Credential | null;
-}
+export type { McpServer, McpServerFull, McpServerStub };
 
 export class McpServerCreateDto {
   @ApiProperty({
@@ -163,8 +135,8 @@ export class McpServerUpdateDto extends PartialType(McpServerCreateDto) {}
 
 export type McpServerDto = TDto<
   {
-    plain: typeof McpServer;
-    full: typeof McpServerFull;
+    plain: typeof mcpServerSchema;
+    full: typeof mcpServerFullSchema;
   },
   {
     create: McpServerCreateDto;

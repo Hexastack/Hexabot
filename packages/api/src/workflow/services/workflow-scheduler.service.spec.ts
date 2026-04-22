@@ -13,6 +13,7 @@ import { FindOneOptions } from 'typeorm';
 
 import { UserService } from '@/user';
 import { EHook, InferActionsDto } from '@/utils';
+import { userFixtureIds } from '@/utils/test/fixtures/user';
 import { installScheduledWorkflowFixturesTypeOrm } from '@/utils/test/fixtures/workflow';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import {
@@ -177,7 +178,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
       description: 'Created by workflow scheduler test',
       type: WorkflowType.scheduled,
       schedule: workflow.schedule ?? '*/10 * * * * *',
-      createdBy: workflow.createdBy,
+      createdBy: workflow.createdBy ?? userFixtureIds.admin,
     });
 
     expect(

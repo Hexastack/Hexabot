@@ -4,16 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Setting } from '@/setting/dto/setting.dto';
+import type { Setting } from '@/setting/dto/setting.dto';
 
-export enum FieldType {
-  text = 'text',
-  url = 'url',
-  textarea = 'textarea',
-  checkbox = 'checkbox',
-  file = 'file',
-  html = 'html',
-}
+export { FieldType } from '@hexabot-ai/types';
 
 export type AnySetting = Setting;
 

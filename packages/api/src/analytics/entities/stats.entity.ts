@@ -10,7 +10,12 @@ import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator'
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { Stats, StatsDto } from '../dto/stats.dto';
+import {
+  statsFullSchema,
+  statsSchema,
+  type Stats,
+  StatsDto,
+} from '../dto/stats.dto';
 import { StatsType } from '../enums/stats-type.enum';
 
 export { StatsType };
@@ -24,9 +29,9 @@ export type ToLinesType = {
 @Entity({ name: 'stats' })
 @Index(['day', 'type', 'name'], { unique: true })
 export class StatsOrmEntity extends BaseOrmEntity<StatsDto> {
-  plainCls = Stats;
+  plainCls = statsSchema;
 
-  fullCls = Stats;
+  fullCls = statsFullSchema;
 
   /**
    * Type of the captured insight.

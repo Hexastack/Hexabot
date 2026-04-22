@@ -25,15 +25,19 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { CredentialOrmEntity } from '@/user';
 import { AsRelation } from '@/utils';
 
-import { McpServer, McpServerDto, McpServerFull } from '../dto/mcp-server.dto';
+import {
+  mcpServerFullSchema,
+  McpServerDto,
+  mcpServerSchema,
+} from '../dto/mcp-server.dto';
 import { McpServerTransport } from '../types';
 
 @Entity({ name: 'mcp_servers' })
 @Index(['name'], { unique: true })
 export class McpServerOrmEntity extends BaseOrmEntity<McpServerDto> {
-  plainCls = McpServer;
+  plainCls = mcpServerSchema;
 
-  fullCls = McpServerFull;
+  fullCls = mcpServerFullSchema;
 
   private originalTransport?: McpServerTransport;
 

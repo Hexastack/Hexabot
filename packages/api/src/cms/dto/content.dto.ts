@@ -4,42 +4,23 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  contentFullSchema,
+  contentSchema,
+  contentStubSchema,
+  type Content,
+  type ContentFull,
+  type ContentStub,
+} from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
-import { ContentType } from './contentType.dto';
+export { contentFullSchema, contentSchema, contentStubSchema };
 
-@Exclude()
-export class ContentStub extends BaseStub {
-  @Expose()
-  title!: string;
-
-  @Expose()
-  status!: boolean;
-
-  @Expose()
-  properties!: Record<string, any> | null;
-
-  @Expose()
-  searchText: string;
-}
-
-@Exclude()
-export class Content extends ContentStub {
-  @Expose({ name: 'contentTypeId' })
-  contentType!: string;
-}
-
-@Exclude()
-export class ContentFull extends ContentStub {
-  @Expose()
-  @Type(() => ContentType)
-  contentType!: ContentType;
-}
+export type { Content, ContentFull, ContentStub };
 
 export class ContentCreateDto {
   @ApiProperty({ description: 'Content entity', type: String })
@@ -67,8 +48,8 @@ export class ContentUpdateDto extends PartialType(ContentCreateDto) {}
 
 export type ContentDto = TDto<
   {
-    plain: typeof Content;
-    full: typeof ContentFull;
+    plain: typeof contentSchema;
+    full: typeof contentFullSchema;
   },
   {
     create: ContentCreateDto;

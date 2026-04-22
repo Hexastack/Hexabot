@@ -586,8 +586,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     this.logger.debug('subscribe (isSocket=true)');
     try {
       const profile = await this.getOrCreateSession(req);
+      const profileForeignId = profile.foreignId;
+      if (!profileForeignId) {
+        throw new Error('Session profile foreignId is missing');
+      }
       try {
-        await req.socket.join(profile.foreignId);
+        await req.socket.join(profileForeignId);
       } catch (err) {
         this.logger.error('Unable to subscribe via websocket', err);
       }
@@ -824,6 +828,9 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         // Generate unique ID and handle message
         messageEvent.setMessageId(this.generateId());
         // Force author id from session
+        if (!profile.foreignId) {
+          throw new Error('Session profile foreignId is missing');
+        }
         messageEvent.setAuthorForeignId(profile.foreignId);
         // Use a server-side timestamp so realtime clients can sort deterministically.
         messageEvent.setCreatedAt(new Date());
@@ -1035,7 +1042,11 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     } = sender;
     const subscriber: SubscriberCreateDto = {
       ...rest,
-      channel: sender.channel,
+      channel: {
+        ...sender.channel,
+        name: sender.channel.name ?? this.name,
+        data: sender.channel.data ?? undefined,
+      },
     };
 
     return subscriber;

@@ -4,63 +4,30 @@
  * Full terms: see LICENSE.md.
  */
 
-import { coerceUser, type User } from '@hexabot-ai/types';
+import {
+  workflowVersionFullSchema,
+  workflowVersionSchema,
+  workflowVersionStubSchema,
+  type WorkflowVersion,
+  type WorkflowVersionFull,
+  type WorkflowVersionStub,
+} from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import { IsWorkflowYaml } from '../decorators/is-workflow-yaml.decorator';
 import { WorkflowVersionAction } from '../types';
 
-import { Workflow } from './workflow.dto';
+export {
+  workflowVersionFullSchema,
+  workflowVersionSchema,
+  workflowVersionStubSchema,
+};
 
-@Exclude()
-export class WorkflowVersionStub extends BaseStub {
-  @Expose()
-  version!: number;
-
-  @Expose()
-  definitionYml!: string;
-
-  @Expose()
-  checksum!: string;
-
-  @Expose()
-  message?: string | null;
-
-  @Expose()
-  action?: WorkflowVersionAction | null;
-}
-
-@Exclude()
-export class WorkflowVersion extends WorkflowVersionStub {
-  @Expose({ name: 'parentVersionId' })
-  parentVersion?: string | null;
-
-  @Expose({ name: 'workflowId' })
-  workflow!: string;
-
-  @Expose({ name: 'createdById' })
-  createdBy: string | null;
-}
-
-@Exclude()
-export class WorkflowVersionFull extends WorkflowVersionStub {
-  @Expose()
-  @Type(() => WorkflowVersion)
-  parentVersion!: WorkflowVersion;
-
-  @Expose()
-  @Type(() => Workflow)
-  workflow!: Workflow;
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? value : coerceUser(value)))
-  createdBy: User | null;
-}
+export type { WorkflowVersion, WorkflowVersionFull, WorkflowVersionStub };
 
 export class WorkflowNewVersionDto {
   @ApiPropertyOptional({
@@ -137,8 +104,8 @@ export class WorkflowVersionRestoreDto {
 
 export type WorkflowVersionDto = TDto<
   {
-    plain: typeof WorkflowVersion;
-    full: typeof WorkflowVersionFull;
+    plain: typeof workflowVersionSchema;
+    full: typeof workflowVersionFullSchema;
   },
   {
     create: WorkflowVersionCreateDto;

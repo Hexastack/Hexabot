@@ -4,26 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  type UserProfile,
+  userProfileFullSchema,
+  userProfileSchema,
+  userProfileStubSchema,
+  type UserProfileFull,
+  type UserProfileStub,
+} from '@hexabot-ai/types';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-import { BaseStub, TDto } from '@/utils';
+import { TDto } from '@/utils';
 
-@Exclude()
-export class UserProfileStub extends BaseStub {
-  @Expose()
-  firstName!: string;
+export { userProfileFullSchema, userProfileSchema, userProfileStubSchema };
 
-  @Expose()
-  lastName!: string;
-
-  @Expose()
-  language!: string | null;
-
-  @Expose()
-  timezone: number = 0;
-}
+export type { UserProfile, UserProfileFull, UserProfileStub };
 
 export class UserProfileCreateDto {
   @ApiProperty({ description: `User Profile firstName`, type: String })
@@ -38,6 +34,6 @@ export class UserProfileCreateDto {
 }
 
 export type UserProfileDto = TDto<{
-  plain: typeof UserProfileStub;
-  full: typeof UserProfileStub;
+  plain: typeof userProfileSchema;
+  full: typeof userProfileFullSchema;
 }>;

@@ -12,9 +12,9 @@ import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import {
-  MemoryDefinition,
+  memoryDefinitionFullSchema,
+  memoryDefinitionSchema,
   MemoryDefinitionDto,
-  MemoryDefinitionFull,
 } from '../dto/memory-definition.dto';
 import { MemoryScope } from '../types';
 
@@ -22,9 +22,9 @@ import { MemoryScope } from '../types';
 @Index(['name'], { unique: true })
 @Index(['slug'], { unique: true })
 export class MemoryDefinitionOrmEntity extends BaseOrmEntity<MemoryDefinitionDto> {
-  plainCls = MemoryDefinition;
+  plainCls = memoryDefinitionSchema;
 
-  fullCls = MemoryDefinitionFull;
+  fullCls = memoryDefinitionFullSchema;
 
   /** Human-friendly label for the memory definition. */
   @Column({ type: 'varchar', length: 255 })
