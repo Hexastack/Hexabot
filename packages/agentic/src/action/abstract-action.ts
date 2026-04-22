@@ -48,7 +48,6 @@ export abstract class AbstractAction<
    * Sets up core metadata and schemas for the action.
    *
    * @param metadata - Describes the action name, description, and schemas.
-   * @param options - Optional configuration or definition override.
    */
   protected constructor(metadata: ActionMetadata<I, O, S>) {
     if (metadata.settingsSchema instanceof z.ZodObject) {
@@ -97,7 +96,6 @@ export abstract class AbstractAction<
    * Executes the action with retry, timeout, and schema safety.
    *
    * @param payload - Raw input being provided to the action.
-   * @param context - Workflow context used during execution.
    * @returns Validated output produced by the action.
    * @throws Error when retries are exhausted or validation fails.
    */
