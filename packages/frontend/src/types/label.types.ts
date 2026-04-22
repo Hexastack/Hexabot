@@ -4,31 +4,25 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
+import type {
+  Label as SharedLabel,
+  LabelFull as SharedLabelFull,
+  LabelStub as SharedLabelStub,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { ILabelGroup } from "./label-group.types";
-import { IUser } from "./user.types";
+export type ILabelAttributes = Pick<
+  SharedLabel,
+  "title" | "name" | "description" | "builtin" | "group"
+>;
 
-export interface ILabelAttributes {
-  title: string;
-  name: string;
-  description: string;
-  builtin?: boolean;
-  group?: string | null;
-}
+export type ILabelStub = SharedLabelStub & {
+  subscriber_count?: number;
+};
 
-export interface ILabelStub
-  extends IBaseSchema,
-    OmitPopulate<ILabelAttributes, EntityType.LABEL> {
-  subscriber_count: number;
-}
+export type Label = SharedLabel & {
+  subscriber_count?: number;
+};
 
-export interface ILabel extends ILabelStub, IFormat<Format.BASIC> {
-  group?: string | null;
-}
-
-export interface ILabelFull extends ILabelStub, IFormat<Format.FULL> {
-  users: IUser[];
-  group: ILabelGroup;
-}
+export type LabelFull = SharedLabelFull & {
+  subscriber_count?: number;
+};

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import {
   Activity,
   AlignLeft,
@@ -27,7 +28,6 @@ import {
 
 import { TMenu } from "@/app-components/menus/DashboardSidebar/types/sidebar.types";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
   {
@@ -35,7 +35,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     href: "/",
     Icon: Home,
     requires: {
-      [EntityType.STATS]: [PermissionAction.READ],
+      [EntityType.STATS]: [Action.READ],
     },
   },
   {
@@ -43,7 +43,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     href: "/workflow-editor",
     Icon: LayoutGrid,
     requires: {
-      [EntityType.WORKFLOW]: [PermissionAction.READ],
+      [EntityType.WORKFLOW]: [Action.READ],
     },
   },
   {
@@ -51,7 +51,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     href: "/workflow/memory-definitions",
     Icon: MemoryStick,
     requires: {
-      [EntityType.MEMORY_DEFINITION]: [PermissionAction.READ],
+      [EntityType.MEMORY_DEFINITION]: [Action.READ],
     },
   },
   {
@@ -59,7 +59,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     href: "/workflow/runs",
     Icon: Activity,
     requires: {
-      [EntityType.WORKFLOW_RUN]: [PermissionAction.READ],
+      [EntityType.WORKFLOW_RUN]: [Action.READ],
     },
   },
   {
@@ -67,7 +67,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     href: "/workflow/mcp-servers",
     Icon: Plug,
     requires: {
-      [EntityType.MCP_SERVER]: [PermissionAction.READ],
+      [EntityType.MCP_SERVER]: [Action.READ],
     },
   },
   {
@@ -75,7 +75,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     href: "/inbox/threads",
     Icon: MessagesSquare,
     requires: {
-      [EntityType.MESSAGE]: [PermissionAction.READ],
+      [EntityType.MESSAGE]: [Action.READ],
     },
   },
   {
@@ -87,7 +87,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         href: "/content/persistent-menu",
         Icon: Menu,
         requires: {
-          [EntityType.MENU]: [PermissionAction.READ],
+          [EntityType.MENU]: [Action.READ],
         },
       },
       {
@@ -95,7 +95,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         href: "/content-types",
         Icon: AlignLeft,
         requires: {
-          [EntityType.CONTENT_TYPE]: [PermissionAction.READ],
+          [EntityType.CONTENT_TYPE]: [Action.READ],
         },
       },
       {
@@ -103,7 +103,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         href: "/content/media-library",
         Icon: FolderUp,
         requires: {
-          [EntityType.ATTACHMENT]: [PermissionAction.READ],
+          [EntityType.ATTACHMENT]: [Action.READ],
         },
       },
     ],
@@ -117,7 +117,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         href: "/subscribers",
         Icon: UserCircle,
         requires: {
-          [EntityType.SUBSCRIBER]: [PermissionAction.READ],
+          [EntityType.SUBSCRIBER]: [Action.READ],
         },
       },
       {
@@ -125,7 +125,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         href: "/subscribers/labels",
         Icon: Tag,
         requires: {
-          [EntityType.LABEL]: [PermissionAction.READ],
+          [EntityType.LABEL]: [Action.READ],
         },
       },
 
@@ -148,7 +148,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         href: "/users",
         Icon: Users,
         requires: {
-          [EntityType.USER]: [PermissionAction.READ],
+          [EntityType.USER]: [Action.READ],
         },
       },
       ...(!ssoEnabled
@@ -158,7 +158,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
               href: "/roles",
               Icon: Shield,
               requires: {
-                [EntityType.ROLE]: [PermissionAction.READ],
+                [EntityType.ROLE]: [Action.READ],
               },
             } satisfies TMenu,
           ]
@@ -168,7 +168,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         href: "/credentials",
         Icon: KeyRound,
         requires: {
-          [EntityType.CREDENTIAL]: [PermissionAction.READ],
+          [EntityType.CREDENTIAL]: [Action.READ],
         },
       },
     ],
@@ -182,7 +182,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         href: "/localization/languages",
         Icon: Flag,
         requires: {
-          [EntityType.LANGUAGE]: [PermissionAction.READ],
+          [EntityType.LANGUAGE]: [Action.READ],
         },
       },
       {
@@ -190,7 +190,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         href: "/localization/translations",
         Icon: Languages,
         requires: {
-          [EntityType.TRANSLATION]: [PermissionAction.READ],
+          [EntityType.TRANSLATION]: [Action.READ],
         },
       },
     ],
@@ -200,7 +200,7 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     href: "/settings",
     Icon: Settings,
     requires: {
-      [EntityType.SETTING]: [PermissionAction.READ, PermissionAction.UPDATE],
+      [EntityType.SETTING]: [Action.READ, Action.UPDATE],
     },
   },
 ];

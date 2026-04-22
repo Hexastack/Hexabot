@@ -4,6 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  AttachmentResourceRef,
+  type Content,
+  type ContentType,
+} from "@hexabot-ai/types";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
 
@@ -13,14 +18,11 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { AttachmentResourceRef } from "@/types/attachment.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import {
   ContentField,
   ContentSchemaProperties,
-  IContentType,
 } from "@/types/content-type.types";
-import { IContent } from "@/types/content.types";
 
 import { getSchemaProperties } from "../visual-editor/v4/utils/schema-defaults.utils";
 
@@ -31,7 +33,7 @@ type ContentFormData = Record<string, unknown> & {
 };
 
 const buildDefaultFormData = (
-  content: IContent | null | undefined,
+  content: Content | null | undefined,
   contentTypeId: string,
 ): ContentFormData => ({
   contentType: content?.contentType ?? contentTypeId,
@@ -111,7 +113,7 @@ const CONTENT_FIELD_UI_SCHEMAS: Partial<
   },
 };
 
-export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
+export const ContentForm: FC<ComponentFormProps<Content, ContentType>> = ({
   data: { defaultValues: content, presetValues: contentType },
   Wrapper = Fragment,
   WrapperProps,

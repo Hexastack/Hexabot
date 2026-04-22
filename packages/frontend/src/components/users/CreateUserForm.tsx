@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Role } from "@hexabot-ai/types";
 import { Button, Link, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment } from "react";
@@ -20,7 +21,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IRole } from "@/types/role.types";
 
 type CreateUserFormData = {
   firstName: string;
@@ -196,7 +196,7 @@ export const CreateUserForm: FC<ComponentFormProps<undefined>> = ({
                     const { onChange, ...rest } = field;
 
                     return (
-                      <AutoCompleteEntitySelect<IRole>
+                      <AutoCompleteEntitySelect<Role>
                         searchFields={["name"]}
                         entity={EntityType.ROLE}
                         format={Format.BASIC}

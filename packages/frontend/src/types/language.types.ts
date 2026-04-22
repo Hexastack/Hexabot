@@ -4,19 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
+import type { Language as SharedLanguage } from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-
-export interface ILanguageAttributes {
-  title: string;
-  code: string;
-  isDefault: boolean;
-  isRTL: boolean;
-}
-
-export interface ILanguageStub
-  extends IBaseSchema,
-    OmitPopulate<ILanguageAttributes, EntityType.LANGUAGE> {}
-
-export interface ILanguage extends ILanguageStub, IFormat<Format.BASIC> {}
+export type ILanguageAttributes = Pick<
+  SharedLanguage,
+  "title" | "code" | "isDefault" | "isRTL"
+>;

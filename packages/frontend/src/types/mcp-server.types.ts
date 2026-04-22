@@ -4,38 +4,32 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
+import {
+  McpServerTransport,
+  type McpServer as SharedMcpServer,
+  type McpServerFull as SharedMcpServerFull,
+  type McpServerStub as SharedMcpServerStub,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { ICredential } from "./credential.types";
+export { McpServerTransport };
 
-export enum McpServerTransport {
-  http = "http",
-  stdio = "stdio",
-}
+export type IMcpServerAttributes = Pick<
+  SharedMcpServer,
+  | "name"
+  | "enabled"
+  | "transport"
+  | "url"
+  | "command"
+  | "args"
+  | "cwd"
+  | "credential"
+>;
 
-export interface IMcpServerAttributes {
-  name: string;
-  enabled: boolean;
-  transport: McpServerTransport;
-  url: string | null;
-  command: string | null;
-  args: string[] | null;
-  cwd: string | null;
-  credential: string | null;
-}
+export type McpServerStub = SharedMcpServerStub;
 
-export interface IMcpServerStub
-  extends IBaseSchema,
-    OmitPopulate<IMcpServerAttributes, EntityType.MCP_SERVER> {}
+export type McpServer = SharedMcpServer;
 
-export interface IMcpServer extends IMcpServerStub, IFormat<Format.BASIC> {
-  credential: string | null;
-}
-
-export interface IMcpServerFull extends IMcpServerStub, IFormat<Format.FULL> {
-  credential?: ICredential | null;
-}
+export type McpServerFull = SharedMcpServerFull;
 
 export interface IMcpServerToolAttributes {
   serverId: string;
@@ -48,9 +42,7 @@ export interface IMcpServerToolAttributes {
   meta?: Record<string, unknown>;
 }
 
-export interface IMcpServerTool
-  extends IMcpServerToolAttributes,
-    IFormat<Format.BASIC> {
+export interface IMcpServerTool extends IMcpServerToolAttributes {
   id: string;
 }
 

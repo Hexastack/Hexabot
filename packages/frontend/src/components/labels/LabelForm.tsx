@@ -31,13 +31,13 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ILabelGroup } from "@/types/label-group.types";
-import { ILabel, ILabelAttributes } from "@/types/label.types";
+import { LabelGroup } from "@/types/label-group.types";
+import { Label, ILabelAttributes } from "@/types/label.types";
 import { slugify } from "@/utils/string";
 
-const filter = createFilterOptions<ILabelGroup>();
+const filter = createFilterOptions<LabelGroup>();
 
-export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
+export const LabelForm: FC<ComponentFormProps<Label>> = ({
   data: { defaultValues: label },
   Wrapper = Fragment,
   WrapperProps,
@@ -62,7 +62,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
   );
   const { mutate: createLabel } = useCreate(EntityType.LABEL, options);
   const { mutate: createGroupLabel } = useCreate(EntityType.LABEL_GROUP, {
-    onSuccess: (createdGroup: ILabelGroup) => {
+    onSuccess: (createdGroup: LabelGroup) => {
       toast.success(t("message.success_save"));
       // Automatically select the newly created group label
       setLabelGroup(createdGroup.id);
@@ -142,7 +142,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
               helperText={errors.title ? errors.title.message : null}
             />
           </ContentItem>
-          <AutoCompleteEntitySelect<ILabelGroup, "name", false>
+          <AutoCompleteEntitySelect<LabelGroup, "name", false>
             fullWidth={true}
             searchFields={["name"]}
             disableSearch
@@ -172,7 +172,6 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
                 filtered.push({
                   id: "",
                   name: `${addLabelGroupTitle} "${inputValue}"`,
-                  format: Format.BASIC,
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 });

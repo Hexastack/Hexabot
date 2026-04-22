@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { Box, Button, Paper } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import debounce from "@mui/utils/debounce";
@@ -19,7 +20,6 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 import MenuAccordion from "./MenuAccordion";
 import { MenuFormDialog } from "./MenuFormDialog";
@@ -50,7 +50,7 @@ export const Menu = () => {
           flexShrink={0}
           width="max-content"
         >
-          {hasPermission(EntityType.MENU, PermissionAction.CREATE) ? (
+          {hasPermission(EntityType.MENU, Action.CREATE) ? (
             <Button
               variant="contained"
               onClick={() =>

@@ -15,14 +15,14 @@ import {
 
 import { useGet } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
-import { ISubscriber } from "@/types/subscriber.types";
-import { IThreadFull } from "@/types/thread.types";
+import { Subscriber } from "@/types/subscriber.types";
+import { ThreadFull } from "@/types/thread.types";
 
 import { noop } from "../helpers/noop";
 
 interface IChatContext {
-  thread: IThreadFull | null;
-  subscriber: ISubscriber | null;
+  thread: ThreadFull | null;
+  subscriber: Subscriber | null;
   setThreadId: Dispatch<string | null>;
 }
 
@@ -46,7 +46,7 @@ export const ChatProvider = ({ children }: PropsWithChildren) => {
   );
   const thread = (
     threadId && threadData ? threadData : null
-  ) as IThreadFull | null;
+  ) as ThreadFull | null;
   const subscriberId = useMemo(() => {
     if (!thread?.subscriber) {
       return null;

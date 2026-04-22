@@ -4,24 +4,21 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowRun, WorkflowVersion, Workflow } from "@hexabot-ai/types";
 import { Paper } from "@mui/material";
 import Grid from "@mui/material/Grid";
-
-import type { IWorkflowRun } from "@/types/workflow-run.types";
-import type { IWorkflowVersion } from "@/types/workfow-version.types";
-import type { IWorkflow } from "@/types/workfow.types";
 
 import { RunActions } from "./RunActions";
 import { RunMetaSummary } from "./RunMetaSummary";
 import { RunStatusSummary } from "./RunStatusSummary";
 
 type RunHeaderProps = {
-  workflowRuns: Array<IWorkflowRun>;
+  workflowRuns: Array<WorkflowRun>;
   isFetching: boolean;
-  selectedRun?: IWorkflowRun;
-  workflow?: IWorkflow | null;
+  selectedRun?: WorkflowRun;
+  workflow?: Workflow | null;
   workflowInput?: Record<string, unknown>;
-  workflowVersion?: IWorkflowVersion | null;
+  workflowVersion?: WorkflowVersion | null;
   onSelectRun: (runId: string) => void;
 };
 

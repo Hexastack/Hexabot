@@ -4,15 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowVersion } from "@hexabot-ai/types";
 import { Box, Chip, Tooltip, Typography } from "@mui/material";
 
 import { VersionChip } from "@/app-components/displays/VersionChip";
-import type { IWorkflowVersion } from "@/types/workfow-version.types";
 
 type WorkflowMetaInfoProps = {
   isDraft: boolean;
   statusLabel: string;
-  workflowVersion?: IWorkflowVersion | null;
+  workflowVersion?: WorkflowVersion | null;
   lastSavedLabel: string;
   lastSavedExact?: string;
 };

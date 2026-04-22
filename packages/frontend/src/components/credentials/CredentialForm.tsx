@@ -15,9 +15,13 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ICredential, ICredentialAttributes } from "@/types/credential.types";
+import {
+  Credential,
+  CredentialWithValue,
+  ICredentialAttributes,
+} from "@/types/credential.types";
 
-export const CredentialForm: FC<ComponentFormProps<ICredential>> = ({
+export const CredentialForm: FC<ComponentFormProps<Credential>> = ({
   data: { defaultValues: credential },
   Wrapper = Fragment,
   WrapperProps,
@@ -51,7 +55,7 @@ export const CredentialForm: FC<ComponentFormProps<ICredential>> = ({
   } = useForm<ICredentialAttributes>({
     defaultValues: {
       name: credential?.name || "",
-      value: credential?.value || "",
+      value: (credential as CredentialWithValue | null)?.value || "",
     },
   });
   const validationRules = {
@@ -74,7 +78,7 @@ export const CredentialForm: FC<ComponentFormProps<ICredential>> = ({
     if (credential) {
       reset({
         name: credential.name,
-        value: credential.value,
+        value: (credential as CredentialWithValue | null)?.value || "",
       });
     } else {
       reset();

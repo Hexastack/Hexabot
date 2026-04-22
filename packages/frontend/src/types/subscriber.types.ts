@@ -4,32 +4,29 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
+import type {
+  Subscriber as SharedSubscriber,
+  SubscriberFull as SharedSubscriberFull,
+  SubscriberStub as SharedSubscriberStub,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { ILabel } from "./label.types";
-import { IUser } from "./user.types";
-
-interface Channel {
-  name: string;
-  isSocket?: boolean;
-}
+type Channel = SharedSubscriber["channel"];
 
 export interface ISubscriberAttributes {
-  firstName: string;
-  lastName: string;
-  locale: string;
-  gender: string;
+  firstName: SharedSubscriber["firstName"];
+  lastName: SharedSubscriber["lastName"];
+  locale: SharedSubscriber["locale"];
+  gender: SharedSubscriber["gender"];
   labels: string[];
   assignedTo?: string | null;
-  assignedAt?: Date | null;
-  lastvisit?: Date;
-  retainedFrom?: Date;
+  assignedAt?: SharedSubscriber["assignedAt"];
+  lastvisit?: SharedSubscriber["lastvisit"];
+  retainedFrom?: SharedSubscriber["retainedFrom"];
   channel: Channel;
-  timezone?: number;
-  language: string;
-  country?: string;
-  foreignId?: string;
+  timezone?: SharedSubscriber["timezone"];
+  language: SharedSubscriber["language"];
+  country?: SharedSubscriber["country"];
+  foreignId?: SharedSubscriber["foreignId"];
 }
 
 export interface ISubscriberFilters {
@@ -38,19 +35,14 @@ export interface ISubscriberFilters {
   channel: Channel;
 }
 
-export interface ISubscriberStub
-  extends IBaseSchema,
-    OmitPopulate<ISubscriberAttributes, EntityType.SUBSCRIBER> {
+export type SubscriberStub = SharedSubscriberStub & {
   fullName?: string;
-}
+};
 
-export interface ISubscriber extends ISubscriberStub, IFormat<Format.BASIC> {
-  labels: string[];
-  assignedTo: string | null;
-  avatar: string | null;
-}
+export type Subscriber = SharedSubscriber & {
+  fullName?: string;
+};
 
-export interface ISubscriberFull extends ISubscriberStub, IFormat<Format.FULL> {
-  labels: ILabel[];
-  assignedTo?: IUser;
-}
+export type SubscriberFull = SharedSubscriberFull & {
+  fullName?: string;
+};

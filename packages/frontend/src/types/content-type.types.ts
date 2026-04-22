@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { ContentType as SharedContentType } from "@hexabot-ai/types";
+
 import {
   JsonSchemaType,
   SchemaNodeForm,
 } from "@/app-components/inputs/JsonSchemaObjectBuilder";
-import { Format } from "@/services/types";
-
-import { IBaseSchema, IFormat } from "./base.types";
 
 export type ContentField = {
   title: string;
@@ -18,15 +17,8 @@ export type ContentField = {
   name: string;
 };
 
-export interface IContentTypeAttributes {
-  name: string;
+export type IContentTypeAttributes = Pick<SharedContentType, "name"> & {
   schema: SchemaNodeForm;
-}
+};
 
 export type ContentSchemaProperties = Record<string, ContentField>;
-export interface IContentTypeStub extends IBaseSchema {
-  name: string;
-  schema: SchemaNodeForm;
-}
-
-export interface IContentType extends IContentTypeStub, IFormat<Format.BASIC> {}

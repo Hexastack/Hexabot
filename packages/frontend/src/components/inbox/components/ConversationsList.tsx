@@ -106,11 +106,9 @@ export const ConversationsList = (props: {
           typeof thread.subscriber === "string"
             ? getSubscriberFromCache(thread.subscriber)
             : thread.subscriber;
-        const subscriberName =
-          subscriber?.fullName ||
-          [subscriber?.firstName, subscriber?.lastName]
-            .filter(Boolean)
-            .join(" ");
+        const subscriberName = [subscriber?.firstName, subscriber?.lastName]
+          .filter(Boolean)
+          .join(" ");
         const threadTitle = thread.title?.trim();
         const primaryText = threadTitle || subscriberName || t("label.unknown");
         const formattedDate = normalizeDate(

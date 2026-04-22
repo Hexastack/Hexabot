@@ -5,6 +5,8 @@
  */
 
 import type { WorkflowDefinition } from "@hexabot-ai/agentic";
+import { WorkflowType } from "@hexabot-ai/types";
+import type { Workflow } from "@hexabot-ai/types";
 import { TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import type { JSONSchema7 as JsonSchema } from "json-schema";
@@ -25,11 +27,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import {
-  IWorkflowSubmitAttributes,
-  WorkflowType,
-  type IWorkflow,
-} from "@/types/workfow.types";
+import { IWorkflowSubmitAttributes } from "@/types/workfow.types";
 
 import { WorkflowTypeSelector } from "./WorkflowTypeSelector";
 
@@ -122,8 +120,8 @@ const buildInputSchemaNode = (
 type WorkflowFormPreset = {
   definition?: WorkflowDefinition;
   definitionYaml?: string;
-  onCreated?: (workflow: IWorkflow) => void;
-  onUpdated?: (workflow: IWorkflow) => void;
+  onCreated?: (workflow: Workflow) => void;
+  onUpdated?: (workflow: Workflow) => void;
 };
 
 type WorkflowFormValues = {
@@ -135,7 +133,7 @@ type WorkflowFormValues = {
 };
 
 export const WorkflowForm: FC<
-  ComponentFormProps<IWorkflow, WorkflowFormPreset>
+  ComponentFormProps<Workflow, WorkflowFormPreset>
 > = ({
   data: { defaultValues: workflow, presetValues },
   Wrapper = Fragment,

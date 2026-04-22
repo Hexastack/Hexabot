@@ -4,16 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowRun, WorkflowRunFull } from "@hexabot-ai/types";
+
 import { BadgeWithTitle } from "@/app-components/displays/Badge";
 import { WORKFLOW_STATUS } from "@/constants/workflow.constants";
-import {
-  EWorkflowRunStatus,
-  type IWorkflowRun,
-  type IWorkflowRunFull,
-} from "@/types/workflow-run.types";
+import { EWorkflowRunStatus } from "@/types/workflow-run.types";
 
 export type WorkflowRunStatusBadgeProps = {
-  workflowRun?: IWorkflowRun | IWorkflowRunFull | null;
+  workflowRun?: WorkflowRun | WorkflowRunFull | null;
 };
 
 export const WorkflowRunStatusBadge = ({

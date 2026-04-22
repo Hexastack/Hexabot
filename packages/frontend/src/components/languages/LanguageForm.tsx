@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Language } from "@hexabot-ai/types";
 import { FormControlLabel, Switch, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -15,9 +16,9 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ILanguage, ILanguageAttributes } from "@/types/language.types";
+import { ILanguageAttributes } from "@/types/language.types";
 
-export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
+export const LanguageForm: FC<ComponentFormProps<Language>> = ({
   data: { defaultValues: language },
   Wrapper = Fragment,
   WrapperProps,

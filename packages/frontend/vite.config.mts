@@ -30,6 +30,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@hexabot-ai/types": path.resolve(__dirname, "../types/src"),
       "@rjsf/validator-ajv8": path.resolve(
         __dirname,
         "./src/utils/rjsf-zod-validator.ts",

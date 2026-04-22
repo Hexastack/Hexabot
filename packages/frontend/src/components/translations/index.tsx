@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
+import type { Language } from "@hexabot-ai/types";
 import { Chip, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Languages, RefreshCw } from "lucide-react";
@@ -21,9 +23,7 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { ILanguage } from "@/types/language.types";
-import { PermissionAction } from "@/types/permission.types";
-import { ITranslation } from "@/types/translation.types";
+import { Translation } from "@/types/translation.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { TranslationFormDialog } from "./TranslationFormDialog";
@@ -55,7 +55,7 @@ export const Translations = () => {
         toast.success(t("message.success_translation_refresh"));
       },
     });
-  const actionColumns = useActionColumns<ITranslation>(
+  const actionColumns = useActionColumns<Translation>(
     EntityType.TRANSLATION,
     [
       {
@@ -63,7 +63,7 @@ export const Translations = () => {
         onClick: (row) => {
           dialogs.open(TranslationFormDialog, { defaultValues: row });
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
@@ -74,12 +74,12 @@ export const Translations = () => {
             deleteTranslation(id);
           }
         },
-        requires: [PermissionAction.DELETE],
+        requires: [Action.DELETE],
       },
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<ITranslation>[] = [
+  const columns: GridColDef<Translation>[] = [
     { flex: 1, field: "str", headerName: t("label.str") },
     {
       maxWidth: 300,
@@ -90,7 +90,7 @@ export const Translations = () => {
         <Stack direction="row" my={1} spacing={1}>
           {languages
             .filter(({ isDefault }) => !isDefault)
-            .map((language: ILanguage) => (
+            .map((language: Language) => (
               <Chip
                 key={language.code}
                 color={
@@ -126,7 +126,7 @@ export const Translations = () => {
       entity={EntityType.TRANSLATION}
       buttons={[
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           children: t("button.refresh"),
           startIcon: <RefreshCw />,
           onClick: () => {

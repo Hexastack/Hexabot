@@ -4,16 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Format } from "@/services/types";
+import type {
+  LabelGroup as SharedLabelGroup,
+  LabelGroupStub as SharedLabelGroupStub,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat } from "./base.types";
+export type ILabelGroupStub = SharedLabelGroupStub;
 
-export interface ILabelGroupStub extends IBaseSchema {
-  name: string;
-}
+export type ILabelGroupAttributes = Pick<SharedLabelGroup, "name">;
 
-export interface ILabelGroupAttributes {
-  name: string;
-}
-
-export interface ILabelGroup extends ILabelGroupStub, IFormat<Format.BASIC> {}
+export type LabelGroup = SharedLabelGroup;

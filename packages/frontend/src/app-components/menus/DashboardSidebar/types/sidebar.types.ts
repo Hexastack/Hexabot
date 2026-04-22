@@ -4,14 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { PopoverProps, type TooltipProps } from "@mui/material";
 import { type LucideIcon } from "lucide-react";
 import { PropsWithChildren } from "react";
 
 import { type TTranslationKeys } from "@/i18n/i18n.types";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
-import { IUser } from "@/types/user.types";
+import { User } from "@/types/user.types";
 
 type TMenuItem = {
   Icon?: LucideIcon;
@@ -20,7 +20,7 @@ type TMenuItem = {
   selected?: boolean;
   onClick?: () => void;
   tooltip?: Partial<TooltipProps>;
-  requires?: { [key in EntityType]?: PermissionAction[] };
+  requires?: { [key in EntityType]?: Action[] };
 };
 
 export type TMenu = TMenuItem & {
@@ -44,7 +44,7 @@ export type TPopoverMenuItem = { text: string; href: string };
 
 export type TPopoverMenuLogoutItem = { text: string; onClick: () => void };
 export type PopoverMenuProps = {
-  user?: Pick<IUser, "email" | "firstName" | "lastName" | "fullName">;
+  user?: Pick<User, "email" | "firstName" | "lastName" | "fullName">;
   links?: TPopoverMenuItem[];
   logout?: TPopoverMenuLogoutItem;
   handleClose?: () => void;

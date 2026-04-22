@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MenuType } from "@hexabot-ai/types";
 import { MenuItem, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -16,7 +17,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IMenuItem, IMenuItemAttributes, MenuType } from "@/types/menu.types";
+import { IMenuItem, IMenuItemAttributes } from "@/types/menu.types";
 import { isAbsoluteUrl } from "@/utils/URL";
 
 const DEFAULT_VALUES = { title: "", type: MenuType.web_url, url: undefined };
@@ -65,8 +66,8 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
     title: { required: t("message.title_is_required") },
     url: {
       required: t("message.url_is_invalid"),
-      validate: (value: string = "") =>
-        isAbsoluteUrl(value) || t("message.url_is_invalid"),
+      validate: (value?: string | null) =>
+        isAbsoluteUrl(value ?? "") || t("message.url_is_invalid"),
     },
     payload: {},
   };

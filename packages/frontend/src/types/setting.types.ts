@@ -4,20 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Format } from "@/services/types";
+import type {
+  Setting as SharedSetting,
+  SettingStub as SharedSettingStub,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat } from "./base.types";
-
-export interface ISettingAttributes {
-  group: string;
+export type ISettingAttributes = Pick<
+  SharedSetting,
+  "group" | "subgroup" | "label"
+> & {
   subgroup?: string;
-  label: string;
-  value: unknown;
-}
+  value: string | number | boolean | string[] | Record<string, unknown> | null;
+};
 
-export interface ISettingStub extends IBaseSchema, ISettingAttributes {}
+export type ISettingStub = SharedSettingStub;
 
-export interface ISetting extends ISettingStub, IFormat<Format.BASIC> {}
+export type Setting = SharedSetting;
 
 export interface ISettingSchemaDefinition {
   schema: Record<string, any>;

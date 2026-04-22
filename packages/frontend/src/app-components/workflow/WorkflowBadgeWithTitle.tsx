@@ -4,17 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Workflow } from "@hexabot-ai/types";
 import { Box, Typography } from "@mui/material";
 
 import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
-import type { IWorkflow } from "@/types/workfow.types";
 
 import { BadgeWithTitleProps } from "../displays/Badge";
 
 import { WorkflowTypeBadge } from "./WorkflowTypeBadge";
 
 export type WorkflowBadgeWithTitleProps = BadgeWithTitleProps & {
-  workflow?: IWorkflow | null;
+  workflow?: Workflow | null;
 };
 
 export const WorkflowBadgeWithTitle = ({

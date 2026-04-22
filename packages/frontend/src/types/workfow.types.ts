@@ -4,33 +4,28 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { WorkflowDefinition } from "@hexabot-ai/agentic";
+import {
+  WorkflowType,
+  type Workflow as SharedWorkflow,
+} from "@hexabot-ai/types";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { JSONSchema7 as JsonSchema } from "json-schema";
 
-import { EntityType, Format } from "@/services/types";
+export { WorkflowType };
 
-import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { IWorkflowVersion } from "./workfow-version.types";
+type SharedWorkflowCoreAttributes = Pick<
+  SharedWorkflow,
+  "name" | "description" | "schedule" | "type"
+>;
 
-export enum WorkflowType {
-  conversational = "conversational",
-  manual = "manual",
-  scheduled = "scheduled",
-}
-
-export interface IWorkflowAttributes {
-  name: string;
-  description?: string | null;
+export type IWorkflowAttributes = SharedWorkflowCoreAttributes & {
   builtin?: boolean;
-  schedule?: string | null;
-  type: WorkflowType;
   inputSchema?: JsonSchema;
   zoom?: number;
   x?: number;
   y?: number;
   direction?: ResizeControlDirection;
-}
+};
 
 export interface IWorkflowSubmitAttributes extends IWorkflowAttributes {
   definitionYml?: string;
@@ -42,21 +37,4 @@ export interface IWorkflowFilters {
   description: string;
   type: WorkflowType;
   runAfterMs: number;
-}
-
-export interface IWorkflowStub
-  extends IBaseSchema,
-    OmitPopulate<IWorkflowAttributes, EntityType.WORKFLOW> {}
-
-export interface IWorkflow extends IWorkflowStub, IFormat<Format.BASIC> {
-  currentVersion: string | null;
-  publishedVersion: string | null;
-  runAfterMs: number;
-}
-
-export interface IWorkflowFull extends IWorkflowStub, IFormat<Format.FULL> {
-  currentVersion: IWorkflowVersion | null;
-  publishedVersion: IWorkflowVersion | null;
-  definitionYml: string;
-  definition: WorkflowDefinition;
 }

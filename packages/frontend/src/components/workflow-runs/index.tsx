@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowRunFull } from "@hexabot-ai/types";
 import { Box } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Activity, GalleryHorizontalEnd } from "lucide-react";
@@ -27,7 +28,6 @@ import { useAppRouter } from "@/hooks/useAppRouter";
 import { useQueryState } from "@/hooks/useQueryState";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
-import { IWorkflowRunFull } from "@/types/workflow-run.types";
 import { formatDurationMs, getDateTimeFormatter } from "@/utils/date";
 
 export const WorkflowRuns = ({
@@ -39,7 +39,7 @@ export const WorkflowRuns = ({
   const { t } = useTranslate();
   const router = useAppRouter();
   const getWorkflowFromCache = useGetFromCache(EntityType.WORKFLOW);
-  const actionColumns = useActionColumns<IWorkflowRunFull>(
+  const actionColumns = useActionColumns<WorkflowRunFull>(
     EntityType.WORKFLOW_RUN,
     [
       {
@@ -103,7 +103,7 @@ export const WorkflowRuns = ({
               <ChipEntity
                 id={subscriberId}
                 key={subscriberId}
-                field="fullName"
+                field="firstName"
                 entity={EntityType.SUBSCRIBER}
               />
             );
@@ -141,7 +141,7 @@ export const WorkflowRuns = ({
           valueGetter: (_value, row) => row.error || "-",
         },
         actionColumns,
-      ] satisfies GridColDef<IWorkflowRunFull>[],
+      ] satisfies GridColDef<WorkflowRunFull>[],
     [t],
   );
   const [name, setName] = useQueryState("name");
@@ -171,7 +171,7 @@ export const WorkflowRuns = ({
         entity: EntityType.SUBSCRIBER,
         type: "entitySelectFilter",
         field: "id",
-        labelKey: "fullName",
+        labelKey: "firstName",
         value: subscriber,
         label: t("title.subscribers"),
         onChange: setSubscriber,

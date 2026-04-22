@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment, useEffect } from "react";
@@ -18,10 +19,9 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { PermissionAction } from "@/types/permission.types";
-import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
+import { Subscriber, ISubscriberAttributes } from "@/types/subscriber.types";
 
-export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
+export const SubscriberForm: FC<ComponentFormProps<Subscriber>> = ({
   data: { defaultValues: subscriber },
   Wrapper = Fragment,
   WrapperProps,
@@ -93,7 +93,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                     return (
                       <WithEntityButton
                         entity={EntityType.LABEL}
-                        permissionAction={PermissionAction.CREATE}
+                        permissionAction={Action.CREATE}
                         enableEntityAddButton
                       >
                         <AutoCompleteEntityDistinctSelect

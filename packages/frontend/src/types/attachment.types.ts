@@ -4,65 +4,49 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+  type Attachment as SharedAttachment,
+  type AttachmentFull as SharedAttachmentFull,
+  type AttachmentStub as SharedAttachmentStub,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { ISubscriber } from "./subscriber.types";
-import { IUser } from "./user.types";
+import { Subscriber } from "./subscriber.types";
+import { User } from "./user.types";
 
-/**
- * Defines the types of owners for an attachment,
- * indicating whether the file belongs to a User or a Subscriber.
- */
-export enum AttachmentCreatedByRef {
-  User = "User",
-  Subscriber = "Subscriber",
+export { AttachmentAccess, AttachmentCreatedByRef, AttachmentResourceRef };
+
+export interface IAttachmentAttributes
+  extends Pick<
+    SharedAttachment,
+    | "name"
+    | "type"
+    | "size"
+    | "location"
+    | "url"
+    | "channel"
+    | "resourceRef"
+    | "access"
+    | "createdBy"
+  > {
+  createdByRef?: AttachmentCreatedByRef;
 }
 
-/**
- * Defines the various resource references in which an attachment can exist.
- * These references influence how the attachment is uploaded, stored, and accessed:
- */
-export enum AttachmentResourceRef {
-  SettingAttachment = "Setting", // Attachments related to app settings, restricted to users with specific permissions.
-  UserAvatar = "User", // Avatar files for users, only the current user can upload, accessible to those with appropriate permissions.
-  SubscriberAvatar = "Subscriber", // Avatar files for subscribers, uploaded programmatically, accessible to authorized users.
-  ContentAttachment = "Content", // Files in the knowledge base, usually public but could vary based on specific needs.
-  MessageAttachment = "Message", // Files sent or received via messages, uploaded programmatically, accessible to users with inbox permissions.;
-}
+export type IAttachmentStub = SharedAttachmentStub;
 
-export enum AttachmentAccess {
-  Public = "public",
-  Private = "private",
-}
+export type Attachment = SharedAttachment;
 
-export interface IAttachmentAttributes {
-  name: string;
-  type: string;
-  size: number;
-  location: string;
-  url: string;
-  channel?: Record<string, any>;
-  resourceRef: AttachmentResourceRef;
-  access: AttachmentAccess;
-  createdByRef: AttachmentCreatedByRef;
-  createdBy: string | null;
-}
+export type AttachmentFull = SharedAttachmentFull;
 
-export interface IAttachmentStub
-  extends IBaseSchema,
-    OmitPopulate<IAttachmentAttributes, EntityType.ATTACHMENT> {}
+export type ISubscriberAttachmentFull = Omit<
+  SharedAttachmentFull,
+  "createdBy"
+> & {
+  createdBy: (Subscriber | User)[];
+};
 
-export interface IAttachment extends IAttachmentStub, IFormat<Format.BASIC> {
-  createdBy: string | null;
-}
-
-export interface ISubscriberAttachmentFull
-  extends IAttachmentStub,
-    IFormat<Format.FULL> {
-  createdBy: (ISubscriber | IUser)[];
-}
-
-export interface IAttachmentFilters extends Omit<IAttachment, "resourceRef"> {
+export interface IAttachmentFilters extends Omit<Attachment, "resourceRef"> {
   resourceRef: AttachmentResourceRef[];
 }

@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
+import type { Language } from "@hexabot-ai/types";
 import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Flag, Plus } from "lucide-react";
@@ -23,8 +25,6 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { ILanguage } from "@/types/language.types";
-import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { LanguageFormDialog } from "./LanguageFormDialog";
@@ -51,7 +51,7 @@ export const Languages = () => {
     },
   });
   const queryClient = useTanstackQueryClient();
-  const toggleDefault = (row: ILanguage) => {
+  const toggleDefault = (row: Language) => {
     if (!row.isDefault) {
       updateLanguage(
         {
@@ -74,7 +74,7 @@ export const Languages = () => {
       );
     }
   };
-  const actionColumns = useActionColumns<ILanguage>(
+  const actionColumns = useActionColumns<Language>(
     EntityType.LANGUAGE,
     [
       {
@@ -82,7 +82,7 @@ export const Languages = () => {
         onClick: (row) => {
           dialogs.open(LanguageFormDialog, { defaultValues: row });
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
@@ -93,13 +93,13 @@ export const Languages = () => {
             deleteLanguage(id);
           }
         },
-        requires: [PermissionAction.DELETE],
+        requires: [Action.DELETE],
         isDisabled: (row) => row.isDefault,
       },
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<ILanguage>[] = [
+  const columns: GridColDef<Language>[] = [
     { field: "id", headerName: "ID" },
     {
       flex: 2,
@@ -135,8 +135,7 @@ export const Languages = () => {
           checked={params.value}
           slotProps={{ input: { "aria-label": "primary checkbox" } }}
           disabled={
-            params.value ||
-            !hasPermission(EntityType.LANGUAGE, PermissionAction.UPDATE)
+            params.value || !hasPermission(EntityType.LANGUAGE, Action.UPDATE)
           }
           onChange={() => {
             toggleDefault(params.row);
@@ -172,7 +171,7 @@ export const Languages = () => {
       entity={EntityType.LANGUAGE}
       buttons={[
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           children: t("button.add"),
           startIcon: <Plus />,
           onClick: () => {

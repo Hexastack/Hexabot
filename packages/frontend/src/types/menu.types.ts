@@ -4,32 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
+import type {
+  Menu as SharedMenu,
+  MenuFull as SharedMenuFull,
+  MenuStub as SharedMenuStub,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+export type IMenuItemAttributes = Pick<
+  SharedMenu,
+  "type" | "title" | "url" | "payload" | "parent"
+>;
 
-export enum MenuType {
-  web_url = "web_url",
-  postback = "postback",
-  nested = "nested",
-}
+export type IMenuItemStub = SharedMenuStub;
 
-export interface IMenuItemAttributes {
-  type: MenuType;
-  url?: string;
-  title: string;
-  payload?: string;
-  parent?: string;
-}
+export type IMenuItem = SharedMenu;
 
-export interface IMenuItemStub
-  extends IBaseSchema,
-    OmitPopulate<IMenuItemAttributes, EntityType.MENU> {}
-
-export interface IMenuItem extends IMenuItemStub, IFormat<Format.BASIC> {
-  parent?: string;
-}
-
-export interface IMenuItemFull extends IMenuItemStub, IFormat<Format.FULL> {
-  parent?: IMenuItem[];
-}
+export type IMenuItemFull = SharedMenuFull;

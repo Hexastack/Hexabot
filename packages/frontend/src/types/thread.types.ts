@@ -4,29 +4,38 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
+import type {
+  Thread as SharedThread,
+  ThreadFull as SharedThreadFull,
+  ThreadStub as SharedThreadStub,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { ISubscriber } from "./subscriber.types";
+import { Subscriber } from "./subscriber.types";
 
-export enum ThreadStatus {
-  open = "open",
-  closed = "closed",
-}
+export const ThreadStatus = {
+  open: "open",
+  closed: "closed",
+} as const;
 
-export enum ThreadCloseReason {
-  manual = "manual",
-  inactivity = "inactivity",
-}
+export type ThreadStatus = (typeof ThreadStatus)[keyof typeof ThreadStatus];
 
-export interface IThreadAttributes {
-  subscriber: string;
-  status: ThreadStatus;
-  lastMessageAt?: Date | null;
-  closedAt?: Date | null;
-  closeReason?: ThreadCloseReason | null;
-  title?: string | null;
-}
+export const ThreadCloseReason = {
+  manual: "manual",
+  inactivity: "inactivity",
+} as const;
+
+export type ThreadCloseReason =
+  (typeof ThreadCloseReason)[keyof typeof ThreadCloseReason];
+
+export type IThreadAttributes = Pick<
+  SharedThread,
+  | "subscriber"
+  | "status"
+  | "lastMessageAt"
+  | "closedAt"
+  | "closeReason"
+  | "title"
+>;
 
 export interface IThreadFilters {
   subscriber: {
@@ -45,14 +54,10 @@ export interface IThreadFilters {
   title: string;
 }
 
-export interface IThreadStub
-  extends IBaseSchema,
-    OmitPopulate<IThreadAttributes, EntityType.THREAD> {}
+export type ThreadStub = SharedThreadStub;
 
-export interface IThread extends IThreadStub, IFormat<Format.BASIC> {
-  subscriber: string;
-}
+export type Thread = SharedThread;
 
-export interface IThreadFull extends IThreadStub, IFormat<Format.FULL> {
-  subscriber: ISubscriber;
-}
+export type ThreadFull = Omit<SharedThreadFull, "subscriber"> & {
+  subscriber: Subscriber;
+};

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowRun, WorkflowRunFull } from "@hexabot-ai/types";
 import { Menu, MenuItem, Stack, Typography } from "@mui/material";
 
 import { BadgeWithTitle } from "@/app-components/displays/Badge";
@@ -11,11 +12,7 @@ import { VersionChip } from "@/app-components/displays/VersionChip";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import {
-  EWorkflowRunStatus,
-  type IWorkflowRun,
-  type IWorkflowRunFull,
-} from "@/types/workflow-run.types";
+import { EWorkflowRunStatus } from "@/types/workflow-run.types";
 
 import {
   formatRunTimestamp,
@@ -28,7 +25,7 @@ type RunHistoryMenuProps = {
   open: boolean;
   onClose: () => void;
   onSelectRun: (runId: string) => void;
-  workflowRuns: Array<IWorkflowRun | IWorkflowRunFull>;
+  workflowRuns: Array<WorkflowRun | WorkflowRunFull>;
   isFetching: boolean;
   selectedRunId?: string;
 };

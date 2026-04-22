@@ -17,15 +17,15 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ICredential } from "@/types/credential.types";
+import { Credential } from "@/types/credential.types";
 import {
-  IMcpServer,
-  IMcpServerAttributes,
   McpServerTransport,
+  McpServer,
+  IMcpServerAttributes,
 } from "@/types/mcp-server.types";
 import { isAbsoluteUrl } from "@/utils/URL";
 
-export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
+export const McpServerForm: FC<ComponentFormProps<McpServer>> = ({
   data: { defaultValues: mcpServer },
   Wrapper = Fragment,
   WrapperProps,
@@ -242,7 +242,7 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
                     const { onChange, ...restField } = field;
 
                     return (
-                      <AutoCompleteEntitySelect<ICredential, "name", false>
+                      <AutoCompleteEntitySelect<Credential, "name", false>
                         entity={EntityType.CREDENTIAL}
                         format={Format.BASIC}
                         searchFields={["name"]}

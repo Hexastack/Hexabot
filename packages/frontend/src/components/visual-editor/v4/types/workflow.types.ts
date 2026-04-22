@@ -14,16 +14,17 @@ import type {
   FlowStepPath,
   WorkflowSelectionSnapshot,
 } from "@hexabot-ai/graph";
+import type { Workflow } from "@hexabot-ai/types";
 import type { Cancelable } from "@mui/utils/debounce";
 import type { UseMutateFunction } from "@tanstack/react-query";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import type { IAction } from "@/types/action.types";
-import type { IWorkflow, IWorkflowAttributes } from "@/types/workfow.types";
+import type { IWorkflowAttributes } from "@/types/workfow.types";
 
 export interface IWorkflowContext {
-  getWorkflowFromCache: (id: string) => IWorkflow | undefined;
+  getWorkflowFromCache: (id: string) => Workflow | undefined;
   graphSelection: WorkflowSelectionSnapshot;
   selectedNodeIds: string[];
   setGraphSelection: (selection: WorkflowSelectionSnapshot) => void;
@@ -37,18 +38,18 @@ export interface IWorkflowContext {
   updateWorkflowURL: (workflowIid: string, nodeIds?: string[]) => Promise<void>;
   yaml: string;
   updateDefinitionState: (nextDefinition: string | WorkflowDefinition) => void;
-  workflow?: IWorkflow;
-  workflows?: IWorkflow[];
+  workflow?: Workflow;
+  workflows?: Workflow[];
   debouncedWorkflowUpdate: ((params: Partial<IWorkflowAttributes>) => void) &
     Cancelable;
   updateWorkflow: UseMutateFunction<
-    IWorkflow,
+    Workflow,
     Error,
     {
       id: string;
       params: Partial<IWorkflowAttributes>;
     },
-    IWorkflow
+    Workflow
   >;
   updateDefinition: (definition: WorkflowDefinition) => void;
   persistDefinition: () => void;
@@ -71,7 +72,7 @@ export interface IWorkflowContext {
 
 export interface WorkflowContextProps {
   children: ReactNode;
-  workflow?: IWorkflow;
+  workflow?: Workflow;
 }
 
 export type WorkflowEvent<

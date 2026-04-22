@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { Box, ButtonProps } from "@mui/material";
 import { PropsWithChildren } from "react";
 
 import { THook } from "@/types/base.types";
 import { TPayload } from "@/types/common/dialogs.types";
-import { PermissionAction } from "@/types/permission.types";
 
 import { BASE_ADD_DIALOG_MAP } from "../../dialogs/dialog.constants";
 
@@ -31,7 +31,7 @@ export const WithEntityButton = <
   entity: TE;
   payload?: TP;
   slotProps?: ButtonProps;
-  permissionAction: PermissionAction;
+  permissionAction: Action;
   enableEntityAddButton?: boolean;
 }>) => {
   const Button = (

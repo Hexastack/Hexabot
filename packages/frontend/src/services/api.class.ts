@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { AttachmentResourceRef } from "@hexabot-ai/types";
+import type { Workflow } from "@hexabot-ai/types";
 import { AxiosInstance, AxiosResponse } from "axios";
 
 import { WorkflowBindingsCatalog } from "@/contexts/workflow-bindings.context";
 import { IAction } from "@/types/action.types";
-import { AttachmentResourceRef } from "@/types/attachment.types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import { IUserPermissions } from "@/types/auth/permission.types";
 import { THook } from "@/types/base.types";
@@ -20,8 +21,7 @@ import {
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
 import { ISettingSchemasMap } from "@/types/setting.types";
 import { StatsSummary } from "@/types/stat.types";
-import { IProfileAttributes, IUser, IUserStub } from "@/types/user.types";
-import { IWorkflow } from "@/types/workfow.types";
+import { UserStub, User, IProfileAttributes } from "@/types/user.types";
 import { applyFullNameDerivedFields } from "@/utils/full-name.utils";
 
 import { EntityType, Format, TCount, TypeByFormat } from "./types";
@@ -141,8 +141,8 @@ export class ApiClient extends TranslatableMethods {
 
   async login(payload: ILoginAttributes) {
     const { data } = await this.request.post<
-      IUser,
-      AxiosResponse<IUser>,
+      User,
+      AxiosResponse<User>,
       ILoginAttributes
     >(ROUTES.LOGIN, payload);
 
@@ -156,7 +156,7 @@ export class ApiClient extends TranslatableMethods {
   }
 
   async getCurrentSession() {
-    const { data } = await this.request.get<IUser>(ROUTES.ME);
+    const { data } = await this.request.get<User>(ROUTES.ME);
 
     return applyFullNameDerivedFields(data);
   }
@@ -175,8 +175,8 @@ export class ApiClient extends TranslatableMethods {
     formData.append("_csrf", _csrf);
 
     const { data } = await this.request.patch<
-      IUserStub,
-      AxiosResponse<IUserStub>,
+      UserStub,
+      AxiosResponse<UserStub>,
       Partial<IProfileAttributes>
     >(`${ROUTES.PROFILE}/${id}?_csrf=${_csrf}`, payload, {
       headers: {
@@ -272,7 +272,7 @@ export class ApiClient extends TranslatableMethods {
   async publishWorkflow(id: string) {
     const { _csrf } = await this.getCsrf();
     const route = resolveRoute(ROUTES.WORKFLOW_PUBLISH, { id });
-    const { data } = await this.request.post<IWorkflow>(route, { _csrf });
+    const { data } = await this.request.post<Workflow>(route, { _csrf });
 
     return data;
   }
@@ -280,7 +280,7 @@ export class ApiClient extends TranslatableMethods {
   async unpublishWorkflow(id: string) {
     const { _csrf } = await this.getCsrf();
     const route = resolveRoute(ROUTES.WORKFLOW_UNPUBLISH, { id });
-    const { data } = await this.request.post<IWorkflow>(route, { _csrf });
+    const { data } = await this.request.post<Workflow>(route, { _csrf });
 
     return data;
   }
@@ -288,7 +288,7 @@ export class ApiClient extends TranslatableMethods {
   async publishWorkflowVersion(workflowId: string, versionId: string) {
     const { _csrf } = await this.getCsrf();
     const route = resolveRoute(ROUTES[EntityType.WORKFLOW], {});
-    const { data } = await this.request.patch<IWorkflow>(
+    const { data } = await this.request.patch<Workflow>(
       `${route}/${encodeURIComponent(workflowId)}`,
       {
         _csrf,

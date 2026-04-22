@@ -4,14 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType } from "@/services/types";
+import type {
+  Content as SharedContent,
+  Message as SharedMessage,
+  MessageFull as SharedMessageFull,
+  MessageStub as SharedMessageStub,
+} from "@hexabot-ai/types";
 
-import { IAttachment } from "./attachment.types";
-import { IBaseSchema, OmitPopulate } from "./base.types";
-import { IContent } from "./content.types";
-import { ISubscriber } from "./subscriber.types";
-import { IThread } from "./thread.types";
-import { IUser } from "./user.types";
+import { Attachment } from "./attachment.types";
+import { Subscriber } from "./subscriber.types";
+import { Thread } from "./thread.types";
+import { User } from "./user.types";
 
 export enum OutgoingMessageFormat {
   text = "text",
@@ -114,7 +117,7 @@ export type StdOutgoingButtonsMessage = {
 export interface OutgoingPopulatedListMessage {
   title: string;
   subtitle: string | null;
-  image_url?: { payload: IAttachment; type: string } | null;
+  image_url?: { payload: Attachment; type: string } | null;
   url?: string;
   action_title?: string;
   action_payload?: string;
@@ -122,7 +125,7 @@ export interface OutgoingPopulatedListMessage {
 
 export type StdOutgoingListMessage = {
   options: ContentOptions;
-  elements: IContent[];
+  elements: SharedContent[];
   pagination: {
     total: number;
     skip: number;
@@ -185,20 +188,16 @@ export interface IMessageAttributes {
 
 export interface IMessageFilters {}
 
-export interface IMessageStub
-  extends IBaseSchema,
-    OmitPopulate<IMessageAttributes, EntityType.MESSAGE> {}
+export type MessageStub = SharedMessageStub;
 
-export interface IMessage extends IMessageStub {
-  thread: string;
-  sender?: string;
-  recipient?: string;
-  sentBy?: string;
-}
+export type Message = SharedMessage;
 
-export interface IMessageFull extends IMessageStub {
-  thread: IThread;
-  sender?: ISubscriber;
-  recipient?: ISubscriber;
-  sentBy?: IUser;
-}
+export type MessageFull = Omit<
+  SharedMessageFull,
+  "thread" | "sender" | "recipient" | "sentBy"
+> & {
+  thread: Thread;
+  sender?: Subscriber | null;
+  recipient?: Subscriber | null;
+  sentBy?: User | null;
+};

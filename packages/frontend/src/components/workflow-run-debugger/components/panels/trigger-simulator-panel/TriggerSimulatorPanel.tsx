@@ -4,17 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowType } from "@hexabot-ai/types";
+import type { Workflow } from "@hexabot-ai/types";
 import { Paper, Stack, Typography } from "@mui/material";
 import type { RJSFSchema } from "@rjsf/utils";
 
 import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { extractUiSchema } from "@/components/visual-editor/v4/utils/schema-defaults.utils";
 import { useTranslate } from "@/hooks/useTranslate";
-import type { IWorkflow } from "@/types/workfow.types";
-import { WorkflowType } from "@/types/workfow.types";
 
 type TriggerSimulatorPanelProps = {
-  workflow?: IWorkflow;
+  workflow?: Workflow;
   formData: Record<string, unknown>;
   onFormDataChange: (data: Record<string, unknown>) => void;
 };

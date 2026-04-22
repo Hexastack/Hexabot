@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { MemoryDefinition } from "@hexabot-ai/types";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 
@@ -11,7 +12,6 @@ import { JsonataGlobalsSchemaProvider } from "@/app-components/inputs/JsonataFor
 import { useWorkflowActionsCatalog } from "@/contexts/workflow-actions.context";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType } from "@/services/types";
-import type { IMemoryDefinition } from "@/types/memory-definition.types";
 
 import { useWorkflow } from "../hooks/useWorkflow";
 import {
@@ -37,7 +37,7 @@ export const WorkflowJsonataGlobalsSchemaProvider = ({
         .map((memoryDefinitionId) =>
           getMemoryDefinitionFromCache(memoryDefinitionId),
         )
-        .filter((memoryDefinition): memoryDefinition is IMemoryDefinition =>
+        .filter((memoryDefinition): memoryDefinition is MemoryDefinition =>
           Boolean(memoryDefinition),
         ),
     [getMemoryDefinitionFromCache, memoryDefinitionIds],

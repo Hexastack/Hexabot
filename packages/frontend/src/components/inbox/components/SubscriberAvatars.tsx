@@ -8,9 +8,9 @@ import AvatarGroup from "@mui/material/AvatarGroup";
 import { FC } from "react";
 
 import { Avatar } from "@/app-components/displays/Avatar";
-import { ISubscriber } from "@/types/subscriber.types";
+import { Subscriber } from "@/types/subscriber.types";
 
-export const SubscriberAvatars: FC<{ subscriber: ISubscriber }> = ({
+export const SubscriberAvatars: FC<{ subscriber: Subscriber }> = ({
   subscriber,
 }) => {
   return (

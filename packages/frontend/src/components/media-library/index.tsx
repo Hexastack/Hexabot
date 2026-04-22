@@ -17,7 +17,7 @@ import { getDateTimeFormatter } from "@/utils/date";
 
 import {
   AttachmentResourceRef,
-  IAttachment,
+  Attachment,
 } from "../../types/attachment.types";
 
 type MediaLibraryProps = {
@@ -29,7 +29,7 @@ type MediaLibraryProps = {
 export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   const { t } = useTranslate();
   const formatFileSize = useFormattedFileSize();
-  const columns: GridColDef<IAttachment>[] = [
+  const columns: GridColDef<Attachment>[] = [
     { field: "id", headerName: "ID" },
     {
       field: "url",

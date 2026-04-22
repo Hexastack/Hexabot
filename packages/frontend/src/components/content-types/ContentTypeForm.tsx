@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { ContentType } from "@hexabot-ai/types";
 import { FormHelperText, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
@@ -21,10 +22,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import {
-  IContentType,
-  IContentTypeAttributes,
-} from "@/types/content-type.types";
+import { IContentTypeAttributes } from "@/types/content-type.types";
 import { validateJsonSchema } from "@/utils/jsonSchemaValidation";
 
 import { CONTENT_TYPE_DEFAULT_PROPERTIES } from "./constants";
@@ -33,7 +31,7 @@ const CONTEXT = "fieldInput" as const;
 const buildDefaultSchema = () =>
   makeDefaultSchemaNode("object", CONTENT_TYPE_DEFAULT_PROPERTIES);
 
-export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
+export const ContentTypeForm: FC<ComponentFormProps<ContentType>> = ({
   data: { defaultValues: contentType },
   Wrapper = Fragment,
   WrapperProps,
@@ -41,7 +39,7 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
 }) => {
   const { toast } = useToast();
   const { t } = useTranslate();
-  const form = useForm<IContentType>({
+  const form = useForm<ContentType>({
     defaultValues: {
       name: "",
       schema: buildDefaultSchema(),

@@ -4,9 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
-
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import type {
+  Credential as SharedCredential,
+  CredentialFull as SharedCredentialFull,
+  CredentialStub as SharedCredentialStub,
+} from "@hexabot-ai/types";
 
 export interface ICredentialAttributes {
   name: string;
@@ -14,8 +16,12 @@ export interface ICredentialAttributes {
   owner: string | null;
 }
 
-export interface ICredentialStub
-  extends IBaseSchema,
-    OmitPopulate<ICredentialAttributes, EntityType.CREDENTIAL> {}
+export type ICredentialStub = SharedCredentialStub;
 
-export interface ICredential extends ICredentialStub, IFormat<Format.BASIC> {}
+export type Credential = SharedCredential;
+
+export type CredentialFull = SharedCredentialFull;
+
+export type CredentialWithValue = Credential & {
+  value?: string;
+};

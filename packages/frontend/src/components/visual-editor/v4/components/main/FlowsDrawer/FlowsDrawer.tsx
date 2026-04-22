@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowType } from "@hexabot-ai/types";
+import type { Workflow } from "@hexabot-ai/types";
 import {
   Box,
   Button,
@@ -42,7 +44,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { WorkflowType, type IWorkflow } from "@/types/workfow.types";
 
 import { useWorkflow } from "../../../hooks/useWorkflow";
 import { YamlEditor } from "../../yaml-editor";
@@ -226,7 +227,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const hasUnsaved = Boolean(selectedFlowId && (isDefinitionDirty || isSaving));
   const matches = useMemo<FlowMatch[]>(() => {
     const list = workflowsList ?? [];
-    const getTypeMeta = (flow: IWorkflow, typeKey: string) => {
+    const getTypeMeta = (flow: Workflow, typeKey: string) => {
       if (typeKey === WorkflowType.conversational) {
         return {
           secondaryText: flow.description?.trim() ?? "",

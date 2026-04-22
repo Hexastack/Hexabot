@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { Box, Switch, Typography } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Plug, Plus } from "lucide-react";
@@ -25,13 +26,12 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import {
-  IMcpServer,
+  McpServerTransport,
+  McpServer,
   IMcpServerDiagnostics,
   IMcpServerTool,
   IMcpServerToolsDiscovery,
-  McpServerTransport,
 } from "@/types/mcp-server.types";
-import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { McpServerFormDialog } from "./McpServerFormDialog";
@@ -57,7 +57,7 @@ export const McpServers = () => {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
   const [testDrawerState, setTestDrawerState] =
     useState<DrawerState>(INITIAL_DRAWER_STATE);
-  const [selectedToolsServer, setSelectedToolsServer] = useState<IMcpServer>();
+  const [selectedToolsServer, setSelectedToolsServer] = useState<McpServer>();
   const { mutate: updateMcpServer } = useUpdate(EntityType.MCP_SERVER, {
     onError: (error: Error) => {
       toast.error(error);
@@ -89,7 +89,7 @@ export const McpServers = () => {
     setTestDrawerState(INITIAL_DRAWER_STATE);
     setSelectedToolsServer(undefined);
   };
-  const handleTest = async (row: IMcpServer) => {
+  const handleTest = async (row: McpServer) => {
     setDrawerMode("test");
     setTestDrawerState({
       status: "loading",
@@ -109,7 +109,7 @@ export const McpServers = () => {
       });
     }
   };
-  const handleTools = (row: IMcpServer) => {
+  const handleTools = (row: McpServer) => {
     setDrawerMode("tools");
     setSelectedToolsServer(row);
   };
@@ -158,25 +158,25 @@ export const McpServers = () => {
     drawerError = toolsError;
   }
 
-  const actionColumns = useActionColumns<IMcpServer>(
+  const actionColumns = useActionColumns<McpServer>(
     EntityType.MCP_SERVER,
     [
       {
         action: ColumnActionType.Test,
         onClick: handleTest,
-        requires: [PermissionAction.CREATE],
+        requires: [Action.CREATE],
       },
       {
         action: ColumnActionType.Tools,
         onClick: handleTools,
-        requires: [PermissionAction.READ],
+        requires: [Action.READ],
       },
       {
         action: ColumnActionType.Edit,
         onClick: (row) => {
           dialogs.open(McpServerFormDialog, { defaultValues: row });
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
@@ -187,12 +187,12 @@ export const McpServers = () => {
             deleteMcpServer(id);
           }
         },
-        requires: [PermissionAction.DELETE],
+        requires: [Action.DELETE],
       },
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<IMcpServer>[] = [
+  const columns: GridColDef<McpServer>[] = [
     { field: "id", headerName: "ID" },
     {
       flex: 1,
@@ -211,9 +211,7 @@ export const McpServers = () => {
         <Switch
           checked={params.value}
           slotProps={{ input: { "aria-label": "primary checkbox" } }}
-          disabled={
-            !hasPermission(EntityType.MCP_SERVER, PermissionAction.UPDATE)
-          }
+          disabled={!hasPermission(EntityType.MCP_SERVER, Action.UPDATE)}
           onChange={() =>
             updateMcpServer({
               id: params.row.id,
@@ -303,7 +301,7 @@ export const McpServers = () => {
         entity={EntityType.MCP_SERVER}
         buttons={[
           {
-            permissionAction: PermissionAction.CREATE,
+            permissionAction: Action.CREATE,
             children: t("button.add"),
             startIcon: <Plus />,
             onClick: () => {

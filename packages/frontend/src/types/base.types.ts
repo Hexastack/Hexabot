@@ -4,90 +4,82 @@
  * Full terms: see LICENSE.md.
  */
 
+import type {
+  Attachment,
+  Content,
+  ContentFull,
+  ContentType,
+  Credential,
+  Label,
+  LabelFull,
+  LabelGroup,
+  Language,
+  McpServer,
+  McpServerFull,
+  MemoryDefinition,
+  Menu,
+  MenuFull,
+  Message,
+  MessageFull,
+  Model,
+  ModelFull,
+  Permission,
+  PermissionFull,
+  Role,
+  RoleFull,
+  Setting,
+  Subscriber,
+  SubscriberFull,
+  Thread,
+  ThreadFull,
+  Translation,
+  User,
+  UserFull,
+  Workflow,
+  WorkflowFull,
+  WorkflowRun,
+  WorkflowRunFull,
+  WorkflowVersion,
+  WorkflowVersionFull,
+} from "@hexabot-ai/types";
 import { GridPaginationModel, GridSortModel } from "@mui/x-data-grid";
 import { Path, PathValue } from "react-hook-form";
 
 import { EntityType, Format, TPopulateTypeFromFormat } from "@/services/types";
 
-import {
-  IAttachment,
-  IAttachmentAttributes,
-  IAttachmentFilters,
-} from "./attachment.types";
+import { IAttachmentAttributes, IAttachmentFilters } from "./attachment.types";
 import { IChannel, IChannelAttributes } from "./channel.types";
-import { IContentType, IContentTypeAttributes } from "./content-type.types";
-import {
-  IContent,
-  IContentAttributes,
-  IContentFilters,
-  IContentFull,
-} from "./content.types";
-import { ICredential, ICredentialAttributes } from "./credential.types";
+import { IContentTypeAttributes } from "./content-type.types";
+import { IContentAttributes, IContentFilters } from "./content.types";
+import { ICredentialAttributes } from "./credential.types";
 import { IHelper, IHelperAttributes } from "./helper.types";
-import { ILabelGroup, ILabelGroupAttributes } from "./label-group.types";
-import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
-import { ILanguage, ILanguageAttributes } from "./language.types";
-import {
-  IMcpServer,
-  IMcpServerAttributes,
-  IMcpServerFull,
-} from "./mcp-server.types";
-import {
-  IMemoryDefinition,
-  IMemoryDefinitionAttributes,
-} from "./memory-definition.types";
+import { ILabelGroupAttributes } from "./label-group.types";
+import { ILabelAttributes } from "./label.types";
+import { ILanguageAttributes } from "./language.types";
+import { IMcpServerAttributes } from "./mcp-server.types";
+import { IMemoryDefinitionAttributes } from "./memory-definition.types";
 import {
   IMenuNode,
   IMenuNodeAttributes,
   IMenuNodeFull,
 } from "./menu-tree.types";
-import { IMenuItem, IMenuItemAttributes, IMenuItemFull } from "./menu.types";
-import {
-  IMessage,
-  IMessageAttributes,
-  IMessageFilters,
-  IMessageFull,
-} from "./message.types";
-import { IModel, IModelAttributes, IModelFull } from "./model.types";
-import {
-  IPermission,
-  IPermissionAttributes,
-  IPermissionFull,
-} from "./permission.types";
-import { IRole, IRoleAttributes, IRoleFull } from "./role.types";
+import { IMenuItemAttributes } from "./menu.types";
+import { IMessageAttributes, IMessageFilters } from "./message.types";
+import { IModelAttributes } from "./model.types";
+import { IPermissionAttributes } from "./permission.types";
+import { IRoleAttributes } from "./role.types";
 import { SearchPayload } from "./search.types";
-import { ISetting, ISettingAttributes } from "./setting.types";
+import { ISettingAttributes } from "./setting.types";
+import { ISubscriberAttributes, ISubscriberFilters } from "./subscriber.types";
+import { IThreadAttributes, IThreadFilters } from "./thread.types";
+import { ITranslationAttributes } from "./translation.types";
+import { IUserAttributes } from "./user.types";
 import {
-  ISubscriber,
-  ISubscriberAttributes,
-  ISubscriberFilters,
-  ISubscriberFull,
-} from "./subscriber.types";
-import {
-  IThread,
-  IThreadAttributes,
-  IThreadFilters,
-  IThreadFull,
-} from "./thread.types";
-import { ITranslation, ITranslationAttributes } from "./translation.types";
-import { IUser, IUserAttributes, IUserFull } from "./user.types";
-import {
-  IWorkflowRun,
   IWorkflowRunAttributes,
   IWorkflowRunFilters,
-  IWorkflowRunFull,
 } from "./workflow-run.types";
-import {
-  IWorkflowVersion,
-  IWorkflowVersionAttributes,
-  IWorkflowVersionFull,
-} from "./workfow-version.types";
-import {
-  IWorkflow,
-  IWorkflowAttributes,
-  IWorkflowFilters,
-  IWorkflowFull,
-} from "./workfow.types";
+import { IWorkflowVersionAttributes } from "./workfow-version.types";
+import { IWorkflowAttributes, IWorkflowFilters } from "./workfow.types";
 
 export interface IBaseSchema {
   id: string;
@@ -160,89 +152,84 @@ interface IEntityTypes<
 
 export interface IEntityMapTypes {
   [EntityType.WORKFLOW]: IEntityTypes<
-    IWorkflow,
+    Workflow,
     IWorkflowAttributes,
     IWorkflowFilters,
-    IWorkflowFull
+    WorkflowFull
   >;
   [EntityType.WORKFLOW_VERSION]: IEntityTypes<
-    IWorkflowVersion,
+    WorkflowVersion,
     IWorkflowVersionAttributes,
     never,
-    IWorkflowVersionFull
+    WorkflowVersionFull
   >;
   [EntityType.WORKFLOW_RUN]: IEntityTypes<
-    IWorkflowRun,
+    WorkflowRun,
     IWorkflowRunAttributes,
     IWorkflowRunFilters,
-    IWorkflowRunFull
+    WorkflowRunFull
   >;
   [EntityType.MCP_SERVER]: IEntityTypes<
-    IMcpServer,
+    McpServer,
     IMcpServerAttributes,
     never,
-    IMcpServerFull
+    McpServerFull
   >;
   [EntityType.MEMORY_DEFINITION]: IEntityTypes<
-    IMemoryDefinition,
+    MemoryDefinition,
     IMemoryDefinitionAttributes
   >;
   [EntityType.THREAD]: IEntityTypes<
-    IThread,
+    Thread,
     IThreadAttributes,
     IThreadFilters,
-    IThreadFull
+    ThreadFull
   >;
   [EntityType.CONTENT]: IEntityTypes<
-    IContent,
+    Content,
     IContentAttributes,
     IContentFilters,
-    IContentFull
+    ContentFull
   >;
-  [EntityType.CONTENT_TYPE]: IEntityTypes<IContentType, IContentTypeAttributes>;
-  [EntityType.LABEL]: IEntityTypes<ILabel, ILabelAttributes, never, ILabelFull>;
-  [EntityType.LABEL_GROUP]: IEntityTypes<ILabelGroup, ILabelGroupAttributes>;
-  [EntityType.MENU]: IEntityTypes<
-    IMenuItem,
-    IMenuItemAttributes,
-    never,
-    IMenuItemFull
-  >;
+  [EntityType.CONTENT_TYPE]: IEntityTypes<ContentType, IContentTypeAttributes>;
+  [EntityType.LABEL]: IEntityTypes<Label, ILabelAttributes, never, LabelFull>;
+  [EntityType.LABEL_GROUP]: IEntityTypes<LabelGroup, ILabelGroupAttributes>;
+  [EntityType.MENU]: IEntityTypes<Menu, IMenuItemAttributes, never, MenuFull>;
   [EntityType.MENUTREE]: IEntityTypes<
     IMenuNode,
     IMenuNodeAttributes,
     never,
     IMenuNodeFull
   >;
-  [EntityType.MODEL]: IEntityTypes<IModel, IModelAttributes, never, IModelFull>;
-  [EntityType.CREDENTIAL]: IEntityTypes<ICredential, ICredentialAttributes>;
+  [EntityType.MODEL]: IEntityTypes<Model, IModelAttributes, never, ModelFull>;
+  [EntityType.CREDENTIAL]: IEntityTypes<Credential, ICredentialAttributes>;
   [EntityType.PERMISSION]: IEntityTypes<
-    IPermission,
+    Permission,
     IPermissionAttributes,
     never,
-    IPermissionFull
+    PermissionFull
   >;
-  [EntityType.ROLE]: IEntityTypes<IRole, IRoleAttributes, never, IRoleFull>;
-  [EntityType.SETTING]: IEntityTypes<ISetting, ISettingAttributes>;
+  [EntityType.ROLE]: IEntityTypes<Role, IRoleAttributes, never, RoleFull>;
+  [EntityType.SETTING]: IEntityTypes<Setting, ISettingAttributes>;
   [EntityType.SUBSCRIBER]: IEntityTypes<
-    ISubscriber,
+    Subscriber,
     ISubscriberAttributes,
     ISubscriberFilters,
-    ISubscriberFull
+    SubscriberFull
   >;
-  [EntityType.LANGUAGE]: IEntityTypes<ILanguage, ILanguageAttributes>;
-  [EntityType.TRANSLATION]: IEntityTypes<ITranslation, ITranslationAttributes>;
-  [EntityType.USER]: IEntityTypes<IUser, IUserAttributes, never, IUserFull>;
+  [EntityType.LANGUAGE]: IEntityTypes<Language, ILanguageAttributes>;
+  [EntityType.TRANSLATION]: IEntityTypes<Translation, ITranslationAttributes>;
+  [EntityType.USER]: IEntityTypes<User, IUserAttributes, never, UserFull>;
   [EntityType.ATTACHMENT]: IEntityTypes<
-    IAttachment,
+    Attachment,
     IAttachmentAttributes,
     IAttachmentFilters
   >;
   [EntityType.MESSAGE]: IEntityTypes<
-    IMessage,
+    Message,
     IMessageAttributes,
     IMessageFilters,
-    IMessageFull
+    MessageFull
   >;
   [EntityType.CHANNEL]: IEntityTypes<IChannel, IChannelAttributes>;
   [EntityType.HELPER]: IEntityTypes<IHelper, IHelperAttributes>;

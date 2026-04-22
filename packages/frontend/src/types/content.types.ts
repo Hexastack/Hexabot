@@ -4,33 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Format } from "@/services/types";
+import type { Content as SharedContent } from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat, TNestedPaths } from "./base.types";
-import { IContentType } from "./content-type.types";
+import { TNestedPaths } from "./base.types";
 
-export interface IContentAttributes {
-  contentType: string;
-  title: string;
-  status: boolean;
-  properties: Record<string, any>;
-}
+export type IContentAttributes = Pick<
+  SharedContent,
+  "contentType" | "title" | "status" | "properties"
+>;
 
 export interface IContentFilters
   extends TNestedPaths<{ contentType: { id: string } }> {
   title: string;
-}
-
-export interface IContentStub extends IBaseSchema {
-  title: string;
-  status: boolean;
-  properties: Record<string, any>;
-}
-
-export interface IContent extends IContentStub, IFormat<Format.BASIC> {
-  contentType: string;
-}
-
-export interface IContentFull extends IContentStub, IFormat<Format.FULL> {
-  contentType: IContentType;
 }

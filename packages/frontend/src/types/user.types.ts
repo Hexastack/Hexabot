@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
-
-import { IAttachment } from "./attachment.types";
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { IRole } from "./role.types";
+import type {
+  User as SharedUser,
+  UserFull as SharedUserFull,
+  UserStub as SharedUserStub,
+} from "@hexabot-ai/types";
 
 export type LicensePlan = "unknown" | "starter" | "pro" | "unlimited";
 
@@ -48,35 +48,31 @@ export interface ILicense {
   quotas: ILicenseQuotas;
 }
 
-export interface IUserAttributes {
-  firstName: string;
-  lastName: string;
-  email: string;
-  language: string;
+export type IUserAttributes = Pick<
+  SharedUser,
+  "firstName" | "lastName" | "email" | "state" | "roles" | "avatar" | "language"
+> & {
   password?: string;
-  state: boolean;
-  roles: string[];
-  avatar: string | null;
   license?: ILicense;
-}
+};
 
-export interface IUserStub
-  extends IBaseSchema,
-    OmitPopulate<IUserAttributes, EntityType.USER> {
+export type UserStub = SharedUserStub & {
   fullName?: string;
-}
+  license?: ILicense;
+};
 
-export interface IProfileAttributes extends Partial<IUserStub> {
+export interface IProfileAttributes extends Partial<UserStub> {
+  password?: string;
   password2?: string;
   avatar?: File | null;
 }
 
-export interface IUser extends IUserStub, IFormat<Format.BASIC> {
-  roles: string[]; //populated by default
-  avatar: string | null;
-}
+export type User = SharedUser & {
+  fullName?: string;
+  license?: ILicense;
+};
 
-export interface IUserFull extends IUserStub, IFormat<Format.FULL> {
-  roles: IRole[];
-  avatar: IAttachment | null;
-}
+export type UserFull = SharedUserFull & {
+  fullName?: string;
+  license?: ILicense;
+};

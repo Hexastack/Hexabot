@@ -4,15 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Role } from "@hexabot-ai/types";
+
 import { EntityType } from "@/services/types";
 
-import { PermissionAction } from "../permission.types";
-import { IRole } from "../role.types";
+import { Action } from "../permission.types";
 
 export interface IUserPermissions {
-  roles: IRole[];
+  roles: Role[];
   permissions: Array<{
-    action: PermissionAction;
+    action: Action;
     model: EntityType;
     relation: string;
   }>;

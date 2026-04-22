@@ -4,31 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Format } from "@/services/types";
+import {
+  MemoryScope,
+  type MemoryDefinition as SharedMemoryDefinition,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat } from "./base.types";
-
-export enum MemoryScope {
-  global = "global",
-  workflow = "workflow",
-  thread = "thread",
-  run = "run",
-}
+export { MemoryScope };
 
 export type MemorySchema = Record<string, unknown>;
 
-export interface IMemoryDefinitionAttributes {
-  name: string;
-  slug: string;
-  scope: MemoryScope;
-  schema: MemorySchema;
-  ttlSeconds?: number | null;
-}
-
-export interface IMemoryDefinitionStub
-  extends IBaseSchema,
-    IMemoryDefinitionAttributes {}
-
-export interface IMemoryDefinition
-  extends IMemoryDefinitionStub,
-    IFormat<Format.BASIC> {}
+export type IMemoryDefinitionAttributes = Pick<
+  SharedMemoryDefinition,
+  "name" | "slug" | "scope" | "schema" | "ttlSeconds"
+>;

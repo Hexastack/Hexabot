@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MemoryScope } from "@hexabot-ai/types";
+import type { MemoryDefinition } from "@hexabot-ai/types";
 import { FormHelperText, MenuItem, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment, useEffect } from "react";
@@ -23,11 +25,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import {
-  IMemoryDefinition,
-  IMemoryDefinitionAttributes,
-  MemoryScope,
-} from "@/types/memory-definition.types";
+import { IMemoryDefinitionAttributes } from "@/types/memory-definition.types";
 import { validateJsonSchema } from "@/utils/jsonSchemaValidation";
 import { slugify } from "@/utils/string";
 
@@ -41,9 +39,7 @@ type MemoryDefinitionFormValues = {
 
 const buildDefaultSchema = () => makeDefaultSchemaNode("object");
 
-export const MemoryDefinitionForm: FC<
-  ComponentFormProps<IMemoryDefinition>
-> = ({
+export const MemoryDefinitionForm: FC<ComponentFormProps<MemoryDefinition>> = ({
   data: { defaultValues: memoryDefinition },
   Wrapper = Fragment,
   WrapperProps,

@@ -4,14 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { AttachmentResourceRef, type Attachment } from "@hexabot-ai/types";
+import { Action } from "@hexabot-ai/types";
 import { Box, FormHelperText, FormLabel } from "@mui/material";
 import { ReactNode, forwardRef } from "react";
 
 import { useGet } from "@/hooks/crud/useGet";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
-import { AttachmentResourceRef, IAttachment } from "@/types/attachment.types";
-import { PermissionAction } from "@/types/permission.types";
 
 import AttachmentThumbnail from "./AttachmentThumbnail";
 import AttachmentUploader from "./AttachmentUploader";
@@ -48,7 +48,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
     ref,
   ) => {
     const hasPermission = useHasPermission();
-    const handleChange = (attachment?: IAttachment | null) => {
+    const handleChange = (attachment?: Attachment | null) => {
       onChange && onChange(attachment?.id || null, attachment?.type || null);
     };
 
@@ -79,7 +79,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
             format={format}
             size={size}
           />
-        ) : hasPermission(EntityType.ATTACHMENT, PermissionAction.CREATE) ? (
+        ) : hasPermission(EntityType.ATTACHMENT, Action.CREATE) ? (
           <AttachmentUploader
             accept={accept}
             enableMediaLibrary={enableMediaLibrary}

@@ -10,7 +10,7 @@ import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQu
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType, Format } from "@/services/types";
 import { SearchPayload } from "@/types/search.types";
-import { IThread } from "@/types/thread.types";
+import { Thread } from "@/types/thread.types";
 
 import { AssignedTo } from "../types";
 
@@ -114,7 +114,7 @@ export const useInfiniteLiveThreads = (props: ConversationsFilters) => {
       ],
     },
   );
-  const threads = useMemo<IThread[]>(() => {
+  const threads = useMemo<Thread[]>(() => {
     const seen = new Set<string>();
     const threadRows = (data?.pages || []).flat();
 

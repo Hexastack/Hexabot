@@ -4,50 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
+import {
+  WorkflowVersionAction,
+  type WorkflowVersion as SharedWorkflowVersion,
+} from "@hexabot-ai/types";
 
-import type { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { IUser } from "./user.types";
-import { IWorkflow } from "./workfow.types";
+export { WorkflowVersionAction };
 
-export enum WorkflowVersionAction {
-  create = "create",
-  update = "update",
-  restore = "restore",
-  import = "import",
-}
-
-export interface IWorkflowVersionAttributes {
-  version?: number;
-  definitionYml: string;
-  checksum?: string;
-  message?: string | null;
-  action: WorkflowVersionAction;
-  parentVersion?: string | null;
-}
-
-export interface IWorkflowVersionStub
-  extends IBaseSchema,
-    OmitPopulate<IWorkflowVersionAttributes, EntityType.WORKFLOW_VERSION> {
-  version: number;
-  definitionYml: string;
-  checksum: string;
-  message?: string | null;
-  action: WorkflowVersionAction;
-}
-
-export interface IWorkflowVersion
-  extends IWorkflowVersionStub,
-    IFormat<Format.BASIC> {
-  workflow: string;
-  parentVersion?: string | null;
-  createdBy: string;
-}
-
-export interface IWorkflowVersionFull
-  extends IWorkflowVersionStub,
-    IFormat<Format.FULL> {
-  workflow: IWorkflow;
-  parentVersion?: IWorkflowVersion | null;
-  createdBy: IUser;
-}
+export type IWorkflowVersionAttributes = Pick<
+  SharedWorkflowVersion,
+  "definitionYml"
+> &
+  Partial<
+    Pick<
+      SharedWorkflowVersion,
+      "version" | "checksum" | "message" | "parentVersion" | "action"
+    >
+  >;

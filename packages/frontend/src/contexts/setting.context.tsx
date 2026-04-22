@@ -4,16 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Setting } from "@hexabot-ai/types";
 import { createContext, ReactNode } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { useFind } from "@/hooks/crud/useFind";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType } from "@/services/types";
-import { ISetting } from "@/types/setting.types";
 
 export const SettingsContext = createContext<{
-  settings: { [key: string]: ISetting[] } | undefined;
+  settings: { [key: string]: Setting[] } | undefined;
 }>({ settings: undefined });
 
 SettingsContext.displayName = "SettingsContext";

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { IWorkflow } from "@/types/workfow.types";
+import type { Workflow } from "@hexabot-ai/types";
 
 export const normalizeQuery = (value: string) =>
   value.trim().toLowerCase().replace(/\s+/g, "");
@@ -52,13 +52,13 @@ export const buildHighlightSegments = (text: string, matches: number[]) => {
 };
 
 // @todo: (error count is not part of the typing, maybe expose the info in the useWorkflowDefinitionState hook)
-export const getErrorCount = (workflow: IWorkflow) => {
+export const getErrorCount = (workflow: Workflow) => {
   const value = (workflow as { errorCount?: number }).errorCount;
 
   return typeof value === "number" && value > 0 ? value : 0;
 };
 
 // @todo: revisit (move to useWorkflowDefinitionState hook ?)
-export const isDraftWorkflow = (workflow: IWorkflow) => {
+export const isDraftWorkflow = (workflow: Workflow) => {
   return !workflow.publishedVersion;
 };

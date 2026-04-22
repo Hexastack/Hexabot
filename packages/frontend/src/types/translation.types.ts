@@ -4,20 +4,27 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
-
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import type {
+  Translation as SharedTranslation,
+  TranslationFull as SharedTranslationFull,
+  TranslationStub as SharedTranslationStub,
+} from "@hexabot-ai/types";
 
 export type ITranslations = Record<string, string>;
 
-export interface ITranslationAttributes {
-  str: string;
-  translations: ITranslations;
-  translated: number;
-}
+export type ITranslationAttributes = Pick<
+  SharedTranslation,
+  "str" | "translations"
+>;
 
-export interface ITranslationStub
-  extends IBaseSchema,
-    OmitPopulate<ITranslationAttributes, EntityType.TRANSLATION> {}
+export type ITranslationStub = SharedTranslationStub & {
+  translated?: number;
+};
 
-export interface ITranslation extends ITranslationStub, IFormat<Format.BASIC> {}
+export type Translation = SharedTranslation & {
+  translated?: number;
+};
+
+export type TranslationFull = SharedTranslationFull & {
+  translated?: number;
+};

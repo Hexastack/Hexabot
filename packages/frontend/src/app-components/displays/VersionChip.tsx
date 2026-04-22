@@ -4,15 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowVersion } from "@hexabot-ai/types";
 import { Chip, type ChipProps } from "@mui/material";
-
-import type { IWorkflowVersion } from "@/types/workfow-version.types";
 
 export type VersionChipProps = Omit<
   ChipProps,
   "label" | "size" | "variant" | "color"
 > & {
-  version: IWorkflowVersion | null;
+  version: WorkflowVersion | null;
 };
 
 export const VersionChip = ({ version, ...rest }: VersionChipProps) => {

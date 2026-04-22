@@ -4,30 +4,26 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Format } from "@/services/types";
+import { MenuType } from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat } from "./base.types";
+import { IBaseSchema } from "./base.types";
 
-export enum MenuType {
-  web_url = "web_url",
-  postback = "postback",
-  nested = "nested",
-}
+export { MenuType };
 
 export interface IMenuNodeAttributes {
   type: MenuType;
-  url?: string;
+  url?: string | null;
   title: string;
-  payload?: string;
-  parent?: string;
+  payload?: string | null;
+  parent?: string | null;
 }
 
 export interface IMenuNodeStub extends IBaseSchema, IMenuNodeAttributes {}
 
-export interface IMenuNode extends IMenuNodeStub, IFormat<Format.BASIC> {
+export interface IMenuNode extends IMenuNodeStub {
   call_to_actions?: string[];
 }
 
-export interface IMenuNodeFull extends IMenuNodeStub, IFormat<Format.BASIC> {
+export interface IMenuNodeFull extends IMenuNodeStub {
   call_to_actions?: IMenuNode[];
 }

@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Workflow } from "@hexabot-ai/types";
 import { Box, Chip, Stack, Tooltip, Typography } from "@mui/material";
 import type { MouseEvent } from "react";
-
-import type { IWorkflow } from "@/types/workfow.types";
 
 import { WorkflowActionButtons } from "../WorkflowActionButtons";
 
@@ -19,7 +18,7 @@ type FlowListItemProps = {
   match: FlowMatch;
   normalizedQuery: string;
   onSelect: (flowId: string) => void;
-  onEdit?: (workflow: IWorkflow) => void;
+  onEdit?: (workflow: Workflow) => void;
   onOpenMenu: (event: MouseEvent<HTMLElement>, flowId: string) => void;
   renameLabel: string;
   moreLabel: string;

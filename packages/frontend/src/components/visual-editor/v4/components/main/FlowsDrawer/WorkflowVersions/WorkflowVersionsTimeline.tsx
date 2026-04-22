@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowVersion } from "@hexabot-ai/types";
 import { Timeline } from "@mui/lab";
-
-import type { IWorkflowVersion } from "@/types/workfow-version.types";
 
 import { WorkflowVersionItem } from "./WorkflowVersionItem";
 
 type WorkflowVersionsTimelineProps = {
-  versions: IWorkflowVersion[];
+  versions: WorkflowVersion[];
   currentVersionId?: string | null;
   publishedVersionId?: string | null;
   isSaving: boolean;
@@ -19,7 +18,7 @@ type WorkflowVersionsTimelineProps = {
   onPublish: (id: string) => void;
   onUnpublish: () => void;
   onUpdateMessage: (id: string, message: string) => void;
-  getUserLabel: (createdBy: string) => string;
+  getUserLabel: (createdBy: string | null) => string;
   language: string;
 };
 

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
 import { KeyRound, Plus } from "lucide-react";
 
@@ -19,8 +20,7 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { ICredential } from "@/types/credential.types";
-import { PermissionAction } from "@/types/permission.types";
+import { Credential } from "@/types/credential.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { CredentialFormDialog } from "./CredentialFormDialog";
@@ -37,7 +37,7 @@ export const Credentials = () => {
       toast.success(t("message.item_delete_success"));
     },
   });
-  const actionColumns = useActionColumns<ICredential>(
+  const actionColumns = useActionColumns<Credential>(
     EntityType.CREDENTIAL,
     [
       {
@@ -45,7 +45,7 @@ export const Credentials = () => {
         onClick: (row) => {
           dialogs.open(CredentialFormDialog, { defaultValues: row });
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
@@ -56,12 +56,12 @@ export const Credentials = () => {
             deleteCredential(id);
           }
         },
-        requires: [PermissionAction.DELETE],
+        requires: [Action.DELETE],
       },
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<ICredential>[] = [
+  const columns: GridColDef<Credential>[] = [
     { field: "id", headerName: "ID" },
     {
       flex: 1,
@@ -121,7 +121,7 @@ export const Credentials = () => {
       entity={EntityType.CREDENTIAL}
       buttons={[
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           children: t("button.add"),
           startIcon: <Plus />,
           onClick: () => {
@@ -132,7 +132,7 @@ export const Credentials = () => {
       columns={columns}
       headerIcon={KeyRound}
       searchParams={{
-        $or: ["name", "value"],
+        $or: ["name"],
         syncUrl: true,
       }}
       headerI18nTitle="title.credentials"

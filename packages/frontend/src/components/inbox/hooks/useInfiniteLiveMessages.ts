@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Message } from "@hexabot-ai/types";
 import { useMemo } from "react";
 
 import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
 import { EntityType } from "@/services/types";
-import { IMessage } from "@/types/message.types";
 import { SearchPayload } from "@/types/search.types";
 
 import { useChat } from "./ChatContext";
@@ -68,7 +68,7 @@ export const useInfinitedLiveMessages = () => {
 
     return (data?.pages || [])
       .flat()
-      .reduce<IMessage[]>((acc, m) => {
+      .reduce<Message[]>((acc, m) => {
         if (!seen.has(m.id)) {
           seen.add(m.id);
           acc.push(m);

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MenuType, Action } from "@hexabot-ai/types";
 import {
   Accordion,
   AccordionDetails,
@@ -35,8 +36,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { theme } from "@/layout/theme";
 import { EntityType } from "@/services/types";
 import { IMenuNode } from "@/types/menu-tree.types";
-import { MenuType } from "@/types/menu.types";
-import { PermissionAction } from "@/types/permission.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
 const StyledAccordion = styled(Accordion)(
@@ -165,7 +164,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
       </Grid>
       <ButtonGroup size="small">
         {menu.type === "nested" &&
-        hasPermission(EntityType.MENU, PermissionAction.CREATE) ? (
+        hasPermission(EntityType.MENU, Action.CREATE) ? (
           <Button
             size="small"
             startIcon={<ListPlus size={18} style={{ opacity: 0.6 }} />}
@@ -177,7 +176,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
             {t("button.append")}
           </Button>
         ) : null}
-        {hasPermission(EntityType.MENU, PermissionAction.UPDATE) ? (
+        {hasPermission(EntityType.MENU, Action.UPDATE) ? (
           <Button
             startIcon={<Pencil size={18} style={{ opacity: 0.6 }} />}
             onClick={(event) => {
@@ -191,7 +190,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
             }}
           />
         ) : null}
-        {hasPermission(EntityType.MENU, PermissionAction.DELETE) ? (
+        {hasPermission(EntityType.MENU, Action.DELETE) ? (
           <Button
             onClick={(event) => {
               onDelete(menu);

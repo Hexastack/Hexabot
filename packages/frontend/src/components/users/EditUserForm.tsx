@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Role } from "@hexabot-ai/types";
 import { Button, Link, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment, useEffect } from "react";
@@ -16,10 +17,9 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IRole } from "@/types/role.types";
-import { IUser, IUserAttributes } from "@/types/user.types";
+import { User, IUserAttributes } from "@/types/user.types";
 
-export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
+export const EditUserForm: FC<ComponentFormProps<User, Role[]>> = ({
   data: { defaultValues: user, presetValues: roles },
   Wrapper = Fragment,
   WrapperProps,
@@ -93,7 +93,7 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
                     const { onChange, ...rest } = field;
 
                     return (
-                      <AutoCompleteEntitySelect<IRole>
+                      <AutoCompleteEntitySelect<Role>
                         autoFocus
                         searchFields={["name"]}
                         entity={EntityType.ROLE}

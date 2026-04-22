@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Language } from "@hexabot-ai/types";
 import { FormLabel, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment } from "react";
@@ -16,16 +17,15 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ILanguage } from "@/types/language.types";
 import {
-  ITranslation,
+  Translation,
   ITranslationAttributes,
   ITranslations,
 } from "@/types/translation.types";
 
 interface TranslationInputProps {
   field: ControllerRenderProps<ITranslationAttributes>;
-  language: ILanguage;
+  language: Language;
 }
 
 const TranslationInput: React.FC<TranslationInputProps> = ({
@@ -46,7 +46,7 @@ const TranslationInput: React.FC<TranslationInputProps> = ({
   />
 );
 
-export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
+export const TranslationForm: FC<ComponentFormProps<Translation>> = ({
   data: { defaultValues: translation },
   Wrapper = Fragment,
   WrapperProps,
