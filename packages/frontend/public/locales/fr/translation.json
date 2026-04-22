@@ -187,7 +187,8 @@
     "user_management_locked_description": "Votre licence actuelle ne donne pas accès à la gestion des utilisateurs.",
     "user_management_locked_hint": "Passez à l'offre Pro ou saisissez une clé de licence valide pour continuer.",
     "users_quota_reached": "Limite d'utilisateurs atteinte pour votre offre actuelle.",
-    "workflows_quota_reached": "Limite de workflows atteinte pour votre offre actuelle."
+    "workflows_quota_reached": "Limite de workflows atteinte pour votre offre actuelle.",
+    "no_settings_schema": "Aucun schéma de configuration n'est disponible pour ce groupe."
   },
   "menu": {
     "terms": "Conditions d'utilisation",

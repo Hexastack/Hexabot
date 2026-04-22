@@ -263,10 +263,7 @@ export const Settings = () => {
                   >
                     {!schema ? (
                       <Typography variant="body2" color="text.secondary">
-                        {t("message.no_settings_schema", {
-                          defaultValue:
-                            "No settings schema is available for this group.",
-                        })}
+                        {t("message.no_settings_schema")}
                       </Typography>
                     ) : (
                       <FormControl>
