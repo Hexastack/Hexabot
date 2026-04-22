@@ -21,6 +21,7 @@ import {
 } from '@/attachment/types';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
+import { AttachmentRef } from '@/chat/types/attachment';
 import { StdOutgoingEnvelope } from '@/chat/types/message';
 import type { ActionOptions } from '@/chat/types/options';
 import { I18nService } from '@/i18n';
@@ -30,7 +31,10 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
 import { ChannelService } from '../channel.service';
+import { ChannelAttachmentService } from '../services/channel-attachment.service';
 import { ChannelName } from '../types';
+
+import { ChannelEventBus } from './channel-event-bus';
 
 @Injectable()
 export default abstract class ChannelHandler<
@@ -48,6 +52,9 @@ export default abstract class ChannelHandler<
   @Inject(AttachmentService)
   public readonly attachmentService: AttachmentService;
 
+  @Inject(ChannelAttachmentService)
+  protected readonly channelAttachmentService: ChannelAttachmentService;
+
   @Inject(SettingService)
   protected readonly settingService: SettingService;
 
@@ -56,6 +63,9 @@ export default abstract class ChannelHandler<
 
   @Inject(ModuleRef)
   private readonly moduleRef: ModuleRef;
+
+  @Inject(ChannelEventBus)
+  protected readonly channelEventBus: ChannelEventBus;
 
   constructor(name: N) {
     super(name);
@@ -200,5 +210,25 @@ export default abstract class ChannelHandler<
    */
   public async hasDownloadAccess(attachment: Attachment, _req: Request) {
     return attachment.access === AttachmentAccess.Public;
+  }
+
+  /**
+   * Returns a publicly accessible URL for an attachment.
+   *
+   * Default: generates a signed Hexabot download URL
+   * (`/webhook/:channel/download/:name?t=<jwt>`).
+   *
+   * Override in HTTP-based channels (Facebook, WhatsApp, …) when the
+   * messaging platform fetches the URL itself and the JWT-signed scheme
+   * would not be appropriate (e.g. upload the file to the platform's media
+   * API once and return the resulting permanent media URL instead).
+   */
+  public async getAttachmentPublicUrl(
+    attachment: AttachmentRef,
+  ): Promise<string> {
+    return this.channelAttachmentService.getPublicUrl(
+      this.getName(),
+      attachment,
+    );
   }
 }

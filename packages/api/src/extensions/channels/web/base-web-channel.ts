@@ -23,13 +23,12 @@ import {
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import ChannelHandler from '@/channel/lib/Handler';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import {
   inferOutgoingMessageEnvelope,
   UnsupportedOutgoingFormatError,
 } from '@/channel/lib/outbound';
-import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
+import { WebSocketChannelHandler } from '@/channel/lib/transports';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
@@ -52,7 +51,6 @@ import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import {
   AttachmentMessageInboundEvent,
@@ -70,7 +68,7 @@ import { WEB_CHANNEL_NAME } from './web-channel.settings';
 
 @Injectable()
 export default abstract class BaseWebChannelHandler<N extends ChannelName>
-  extends ChannelHandler<N>
+  extends WebSocketChannelHandler<N>
   implements OnModuleInit
 {
   @Inject(SubscriberService)
@@ -82,14 +80,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   @Inject(MenuService)
   protected readonly menuService: MenuService;
 
-  @Inject(WebsocketGateway)
-  protected readonly websocketGateway: WebsocketGateway;
-
   @Inject(ThreadService)
   protected readonly threadService: ThreadService;
-
-  @Inject(ChannelAttachmentService)
-  protected readonly channelAttachmentService: ChannelAttachmentService;
 
   private outboundMessageEncoder!: WebOutboundMessageEncoder;
 
@@ -107,14 +99,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     const InboundEventDecoderProvider = createWebInboundEventDecoder(
       this.getName(),
     );
-    [this.outboundMessageEncoder, this.inboundEventDecoder] = await Promise.all(
-      [
-        this.createModuleRef(OutboundMessageEncoderProvider),
-        this.createModuleRef(InboundEventDecoderProvider) as Promise<
-          WebInboundEventDecoder<N>
-        >,
-      ],
-    );
+    const [encoder, decoder] = await Promise.all([
+      this.createModuleRef(OutboundMessageEncoderProvider),
+      this.createModuleRef(InboundEventDecoderProvider),
+    ]);
+    this.outboundMessageEncoder = encoder as WebOutboundMessageEncoder;
+    this.inboundEventDecoder = decoder as WebInboundEventDecoder<N>;
     this.logger.debug('initialization ...');
   }
 
@@ -637,6 +627,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         throw new Error('File payload is missing');
       }
 
+      // Narrow sibling fields after the `'file' in data` guard.
+      // Zod's union inference doesn't propagate narrowing to other properties.
+      const { name: fileName, type: mimeType } = data as {
+        name: string;
+        type: string;
+      };
       const size = Buffer.byteLength(data.file);
 
       if (size > config.parameters.maxUploadSize) {
@@ -644,9 +640,9 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       }
 
       return await this.attachmentService.store(data.file, {
-        name: data.name,
+        name: fileName,
         size,
-        type: data.type,
+        type: mimeType,
         resourceRef: AttachmentResourceRef.MessageAttachment,
         access: AttachmentAccess.Private,
         createdByRef: AttachmentCreatedByRef.Subscriber,
@@ -656,17 +652,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       this.logger.error('Unable to store uploaded file', err);
       throw new Error('Unable to upload file!');
     }
-  }
-
-  /**
-   * Returns the request client IP address
-   *
-   * @param req Either a HTTP request or a WS Request (Synthetic object)
-   *
-   * @returns IP Address
-   */
-  protected getIpAddress(req: SocketRequest): string {
-    return req.socket.handshake.address;
   }
 
   /**
@@ -812,11 +797,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
             read: true,
             delivery: true,
           };
-          this.eventEmitter.emit(
-            'hook:chatbot:sent',
-            sentMessage,
-            messageEvent,
-          );
+          this.channelEventBus.emitSent(sentMessage, messageEvent);
 
           continue;
         }
@@ -829,7 +810,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         messageEvent.setCreatedAt(new Date());
 
         this.broadcast(profile, StdEventType.message, messageEvent.getRaw());
-        await this.eventEmitter.emitAsync('hook:chatbot:message', messageEvent);
+        await this.channelEventBus.emitMessage(messageEvent);
         const resolvedThreadId = messageEvent.getThreadId();
 
         if (resolvedThreadId) {
@@ -849,62 +830,53 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         event.setThreadIdOnRaw(threadId);
       }
       this.broadcast(profile, type, event.getRaw());
-      this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+      this.channelEventBus.emitStatusEvent(event);
     }
 
     res.status(200).json(responseBody);
   }
 
   /**
-   * Checks if a given request is a socket request
-   *
-   * @param req Either a HTTP express request or a WS request
-   * @returns True if it's a WS request
+   * Handle an incoming GET socket request:
+   * CORS validation, then disconnect or subscribe flow.
    */
-  isSocketRequest(req: Request | SocketRequest): req is SocketRequest {
-    return 'isSocket' in req && req.isSocket;
-  }
-
-  /**
-   * Process incoming Web Channel data (finding out its type and assigning it to its proper handler)
-   *
-   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
-   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
-   */
-  async handle(
-    req: Request | SocketRequest,
+  protected async processSocketGet(
+    req: SocketRequest,
     res: Response | SocketResponse,
-    workflowId?: string,
-  ) {
-    if (!this.isSocketRequest(req)) {
-      this.logger.warn(
-        'Web channel over HTTP is no longer supported. Use Socket.IO transport.',
-      );
-
-      return res
-        .status(403)
-        .json({ err: 'Web Channel Handler : Unauthorized!' });
-    }
-
+  ): Promise<void> {
     try {
       await this.ensureValidCors(req, res);
-      if (req.method === 'GET') {
-        if (req.query._disconnect) {
-          req.session.web = undefined;
+      if (req.query._disconnect) {
+        req.session.web = undefined;
 
-          return res.status(200).json({ _disconnect: true });
-        } else {
-          // Handle webhook subscribe requests
-          return await this.subscribe(req, res);
-        }
-      } else {
-        // Handle incoming messages (through POST)
-        return this.handleEvent(req, res, workflowId);
+        return void res.status(200).json({ _disconnect: true });
       }
+
+      await this.subscribe(req, res);
     } catch (err) {
       this.logger.warn('Request check failed', err);
 
-      return res
+      void res.status(403).json({ err: 'Web Channel Handler : Unauthorized!' });
+    }
+  }
+
+  /**
+   * Handle an incoming POST socket request:
+   * CORS validation, then inbound event processing.
+   */
+  protected async processSocketPost(
+    req: SocketRequest,
+    res: Response | SocketResponse,
+    workflowId?: string,
+  ): Promise<void> {
+    try {
+      await this.ensureValidCors(req, res);
+
+      await this.handleEvent(req, res, workflowId);
+    } catch (err) {
+      this.logger.warn('Request check failed', err);
+
+      return void res
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
     }
@@ -917,23 +889,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    */
   generateId(): string {
     return `${this.name}-${uuidv4()}`;
-  }
-
-  /**
-   * Sends a message to the end-user using websocket
-   *
-   * @param subscriber - End-user toward which message will be sent
-   * @param type - The message to be sent (message, typing, ...)
-   * @param content - The message payload contain additional settings
-   * @param [excludedRooms=[]] - Array of room names to exclude from receiving the message.
-   */
-  private broadcast(
-    subscriber: Subscriber,
-    type: StdEventType,
-    content: any,
-    excludedRooms: string[] = [],
-  ): void {
-    this.websocketGateway.broadcast(subscriber, type, content, excludedRooms);
   }
 
   /**
@@ -990,30 +945,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     }
 
     return next();
-  }
-
-  /**
-   * Send a typing indicator (waterline) to the end user for a given duration
-   *
-   * @param recipient - The end-user object
-   * @param timeout - Duration of the typing indicator in milliseconds
-   */
-  async sendTypingIndicator(
-    recipient: Subscriber,
-    timeout: number,
-  ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.broadcast(recipient, StdEventType.typing, true);
-        setTimeout(() => {
-          this.broadcast(recipient, StdEventType.typing, false);
-
-          return resolve();
-        }, timeout);
-      } catch (err) {
-        reject(err);
-      }
-    });
   }
 
   /**
