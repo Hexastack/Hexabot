@@ -10,14 +10,6 @@ import type {
   SubscriberStub as SharedSubscriberStub,
 } from "@hexabot-ai/types";
 
-type Channel = SharedSubscriber["channel"];
-
-export interface ISubscriberFilters {
-  firstName: string;
-  lastName: string;
-  channel: Channel;
-}
-
 export type SubscriberStub = SharedSubscriberStub & {
   fullName?: string;
 };

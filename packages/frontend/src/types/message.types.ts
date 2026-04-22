@@ -173,8 +173,6 @@ export type StdOutgoingMessage =
   | StdOutgoingListMessage
   | StdOutgoingAttachmentMessage;
 
-export interface IMessageFilters {}
-
 export type MessageStub = SharedMessageStub;
 
 export type Message = SharedMessage;

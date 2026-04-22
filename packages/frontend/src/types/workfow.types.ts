@@ -7,11 +7,3 @@
 import { WorkflowType } from "@hexabot-ai/types";
 
 export { WorkflowType };
-
-export interface IWorkflowFilters {
-  name: string;
-  version: string;
-  description: string;
-  type: WorkflowType;
-  runAfterMs: number;
-}

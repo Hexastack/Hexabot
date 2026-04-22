@@ -15,5 +15,3 @@ export interface IBaseSchema {
 export interface IFormat<F = Format> {
   format: F;
 }
-
-export type IsNever<T> = [T] extends [never] ? true : false;

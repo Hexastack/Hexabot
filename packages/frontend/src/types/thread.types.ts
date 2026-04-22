@@ -27,23 +27,6 @@ export const ThreadCloseReason = {
 export type ThreadCloseReason =
   (typeof ThreadCloseReason)[keyof typeof ThreadCloseReason];
 
-export interface IThreadFilters {
-  subscriber: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    channel: {
-      name: string;
-    };
-    assignedTo: {
-      id: string;
-    };
-  };
-  status: ThreadStatus;
-  closeReason: ThreadCloseReason;
-  title: string;
-}
-
 export type ThreadStub = SharedThreadStub;
 
 export type Thread = SharedThread;

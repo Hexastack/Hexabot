@@ -30,7 +30,3 @@ export type ISubscriberAttachmentFull = Omit<
 > & {
   createdBy: (Subscriber | User)[];
 };
-
-export interface IAttachmentFilters extends Omit<Attachment, "resourceRef"> {
-  resourceRef: AttachmentResourceRef[];
-}

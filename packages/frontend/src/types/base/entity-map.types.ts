@@ -12,6 +12,7 @@ import type {
 import type {
   Attachment,
   AttachmentCreatedByRef,
+  AttachmentResourceRef,
   Content,
   ContentFull,
   ContentType,
@@ -54,23 +55,11 @@ import type { JSONSchema7 as JsonSchema } from "json-schema";
 import type { SchemaNodeForm } from "@/app-components/inputs/JsonSchemaObjectBuilder";
 import { EntityType } from "@/services/types";
 
-import type { IAttachmentFilters } from "../attachment.types";
 import type { IChannel } from "../channel.types";
-import type { IContentFilters } from "../content.types";
 import type { IHelper } from "../helper.types";
 import type { IMenuNode, IMenuNodeFull } from "../menu-tree.types";
-import type {
-  IMessageFilters,
-  StdIncomingMessage,
-  StdOutgoingMessage,
-} from "../message.types";
-import type { ISubscriberFilters } from "../subscriber.types";
-import type { IThreadFilters } from "../thread.types";
+import type { StdIncomingMessage, StdOutgoingMessage } from "../message.types";
 import type { ILicense } from "../user.types";
-import type { IWorkflowRunFilters } from "../workflow-run.types";
-import type { IWorkflowFilters } from "../workfow.types";
-
-import type { IsNever } from "./common.types";
 
 type EntityPayload<
   TEntity,
@@ -81,6 +70,16 @@ type EntityPayload<
   Partial<Pick<TEntity, TOptionalKeys>> &
   TExtra;
 
+type NormalizeFilterOverrides<T> = [T] extends [never]
+  ? Record<never, never>
+  : T;
+
+type MergeWithOverrides<TBase, TOverrides> = Omit<
+  TBase,
+  keyof NormalizeFilterOverrides<TOverrides>
+> &
+  NormalizeFilterOverrides<TOverrides>;
+
 interface IEntityTypes<
   TStub = never,
   TAttr = never,
@@ -89,7 +88,7 @@ interface IEntityTypes<
 > {
   basic: TStub;
   attributes: TAttr;
-  filters: IsNever<TFilters> extends true ? TStub : TFilters;
+  filters: MergeWithOverrides<TStub, TFilters>;
   full: TFull;
 }
 
@@ -105,7 +104,9 @@ export interface IEntityMapTypes {
         inputSchema?: JsonSchema;
       }
     >,
-    IWorkflowFilters,
+    {
+      version: string;
+    },
     WorkflowFull
   >;
   [EntityType.WORKFLOW_VERSION]: IEntityTypes<
@@ -146,7 +147,11 @@ export interface IEntityMapTypes {
         stepLog?: Record<string, StepExecutionRecord> | null;
       }
     >,
-    IWorkflowRunFilters,
+    {
+      workflow: Pick<Workflow, "id" | "name" | "type">;
+      workflowVersion?: Pick<WorkflowVersion, "id" | "version">;
+      error: string;
+    },
     WorkflowRunFull
   >;
   [EntityType.MCP_SERVER]: IEntityTypes<
@@ -183,13 +188,29 @@ export interface IEntityMapTypes {
       | "closeReason"
       | "title"
     >,
-    IThreadFilters,
+    {
+      subscriber: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        channel: {
+          name: string;
+        };
+        assignedTo: {
+          id: string;
+        };
+      };
+    },
     ThreadFull
   >;
   [EntityType.CONTENT]: IEntityTypes<
     Content,
     EntityPayload<Content, "contentType" | "title" | "status" | "properties">,
-    IContentFilters,
+    {
+      contentType: {
+        id: string;
+      };
+    },
     ContentFull
   >;
   [EntityType.CONTENT_TYPE]: IEntityTypes<
@@ -292,7 +313,10 @@ export interface IEntityMapTypes {
       country?: Subscriber["country"];
       foreignId?: Subscriber["foreignId"];
     },
-    ISubscriberFilters,
+    {
+      labels: { id: string }[];
+      assignedTo?: { id: string } | null;
+    },
     SubscriberFull
   >;
   [EntityType.LANGUAGE]: IEntityTypes<
@@ -341,7 +365,9 @@ export interface IEntityMapTypes {
         createdByRef?: AttachmentCreatedByRef;
       }
     >,
-    IAttachmentFilters
+    {
+      resourceRef: AttachmentResourceRef[];
+    }
   >;
   [EntityType.MESSAGE]: IEntityTypes<
     Message,
@@ -357,7 +383,7 @@ export interface IEntityMapTypes {
       delivery?: boolean;
       handover?: boolean;
     },
-    IMessageFilters,
+    never,
     MessageFull
   >;
   [EntityType.CHANNEL]: IEntityTypes<IChannel, EntityPayload<IChannel, "name">>;
