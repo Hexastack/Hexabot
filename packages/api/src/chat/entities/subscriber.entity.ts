@@ -19,7 +19,7 @@ import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator'
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
-import { TDto } from '@/utils';
+import { TZodDto } from '@/utils';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import {
@@ -40,7 +40,7 @@ export class SubscriberChannel {
 
 @ChildEntity()
 export class SubscriberOrmEntity<
-  Dto extends TDto = SubscriberDto,
+  Dto extends TZodDto = SubscriberDto,
 > extends UserProfileOrmEntity<Dto> {
   plainCls: Dto['transformers']['plain'] =
     subscriberSchema as Dto['transformers']['plain'];

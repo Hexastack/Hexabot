@@ -6,12 +6,13 @@
 
 import { randomUUID } from 'crypto';
 
-import { plainToInstance } from 'class-transformer';
 import { BeforeInsert, BeforeUpdate, PrimaryColumn } from 'typeorm';
 import type { ZodTypeAny } from 'zod';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { InferTransformDto, TDto } from '@/utils';
+
+type TransformerField = 'plainCls' | 'fullCls';
 
 export abstract class BaseOrmEntity<Dto extends TDto = TDto> {
   abstract plainCls: Dto['transformers']['plain'];
@@ -55,77 +56,49 @@ export abstract class BaseOrmEntity<Dto extends TDto = TDto> {
     );
   }
 
-  private stripTransformerFields<T>(
-    value: T,
-    seen: WeakMap<object, unknown> = new WeakMap(),
-  ): T {
-    if (typeof value !== 'object' || value === null || value instanceof Date) {
-      return value;
+  private getTransformerTargetName(target: unknown): string {
+    if (target === null) {
+      return 'null';
     }
 
-    const cached = seen.get(value);
-    if (cached !== undefined) {
-      return cached as T;
+    if (typeof target === 'function') {
+      return target.name || 'function';
     }
 
-    if (Array.isArray(value)) {
-      const clonedArray: unknown[] = [];
-      seen.set(value, clonedArray);
-      for (const entry of value) {
-        clonedArray.push(this.stripTransformerFields(entry, seen));
-      }
-
-      return clonedArray as T;
+    if (typeof target !== 'object') {
+      return typeof target;
     }
 
-    const source = value as Record<PropertyKey, unknown>;
-    const clone = Object.create(Object.getPrototypeOf(source)) as Record<
-      PropertyKey,
-      unknown
-    >;
-    seen.set(value, clone);
+    const constructorName = (target as { constructor?: { name?: unknown } })
+      .constructor?.name;
 
-    for (const key of Reflect.ownKeys(source)) {
-      if (key === 'plainCls' || key === 'fullCls' || key === '__dtoType') {
-        continue;
-      }
-
-      const descriptor = Object.getOwnPropertyDescriptor(source, key);
-      if (!descriptor) {
-        continue;
-      }
-
-      if ('value' in descriptor) {
-        descriptor.value = this.stripTransformerFields(descriptor.value, seen);
-      }
-
-      Object.defineProperty(clone, key, descriptor);
-    }
-
-    return clone as T;
+    return typeof constructorName === 'string' && constructorName.length > 0
+      ? constructorName
+      : 'object';
   }
 
-  private transform<T>(target: unknown): T {
+  private transform<T>(target: unknown, field: TransformerField): T {
     if (this.isZodSchema(target)) {
       return target.parse(this) as T;
     }
 
-    const source = this.stripTransformerFields(this);
-
-    return plainToInstance(target as any, source, {
-      exposeUnsetFields: false,
-    });
+    const targetName = this.getTransformerTargetName(target);
+    throw new TypeError(
+      `[BaseOrmEntity] ${this.constructor.name}.${field} must be a zod schema (must expose parse and safeParse). Received: ${targetName}.`,
+    );
   }
 
   public toPlainCls(): InferTransformDto<Dto['transformers']['plain']> {
     return this.transform<InferTransformDto<Dto['transformers']['plain']>>(
       this.plainCls,
+      'plainCls',
     );
   }
 
   public toFullCls(): InferTransformDto<Dto['transformers']['full']> {
     return this.transform<InferTransformDto<Dto['transformers']['full']>>(
       this.fullCls,
+      'fullCls',
     );
   }
 }

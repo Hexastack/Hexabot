@@ -18,7 +18,7 @@ import {
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { EnumColumn } from '@/database';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { AsRelation, TDto } from '@/utils';
+import { AsRelation, TZodDto } from '@/utils';
 
 import { UserProfileDto, userProfileStubSchema } from '../dto/user-profile.dto';
 
@@ -34,7 +34,7 @@ export enum EUserProfileType {
 @Index(['firstName'])
 @Index(['lastName'])
 export class UserProfileOrmEntity<
-  Dto extends TDto = UserProfileDto,
+  Dto extends TZodDto = UserProfileDto,
 > extends BaseOrmEntity<Dto> {
   plainCls: Dto['transformers']['plain'] =
     userProfileStubSchema as Dto['transformers']['plain'];

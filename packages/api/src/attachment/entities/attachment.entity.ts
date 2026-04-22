@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Expose } from 'class-transformer';
 import {
   Column,
   Entity,
@@ -84,7 +83,6 @@ export class AttachmentOrmEntity extends BaseOrmEntity<AttachmentDto> {
   @EnumColumn({ enum: AttachmentAccess })
   access!: AttachmentAccess;
 
-  @Expose()
   get url(): string {
     if (!this.id || !this.name) {
       return '';
