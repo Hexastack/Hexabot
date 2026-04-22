@@ -588,7 +588,7 @@ export class WorkflowRunner {
 
   /**
    * Store the raw task result under the task name in the workflow output state.
-   * @reviewed
+   *
    * @param task The task whose output is being captured.
    * @param state Current execution state to mutate.
    * @param result Raw result returned by the task action.
