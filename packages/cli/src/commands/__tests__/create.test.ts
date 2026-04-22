@@ -138,7 +138,9 @@ describe('registerCreateCommand', () => {
       .mockResolvedValueOnce('Anis')
       .mockResolvedValueOnce('Bot')
       .mockResolvedValueOnce('anis@example.com');
-    (password as any).mockResolvedValueOnce('Admin#123');
+    (password as any)
+      .mockResolvedValueOnce('Admin#123')
+      .mockResolvedValueOnce('Admin#123');
 
     const program = new Command();
     registerCreateCommand(program);
@@ -172,7 +174,7 @@ describe('registerCreateCommand', () => {
     });
     expect(exitSpy).not.toHaveBeenCalled();
     expect(input).toHaveBeenCalledTimes(3);
-    expect(password).toHaveBeenCalledTimes(1);
+    expect(password).toHaveBeenCalledTimes(2);
   });
 
   it('fails cleanly when create runs in a non-interactive terminal', async () => {
