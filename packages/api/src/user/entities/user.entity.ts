@@ -21,8 +21,8 @@ import {
 } from '@/database/decorators/orm-event-hooks.decorator';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { User, UserDto, UserFull } from '../dto/user.dto';
-import { UserProvider } from '../types/user-provider.type';
+import { userFullSchema, userSchema, UserDto } from '../dto/user.dto';
+import type { UserProvider } from '../types/user-provider.type';
 import { hash } from '../utilities/bcryptjs';
 
 import { RoleOrmEntity } from './role.entity';
@@ -31,9 +31,9 @@ import { RoleOrmEntity } from './role.entity';
 @Index(['username'], { unique: true })
 @Index(['email'], { unique: true })
 export class UserOrmEntity extends SubscriberOrmEntity<UserDto> {
-  plainCls = User;
+  plainCls = userSchema;
 
-  fullCls = UserFull;
+  fullCls = userFullSchema;
 
   @Column()
   username!: string;

@@ -5,6 +5,7 @@
  */
 
 import { Exclude, Expose } from 'class-transformer';
+import type { ZodTypeAny } from 'zod';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -80,11 +81,13 @@ export type InferUpdateDto<Entity extends BaseOrmEntity<TEntityDto<Entity>>> =
 export type InferActionsDto<Entity extends BaseOrmEntity<TEntityDto<Entity>>> =
   Entity['__dtoType']['actions'];
 
-export type InferTransformDto<T> = T extends new (...args: unknown[]) => infer R
-  ? R
-  : T extends { prototype: infer P }
-    ? P
-    : unknown;
+export type InferTransformDto<T> = T extends ZodTypeAny
+  ? T['_output']
+  : T extends new (...args: unknown[]) => infer R
+    ? R
+    : T extends { prototype: infer P }
+      ? P
+      : unknown;
 
 export type InferPlain<Entity extends BaseOrmEntity<TEntityDto<Entity>>> =
   InferTransformDto<Entity['plainCls']>;

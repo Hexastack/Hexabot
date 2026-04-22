@@ -36,9 +36,11 @@ export enum EUserProfileType {
 export class UserProfileOrmEntity<
   Dto extends TDto = UserProfileDto,
 > extends BaseOrmEntity<Dto> {
-  plainCls = UserProfileStub;
+  plainCls: Dto['transformers']['plain'] =
+    UserProfileStub as Dto['transformers']['plain'];
 
-  fullCls = UserProfileStub;
+  fullCls: Dto['transformers']['full'] =
+    UserProfileStub as Dto['transformers']['full'];
 
   @Column()
   firstName: string;

@@ -4,8 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  attachmentFullSchema,
+  attachmentSchema,
+  attachmentStubSchema,
+  type Attachment,
+  type AttachmentFull,
+  type AttachmentOwnerStub,
+  type AttachmentStub,
+} from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsIn,
   IsMimeType,
@@ -18,9 +27,8 @@ import {
 } from 'class-validator';
 
 import { ChannelName } from '@/channel/types';
-import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import {
   AttachmentAccess,
@@ -28,51 +36,9 @@ import {
   AttachmentResourceRef,
 } from '../types';
 
-@Exclude()
-export class AttachmentStub extends BaseStub {
-  @Expose()
-  name!: string;
+export { attachmentFullSchema, attachmentSchema, attachmentStubSchema };
 
-  @Expose()
-  type!: string;
-
-  @Expose()
-  size!: number;
-
-  @Expose()
-  location!: string;
-
-  @Expose()
-  channel?: Partial<Record<ChannelName, any>>;
-
-  @Expose()
-  createdByRef?: AttachmentCreatedByRef;
-
-  @Expose()
-  resourceRef!: AttachmentResourceRef;
-
-  @Expose()
-  access!: AttachmentAccess;
-
-  @Expose()
-  url: string;
-}
-
-@Exclude()
-export class Attachment extends AttachmentStub {
-  @Expose({ name: 'createdById' })
-  createdBy?: string | null;
-}
-
-@Exclude()
-export class AttachmentOwnerStub extends UserProfileAssignedStub {}
-
-@Exclude()
-export class AttachmentFull extends AttachmentStub {
-  @Expose({ name: 'createdBy' })
-  @Type(() => AttachmentOwnerStub)
-  createdBy?: AttachmentOwnerStub | null;
-}
+export type { Attachment, AttachmentFull, AttachmentOwnerStub, AttachmentStub };
 
 export class AttachmentMetadataDto {
   /**
@@ -203,8 +169,8 @@ export class AttachmentContextParamDto {
 
 export type AttachmentDto = TDto<
   {
-    plain: typeof Attachment;
-    full: typeof AttachmentFull;
+    plain: typeof attachmentSchema;
+    full: typeof attachmentFullSchema;
   },
   {
     create: AttachmentCreateDto;

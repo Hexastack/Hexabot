@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { User } from '@hexabot-ai/types';
 import { JwtModule } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
@@ -15,8 +16,6 @@ import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provide
 import { MailerServiceProvider } from '@/utils/test/providers/mailer-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-
-import { User } from '../dto/user.dto';
 
 import { UserService } from './user.service';
 import { ValidateAccountService } from './validate-account.service';

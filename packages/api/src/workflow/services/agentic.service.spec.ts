@@ -12,13 +12,13 @@ import {
   WorkflowRunner,
   WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
+import type { User } from '@hexabot-ai/types';
 import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
 
 import { ActionService } from '@/actions/actions.service';
 import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { User } from '@/user';
 import {
   installMessagingWorkflowFixturesTypeOrm,
   messagingWorkflowDefinition,

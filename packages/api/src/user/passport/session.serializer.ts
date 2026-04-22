@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { User } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { PassportSerializer } from '@nestjs/passport';
 import { SessionUser } from 'express-session';
 
-import { User } from '../dto/user.dto';
 import { UserService } from '../services/user.service';
 
 @Injectable()

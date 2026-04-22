@@ -9,7 +9,7 @@ import { Exclude, Expose } from 'class-transformer';
 import type { ChannelName } from '@/channel/types';
 import type { SubscriberChannelData } from '@/chat/types/channel';
 
-import { UserProvider } from '../types/user-provider.type';
+import type { UserProvider } from '../types/user-provider.type';
 
 import { UserProfileStub } from './user-profile.dto';
 

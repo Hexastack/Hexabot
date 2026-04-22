@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { User } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import mime from 'mime';
@@ -16,7 +17,6 @@ import {
   AttachmentFile,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { User } from '@/user/dto/user.dto';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { UserService } from '@/user/services/user.service';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';

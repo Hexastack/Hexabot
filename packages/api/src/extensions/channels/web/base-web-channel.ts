@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Attachment } from '@hexabot-ai/types';
 import {
   HttpException,
   HttpStatus,
@@ -16,7 +17,6 @@ import { Request, Response } from 'express';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,

@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { coerceAttachment, type Attachment } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -15,7 +16,6 @@ import {
   IsString,
 } from 'class-validator';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
 import { ChannelName } from '@/channel/types';
 import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
 import {
@@ -80,7 +80,7 @@ export class SubscriberFull extends SubscriberStub {
   assignedTo: UserProfileAssignedStub | null;
 
   @Expose()
-  @Type(() => Attachment)
+  @Transform(({ value }) => (value == null ? value : coerceAttachment(value)))
   avatar: Attachment | null;
 }
 

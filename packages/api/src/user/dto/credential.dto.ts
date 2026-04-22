@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { coerceUser, type User } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { BaseStub, TDto } from '@/utils/types/dto.types';
-
-import { User } from './user.dto';
 
 @Exclude()
 export class CredentialStub extends BaseStub {
@@ -28,7 +27,7 @@ export class Credential extends CredentialStub {
 @Exclude()
 export class CredentialFull extends CredentialStub {
   @Expose()
-  @Type(() => User)
+  @Transform(({ value }) => (value == null ? value : coerceUser(value)))
   owner!: User | null;
 }
 

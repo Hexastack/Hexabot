@@ -7,6 +7,7 @@
 import fs from 'fs';
 import os from 'os';
 
+import type { Attachment } from '@hexabot-ai/types';
 import {
   BadRequestException,
   MethodNotAllowedException,
@@ -29,7 +30,6 @@ import { installUserFixturesTypeOrm } from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Attachment } from '../dto/attachment.dto';
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
 import { AttachmentService } from '../services/attachment.service';
 import {

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { coerceUser, type User } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import {
@@ -14,7 +15,6 @@ import {
   IsString,
 } from 'class-validator';
 
-import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { BaseStub, TDto } from '@/utils/types/dto.types';
@@ -73,7 +73,7 @@ export class MessageFull extends MessageStub {
   recipient?: Subscriber | null;
 
   @Expose()
-  @Type(() => User)
+  @Transform(({ value }) => (value == null ? value : coerceUser(value)))
   sentBy?: User | null;
 
   @Expose()

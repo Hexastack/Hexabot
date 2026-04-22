@@ -5,6 +5,7 @@
  */
 
 import { WorkflowDefinition } from '@hexabot-ai/agentic';
+import { coerceUser, type User } from '@hexabot-ai/types';
 import {
   ApiProperty,
   ApiPropertyOptional,
@@ -24,7 +25,6 @@ import {
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { z } from 'zod';
 
-import { User } from '@/user/dto/user.dto';
 import { Validate } from '@/utils';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { BaseStub, TDto } from '@/utils/types/dto.types';
@@ -96,7 +96,7 @@ export class WorkflowFull extends WorkflowStub {
   publishedVersion!: WorkflowVersion | null;
 
   @Expose()
-  @Type(() => User)
+  @Transform(({ value }) => (value == null ? value : coerceUser(value)))
   createdBy!: User;
 
   @Expose()

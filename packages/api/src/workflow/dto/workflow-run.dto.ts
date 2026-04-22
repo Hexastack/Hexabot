@@ -9,8 +9,15 @@ import {
   WorkflowRunStatus,
   WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
+import { coerceUser, type User } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import {
+  Exclude,
+  Expose,
+  plainToInstance,
+  Transform,
+  Type,
+} from 'class-transformer';
 import {
   IsDate,
   IsIn,
@@ -23,7 +30,6 @@ import {
 
 import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { Thread } from '@/chat/dto/thread.dto';
-import { User, UserOrmEntity } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { BaseStub, TDto } from '@/utils/types/dto.types';
 
@@ -33,6 +39,25 @@ import { resolveRunDurationMs } from '../utils/workflow-run-duration';
 
 import { WorkflowVersion } from './workflow-version.dto';
 import { Workflow } from './workflow.dto';
+
+const toSubscriberOrUser = (value: unknown): Subscriber | User => {
+  if (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    ('username' in value ||
+      'email' in value ||
+      'sendEmail' in value ||
+      'roles' in value ||
+      'roleIds' in value)
+  ) {
+    return coerceUser(value);
+  }
+
+  return plainToInstance(Subscriber, value, {
+    exposeUnsetFields: false,
+  });
+};
 
 @Exclude()
 export class WorkflowRunStub extends BaseStub {
@@ -127,9 +152,7 @@ export class WorkflowRunFull extends WorkflowRunStub {
   workflowVersion?: WorkflowVersion | null;
 
   @Expose()
-  @Type((options) =>
-    options?.object.triggeredBy instanceof UserOrmEntity ? User : Subscriber,
-  )
+  @Transform(({ value }) => (value == null ? value : toSubscriberOrUser(value)))
   triggeredBy: Subscriber | User;
 
   @Expose()

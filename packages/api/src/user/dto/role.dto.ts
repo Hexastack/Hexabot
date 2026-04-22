@@ -4,14 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { coerceUser, type User } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { BaseStub, TDto } from '@/utils/types/dto.types';
 
 import { Permission } from './permission.dto';
-import { User } from './user.dto';
 
 @Exclude()
 export class RoleStub extends BaseStub {
@@ -41,7 +41,9 @@ export class RoleFull extends RoleStub {
   permissions?: Permission[];
 
   @Expose()
-  @Type(() => User)
+  @Transform(({ value }) =>
+    Array.isArray(value) ? value.map((user) => coerceUser(user)) : [],
+  )
   users: User[];
 }
 

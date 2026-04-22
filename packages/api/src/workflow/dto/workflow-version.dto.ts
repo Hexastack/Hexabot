@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { coerceUser, type User } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
-import { User } from '@/user/dto/user.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { BaseStub, TDto } from '@/utils/types/dto.types';
 
@@ -58,7 +58,7 @@ export class WorkflowVersionFull extends WorkflowVersionStub {
   workflow!: Workflow;
 
   @Expose()
-  @Type(() => User)
+  @Transform(({ value }) => (value == null ? value : coerceUser(value)))
   createdBy: User | null;
 }
 

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { User } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -26,7 +27,6 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
-import { User } from '../dto/user.dto';
 import { RoleOrmEntity } from '../entities/role.entity';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';

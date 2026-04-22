@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Attachment } from '@hexabot-ai/types';
 import {
   ForbiddenException,
   Injectable,
@@ -13,7 +14,6 @@ import {
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { Request } from 'express';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { AttachmentRef } from '@/chat/types/attachment';

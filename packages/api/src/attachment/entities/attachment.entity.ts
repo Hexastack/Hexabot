@@ -20,15 +20,14 @@ import { config } from '@/config';
 import { BaseOrmEntity } from '@/database';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
-import { UserProfileDto } from '@/user/dto/user-profile.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils';
 import { buildURL } from '@/utils/helpers/URL';
 
 import {
-  Attachment,
+  attachmentFullSchema,
+  attachmentSchema,
   AttachmentDto,
-  AttachmentFull,
 } from '../dto/attachment.dto';
 import {
   AttachmentAccess,
@@ -39,9 +38,9 @@ import {
 @Entity({ name: 'attachments' })
 @Index('idx_attachment_resource_ref', ['resourceRef'])
 export class AttachmentOrmEntity extends BaseOrmEntity<AttachmentDto> {
-  plainCls = Attachment;
+  plainCls = attachmentSchema;
 
-  fullCls = AttachmentFull;
+  fullCls = attachmentFullSchema;
 
   @Column()
   name!: string;
@@ -64,9 +63,9 @@ export class AttachmentOrmEntity extends BaseOrmEntity<AttachmentDto> {
   })
   @JoinColumn({ name: 'created_by_id' })
   @AsRelation()
-  createdBy?: UserProfileOrmEntity<UserProfileDto> | null;
+  createdBy?: UserProfileOrmEntity<any> | null;
 
-  @RelationId((attachment: Attachment) => attachment.createdBy)
+  @RelationId((attachment: AttachmentOrmEntity) => attachment.createdBy)
   private readonly createdById?: string;
 
   @EnumColumn({

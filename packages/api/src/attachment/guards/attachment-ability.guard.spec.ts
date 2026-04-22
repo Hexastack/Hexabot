@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Attachment } from '@hexabot-ai/types';
 import {
   BadRequestException,
   ExecutionContext,
@@ -19,7 +20,6 @@ import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Attachment } from '../dto/attachment.dto';
 import { attachment } from '../mocks/attachment.mock';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentResourceRef } from '../types';

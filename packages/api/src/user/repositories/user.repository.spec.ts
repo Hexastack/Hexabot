@@ -6,6 +6,7 @@
 
 import { randomUUID } from 'crypto';
 
+import type { User } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -14,8 +15,6 @@ import { roleFixtureIds } from '@/utils/test/fixtures/role';
 import { userFixtures } from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-
-import { User } from '../dto/user.dto';
 
 import { RoleRepository } from './role.repository';
 import { UserRepository } from './user.repository';

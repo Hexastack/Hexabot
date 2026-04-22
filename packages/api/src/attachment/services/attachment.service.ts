@@ -6,6 +6,7 @@
 
 import { Readable, Stream } from 'stream';
 
+import type { Attachment, AttachmentStub } from '@hexabot-ai/types';
 import { Injectable, StreamableFile } from '@nestjs/common';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
@@ -13,11 +14,7 @@ import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import {
-  Attachment,
-  AttachmentMetadataDto,
-  AttachmentStub,
-} from '../dto/attachment.dto';
+import { AttachmentMetadataDto } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 
 @Injectable()
