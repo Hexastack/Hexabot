@@ -6,7 +6,7 @@
 
 import { existsSync, mkdirSync } from 'fs';
 
-import { Module, OnApplicationBootstrap } from '@nestjs/common';
+import { forwardRef, Module, OnApplicationBootstrap } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppInstance } from '@/app.instance';
@@ -19,7 +19,10 @@ import { AttachmentRepository } from './repositories/attachment.repository';
 import { AttachmentService } from './services/attachment.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AttachmentOrmEntity]), UserModule],
+  imports: [
+    TypeOrmModule.forFeature([AttachmentOrmEntity]),
+    forwardRef(() => UserModule),
+  ],
   providers: [AttachmentRepository, AttachmentService],
   controllers: [AttachmentController],
   exports: [AttachmentService],

@@ -6,8 +6,8 @@
 
 import { Exclude, Expose } from 'class-transformer';
 
-import { ChannelName } from '@/channel';
-import { SubscriberChannelData } from '@/chat';
+import type { ChannelName } from '@/channel/types';
+import type { SubscriberChannelData } from '@/chat/types/channel';
 
 import { UserProvider } from '../types/user-provider.type';
 
