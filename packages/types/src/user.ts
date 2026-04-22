@@ -89,23 +89,3 @@ export type UserStub = z.infer<typeof userStubSchema>;
 export type User = z.infer<typeof userSchema>;
 
 export type UserFull = z.infer<typeof userFullSchema>;
-
-export const coerceUserStub = (value: unknown): UserStub => {
-  return userStubSchema.parse(value);
-};
-
-export const coerceUser = (value: unknown): User => {
-  return userSchema.parse(value);
-};
-
-export const coerceUserFull = (value: unknown): UserFull => {
-  return userFullSchema.parse(value);
-};
-
-export const coerceUserNullable = (value: unknown): User | null => {
-  return value == null ? null : coerceUser(value);
-};
-
-export const coerceUserOptional = (value: unknown): User | undefined => {
-  return value == null ? undefined : coerceUser(value);
-};

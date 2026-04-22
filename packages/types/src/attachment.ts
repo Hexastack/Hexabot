@@ -79,25 +79,3 @@ export type AttachmentStub = z.infer<typeof attachmentStubSchema>;
 export type Attachment = z.infer<typeof attachmentSchema>;
 
 export type AttachmentFull = z.infer<typeof attachmentFullSchema>;
-
-export const coerceAttachmentStub = (value: unknown): AttachmentStub => {
-  return attachmentStubSchema.parse(value);
-};
-
-export const coerceAttachment = (value: unknown): Attachment => {
-  return attachmentSchema.parse(value);
-};
-
-export const coerceAttachmentFull = (value: unknown): AttachmentFull => {
-  return attachmentFullSchema.parse(value);
-};
-
-export const coerceAttachmentNullable = (value: unknown): Attachment | null => {
-  return value == null ? null : coerceAttachment(value);
-};
-
-export const coerceAttachmentOptional = (
-  value: unknown,
-): Attachment | undefined => {
-  return value == null ? undefined : coerceAttachment(value);
-};

@@ -6,7 +6,7 @@
 
 import { z } from "zod";
 
-import { coerceSubscriber, subscriberSchema, threadSchema } from "./chat";
+import { subscriberSchema, threadSchema } from "./chat";
 import { asId, baseStubSchema, preprocess, withAliases } from "./fragments";
 import {
   directionTypeSchema,
@@ -15,8 +15,8 @@ import {
   workflowTypeSchema,
   workflowVersionActionSchema,
 } from "./primitives";
-import { coerceUser, userSchema } from "./user";
-import { coerceCredential, credentialSchema } from "./user-access";
+import { userSchema } from "./user";
+import { credentialSchema } from "./user-access";
 
 const toRecord = (value: unknown): Record<string, unknown> | null => {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
@@ -44,8 +44,10 @@ const isUserLike = (value: unknown): boolean => {
     "roleIds" in record
   );
 };
-const coerceUserOrSubscriber = (value: unknown): unknown => {
-  return isUserLike(value) ? coerceUser(value) : coerceSubscriber(value);
+const parseUserOrSubscriber = (value: unknown): unknown => {
+  return isUserLike(value)
+    ? userSchema.parse(value)
+    : subscriberSchema.parse(value);
 };
 const workflowRunStatusSchema = z.enum([
   "idle",
@@ -401,7 +403,7 @@ export const workflowRunSchema = preprocess(
 );
 
 const userOrSubscriberSchema = preprocess(
-  (value) => (value == null ? null : coerceUserOrSubscriber(value)),
+  (value) => (value == null ? null : parseUserOrSubscriber(value)),
   z.union([userSchema, subscriberSchema]).nullable(),
 );
 
@@ -460,7 +462,7 @@ export const memoryRecordFullSchema = preprocess(
   memoryRecordStubObjectSchema.extend({
     definition: preprocess((value) => value, memoryDefinitionSchema),
     owner: preprocess(
-      (value) => coerceUserOrSubscriber(value),
+      (value) => parseUserOrSubscriber(value),
       z.union([userSchema, subscriberSchema]),
     ),
     workflow: preprocess(
@@ -494,7 +496,7 @@ export const mcpServerFullSchema = preprocess(
   (value) => withAliases(value, mcpServerAliasMap),
   mcpServerStubObjectSchema.extend({
     credential: preprocess(
-      (value) => (value == null ? null : coerceCredential(value)),
+      (value) => (value == null ? null : credentialSchema.parse(value)),
       credentialSchema.nullable(),
     ).optional(),
   }),
@@ -535,158 +537,3 @@ export type McpServerStub = z.infer<typeof mcpServerStubSchema>;
 export type McpServer = z.infer<typeof mcpServerSchema>;
 
 export type McpServerFull = z.infer<typeof mcpServerFullSchema>;
-
-export const coerceWorkflowVersionStub = (
-  value: unknown,
-): WorkflowVersionStub => {
-  return workflowVersionStubSchema.parse(value);
-};
-
-export const coerceWorkflowVersion = (value: unknown): WorkflowVersion => {
-  return workflowVersionSchema.parse(value);
-};
-
-export const coerceWorkflowVersionFull = (
-  value: unknown,
-): WorkflowVersionFull => {
-  return workflowVersionFullSchema.parse(value);
-};
-
-export const coerceWorkflowVersionOptional = (
-  value: unknown,
-): WorkflowVersion | undefined => {
-  return value == null ? undefined : coerceWorkflowVersion(value);
-};
-
-export const coerceWorkflowVersionNullable = (
-  value: unknown,
-): WorkflowVersion | null => {
-  return value == null ? null : coerceWorkflowVersion(value);
-};
-
-export const coerceWorkflowStub = (value: unknown): WorkflowStub => {
-  return workflowStubSchema.parse(value);
-};
-
-export const coerceWorkflow = (value: unknown): Workflow => {
-  return workflowSchema.parse(value);
-};
-
-export const coerceWorkflowFull = (value: unknown): WorkflowFull => {
-  return workflowFullSchema.parse(value);
-};
-
-export const coerceWorkflowFullWithParser = (
-  value: unknown,
-  parseDefinition: WorkflowDefinitionParser,
-): WorkflowFull => {
-  return createWorkflowFullSchema({ parseDefinition }).parse(value);
-};
-
-export const coerceWorkflowOptional = (
-  value: unknown,
-): Workflow | undefined => {
-  return value == null ? undefined : coerceWorkflow(value);
-};
-
-export const coerceWorkflowNullable = (value: unknown): Workflow | null => {
-  return value == null ? null : coerceWorkflow(value);
-};
-
-export const coerceWorkflowRunStub = (value: unknown): WorkflowRunStub => {
-  return workflowRunStubSchema.parse(value);
-};
-
-export const coerceWorkflowRun = (value: unknown): WorkflowRun => {
-  return workflowRunSchema.parse(value);
-};
-
-export const coerceWorkflowRunFull = (value: unknown): WorkflowRunFull => {
-  return workflowRunFullSchema.parse(value);
-};
-
-export const coerceWorkflowRunOptional = (
-  value: unknown,
-): WorkflowRun | undefined => {
-  return value == null ? undefined : coerceWorkflowRun(value);
-};
-
-export const coerceWorkflowRunNullable = (
-  value: unknown,
-): WorkflowRun | null => {
-  return value == null ? null : coerceWorkflowRun(value);
-};
-
-export const coerceMemoryDefinitionStub = (
-  value: unknown,
-): MemoryDefinitionStub => {
-  return memoryDefinitionStubSchema.parse(value);
-};
-
-export const coerceMemoryDefinition = (value: unknown): MemoryDefinition => {
-  return memoryDefinitionSchema.parse(value);
-};
-
-export const coerceMemoryDefinitionFull = (
-  value: unknown,
-): MemoryDefinitionFull => {
-  return memoryDefinitionFullSchema.parse(value);
-};
-
-export const coerceMemoryDefinitionOptional = (
-  value: unknown,
-): MemoryDefinition | undefined => {
-  return value == null ? undefined : coerceMemoryDefinition(value);
-};
-
-export const coerceMemoryDefinitionNullable = (
-  value: unknown,
-): MemoryDefinition | null => {
-  return value == null ? null : coerceMemoryDefinition(value);
-};
-
-export const coerceMemoryRecordStub = (value: unknown): MemoryRecordStub => {
-  return memoryRecordStubSchema.parse(value);
-};
-
-export const coerceMemoryRecord = (value: unknown): MemoryRecord => {
-  return memoryRecordSchema.parse(value);
-};
-
-export const coerceMemoryRecordFull = (value: unknown): MemoryRecordFull => {
-  return memoryRecordFullSchema.parse(value);
-};
-
-export const coerceMemoryRecordOptional = (
-  value: unknown,
-): MemoryRecord | undefined => {
-  return value == null ? undefined : coerceMemoryRecord(value);
-};
-
-export const coerceMemoryRecordNullable = (
-  value: unknown,
-): MemoryRecord | null => {
-  return value == null ? null : coerceMemoryRecord(value);
-};
-
-export const coerceMcpServerStub = (value: unknown): McpServerStub => {
-  return mcpServerStubSchema.parse(value);
-};
-
-export const coerceMcpServer = (value: unknown): McpServer => {
-  return mcpServerSchema.parse(value);
-};
-
-export const coerceMcpServerFull = (value: unknown): McpServerFull => {
-  return mcpServerFullSchema.parse(value);
-};
-
-export const coerceMcpServerOptional = (
-  value: unknown,
-): McpServer | undefined => {
-  return value == null ? undefined : coerceMcpServer(value);
-};
-
-export const coerceMcpServerNullable = (value: unknown): McpServer | null => {
-  return value == null ? null : coerceMcpServer(value);
-};

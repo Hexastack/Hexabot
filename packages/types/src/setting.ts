@@ -55,48 +55,6 @@ export type Metadata = z.infer<typeof metadataSchema>;
 
 export type MetadataFull = z.infer<typeof metadataFullSchema>;
 
-export const coerceSettingStub = (value: unknown): SettingStub => {
-  return settingStubSchema.parse(value);
-};
-
-export const coerceSetting = (value: unknown): Setting => {
-  return settingSchema.parse(value);
-};
-
-export const coerceSettingFull = (value: unknown): SettingFull => {
-  return settingFullSchema.parse(value);
-};
-
-export const coerceSettingOptional = (value: unknown): Setting | undefined => {
-  return value == null ? undefined : coerceSetting(value);
-};
-
-export const coerceSettingNullable = (value: unknown): Setting | null => {
-  return value == null ? null : coerceSetting(value);
-};
-
-export const coerceMetadataStub = (value: unknown): MetadataStub => {
-  return metadataStubSchema.parse(value);
-};
-
-export const coerceMetadata = (value: unknown): Metadata => {
-  return metadataSchema.parse(value);
-};
-
-export const coerceMetadataFull = (value: unknown): MetadataFull => {
-  return metadataFullSchema.parse(value);
-};
-
-export const coerceMetadataOptional = (
-  value: unknown,
-): Metadata | undefined => {
-  return value == null ? undefined : coerceMetadata(value);
-};
-
-export const coerceMetadataNullable = (value: unknown): Metadata | null => {
-  return value == null ? null : coerceMetadata(value);
-};
-
 export enum FieldType {
   text = "text",
   url = "url",

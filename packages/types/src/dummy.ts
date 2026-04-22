@@ -27,23 +27,3 @@ export type DummyStub = z.infer<typeof dummyStubSchema>;
 export type Dummy = z.infer<typeof dummySchema>;
 
 export type DummyFull = z.infer<typeof dummyFullSchema>;
-
-export const coerceDummyStub = (value: unknown): DummyStub => {
-  return dummyStubSchema.parse(value);
-};
-
-export const coerceDummy = (value: unknown): Dummy => {
-  return dummySchema.parse(value);
-};
-
-export const coerceDummyFull = (value: unknown): DummyFull => {
-  return dummyFullSchema.parse(value);
-};
-
-export const coerceDummyOptional = (value: unknown): Dummy | undefined => {
-  return value == null ? undefined : coerceDummy(value);
-};
-
-export const coerceDummyNullable = (value: unknown): Dummy | null => {
-  return value == null ? null : coerceDummy(value);
-};

@@ -28,24 +28,4 @@ export type Stats = z.infer<typeof statsSchema>;
 
 export type StatsFull = z.infer<typeof statsFullSchema>;
 
-export const coerceStatsStub = (value: unknown): StatsStub => {
-  return statsStubSchema.parse(value);
-};
-
-export const coerceStats = (value: unknown): Stats => {
-  return statsSchema.parse(value);
-};
-
-export const coerceStatsFull = (value: unknown): StatsFull => {
-  return statsFullSchema.parse(value);
-};
-
-export const coerceStatsOptional = (value: unknown): Stats | undefined => {
-  return value == null ? undefined : coerceStats(value);
-};
-
-export const coerceStatsNullable = (value: unknown): Stats | null => {
-  return value == null ? null : coerceStats(value);
-};
-
 export { StatsType };

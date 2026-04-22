@@ -11,7 +11,6 @@ import {
   baseStubSchema,
   preprocess,
   roleSchema as roleBaseSchema,
-  userProfileAssignedSchema,
   userProfileStubSchema as userProfileBaseStubSchema,
   withAliases,
 } from "./fragments";
@@ -161,119 +160,5 @@ export type CredentialStub = z.infer<typeof credentialStubSchema>;
 export type Credential = z.infer<typeof credentialSchema>;
 
 export type CredentialFull = z.infer<typeof credentialFullSchema>;
-
-export const coerceUserProfileStub = (value: unknown): UserProfileStub => {
-  return userProfileStubSchema.parse(value);
-};
-
-export const coerceUserProfile = (value: unknown): UserProfile => {
-  return userProfileSchema.parse(value);
-};
-
-export const coerceUserProfileFull = (value: unknown): UserProfileFull => {
-  return userProfileFullSchema.parse(value);
-};
-
-export const coerceUserProfileOptional = (
-  value: unknown,
-): UserProfile | undefined => {
-  return value == null ? undefined : coerceUserProfile(value);
-};
-
-export const coerceUserProfileNullable = (
-  value: unknown,
-): UserProfile | null => {
-  return value == null ? null : coerceUserProfile(value);
-};
-
-export const coerceUserProfileAssigned = (
-  value: unknown,
-): z.infer<typeof userProfileAssignedSchema> => {
-  return userProfileAssignedSchema.parse(value);
-};
-
-export const coerceModelStub = (value: unknown): ModelStub => {
-  return modelStubSchema.parse(value);
-};
-
-export const coerceModel = (value: unknown): Model => {
-  return modelSchema.parse(value);
-};
-
-export const coerceModelFull = (value: unknown): ModelFull => {
-  return modelFullSchema.parse(value);
-};
-
-export const coerceModelOptional = (value: unknown): Model | undefined => {
-  return value == null ? undefined : coerceModel(value);
-};
-
-export const coerceModelNullable = (value: unknown): Model | null => {
-  return value == null ? null : coerceModel(value);
-};
-
-export const coercePermissionStub = (value: unknown): PermissionStub => {
-  return permissionStubSchema.parse(value);
-};
-
-export const coercePermission = (value: unknown): Permission => {
-  return permissionSchema.parse(value);
-};
-
-export const coercePermissionFull = (value: unknown): PermissionFull => {
-  return permissionFullSchema.parse(value);
-};
-
-export const coercePermissionOptional = (
-  value: unknown,
-): Permission | undefined => {
-  return value == null ? undefined : coercePermission(value);
-};
-
-export const coercePermissionNullable = (value: unknown): Permission | null => {
-  return value == null ? null : coercePermission(value);
-};
-
-export const coerceRoleStub = (value: unknown): RoleStub => {
-  return roleStubSchema.parse(value);
-};
-
-export const coerceRole = (value: unknown): Role => {
-  return roleSchema.parse(value);
-};
-
-export const coerceRoleFull = (value: unknown): RoleFull => {
-  return roleFullSchema.parse(value);
-};
-
-export const coerceRoleOptional = (value: unknown): Role | undefined => {
-  return value == null ? undefined : coerceRole(value);
-};
-
-export const coerceRoleNullable = (value: unknown): Role | null => {
-  return value == null ? null : coerceRole(value);
-};
-
-export const coerceCredentialStub = (value: unknown): CredentialStub => {
-  return credentialStubSchema.parse(value);
-};
-
-export const coerceCredential = (value: unknown): Credential => {
-  return credentialSchema.parse(value);
-};
-
-export const coerceCredentialFull = (value: unknown): CredentialFull => {
-  return credentialFullSchema.parse(value);
-};
-
-export const coerceCredentialOptional = (
-  value: unknown,
-): Credential | undefined => {
-  return value == null ? undefined : coerceCredential(value);
-};
-
-export const coerceCredentialNullable = (value: unknown): Credential | null => {
-  return value == null ? null : coerceCredential(value);
-};
 
 export type { TModel, TRelation };

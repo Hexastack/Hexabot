@@ -10,36 +10,36 @@ import {
   AttachmentResourceRef,
   FieldType,
   MemoryScope,
-  MenuType,
   McpServerTransport,
+  MenuType,
   StatsType,
   WorkflowType,
   WorkflowVersionAction,
-  coerceAttachment,
-  coerceAttachmentFull,
-  coerceContent,
-  coerceCredential,
-  coerceDummy,
-  coerceLabel,
-  coerceMemoryRecord,
-  coerceMcpServer,
-  coerceMenu,
-  coercePermission,
-  coerceSetting,
-  coerceSubscriber,
-  coerceUser,
-  coerceUserFull,
-  coerceWorkflowFullWithParser,
-  coerceWorkflowRun,
-  coerceWorkflowRunFull,
+  attachmentFullSchema,
+  attachmentSchema,
+  contentSchema,
+  createWorkflowFullSchema,
+  credentialSchema,
+  dummySchema,
+  labelSchema,
+  mcpServerSchema,
+  memoryRecordSchema,
+  menuSchema,
+  permissionSchema,
   resolveRunDurationMs,
+  settingSchema,
+  subscriberSchema,
+  userFullSchema,
+  userSchema,
+  workflowRunFullSchema,
+  workflowRunSchema,
 } from "./index";
 
 describe("@hexabot-ai/types schemas", () => {
   const now = "2026-01-01T00:00:00.000Z";
 
   it("maps user aliases and strips unknown keys", () => {
-    const parsed = coerceUser({
+    const parsed = userSchema.parse({
       id: "u_1",
       createdAt: now,
       updatedAt: now,
@@ -75,7 +75,7 @@ describe("@hexabot-ai/types schemas", () => {
   });
 
   it("parses strict nested user full payloads", () => {
-    const parsed = coerceUserFull({
+    const parsed = userFullSchema.parse({
       id: "u_1",
       createdAt: now,
       updatedAt: now,
@@ -130,7 +130,7 @@ describe("@hexabot-ai/types schemas", () => {
   });
 
   it("maps attachment aliases and strips unknown keys", () => {
-    const parsed = coerceAttachment({
+    const parsed = attachmentSchema.parse({
       id: "a_1",
       createdAt: now,
       updatedAt: now,
@@ -152,7 +152,7 @@ describe("@hexabot-ai/types schemas", () => {
   });
 
   it("supports nullable nested attachment owner in full payloads", () => {
-    const parsed = coerceAttachmentFull({
+    const parsed = attachmentFullSchema.parse({
       id: "a_1",
       createdAt: now,
       updatedAt: now,
@@ -171,7 +171,7 @@ describe("@hexabot-ai/types schemas", () => {
   });
 
   it("preserves alias mapping for chat/cms/user-access plain contracts", () => {
-    const label = coerceLabel({
+    const label = labelSchema.parse({
       id: "l_1",
       createdAt: now,
       updatedAt: now,
@@ -181,7 +181,7 @@ describe("@hexabot-ai/types schemas", () => {
       groupId: "g_1",
       users: [{ id: "s_1" }],
     });
-    const subscriber = coerceSubscriber({
+    const subscriber = subscriberSchema.parse({
       id: "s_1",
       createdAt: now,
       updatedAt: now,
@@ -201,7 +201,7 @@ describe("@hexabot-ai/types schemas", () => {
       assignedToId: "u_1",
       avatarId: "a_1",
     });
-    const content = coerceContent({
+    const content = contentSchema.parse({
       id: "c_1",
       createdAt: now,
       updatedAt: now,
@@ -211,7 +211,7 @@ describe("@hexabot-ai/types schemas", () => {
       searchText: "Welcome hello",
       contentTypeId: "ct_1",
     });
-    const permission = coercePermission({
+    const permission = permissionSchema.parse({
       id: "p_1",
       createdAt: now,
       updatedAt: now,
@@ -232,7 +232,7 @@ describe("@hexabot-ai/types schemas", () => {
   });
 
   it("normalizes nullable and optional values for setting/menu/mcp", () => {
-    const setting = coerceSetting({
+    const setting = settingSchema.parse({
       id: "st_1",
       createdAt: now,
       updatedAt: now,
@@ -241,7 +241,7 @@ describe("@hexabot-ai/types schemas", () => {
       label: "title",
       value: "Hexabot",
     });
-    const menu = coerceMenu({
+    const menu = menuSchema.parse({
       id: "mn_1",
       createdAt: now,
       updatedAt: now,
@@ -251,7 +251,7 @@ describe("@hexabot-ai/types schemas", () => {
       payload: null,
       url: null,
     });
-    const mcp = coerceMcpServer({
+    const mcp = mcpServerSchema.parse({
       id: "mcp_1",
       createdAt: now,
       updatedAt: now,
@@ -273,7 +273,7 @@ describe("@hexabot-ai/types schemas", () => {
   });
 
   it("keeps credential outputs free of secret value fields", () => {
-    const credential = coerceCredential({
+    const credential = credentialSchema.parse({
       id: "cred_1",
       createdAt: now,
       updatedAt: now,
@@ -294,66 +294,63 @@ describe("@hexabot-ai/types schemas", () => {
       outputs: {},
       yml,
     }));
-    const parsed = coerceWorkflowFullWithParser(
-      {
-        id: "wf_1",
+    const parsed = createWorkflowFullSchema({ parseDefinition: parser }).parse({
+      id: "wf_1",
+      createdAt: now,
+      updatedAt: now,
+      name: "Main",
+      description: null,
+      type: WorkflowType.conversational,
+      schedule: null,
+      inputSchema: {},
+      builtin: false,
+      x: 0,
+      y: 0,
+      zoom: 1,
+      direction: "horizontal",
+      runAfterMs: 0,
+      createdBy: {
+        id: "u_1",
         createdAt: now,
         updatedAt: now,
-        name: "Main",
-        description: null,
-        type: WorkflowType.conversational,
-        schedule: null,
-        inputSchema: {},
-        builtin: false,
-        x: 0,
-        y: 0,
-        zoom: 1,
-        direction: "horizontal",
-        runAfterMs: 0,
-        createdBy: {
-          id: "u_1",
-          createdAt: now,
-          updatedAt: now,
-          firstName: "Ada",
-          lastName: "Lovelace",
-          language: "en",
-          timezone: 1,
-          locale: null,
-          gender: null,
-          country: null,
-          foreignId: "foreign-u-1",
-          assignedAt: null,
-          lastvisit: null,
-          retainedFrom: null,
-          channel: { name: "web" },
-          username: "ada",
-          email: "ada@example.com",
-          sendEmail: false,
-          state: true,
-          resetCount: 0,
-          resetToken: null,
-          roles: [],
-          labels: [],
-          assignedTo: null,
-          avatar: null,
-        },
-        currentVersion: {
-          id: "wfv_1",
-          createdAt: now,
-          updatedAt: now,
-          version: 1,
-          definitionYml: "defs: {}\nflow: []\noutputs: {}",
-          checksum: "sha",
-          message: null,
-          action: WorkflowVersionAction.create,
-          workflowId: "wf_1",
-          createdById: "u_1",
-          parentVersionId: null,
-        },
-        publishedVersion: null,
+        firstName: "Ada",
+        lastName: "Lovelace",
+        language: "en",
+        timezone: 1,
+        locale: null,
+        gender: null,
+        country: null,
+        foreignId: "foreign-u-1",
+        assignedAt: null,
+        lastvisit: null,
+        retainedFrom: null,
+        channel: { name: "web" },
+        username: "ada",
+        email: "ada@example.com",
+        sendEmail: false,
+        state: true,
+        resetCount: 0,
+        resetToken: null,
+        roles: [],
+        labels: [],
+        assignedTo: null,
+        avatar: null,
       },
-      parser,
-    );
+      currentVersion: {
+        id: "wfv_1",
+        createdAt: now,
+        updatedAt: now,
+        version: 1,
+        definitionYml: "defs: {}\nflow: []\noutputs: {}",
+        checksum: "sha",
+        message: null,
+        action: WorkflowVersionAction.create,
+        workflowId: "wf_1",
+        createdById: "u_1",
+        parentVersionId: null,
+      },
+      publishedVersion: null,
+    });
 
     expect(parsed.definitionYml).toContain("defs");
     expect(parsed.definition).toEqual({
@@ -366,7 +363,7 @@ describe("@hexabot-ai/types schemas", () => {
   });
 
   it("computes workflow run duration and mixed triggeredBy coercion", () => {
-    const run = coerceWorkflowRun({
+    const run = workflowRunSchema.parse({
       id: "run_1",
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:01:00.000Z",
@@ -378,7 +375,7 @@ describe("@hexabot-ai/types schemas", () => {
       threadId: "t_1",
       finishedAt: "2026-01-01T00:02:00.000Z",
     });
-    const full = coerceWorkflowRunFull({
+    const full = workflowRunFullSchema.parse({
       id: "run_1",
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:01:00.000Z",
@@ -433,7 +430,7 @@ describe("@hexabot-ai/types schemas", () => {
   });
 
   it("coerces workflow memory aliases and test dummy fixtures", () => {
-    const record = coerceMemoryRecord({
+    const record = memoryRecordSchema.parse({
       id: "mem_1",
       createdAt: now,
       updatedAt: now,
@@ -446,7 +443,7 @@ describe("@hexabot-ai/types schemas", () => {
       runId: "run_1",
       threadId: "th_1",
     });
-    const dummy = coerceDummy({
+    const dummy = dummySchema.parse({
       id: "d_1",
       createdAt: now,
       updatedAt: now,

@@ -5,7 +5,6 @@
  */
 
 import {
-  coerceModel,
   modelFullSchema,
   modelSchema,
   modelStubSchema,
@@ -21,7 +20,7 @@ import { TDto } from '@/utils/types/dto.types';
 import { TRelation } from '../types/index.type';
 import { TModel } from '../types/model.type';
 
-export { modelFullSchema, modelSchema, modelStubSchema, coerceModel };
+export { modelFullSchema, modelSchema, modelStubSchema };
 
 export type { Model, ModelFull, ModelStub };
 
