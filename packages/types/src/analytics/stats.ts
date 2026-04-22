@@ -6,9 +6,19 @@
 
 import { z } from "zod";
 
-import { baseStubSchema } from "./fragments";
-import { StatsType, statsTypeSchema } from "./primitives";
+import { baseStubSchema } from "../shared/base";
 
+export enum StatsType {
+  outgoing = "outgoing",
+  new_users = "new_users",
+  all_messages = "all_messages",
+  incoming = "incoming",
+  returning_users = "returning_users",
+  retention = "retention",
+  echo = "echo",
+}
+
+const statsTypeSchema = z.nativeEnum(StatsType);
 const statsObjectSchema = baseStubSchema.extend({
   type: statsTypeSchema,
   day: z.coerce.date(),
@@ -27,5 +37,3 @@ export type StatsStub = z.infer<typeof statsStubSchema>;
 export type Stats = z.infer<typeof statsSchema>;
 
 export type StatsFull = z.infer<typeof statsFullSchema>;
-
-export { StatsType };

@@ -6,7 +6,8 @@
 
 import { z } from "zod";
 
-import { baseStubSchema, preprocess } from "./fragments";
+import { baseStubSchema } from "../shared/base";
+import { preprocess } from "../shared/preprocess";
 
 const dummyObjectSchema = baseStubSchema.extend({
   dummy: z.string(),

@@ -6,13 +6,10 @@
 
 import { z } from "zod";
 
-import {
-  asId,
-  baseStubSchema,
-  preprocess,
-  userProfileAssignedSchema,
-  withAliases,
-} from "./fragments";
+import { asId, withAliases } from "../shared/aliases";
+import { baseStubSchema } from "../shared/base";
+import { preprocess } from "../shared/preprocess";
+import { userProfileAssignedSchema } from "../user/user-profile-assigned";
 
 export enum AttachmentCreatedByRef {
   User = "User",
@@ -36,7 +33,7 @@ const attachmentAliasMap = {
   createdById: "createdBy",
 } as const;
 
-export const attachmentOwnerStubSchema = userProfileAssignedSchema;
+export const attachmentOwnerSchema = userProfileAssignedSchema;
 
 const attachmentStubObjectSchema = baseStubSchema.extend({
   name: z.string(),
@@ -68,11 +65,11 @@ export const attachmentSchema = preprocess(
 export const attachmentFullSchema = attachmentStubObjectSchema.extend({
   createdBy: preprocess(
     (value) => (value == null ? null : value),
-    attachmentOwnerStubSchema.nullable(),
+    attachmentOwnerSchema.nullable(),
   ).optional(),
 });
 
-export type AttachmentOwnerStub = z.infer<typeof attachmentOwnerStubSchema>;
+export type AttachmentOwner = z.infer<typeof attachmentOwnerSchema>;
 
 export type AttachmentStub = z.infer<typeof attachmentStubSchema>;
 

@@ -6,18 +6,17 @@
 
 import { z } from "zod";
 
-import { attachmentSchema } from "./attachment";
+import { attachmentSchema } from "../attachment/attachment";
+import { labelSchema } from "../chat/label";
+import { asId, asIdArray, withAliases } from "../shared/aliases";
+import { preprocess } from "../shared/preprocess";
+import { subscriberBaseSchema } from "../shared/profile";
+
+import { roleSchema } from "./role";
 import {
-  asId,
-  asIdArray,
-  labelSchema,
-  preprocess,
-  roleSchema,
-  subscriberStubSchema,
   userProfileAssignedSchema,
   userProviderSchema,
-  withAliases,
-} from "./fragments";
+} from "./user-profile-assigned";
 
 const userAliasMap = {
   labelIds: "labels",
@@ -25,7 +24,7 @@ const userAliasMap = {
   roleIds: "roles",
   avatarId: "avatar",
 } as const;
-const userStubObjectSchema = subscriberStubSchema.extend({
+const userStubObjectSchema = subscriberBaseSchema.extend({
   username: z.string(),
   email: z.string(),
   sendEmail: z.coerce.boolean(),
@@ -67,7 +66,7 @@ export const userFullSchema = preprocess(
   userStubObjectSchema.extend({
     labels: preprocess(
       (value) => (Array.isArray(value) ? value : []),
-      z.array(labelSchema),
+      z.array(z.lazy(() => labelSchema)),
     ),
     assignedTo: preprocess(
       (value) => (value == null ? null : value),
@@ -75,7 +74,7 @@ export const userFullSchema = preprocess(
     ),
     roles: preprocess(
       (value) => (Array.isArray(value) ? value : []),
-      z.array(roleSchema),
+      z.array(z.lazy(() => roleSchema)),
     ),
     avatar: preprocess(
       (value) => (value == null ? null : value),

@@ -10,7 +10,7 @@ import {
   attachmentStubSchema,
   type Attachment,
   type AttachmentFull,
-  type AttachmentOwnerStub,
+  type AttachmentOwner,
   type AttachmentStub,
 } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -38,7 +38,7 @@ import {
 
 export { attachmentFullSchema, attachmentSchema, attachmentStubSchema };
 
-export type { Attachment, AttachmentFull, AttachmentOwnerStub, AttachmentStub };
+export type { Attachment, AttachmentFull, AttachmentOwner, AttachmentStub };
 
 export class AttachmentMetadataDto {
   /**

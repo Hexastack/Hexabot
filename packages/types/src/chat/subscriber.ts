@@ -1,0 +1,66 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { z } from "zod";
+
+import { attachmentSchema } from "../attachment/attachment";
+import { asId, asIdArray, withAliases } from "../shared/aliases";
+import { preprocess } from "../shared/preprocess";
+import { subscriberBaseSchema } from "../shared/profile";
+import { userProfileAssignedSchema } from "../user/user-profile-assigned";
+
+import { labelSchema } from "./label";
+
+const subscriberAliasMap = {
+  labelIds: "labels",
+  assignedToId: "assignedTo",
+  avatarId: "avatar",
+} as const;
+const subscriberObjectSchema = subscriberBaseSchema.extend({
+  labels: preprocess(
+    (value) => (Array.isArray(value) ? asIdArray(value) : []),
+    z.array(z.string()),
+  ),
+  assignedTo: preprocess(
+    (value) => (value == null ? null : asId(value)),
+    z.string().nullable(),
+  ),
+  avatar: preprocess(
+    (value) => (value == null ? null : asId(value)),
+    z.string().nullable(),
+  ),
+});
+
+export const subscriberStubSchema = subscriberBaseSchema;
+
+export const subscriberSchema = preprocess(
+  (value) => withAliases(value, subscriberAliasMap),
+  subscriberObjectSchema,
+);
+
+export const subscriberFullSchema = preprocess(
+  (value) => withAliases(value, subscriberAliasMap),
+  subscriberBaseSchema.extend({
+    labels: preprocess(
+      (value) => (Array.isArray(value) ? value : []),
+      z.array(z.lazy(() => labelSchema)),
+    ),
+    assignedTo: preprocess(
+      (value) => (value == null ? null : value),
+      userProfileAssignedSchema.nullable(),
+    ),
+    avatar: preprocess(
+      (value) => (value == null ? null : value),
+      attachmentSchema.nullable(),
+    ),
+  }),
+);
+
+export type SubscriberStub = z.infer<typeof subscriberStubSchema>;
+
+export type Subscriber = z.infer<typeof subscriberSchema>;
+
+export type SubscriberFull = z.infer<typeof subscriberFullSchema>;

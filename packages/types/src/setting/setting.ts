@@ -6,7 +6,8 @@
 
 import { z } from "zod";
 
-import { baseStubSchema, preprocess } from "./fragments";
+import { baseStubSchema } from "../shared/base";
+import { preprocess } from "../shared/preprocess";
 
 export const settingValueSchema = z.union([
   z.null(),
@@ -26,10 +27,6 @@ const settingObjectSchema = baseStubSchema.extend({
   label: z.string(),
   value: settingValueSchema,
 });
-const metadataObjectSchema = baseStubSchema.extend({
-  name: z.string(),
-  value: z.any(),
-});
 
 export const settingStubSchema = settingObjectSchema;
 
@@ -37,23 +34,11 @@ export const settingSchema = settingObjectSchema;
 
 export const settingFullSchema = settingObjectSchema;
 
-export const metadataStubSchema = metadataObjectSchema;
-
-export const metadataSchema = metadataObjectSchema;
-
-export const metadataFullSchema = metadataObjectSchema;
-
 export type SettingStub = z.infer<typeof settingStubSchema>;
 
 export type Setting = z.infer<typeof settingSchema>;
 
 export type SettingFull = z.infer<typeof settingFullSchema>;
-
-export type MetadataStub = z.infer<typeof metadataStubSchema>;
-
-export type Metadata = z.infer<typeof metadataSchema>;
-
-export type MetadataFull = z.infer<typeof metadataFullSchema>;
 
 export enum FieldType {
   text = "text",
