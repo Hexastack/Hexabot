@@ -7,10 +7,6 @@
 import {
   createWorkflowFullSchema as createTypesWorkflowFullSchema,
   workflowSchema,
-  workflowStubSchema,
-  type Workflow,
-  type WorkflowFull,
-  type WorkflowStub,
 } from '@hexabot-ai/types';
 import {
   ApiProperty,
@@ -41,12 +37,6 @@ import { DirectionType, WorkflowType } from '../types';
 export const workflowFullSchema = createTypesWorkflowFullSchema({
   parseDefinition: parseWorkflowDefinition,
 });
-
-export { createTypesWorkflowFullSchema as createWorkflowFullSchema };
-
-export { workflowSchema, workflowStubSchema };
-
-export type { Workflow, WorkflowFull, WorkflowStub };
 
 const WorkflowInputSchemaValidator = z.looseObject({});
 

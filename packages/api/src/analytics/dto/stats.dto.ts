@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  statsFullSchema,
-  statsSchema,
-  statsStubSchema,
-  type Stats,
-  type StatsFull,
-  type StatsStub,
-} from '@hexabot-ai/types';
+import { statsFullSchema, statsSchema } from '@hexabot-ai/types';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -28,10 +21,6 @@ import { TDto } from '@/utils/types/dto.types';
 
 import { StatsType } from '../enums/stats-type.enum';
 import { IsLessThanDate } from '../validation-rules/is-less-than-date';
-
-export { statsFullSchema, statsSchema, statsStubSchema };
-
-export type { Stats, StatsFull, StatsStub };
 
 export class StatsCreateDto {
   @ApiProperty({ description: 'Bot statistic type', enum: StatsType })

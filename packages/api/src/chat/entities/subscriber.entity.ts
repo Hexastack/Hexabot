@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { subscriberSchema, subscriberFullSchema } from '@hexabot-ai/types';
 import {
   ChildEntity,
   Column,
@@ -22,11 +23,7 @@ import { UserOrmEntity } from '@/user/entities/user.entity';
 import { TZodDto } from '@/utils';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import {
-  subscriberFullSchema,
-  SubscriberDto,
-  subscriberSchema,
-} from '../dto/subscriber.dto';
+import { SubscriberDto } from '../dto/subscriber.dto';
 
 import { LabelOrmEntity } from './label.entity';
 

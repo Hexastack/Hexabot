@@ -4,22 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  metadataFullSchema,
-  metadataSchema,
-  metadataStubSchema,
-  type Metadata,
-  type MetadataFull,
-  type MetadataStub,
-} from '@hexabot-ai/types';
+import { metadataFullSchema, metadataSchema } from '@hexabot-ai/types';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 import { TDto } from '@/utils/types/dto.types';
-
-export { metadataFullSchema, metadataSchema, metadataStubSchema };
-
-export type { Metadata, MetadataFull, MetadataStub };
 
 export class MetadataCreateDto {
   @ApiProperty({ description: 'Metadata name', type: String })

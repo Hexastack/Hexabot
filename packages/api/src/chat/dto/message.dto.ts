@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  messageFullSchema,
-  messageSchema,
-  messageStubSchema,
-  type Message,
-  type MessageFull,
-  type MessageStub,
-} from '@hexabot-ai/types';
+import { messageFullSchema, messageSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -30,10 +23,6 @@ import {
   StdOutgoingMessage,
   validMessageTextSchema,
 } from '../types/message';
-
-export { messageFullSchema, messageSchema, messageStubSchema };
-
-export type { Message, MessageFull, MessageStub };
 
 export class MessageCreateDto {
   @ApiProperty({ description: 'Message id', type: String })

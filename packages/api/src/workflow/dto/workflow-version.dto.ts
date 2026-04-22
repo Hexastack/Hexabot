@@ -7,10 +7,6 @@
 import {
   workflowVersionFullSchema,
   workflowVersionSchema,
-  workflowVersionStubSchema,
-  type WorkflowVersion,
-  type WorkflowVersionFull,
-  type WorkflowVersionStub,
 } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
@@ -20,14 +16,6 @@ import { TDto } from '@/utils/types/dto.types';
 
 import { IsWorkflowYaml } from '../decorators/is-workflow-yaml.decorator';
 import { WorkflowVersionAction } from '../types';
-
-export {
-  workflowVersionFullSchema,
-  workflowVersionSchema,
-  workflowVersionStubSchema,
-};
-
-export type { WorkflowVersion, WorkflowVersionFull, WorkflowVersionStub };
 
 export class WorkflowNewVersionDto {
   @ApiPropertyOptional({

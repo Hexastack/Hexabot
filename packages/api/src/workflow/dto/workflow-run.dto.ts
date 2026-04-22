@@ -9,14 +9,7 @@ import {
   WorkflowRunStatus,
   WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
-import {
-  workflowRunFullSchema,
-  workflowRunSchema,
-  workflowRunStubSchema,
-  type WorkflowRun,
-  type WorkflowRunFull,
-  type WorkflowRunStub,
-} from '@hexabot-ai/types';
+import { workflowRunFullSchema, workflowRunSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -33,10 +26,6 @@ import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
 import { WORKFLOW_RUN_STATUSES } from '../entities/workflow-run.entity';
-
-export { workflowRunFullSchema, workflowRunSchema, workflowRunStubSchema };
-
-export type { WorkflowRun, WorkflowRunFull, WorkflowRunStub };
 
 export class WorkflowRunCreateDto {
   @ApiProperty({ description: 'Workflow to execute', type: String })

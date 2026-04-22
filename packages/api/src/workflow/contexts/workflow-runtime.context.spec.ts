@@ -4,11 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  MemoryDefinition,
+  MemoryRecordFull,
+  WorkflowRunFull,
+} from '@hexabot-ai/types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import type { MemoryDefinition } from '@/workflow/dto/memory-definition.dto';
-import type { MemoryRecordFull } from '@/workflow/dto/memory-record.dto';
-import type { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { MemoryScope, WorkflowType } from '@/workflow/types';
 
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';

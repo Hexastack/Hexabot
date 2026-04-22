@@ -4,16 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { settingSchema, settingFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index } from 'typeorm';
 
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import {
-  settingFullSchema,
-  SettingDto,
-  settingSchema,
-} from '../dto/setting.dto';
+import { SettingDto } from '../dto/setting.dto';
 
 @Entity({ name: 'settings' })
 @Index(['group', 'label'])

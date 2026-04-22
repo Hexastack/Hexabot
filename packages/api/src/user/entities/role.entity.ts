@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { roleSchema, roleFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index, ManyToMany, OneToMany } from 'typeorm';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { RoleDto, roleFullSchema, roleSchema } from '../dto/role.dto';
+import { RoleDto } from '../dto/role.dto';
 
 import { PermissionOrmEntity } from './permission.entity';
 import { UserOrmEntity } from './user.entity';

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Attachment } from '@hexabot-ai/types';
+import type { Attachment, Subscriber, Thread } from '@hexabot-ai/types';
 import {
   HttpException,
   HttpStatus,
@@ -32,8 +32,7 @@ import {
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
-import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { Thread } from '@/chat/dto/thread.dto';
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ThreadService } from '@/chat/services/thread.service';

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Language } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Body,
@@ -23,11 +24,7 @@ import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  Language,
-  LanguageCreateDto,
-  LanguageUpdateDto,
-} from '../dto/language.dto';
+import { LanguageCreateDto, LanguageUpdateDto } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageService } from '../services/language.service';
 

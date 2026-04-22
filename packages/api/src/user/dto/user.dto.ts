@@ -5,13 +5,9 @@
  */
 
 import {
-  type User,
   userFullSchema,
   userSchema,
-  userStubSchema,
-  type UserFull,
   type UserProvider,
-  type UserStub,
 } from '@hexabot-ai/types';
 import { PickType } from '@nestjs/mapped-types';
 import {
@@ -36,10 +32,6 @@ import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
 import { UserProfileCreateDto } from './user-profile.dto';
-
-export { userFullSchema, userSchema, userStubSchema };
-
-export type { User, UserFull, UserProvider, UserStub };
 
 export class UserCreateDto extends UserProfileCreateDto {
   @ApiProperty({ description: 'User username', type: String })

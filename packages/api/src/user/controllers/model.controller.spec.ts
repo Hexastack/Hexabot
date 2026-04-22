@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ModelFull } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ModelFull } from '../dto/model.dto';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { contentSchema, contentFullSchema, Content } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -23,12 +24,7 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import {
-  contentFullSchema,
-  contentSchema,
-  type Content,
-  ContentDto,
-} from '../dto/content.dto';
+import { ContentDto } from '../dto/content.dto';
 
 import { ContentTypeOrmEntity } from './content-type.entity';
 

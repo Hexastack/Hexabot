@@ -6,6 +6,7 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { ProviderV2, ProviderV3 } from '@ai-sdk/provider';
+import { Message, Thread } from '@hexabot-ai/types';
 import {
   LanguageModel,
   LanguageModelUsage,
@@ -19,8 +20,6 @@ import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { ActionMetadata, ActionName } from '@/actions/types';
 import { RuntimeBindings } from '@/bindings/runtime-bindings';
-import { Message } from '@/chat/dto/message.dto';
-import { Thread } from '@/chat/dto/thread.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 import { McpToolBindingDefinitions } from '@/workflow/types';

@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  labelFullSchema,
-  labelSchema,
-  labelStubSchema,
-  type Label,
-  type LabelFull,
-  type LabelStub,
-} from '@hexabot-ai/types';
+import { labelFullSchema, labelSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsNotEmpty,
@@ -23,10 +16,6 @@ import {
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
-
-export { labelFullSchema, labelSchema, labelStubSchema };
-
-export type { Label, LabelFull, LabelStub };
 
 export class LabelCreateDto {
   @ApiProperty({ description: 'Label title', type: String })

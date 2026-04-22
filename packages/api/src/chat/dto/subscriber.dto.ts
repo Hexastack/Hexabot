@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  subscriberFullSchema,
-  subscriberSchema,
-  subscriberStubSchema,
-  type Subscriber,
-  type SubscriberFull,
-  type SubscriberStub,
-} from '@hexabot-ai/types';
+import { subscriberFullSchema, subscriberSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsArray,
@@ -29,10 +22,6 @@ import { Validate } from '@/utils/decorators/validate.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
 import { channelDataSchema, SubscriberChannelData } from '../types/channel';
-
-export { subscriberFullSchema, subscriberSchema, subscriberStubSchema };
-
-export type { Subscriber, SubscriberFull, SubscriberStub };
 
 export class SubscriberCreateDto extends UserProfileCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber locale', type: String })

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { threadSchema, threadFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
@@ -11,7 +12,7 @@ import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { threadFullSchema, ThreadDto, threadSchema } from '../dto/thread.dto';
+import { ThreadDto } from '../dto/thread.dto';
 
 import { SubscriberOrmEntity } from './subscriber.entity';
 

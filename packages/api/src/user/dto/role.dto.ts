@@ -4,22 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  roleFullSchema,
-  roleSchema,
-  roleStubSchema,
-  type Role,
-  type RoleFull,
-  type RoleStub,
-} from '@hexabot-ai/types';
+import { roleFullSchema, roleSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { TDto } from '@/utils/types/dto.types';
-
-export { roleFullSchema, roleSchema, roleStubSchema };
-
-export type { Role, RoleFull, RoleStub };
 
 export class RoleCreateDto {
   @ApiProperty({ description: 'Name of the role', type: String })

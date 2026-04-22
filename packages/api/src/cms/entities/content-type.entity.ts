@@ -4,17 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { contentTypeSchema, contentTypeFullSchema } from '@hexabot-ai/types';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import {
-  contentTypeFullSchema,
-  contentTypeSchema,
-  ContentTypeDto,
-} from '../dto/contentType.dto';
+import { ContentTypeDto } from '../dto/contentType.dto';
 
 import { ContentOrmEntity } from './content.entity';
 

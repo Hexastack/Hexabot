@@ -4,22 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  type UserProfile,
-  userProfileFullSchema,
-  userProfileSchema,
-  userProfileStubSchema,
-  type UserProfileFull,
-  type UserProfileStub,
-} from '@hexabot-ai/types';
+import { userProfileFullSchema, userProfileSchema } from '@hexabot-ai/types';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 import { TDto } from '@/utils';
-
-export { userProfileFullSchema, userProfileSchema, userProfileStubSchema };
-
-export type { UserProfile, UserProfileFull, UserProfileStub };
 
 export class UserProfileCreateDto {
   @ApiProperty({ description: `User Profile firstName`, type: String })

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Workflow } from '@hexabot-ai/types';
 import { BadRequestException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -26,7 +27,6 @@ import {
   InsertEntityEvent,
   UpdateEntityEvent,
 } from '@/utils/types/entity-event.types';
-import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowType } from '@/workflow/types';
 
 import { ScheduledWorkflowContext } from '../contexts/scheduled-workflow.context';

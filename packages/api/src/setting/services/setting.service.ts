@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Setting } from '@hexabot-ai/types';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
@@ -29,11 +30,7 @@ import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { UpdateEntityEvent } from '@/utils/types/entity-event.types';
 
-import {
-  Setting,
-  SettingCreateDto,
-  SettingUpdateDto,
-} from '../dto/setting.dto';
+import { SettingCreateDto, SettingUpdateDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 import { buildSettingSeedsFromRegistry } from '../runtime-settings.seed';

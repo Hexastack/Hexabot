@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  modelFullSchema,
-  modelSchema,
-  modelStubSchema,
-  type Model,
-  type ModelFull,
-  type ModelStub,
-} from '@hexabot-ai/types';
+import { modelFullSchema, modelSchema } from '@hexabot-ai/types';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
@@ -19,10 +12,6 @@ import { TDto } from '@/utils/types/dto.types';
 
 import { TRelation } from '../types/index.type';
 import { TModel } from '../types/model.type';
-
-export { modelFullSchema, modelSchema, modelStubSchema };
-
-export type { Model, ModelFull, ModelStub };
 
 export class ModelCreateDto {
   @ApiProperty({ description: 'Name of the model', type: String })

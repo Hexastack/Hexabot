@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { userProfileStubSchema } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -20,7 +21,7 @@ import { EnumColumn } from '@/database';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation, TZodDto } from '@/utils';
 
-import { UserProfileDto, userProfileStubSchema } from '../dto/user-profile.dto';
+import { UserProfileDto } from '../dto/user-profile.dto';
 
 export enum EUserProfileType {
   SubscriberOrmEntity = 'SubscriberOrmEntity',

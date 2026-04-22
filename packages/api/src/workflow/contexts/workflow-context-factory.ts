@@ -5,10 +5,10 @@
  */
 
 import type { WorkflowDefinition } from '@hexabot-ai/agentic';
+import { WorkflowRunFull } from '@hexabot-ai/types';
 import { Injectable, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 
-import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
 import { MemoryService } from '../services/memory.service';
 import { WorkflowType } from '../types';

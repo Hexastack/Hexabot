@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { credentialSchema, credentialFullSchema } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -16,11 +17,7 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import {
-  CredentialDto,
-  credentialFullSchema,
-  credentialSchema,
-} from '../dto/credential.dto';
+import { CredentialDto } from '../dto/credential.dto';
 
 import { UserOrmEntity } from './user.entity';
 

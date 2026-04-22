@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Stats, Subscriber } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Between } from 'typeorm';
 
-import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
@@ -17,7 +17,7 @@ import { InsertEntityEvent } from '@/utils/types/entity-event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import { Stats, StatsSummaryDto } from '../dto/stats.dto';
+import { StatsSummaryDto } from '../dto/stats.dto';
 import { StatsOrmEntity, StatsType } from '../entities/stats.entity';
 import { StatsRepository } from '../repositories/stats.repository';
 

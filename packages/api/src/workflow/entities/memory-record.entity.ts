@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { memoryRecordSchema, memoryRecordFullSchema } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -21,11 +22,7 @@ import { UserProfileDto } from '@/user/dto/user-profile.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import {
-  memoryRecordFullSchema,
-  memoryRecordSchema,
-  MemoryRecordDto,
-} from '../dto/memory-record.dto';
+import { MemoryRecordDto } from '../dto/memory-record.dto';
 import type { MemoryValue } from '../types';
 
 import { MemoryDefinitionOrmEntity } from './memory-definition.entity';

@@ -7,6 +7,10 @@
 import { createHash } from 'crypto';
 
 import {
+  workflowVersionSchema,
+  workflowVersionFullSchema,
+} from '@hexabot-ai/types';
+import {
   Column,
   Entity,
   Index,
@@ -25,11 +29,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
-import {
-  workflowVersionFullSchema,
-  workflowVersionSchema,
-  WorkflowVersionDto,
-} from '../dto/workflow-version.dto';
+import { WorkflowVersionDto } from '../dto/workflow-version.dto';
 import { WorkflowVersionAction } from '../types';
 
 import { WorkflowOrmEntity } from './workflow.entity';

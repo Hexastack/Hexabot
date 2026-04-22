@@ -16,11 +16,11 @@ import {
   MemoryScope,
   WorkflowType,
   WorkflowVersionAction,
+  MemoryDefinition,
+  WorkflowRunFull,
+  WorkflowFull,
 } from '@hexabot-ai/types';
 
-import { MemoryDefinition } from './dto/memory-definition.dto';
-import { WorkflowRunFull } from './dto/workflow-run.dto';
-import { WorkflowFull } from './dto/workflow.dto';
 import { TriggerEventWrapper } from './lib/trigger-event-wrapper';
 import { SchemaInstance } from './utils/schema-instance';
 

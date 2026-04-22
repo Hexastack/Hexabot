@@ -5,11 +5,11 @@
  */
 
 import { WorkflowSnapshot } from '@hexabot-ai/agentic';
+import { WorkflowRun, WorkflowRunFull } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { WorkflowRun, WorkflowRunFull } from '../dto/workflow-run.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 

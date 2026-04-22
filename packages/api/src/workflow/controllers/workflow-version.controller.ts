@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowVersion } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -24,7 +25,6 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 
 import {
   WorkflowNewVersionDto,
-  WorkflowVersion,
   WorkflowVersionUpdateDto,
 } from '../dto/workflow-version.dto';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';

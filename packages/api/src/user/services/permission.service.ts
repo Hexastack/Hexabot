@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { PermissionFull } from '@hexabot-ai/types';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -13,7 +14,6 @@ import { PERMISSION_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { PermissionFull } from '../dto/permission.dto';
 import { PermissionOrmEntity } from '../entities/permission.entity';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { PermissionsTree } from '../types/permission.type';

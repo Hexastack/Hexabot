@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { userSchema, userFullSchema } from '@hexabot-ai/types';
 import {
   ChildEntity,
   Column,
@@ -21,7 +22,7 @@ import {
 } from '@/database/decorators/orm-event-hooks.decorator';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { userFullSchema, userSchema, UserDto } from '../dto/user.dto';
+import { UserDto } from '../dto/user.dto';
 import type { UserProvider } from '../types/user-provider.type';
 import { hash } from '../utilities/bcryptjs';
 

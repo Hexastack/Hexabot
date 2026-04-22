@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ThreadStub, Message } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Message } from '../dto/message.dto';
-import { ThreadStub } from '../dto/thread.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 
 @Injectable()

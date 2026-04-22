@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { User } from '@hexabot-ai/types';
+import type { User, UserProfileStub } from '@hexabot-ai/types';
 
-import { UserProfileStub } from '@/user/dto/user-profile.dto';
 import { ScheduledWorkflowInput } from '@/workflow/schemas/workflow-input-schemas';
 
 import { WorkflowType } from '../types';

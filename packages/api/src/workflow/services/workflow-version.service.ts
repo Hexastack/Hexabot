@@ -4,14 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowVersion } from '@hexabot-ai/types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import {
-  WorkflowNewVersionDto,
-  WorkflowVersion,
-} from '../dto/workflow-version.dto';
+import { WorkflowNewVersionDto } from '../dto/workflow-version.dto';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 import { WorkflowVersionRepository } from '../repositories/workflow-version.repository';
 import { WorkflowVersionAction } from '../types';

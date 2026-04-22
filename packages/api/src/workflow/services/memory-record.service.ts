@@ -4,13 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MemoryRecordFull, MemoryDefinition } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { FindOptionsWhere, IsNull, MoreThan } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import type { MemoryDefinition } from '../dto/memory-definition.dto';
-import { MemoryRecordFull } from '../dto/memory-record.dto';
 import { MemoryRecordOrmEntity } from '../entities/memory-record.entity';
 import { MemoryRecordRepository } from '../repositories/memory-record.repository';
 import { MemoryScope, MemoryStoreIdentifier, MemoryValue } from '../types';

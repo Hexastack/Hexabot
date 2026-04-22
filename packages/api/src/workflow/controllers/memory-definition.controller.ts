@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MemoryDefinition } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -23,7 +24,6 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
-  MemoryDefinition,
   MemoryDefinitionCreateDto,
   MemoryDefinitionUpdateDto,
 } from '../dto/memory-definition.dto';

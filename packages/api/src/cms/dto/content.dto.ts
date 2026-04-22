@@ -4,23 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  contentFullSchema,
-  contentSchema,
-  contentStubSchema,
-  type Content,
-  type ContentFull,
-  type ContentStub,
-} from '@hexabot-ai/types';
+import { contentFullSchema, contentSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
-
-export { contentFullSchema, contentSchema, contentStubSchema };
-
-export type { Content, ContentFull, ContentStub };
 
 export class ContentCreateDto {
   @ApiProperty({ description: 'Content entity', type: String })

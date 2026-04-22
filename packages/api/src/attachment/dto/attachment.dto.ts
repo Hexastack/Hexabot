@@ -4,15 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  attachmentFullSchema,
-  attachmentSchema,
-  attachmentStubSchema,
-  type Attachment,
-  type AttachmentFull,
-  type AttachmentOwner,
-  type AttachmentStub,
-} from '@hexabot-ai/types';
+import { attachmentFullSchema, attachmentSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -35,10 +27,6 @@ import {
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '../types';
-
-export { attachmentFullSchema, attachmentSchema, attachmentStubSchema };
-
-export type { Attachment, AttachmentFull, AttachmentOwner, AttachmentStub };
 
 export class AttachmentMetadataDto {
   /**

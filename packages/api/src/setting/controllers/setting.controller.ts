@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Setting } from '@hexabot-ai/types';
 import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
@@ -11,7 +12,7 @@ import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { Setting, SettingUpdateDto } from '../dto/setting.dto';
+import { SettingUpdateDto } from '../dto/setting.dto';
 import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingService } from '../services/setting.service';
 

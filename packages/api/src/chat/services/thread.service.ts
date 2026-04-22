@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Thread } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { Thread } from '../dto/thread.dto';
 import { ThreadOrmEntity } from '../entities/thread.entity';
 import { ThreadRepository } from '../repositories/thread.repository';
 

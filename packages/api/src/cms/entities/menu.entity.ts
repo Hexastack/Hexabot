@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { menuSchema, menuFullSchema } from '@hexabot-ai/types';
 import {
   Check,
   Column,
@@ -25,7 +26,7 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { menuFullSchema, MenuDto, menuSchema } from '../dto/menu.dto';
+import { MenuDto } from '../dto/menu.dto';
 import { MenuType } from '../enums/menu-type.enum';
 
 export { MenuType };

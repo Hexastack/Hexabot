@@ -4,21 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  dummyFullSchema,
-  dummySchema,
-  dummyStubSchema,
-  type Dummy,
-  type DummyFull,
-  type DummyStub,
-} from '@hexabot-ai/types';
+import { dummyFullSchema, dummySchema } from '@hexabot-ai/types';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
 import { DtoAction, TDto } from '@/utils/types/dto.types';
-
-export { dummyFullSchema, dummySchema, dummyStubSchema };
-
-export type { Dummy, DummyFull, DummyStub };
 
 export class DummyCreateDto {
   @IsString()

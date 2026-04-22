@@ -4,22 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  settingFullSchema,
-  settingSchema,
-  settingStubSchema,
-  type Setting,
-  type SettingFull,
-  type SettingStub,
-} from '@hexabot-ai/types';
+import { settingFullSchema, settingSchema } from '@hexabot-ai/types';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { TDto } from '@/utils/types/dto.types';
-
-export { settingFullSchema, settingSchema, settingStubSchema };
-
-export type { Setting, SettingFull, SettingStub };
 
 export class SettingCreateDto {
   @ApiProperty({ description: 'Setting group', type: String })

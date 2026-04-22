@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Message, MessageFull } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import { ChannelService } from '@/channel/channel.service';
@@ -15,8 +16,6 @@ import {
 } from '@/utils/test/fixtures/message';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-
-import { Message, MessageFull } from '../dto/message.dto';
 
 import { MessageController } from './message.controller';
 

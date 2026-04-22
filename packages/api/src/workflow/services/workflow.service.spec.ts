@@ -8,6 +8,7 @@ import {
   WorkflowDefinition,
   Workflow as WorkflowHelper,
 } from '@hexabot-ai/agentic';
+import { Workflow } from '@hexabot-ai/types';
 import { BadRequestException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
@@ -23,7 +24,7 @@ import {
   scheduledWorkflowInputJsonSchema,
 } from '@/workflow/schemas/workflow-input-schemas';
 
-import { Workflow, WorkflowUpdateDto } from '../dto/workflow.dto';
+import { WorkflowUpdateDto } from '../dto/workflow.dto';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType, WorkflowVersionAction } from '../types';
 

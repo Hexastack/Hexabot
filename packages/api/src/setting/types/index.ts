@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Setting } from '@/setting/dto/setting.dto';
+import { Setting } from '@hexabot-ai/types';
 
 export { FieldType } from '@hexabot-ai/types';
 

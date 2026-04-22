@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  contentTypeFullSchema,
-  contentTypeSchema,
-  contentTypeStubSchema,
-  type ContentType,
-  type ContentTypeFull,
-  type ContentTypeStub,
-} from '@hexabot-ai/types';
+import { contentTypeFullSchema, contentTypeSchema } from '@hexabot-ai/types';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
@@ -20,10 +13,6 @@ import { z } from 'zod';
 import { FieldType } from '@/setting/types';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { TDto } from '@/utils/types/dto.types';
-
-export { contentTypeFullSchema, contentTypeSchema, contentTypeStubSchema };
-
-export type { ContentType, ContentTypeFull, ContentTypeStub };
 
 export class ContentField {
   @IsString()

@@ -4,23 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  credentialFullSchema,
-  credentialSchema,
-  credentialStubSchema,
-  type Credential,
-  type CredentialFull,
-  type CredentialStub,
-} from '@hexabot-ai/types';
+import { credentialFullSchema, credentialSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
-
-export { credentialFullSchema, credentialSchema, credentialStubSchema };
-
-export type { Credential, CredentialFull, CredentialStub };
 
 export class CredentialCreateDto {
   @ApiProperty({

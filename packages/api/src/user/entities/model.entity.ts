@@ -4,12 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { modelSchema, modelFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { ModelDto, modelFullSchema, modelSchema } from '../dto/model.dto';
+import { ModelDto } from '../dto/model.dto';
 import { TRelation } from '../types/index.type';
 
 import { PermissionOrmEntity } from './permission.entity';

@@ -4,18 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { statsSchema, statsFullSchema, Stats } from '@hexabot-ai/types';
 import { Column, Entity, Index } from 'typeorm';
 
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import {
-  statsFullSchema,
-  statsSchema,
-  type Stats,
-  StatsDto,
-} from '../dto/stats.dto';
+import { StatsDto } from '../dto/stats.dto';
 import { StatsType } from '../enums/stats-type.enum';
 
 export { StatsType };

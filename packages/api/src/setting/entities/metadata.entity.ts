@@ -4,16 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { metadataSchema, metadataFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index } from 'typeorm';
 
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import {
-  metadataFullSchema,
-  MetadataDto,
-  metadataSchema,
-} from '../dto/metadata.dto';
+import { MetadataDto } from '../dto/metadata.dto';
 
 @Entity({ name: 'metadata' })
 @Index(['name'], { unique: true })

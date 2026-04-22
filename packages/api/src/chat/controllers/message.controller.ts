@@ -6,6 +6,7 @@
 
 import { randomUUID } from 'crypto';
 
+import { Message, MessageFull, Thread } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Body,
@@ -31,8 +32,7 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { Message, MessageCreateDto, MessageFull } from '../dto/message.dto';
-import { Thread } from '../dto/thread.dto';
+import { MessageCreateDto } from '../dto/message.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';

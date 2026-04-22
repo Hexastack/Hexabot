@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  threadFullSchema,
-  threadSchema,
-  threadStubSchema,
-  type Thread,
-  type ThreadFull,
-  type ThreadStub,
-} from '@hexabot-ai/types';
+import { threadFullSchema, threadSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDate, IsIn, IsOptional, IsString } from 'class-validator';
@@ -23,10 +16,6 @@ import {
   THREAD_CLOSE_REASONS,
   THREAD_STATUSES,
 } from '../entities/thread.entity';
-
-export { threadFullSchema, threadSchema, threadStubSchema };
-
-export type { Thread, ThreadFull, ThreadStub };
 
 export class ThreadCreateDto {
   @ApiProperty({ description: 'Owner subscriber id', type: String })

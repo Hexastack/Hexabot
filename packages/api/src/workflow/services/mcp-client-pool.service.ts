@@ -9,6 +9,7 @@ import {
   type ListToolsResult,
   type MCPClient,
 } from '@ai-sdk/mcp';
+import { McpServer } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Injectable,
@@ -20,7 +21,6 @@ import { ToolSet } from 'ai';
 import { LoggerService } from '@/logger/logger.service';
 import { CredentialService } from '@/user';
 
-import { McpServer } from '../dto/mcp-server.dto';
 import { McpServerRepository } from '../repositories/mcp-server.repository';
 import { McpServerTransport, McpToolBindingDefinitions } from '../types';
 

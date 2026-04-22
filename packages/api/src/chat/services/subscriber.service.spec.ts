@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { User } from '@hexabot-ai/types';
+import type { User, Subscriber } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import mime from 'mime';
@@ -26,7 +26,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { Subscriber } from '../dto/subscriber.dto';
 import { LabelGroupRepository } from '../repositories/label-group.repository';
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';

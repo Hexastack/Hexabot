@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { mcpServerSchema, mcpServerFullSchema } from '@hexabot-ai/types';
 import { BadRequestException } from '@nestjs/common';
 import {
   AfterLoad,
@@ -25,11 +26,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { CredentialOrmEntity } from '@/user';
 import { AsRelation } from '@/utils';
 
-import {
-  mcpServerFullSchema,
-  McpServerDto,
-  mcpServerSchema,
-} from '../dto/mcp-server.dto';
+import { McpServerDto } from '../dto/mcp-server.dto';
 import { McpServerTransport } from '../types';
 
 @Entity({ name: 'mcp_servers' })

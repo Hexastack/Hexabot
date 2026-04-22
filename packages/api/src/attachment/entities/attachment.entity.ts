@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { attachmentSchema, attachmentFullSchema } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -23,11 +24,7 @@ import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils';
 import { buildURL } from '@/utils/helpers/URL';
 
-import {
-  attachmentFullSchema,
-  attachmentSchema,
-  AttachmentDto,
-} from '../dto/attachment.dto';
+import { AttachmentDto } from '../dto/attachment.dto';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,

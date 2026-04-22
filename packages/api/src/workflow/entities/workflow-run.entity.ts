@@ -9,6 +9,7 @@ import {
   WorkflowRunStatus,
   WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
+import { workflowRunSchema, workflowRunFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
 
 import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
@@ -20,11 +21,7 @@ import { UserProfileDto } from '@/user/dto/user-profile.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import {
-  workflowRunFullSchema,
-  workflowRunSchema,
-  WorkflowRunDto,
-} from '../dto/workflow-run.dto';
+import { WorkflowRunDto } from '../dto/workflow-run.dto';
 
 import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 import { WorkflowOrmEntity } from './workflow.entity';

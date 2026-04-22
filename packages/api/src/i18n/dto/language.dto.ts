@@ -4,23 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  languageFullSchema,
-  languageSchema,
-  languageStubSchema,
-  type Language,
-  type LanguageFull,
-  type LanguageStub,
-} from '@hexabot-ai/types';
+import { languageFullSchema, languageSchema } from '@hexabot-ai/types';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { TDto } from '@/utils/types/dto.types';
-
-export { languageFullSchema, languageSchema, languageStubSchema };
-
-export type { Language, LanguageFull, LanguageStub };
 
 export class LanguageCreateDto {
   @ApiProperty({ description: 'Language Title', type: String })

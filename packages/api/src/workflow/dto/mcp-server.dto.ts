@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  mcpServerFullSchema,
-  mcpServerSchema,
-  mcpServerStubSchema,
-  type McpServer,
-  type McpServerFull,
-  type McpServerStub,
-} from '@hexabot-ai/types';
+import { mcpServerFullSchema, mcpServerSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsArray,
@@ -28,10 +21,6 @@ import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
 import { McpServerTransport } from '../types';
-
-export { mcpServerFullSchema, mcpServerSchema, mcpServerStubSchema };
-
-export type { McpServer, McpServerFull, McpServerStub };
 
 export class McpServerCreateDto {
   @ApiProperty({

@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  menuFullSchema,
-  menuSchema,
-  menuStubSchema,
-  type Menu,
-  type MenuFull,
-  type MenuStub,
-} from '@hexabot-ai/types';
+import { menuFullSchema, menuSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsEnum,
@@ -26,10 +19,6 @@ import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
 import { MenuType } from '../enums/menu-type.enum';
-
-export { menuFullSchema, menuSchema, menuStubSchema };
-
-export type { Menu, MenuFull, MenuStub };
 
 export class MenuCreateDto {
   @ApiProperty({ description: 'Menu title', type: String })

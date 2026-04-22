@@ -4,10 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ContentType } from '@hexabot-ai/types';
 import { DataSource, DeepPartial } from 'typeorm';
 
 import { DEFAULT_CONTENT_TYPE_SCHEMA } from '@/cms';
-import { ContentType, ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
+import { ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';

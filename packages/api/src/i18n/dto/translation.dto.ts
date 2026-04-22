@@ -4,23 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  translationFullSchema,
-  translationSchema,
-  translationStubSchema,
-  type Translation,
-  type TranslationFull,
-  type TranslationStub,
-} from '@hexabot-ai/types';
+import { translationFullSchema, translationSchema } from '@hexabot-ai/types';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsObject, IsString } from 'class-validator';
 
 import { TDto } from '@/utils/types/dto.types';
-
-export { translationFullSchema, translationSchema, translationStubSchema };
-
-export type { Translation, TranslationFull, TranslationStub };
 
 export class TranslationCreateDto {
   @ApiProperty({ description: 'Translation str', type: String })

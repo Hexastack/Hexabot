@@ -7,10 +7,6 @@
 import {
   memoryDefinitionFullSchema,
   memoryDefinitionSchema,
-  memoryDefinitionStubSchema,
-  type MemoryDefinition,
-  type MemoryDefinitionFull,
-  type MemoryDefinitionStub,
 } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
@@ -29,14 +25,6 @@ import { Validate } from '@/utils/decorators/validate.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
 import { MemoryScope } from '../types';
-
-export {
-  memoryDefinitionFullSchema,
-  memoryDefinitionSchema,
-  memoryDefinitionStubSchema,
-};
-
-export type { MemoryDefinition, MemoryDefinitionFull, MemoryDefinitionStub };
 
 export class MemoryDefinitionCreateDto {
   @ApiProperty({ description: 'Memory definition name', type: String })

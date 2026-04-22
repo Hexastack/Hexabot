@@ -5,6 +5,7 @@
  */
 
 import { BaseWorkflowContext } from '@hexabot-ai/agentic';
+import { WorkflowRunFull } from '@hexabot-ai/types';
 import { forwardRef, Inject, Injectable, Scope } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -18,7 +19,6 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { CredentialService } from '@/user';
 import { cloneObject } from '@/utils/helpers/clone';
-import type { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { WorkflowContextState, WorkflowType } from '@/workflow/types';
 
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';

@@ -4,22 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  labelGroupFullSchema,
-  labelGroupSchema,
-  labelGroupStubSchema,
-  type LabelGroup,
-  type LabelGroupFull,
-  type LabelGroupStub,
-} from '@hexabot-ai/types';
+import { labelGroupFullSchema, labelGroupSchema } from '@hexabot-ai/types';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 import { TDto } from '@/utils/types/dto.types';
-
-export { labelGroupFullSchema, labelGroupSchema, labelGroupStubSchema };
-
-export type { LabelGroup, LabelGroupFull, LabelGroupStub };
 
 export class LabelGroupCreateDto {
   @ApiProperty({ description: 'Label group name', type: String })

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { permissionSchema, permissionFullSchema } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -17,11 +18,7 @@ import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import {
-  PermissionDto,
-  permissionFullSchema,
-  permissionSchema,
-} from '../dto/permission.dto';
+import { PermissionDto } from '../dto/permission.dto';
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';
 

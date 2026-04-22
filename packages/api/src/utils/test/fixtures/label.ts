@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Label } from '@hexabot-ai/types';
 import { DataSource } from 'typeorm';
 
-import { Label, LabelCreateDto } from '@/chat/dto/label.dto';
+import { LabelCreateDto } from '@/chat/dto/label.dto';
 import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 

@@ -9,6 +9,7 @@ import {
   Workflow as WorkflowHelper,
   WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
+import { Workflow, WorkflowRun } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import {
@@ -18,8 +19,6 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { WorkflowRun } from '../dto/workflow-run.dto';
-import { Workflow } from '../dto/workflow.dto';
 import { WorkflowRunOrmEntity } from '../entities/workflow-run.entity';
 import { WorkflowVersionOrmEntity } from '../entities/workflow-version.entity';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';

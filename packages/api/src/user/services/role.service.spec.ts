@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Role, Permission } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
@@ -11,8 +12,6 @@ import { roleFixtureIds, roleOrmFixtures } from '@/utils/test/fixtures/role';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Permission } from '../dto/permission.dto';
-import { Role } from '../dto/role.dto';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';

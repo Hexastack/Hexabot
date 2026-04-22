@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  memoryRecordFullSchema,
-  memoryRecordSchema,
-  memoryRecordStubSchema,
-  type MemoryRecord,
-  type MemoryRecordFull,
-  type MemoryRecordStub,
-} from '@hexabot-ai/types';
+import { memoryRecordFullSchema, memoryRecordSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -27,10 +20,6 @@ import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
 import type { MemoryValue } from '../types';
-
-export { memoryRecordFullSchema, memoryRecordSchema, memoryRecordStubSchema };
-
-export type { MemoryRecord, MemoryRecordFull, MemoryRecordStub };
 
 export class MemoryRecordCreateDto {
   @ApiProperty({
