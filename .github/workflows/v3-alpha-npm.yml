@@ -6,7 +6,42 @@ on:
       - "v3.*-alpha.*"
 
 jobs:
+  publish-agentic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          standalone: true
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org/"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --filter "@hexabot-ai/agentic..." --prod=false
+
+      - name: Build the package
+        run: pnpm --filter "@hexabot-ai/agentic..." run build
+
+      - name: Publish to npm
+        working-directory: packages/agentic
+        run: pnpm publish --tag alpha --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
+
   publish-package:
+    needs: publish-agentic
     runs-on: ubuntu-latest
     strategy:
       matrix:
