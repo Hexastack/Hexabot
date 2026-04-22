@@ -5,6 +5,12 @@
  */
 
 import type {
+  StepExecutionRecord,
+  WorkflowRunStatus,
+  WorkflowSnapshot,
+} from "@hexabot-ai/agentic";
+import type {
+  AttachmentCreatedByRef,
   Attachment,
   Content,
   ContentFull,
@@ -43,43 +49,29 @@ import type {
   WorkflowVersionFull,
 } from "@hexabot-ai/types";
 import { GridPaginationModel, GridSortModel } from "@mui/x-data-grid";
+import type { ResizeControlDirection } from "@xyflow/system";
+import type { JSONSchema7 as JsonSchema } from "json-schema";
 import { Path, PathValue } from "react-hook-form";
 
+import type { SchemaNodeForm } from "@/app-components/inputs/JsonSchemaObjectBuilder";
 import { EntityType, Format, TPopulateTypeFromFormat } from "@/services/types";
 
-import { IAttachmentAttributes, IAttachmentFilters } from "./attachment.types";
-import { IChannel, IChannelAttributes } from "./channel.types";
-import { IContentTypeAttributes } from "./content-type.types";
-import { IContentAttributes, IContentFilters } from "./content.types";
-import { ICredentialAttributes } from "./credential.types";
-import { IHelper, IHelperAttributes } from "./helper.types";
-import { ILabelGroupAttributes } from "./label-group.types";
-import { ILabelAttributes } from "./label.types";
-import { ILanguageAttributes } from "./language.types";
-import { IMcpServerAttributes } from "./mcp-server.types";
-import { IMemoryDefinitionAttributes } from "./memory-definition.types";
+import { IAttachmentFilters } from "./attachment.types";
+import { IChannel } from "./channel.types";
+import { IContentFilters } from "./content.types";
+import { IHelper } from "./helper.types";
+import { IMenuNode, IMenuNodeFull } from "./menu-tree.types";
 import {
-  IMenuNode,
-  IMenuNodeAttributes,
-  IMenuNodeFull,
-} from "./menu-tree.types";
-import { IMenuItemAttributes } from "./menu.types";
-import { IMessageAttributes, IMessageFilters } from "./message.types";
-import { IModelAttributes } from "./model.types";
-import { IPermissionAttributes } from "./permission.types";
-import { IRoleAttributes } from "./role.types";
+  IMessageFilters,
+  StdIncomingMessage,
+  StdOutgoingMessage,
+} from "./message.types";
 import { SearchPayload } from "./search.types";
-import { ISettingAttributes } from "./setting.types";
-import { ISubscriberAttributes, ISubscriberFilters } from "./subscriber.types";
-import { IThreadAttributes, IThreadFilters } from "./thread.types";
-import { ITranslationAttributes } from "./translation.types";
-import { IUserAttributes } from "./user.types";
-import {
-  IWorkflowRunAttributes,
-  IWorkflowRunFilters,
-} from "./workflow-run.types";
-import { IWorkflowVersionAttributes } from "./workfow-version.types";
-import { IWorkflowAttributes, IWorkflowFilters } from "./workfow.types";
+import { ISubscriberFilters } from "./subscriber.types";
+import { IThreadFilters } from "./thread.types";
+import { ILicense } from "./user.types";
+import { IWorkflowRunFilters } from "./workflow-run.types";
+import { IWorkflowFilters } from "./workfow.types";
 
 export interface IBaseSchema {
   id: string;
@@ -138,6 +130,15 @@ export type OmitPopulate<Attrs, C extends EntityType> = Omit<
 
 export type IsNever<T> = [T] extends [never] ? true : false;
 
+type EntityPayload<
+  TEntity,
+  TRequiredKeys extends keyof TEntity,
+  TOptionalKeys extends keyof TEntity = never,
+  TExtra extends object = Record<never, never>,
+> = Pick<TEntity, TRequiredKeys> &
+  Partial<Pick<TEntity, TOptionalKeys>> &
+  TExtra;
+
 interface IEntityTypes<
   TStub = never,
   TAttr = never,
@@ -153,93 +154,291 @@ interface IEntityTypes<
 export interface IEntityMapTypes {
   [EntityType.WORKFLOW]: IEntityTypes<
     Workflow,
-    IWorkflowAttributes,
+    EntityPayload<
+      Workflow,
+      "name" | "description" | "schedule" | "type",
+      "builtin" | "zoom" | "x" | "y",
+      {
+        direction?: ResizeControlDirection;
+        inputSchema?: JsonSchema;
+      }
+    >,
     IWorkflowFilters,
     WorkflowFull
   >;
   [EntityType.WORKFLOW_VERSION]: IEntityTypes<
     WorkflowVersion,
-    IWorkflowVersionAttributes,
+    EntityPayload<
+      WorkflowVersion,
+      "definitionYml",
+      "version" | "checksum" | "message" | "parentVersion" | "action"
+    >,
     never,
     WorkflowVersionFull
   >;
   [EntityType.WORKFLOW_RUN]: IEntityTypes<
     WorkflowRun,
-    IWorkflowRunAttributes,
+    EntityPayload<
+      WorkflowRun,
+      | "workflow"
+      | "workflowVersion"
+      | "triggeredBy"
+      | "input"
+      | "output"
+      | "context"
+      | "suspendedStep"
+      | "suspensionReason"
+      | "suspensionData"
+      | "lastResumeData"
+      | "error"
+      | "suspendedAt"
+      | "finishedAt"
+      | "failedAt"
+      | "duration"
+      | "metadata",
+      never,
+      {
+        thread?: string | null;
+        status: WorkflowRunStatus;
+        snapshot?: WorkflowSnapshot | null;
+        stepLog?: Record<string, StepExecutionRecord> | null;
+      }
+    >,
     IWorkflowRunFilters,
     WorkflowRunFull
   >;
   [EntityType.MCP_SERVER]: IEntityTypes<
     McpServer,
-    IMcpServerAttributes,
+    EntityPayload<
+      McpServer,
+      | "name"
+      | "enabled"
+      | "transport"
+      | "url"
+      | "command"
+      | "args"
+      | "cwd"
+      | "credential"
+    >,
     never,
     McpServerFull
   >;
   [EntityType.MEMORY_DEFINITION]: IEntityTypes<
     MemoryDefinition,
-    IMemoryDefinitionAttributes
+    EntityPayload<
+      MemoryDefinition,
+      "name" | "slug" | "scope" | "schema" | "ttlSeconds"
+    >
   >;
   [EntityType.THREAD]: IEntityTypes<
     Thread,
-    IThreadAttributes,
+    EntityPayload<
+      Thread,
+      | "subscriber"
+      | "status"
+      | "lastMessageAt"
+      | "closedAt"
+      | "closeReason"
+      | "title"
+    >,
     IThreadFilters,
     ThreadFull
   >;
   [EntityType.CONTENT]: IEntityTypes<
     Content,
-    IContentAttributes,
+    EntityPayload<Content, "contentType" | "title" | "status" | "properties">,
     IContentFilters,
     ContentFull
   >;
-  [EntityType.CONTENT_TYPE]: IEntityTypes<ContentType, IContentTypeAttributes>;
-  [EntityType.LABEL]: IEntityTypes<Label, ILabelAttributes, never, LabelFull>;
-  [EntityType.LABEL_GROUP]: IEntityTypes<LabelGroup, ILabelGroupAttributes>;
-  [EntityType.MENU]: IEntityTypes<Menu, IMenuItemAttributes, never, MenuFull>;
+  [EntityType.CONTENT_TYPE]: IEntityTypes<
+    ContentType,
+    EntityPayload<
+      ContentType,
+      "name",
+      never,
+      {
+        schema: SchemaNodeForm;
+      }
+    >
+  >;
+  [EntityType.LABEL]: IEntityTypes<
+    Label,
+    EntityPayload<
+      Label,
+      "title" | "name" | "description" | "builtin" | "group"
+    >,
+    never,
+    LabelFull
+  >;
+  [EntityType.LABEL_GROUP]: IEntityTypes<
+    LabelGroup,
+    EntityPayload<LabelGroup, "name">
+  >;
+  [EntityType.MENU]: IEntityTypes<
+    Menu,
+    EntityPayload<Menu, "type" | "title" | "url" | "payload" | "parent">,
+    never,
+    MenuFull
+  >;
   [EntityType.MENUTREE]: IEntityTypes<
     IMenuNode,
-    IMenuNodeAttributes,
+    EntityPayload<IMenuNode, "type" | "title" | "url" | "payload" | "parent">,
     never,
     IMenuNodeFull
   >;
-  [EntityType.MODEL]: IEntityTypes<Model, IModelAttributes, never, ModelFull>;
-  [EntityType.CREDENTIAL]: IEntityTypes<Credential, ICredentialAttributes>;
+  [EntityType.MODEL]: IEntityTypes<
+    Model,
+    EntityPayload<Model, "name" | "identity" | "attributes" | "relation">,
+    never,
+    ModelFull
+  >;
+  [EntityType.CREDENTIAL]: IEntityTypes<
+    Credential,
+    EntityPayload<
+      Credential,
+      "name" | "owner",
+      never,
+      {
+        value: string;
+      }
+    >
+  >;
   [EntityType.PERMISSION]: IEntityTypes<
     Permission,
-    IPermissionAttributes,
+    EntityPayload<Permission, "action" | "model" | "role" | "relation">,
     never,
     PermissionFull
   >;
-  [EntityType.ROLE]: IEntityTypes<Role, IRoleAttributes, never, RoleFull>;
-  [EntityType.SETTING]: IEntityTypes<Setting, ISettingAttributes>;
+  [EntityType.ROLE]: IEntityTypes<
+    Role,
+    EntityPayload<Role, "name">,
+    never,
+    RoleFull
+  >;
+  [EntityType.SETTING]: IEntityTypes<
+    Setting,
+    EntityPayload<
+      Setting,
+      "group" | "label",
+      "subgroup",
+      {
+        value:
+          | string
+          | number
+          | boolean
+          | string[]
+          | Record<string, unknown>
+          | null;
+      }
+    >
+  >;
   [EntityType.SUBSCRIBER]: IEntityTypes<
     Subscriber,
-    ISubscriberAttributes,
+    {
+      firstName: Subscriber["firstName"];
+      lastName: Subscriber["lastName"];
+      locale: Subscriber["locale"];
+      gender: Subscriber["gender"];
+      labels: string[];
+      assignedTo?: string | null;
+      assignedAt?: Subscriber["assignedAt"];
+      lastvisit?: Subscriber["lastvisit"];
+      retainedFrom?: Subscriber["retainedFrom"];
+      channel: Subscriber["channel"];
+      timezone?: Subscriber["timezone"];
+      language: Subscriber["language"];
+      country?: Subscriber["country"];
+      foreignId?: Subscriber["foreignId"];
+    },
     ISubscriberFilters,
     SubscriberFull
   >;
-  [EntityType.LANGUAGE]: IEntityTypes<Language, ILanguageAttributes>;
-  [EntityType.TRANSLATION]: IEntityTypes<Translation, ITranslationAttributes>;
-  [EntityType.USER]: IEntityTypes<User, IUserAttributes, never, UserFull>;
+  [EntityType.LANGUAGE]: IEntityTypes<
+    Language,
+    EntityPayload<Language, "title" | "code" | "isDefault" | "isRTL">
+  >;
+  [EntityType.TRANSLATION]: IEntityTypes<
+    Translation,
+    EntityPayload<Translation, "str" | "translations">
+  >;
+  [EntityType.USER]: IEntityTypes<
+    User,
+    EntityPayload<
+      User,
+      | "firstName"
+      | "lastName"
+      | "email"
+      | "state"
+      | "roles"
+      | "avatar"
+      | "language",
+      never,
+      {
+        password?: string;
+        license?: ILicense;
+      }
+    >,
+    never,
+    UserFull
+  >;
   [EntityType.ATTACHMENT]: IEntityTypes<
     Attachment,
-    IAttachmentAttributes,
+    EntityPayload<
+      Attachment,
+      | "name"
+      | "type"
+      | "size"
+      | "location"
+      | "url"
+      | "channel"
+      | "resourceRef"
+      | "access"
+      | "createdBy",
+      never,
+      {
+        createdByRef?: AttachmentCreatedByRef;
+      }
+    >,
     IAttachmentFilters
   >;
   [EntityType.MESSAGE]: IEntityTypes<
     Message,
-    IMessageAttributes,
+    {
+      mid?: string;
+      inReplyTo?: string;
+      thread: string;
+      sender?: string;
+      recipient?: string;
+      sentBy?: string;
+      message: StdOutgoingMessage | StdIncomingMessage;
+      read?: boolean;
+      delivery?: boolean;
+      handover?: boolean;
+    },
     IMessageFilters,
     MessageFull
   >;
-  [EntityType.CHANNEL]: IEntityTypes<IChannel, IChannelAttributes>;
-  [EntityType.HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
-  [EntityType.NLU_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
-  [EntityType.LLM_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
-  [EntityType.STORAGE_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
+  [EntityType.CHANNEL]: IEntityTypes<IChannel, EntityPayload<IChannel, "name">>;
+  [EntityType.HELPER]: IEntityTypes<IHelper, EntityPayload<IHelper, "name">>;
+  [EntityType.NLU_HELPER]: IEntityTypes<
+    IHelper,
+    EntityPayload<IHelper, "name">
+  >;
+  [EntityType.LLM_HELPER]: IEntityTypes<
+    IHelper,
+    EntityPayload<IHelper, "name">
+  >;
+  [EntityType.STORAGE_HELPER]: IEntityTypes<
+    IHelper,
+    EntityPayload<IHelper, "name">
+  >;
 }
 
 export type TType<TParam extends keyof IEntityMapTypes> =
   IEntityMapTypes[TParam];
+
+export type EntityAttributes<TE extends keyof IEntityMapTypes> =
+  TType<TE>["attributes"];
 
 export type TAllowedFormat<T extends keyof IEntityMapTypes> = {
   format?: (typeof POPULATE_BY_TYPE)[T] extends ReadonlyArray<[]>

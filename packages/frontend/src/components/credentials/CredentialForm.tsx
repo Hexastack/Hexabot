@@ -14,12 +14,11 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import {
-  Credential,
-  CredentialWithValue,
-  ICredentialAttributes,
-} from "@/types/credential.types";
+import { Credential, CredentialWithValue } from "@/types/credential.types";
+
+type CredentialAttributes = EntityAttributes<EntityType.CREDENTIAL>;
 
 export const CredentialForm: FC<ComponentFormProps<Credential>> = ({
   data: { defaultValues: credential },
@@ -52,7 +51,7 @@ export const CredentialForm: FC<ComponentFormProps<Credential>> = ({
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm<ICredentialAttributes>({
+  } = useForm<CredentialAttributes>({
     defaultValues: {
       name: credential?.name || "",
       value: (credential as CredentialWithValue | null)?.value || "",
@@ -66,7 +65,7 @@ export const CredentialForm: FC<ComponentFormProps<Credential>> = ({
       required: t("message.value_is_required"),
     },
   };
-  const onSubmitForm = (params: ICredentialAttributes) => {
+  const onSubmitForm = (params: CredentialAttributes) => {
     if (credential) {
       updateCredential({ id: credential.id, params });
     } else {

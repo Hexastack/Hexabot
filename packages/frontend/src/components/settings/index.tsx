@@ -30,7 +30,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, RouterType } from "@/services/types";
-import { ISettingAttributes } from "@/types/setting.types";
+import type { EntityAttributes } from "@/types/base.types";
 
 import LicenseActivatedModal from "../license/LicenseActivatedModal";
 
@@ -84,6 +84,9 @@ const toSettingsByGroupAndLabel = (settings: Setting[]) => {
 const areSettingValuesEqual = (left: unknown, right: unknown): boolean => {
   return JSON.stringify(left) === JSON.stringify(right);
 };
+
+type SettingAttributes = EntityAttributes<EntityType.SETTING>;
+type SettingValue = SettingAttributes["value"];
 
 export const Settings = () => {
   const { t } = useTranslate();
@@ -182,14 +185,14 @@ export const Settings = () => {
   }, [groupedSettings]);
 
   const handleUpdate = useCallback(
-    (settingId: string, value: ISettingAttributes["value"]) => {
+    (settingId: string, value: SettingValue) => {
       updateSetting({ id: settingId, params: { value } });
     },
     [updateSetting],
   );
   const debouncedUpdate = useMemo(
     () =>
-      debounce((settingId: string, value: ISettingAttributes["value"]) => {
+      debounce((settingId: string, value: SettingValue) => {
         handleUpdate(settingId, value);
       }, 400),
     [handleUpdate],
@@ -221,7 +224,7 @@ export const Settings = () => {
         return;
       }
 
-      debouncedUpdate(setting.id, nextValue as ISettingAttributes["value"]);
+      debouncedUpdate(setting.id, nextValue as SettingValue);
     });
   };
 

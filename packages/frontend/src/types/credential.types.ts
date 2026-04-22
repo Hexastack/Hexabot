@@ -10,12 +10,6 @@ import type {
   CredentialStub as SharedCredentialStub,
 } from "@hexabot-ai/types";
 
-export interface ICredentialAttributes {
-  name: string;
-  value: string;
-  owner: string | null;
-}
-
 export type ICredentialStub = SharedCredentialStub;
 
 export type Credential = SharedCredential;

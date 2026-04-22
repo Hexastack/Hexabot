@@ -16,14 +16,13 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { Credential } from "@/types/credential.types";
-import {
-  McpServerTransport,
-  McpServer,
-  IMcpServerAttributes,
-} from "@/types/mcp-server.types";
+import { McpServerTransport, McpServer } from "@/types/mcp-server.types";
 import { isAbsoluteUrl } from "@/utils/URL";
+
+type McpServerAttributes = EntityAttributes<EntityType.MCP_SERVER>;
 
 export const McpServerForm: FC<ComponentFormProps<McpServer>> = ({
   data: { defaultValues: mcpServer },
@@ -53,7 +52,7 @@ export const McpServerForm: FC<ComponentFormProps<McpServer>> = ({
     control,
     formState: { errors },
     handleSubmit,
-  } = useForm<IMcpServerAttributes>({
+  } = useForm<McpServerAttributes>({
     defaultValues: {
       name: mcpServer?.name || "",
       enabled: mcpServer?.enabled ?? true,
@@ -106,7 +105,7 @@ export const McpServerForm: FC<ComponentFormProps<McpServer>> = ({
       required: t("message.type_is_required"),
     },
   };
-  const onSubmitForm = (params: IMcpServerAttributes) => {
+  const onSubmitForm = (params: McpServerAttributes) => {
     const normalizedUrl =
       typeof params.url === "string" ? params.url.trim() : "";
     const normalizedCommand =
@@ -116,7 +115,7 @@ export const McpServerForm: FC<ComponentFormProps<McpServer>> = ({
     const normalizedArgs = Array.isArray(params.args)
       ? params.args.map((arg) => arg.trim()).filter(Boolean)
       : [];
-    const payload: IMcpServerAttributes = {
+    const payload: McpServerAttributes = {
       ...params,
       name: params.name.trim(),
       url:

@@ -16,8 +16,11 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { User, IUserAttributes } from "@/types/user.types";
+import { User } from "@/types/user.types";
+
+type UserAttributes = EntityAttributes<EntityType.USER>;
 
 export const EditUserForm: FC<ComponentFormProps<User, Role[]>> = ({
   data: { defaultValues: user, presetValues: roles },
@@ -42,7 +45,7 @@ export const EditUserForm: FC<ComponentFormProps<User, Role[]>> = ({
     control,
     formState: { errors },
     handleSubmit,
-  } = useForm<IUserAttributes>({
+  } = useForm<UserAttributes>({
     defaultValues: { roles: roles?.map((role) => role.id) },
   });
   const validationRules = {
@@ -50,7 +53,7 @@ export const EditUserForm: FC<ComponentFormProps<User, Role[]>> = ({
       required: t("message.roles_is_required"),
     },
   };
-  const onSubmitForm = (params: IUserAttributes) => {
+  const onSubmitForm = (params: UserAttributes) => {
     if (user?.id) {
       updateUser({
         id: user.id,

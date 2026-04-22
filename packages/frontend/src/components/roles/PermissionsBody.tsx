@@ -27,12 +27,14 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IPermissionAttributes } from "@/types/permission.types";
 
-type PermissionDraft = Omit<IPermissionAttributes, "action" | "relation"> & {
-  action: IPermissionAttributes["action"] | "";
-  relation: IPermissionAttributes["relation"] | "";
+type PermissionAttributes = EntityAttributes<EntityType.PERMISSION>;
+
+type PermissionDraft = Omit<PermissionAttributes, "action" | "relation"> & {
+  action: PermissionAttributes["action"] | "";
+  relation: PermissionAttributes["relation"] | "";
 };
 
 const DEFAULT_PAYLOAD: PermissionDraft = {
@@ -216,7 +218,7 @@ export const PermissionsBody: FC<ComponentFormProps<Role>> = ({
                           ...payload,
                           role: role.id,
                           model: model.id,
-                        } as IPermissionAttributes);
+                        } as PermissionAttributes);
                       reset();
                     }}
                     disabled={!payload.action || !payload.relation}
@@ -235,7 +237,7 @@ export const PermissionsBody: FC<ComponentFormProps<Role>> = ({
                         setPayload((currentPayload) => ({
                           ...currentPayload,
                           action: e.target
-                            .value as IPermissionAttributes["action"],
+                            .value as PermissionAttributes["action"],
                         }));
                     }}
                   >
@@ -256,7 +258,7 @@ export const PermissionsBody: FC<ComponentFormProps<Role>> = ({
                         setPayload((currentPayload) => ({
                           ...currentPayload,
                           relation: e.target
-                            .value as IPermissionAttributes["relation"],
+                            .value as PermissionAttributes["relation"],
                         }));
                     }}
                   >

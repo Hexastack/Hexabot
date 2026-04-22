@@ -7,8 +7,3 @@
 import type { Model as SharedModel } from "@hexabot-ai/types";
 
 export type TRelation = SharedModel["relation"];
-
-export type IModelAttributes = Pick<
-  SharedModel,
-  "name" | "identity" | "attributes" | "relation"
->;

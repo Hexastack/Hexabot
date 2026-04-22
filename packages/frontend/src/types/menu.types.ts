@@ -10,11 +10,6 @@ import type {
   MenuStub as SharedMenuStub,
 } from "@hexabot-ai/types";
 
-export type IMenuItemAttributes = Pick<
-  SharedMenu,
-  "type" | "title" | "url" | "payload" | "parent"
->;
-
 export type IMenuItemStub = SharedMenuStub;
 
 export type IMenuItem = SharedMenu;

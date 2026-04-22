@@ -30,12 +30,15 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { LabelGroup } from "@/types/label-group.types";
-import { Label, ILabelAttributes } from "@/types/label.types";
+import { Label } from "@/types/label.types";
 import { slugify } from "@/utils/string";
 
 const filter = createFilterOptions<LabelGroup>();
+
+type LabelAttributes = EntityAttributes<EntityType.LABEL>;
 
 export const LabelForm: FC<ComponentFormProps<Label>> = ({
   data: { defaultValues: label },
@@ -80,7 +83,7 @@ export const LabelForm: FC<ComponentFormProps<Label>> = ({
     setValue,
     formState: { errors },
     handleSubmit,
-  } = useForm<ILabelAttributes>({
+  } = useForm<LabelAttributes>({
     defaultValues: {
       name: label?.name || "",
       title: label?.title || "",
@@ -94,7 +97,7 @@ export const LabelForm: FC<ComponentFormProps<Label>> = ({
     name: {},
     description: {},
   };
-  const onSubmitForm = (params: ILabelAttributes) => {
+  const onSubmitForm = (params: LabelAttributes) => {
     if (label) {
       updateLabel({
         id: label.id,

@@ -4,16 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  MemoryScope,
-  type MemoryDefinition as SharedMemoryDefinition,
-} from "@hexabot-ai/types";
+import { MemoryScope } from "@hexabot-ai/types";
 
 export { MemoryScope };
 
 export type MemorySchema = Record<string, unknown>;
-
-export type IMemoryDefinitionAttributes = Pick<
-  SharedMemoryDefinition,
-  "name" | "slug" | "scope" | "schema" | "ttlSeconds"
->;

@@ -18,8 +18,11 @@ import { isCountOrCollectionQuery } from "@/hooks/useEntityMutationSubscription"
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { Subscriber, ISubscriberAttributes } from "@/types/subscriber.types";
+import { Subscriber } from "@/types/subscriber.types";
+
+type SubscriberAttributes = EntityAttributes<EntityType.SUBSCRIBER>;
 
 export const SubscriberForm: FC<ComponentFormProps<Subscriber>> = ({
   data: { defaultValues: subscriber },
@@ -44,8 +47,8 @@ export const SubscriberForm: FC<ComponentFormProps<Subscriber>> = ({
     control,
     formState: { errors },
     handleSubmit,
-  } = useForm<ISubscriberAttributes>();
-  const onSubmitForm = (params: ISubscriberAttributes) => {
+  } = useForm<SubscriberAttributes>();
+  const onSubmitForm = (params: SubscriberAttributes) => {
     if (subscriber?.id)
       updateSubscriber(
         { id: subscriber.id, params },

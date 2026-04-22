@@ -4,9 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Language as SharedLanguage } from "@hexabot-ai/types";
-
-export type ILanguageAttributes = Pick<
-  SharedLanguage,
-  "title" | "code" | "isDefault" | "isRTL"
->;
+export {};

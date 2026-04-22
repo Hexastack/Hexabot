@@ -13,18 +13,6 @@ import {
 
 export { McpServerTransport };
 
-export type IMcpServerAttributes = Pick<
-  SharedMcpServer,
-  | "name"
-  | "enabled"
-  | "transport"
-  | "url"
-  | "command"
-  | "args"
-  | "cwd"
-  | "credential"
->;
-
 export type McpServerStub = SharedMcpServerStub;
 
 export type McpServer = SharedMcpServer;

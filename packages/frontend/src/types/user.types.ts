@@ -48,14 +48,6 @@ export interface ILicense {
   quotas: ILicenseQuotas;
 }
 
-export type IUserAttributes = Pick<
-  SharedUser,
-  "firstName" | "lastName" | "email" | "state" | "roles" | "avatar" | "language"
-> & {
-  password?: string;
-  license?: ILicense;
-};
-
 export type UserStub = SharedUserStub & {
   fullName?: string;
   license?: ILicense;

@@ -6,9 +6,7 @@
 
 import { IBaseSchema } from "./base.types";
 
-export interface IHelperAttributes {
+// @TODO: not all entities extend from IBaseSchema
+export interface IHelper extends IBaseSchema {
   name: string;
 }
-
-// @TODO: not all entities extend from IBaseSchema
-export interface IHelper extends IHelperAttributes, IBaseSchema {}

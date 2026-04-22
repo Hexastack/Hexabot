@@ -26,7 +26,7 @@ import { useQueryState } from "@/hooks/useQueryState";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { EntityType, Format, RouterType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
-import type { IWorkflowAttributes } from "@/types/workfow.types";
+import type { EntityAttributes } from "@/types/base.types";
 
 import { WorkflowContext } from "../contexts/workflow.context";
 import { useWorkflowDefinitionState } from "../hooks/useWorkflowDefinitionState";
@@ -40,6 +40,7 @@ import {
 
 type TaskInputs = NonNullable<TaskDefinition["inputs"]>;
 type TaskSettings = NonNullable<TaskDefinition["settings"]>;
+type WorkflowAttributes = EntityAttributes<EntityType.WORKFLOW>;
 const EMPTY_GRAPH_SELECTION: WorkflowSelectionSnapshot = {
   nodeIds: [],
   nodes: [],
@@ -275,7 +276,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   };
   const debouncedWorkflowUpdate = useSafeCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    debounce((props: Partial<IWorkflowAttributes>) => {
+    debounce((props: Partial<WorkflowAttributes>) => {
       if (flowId) {
         updateWorkflow({
           id: flowId,

@@ -11,6 +11,4 @@ import type {
 
 export type ILabelGroupStub = SharedLabelGroupStub;
 
-export type ILabelGroupAttributes = Pick<SharedLabelGroup, "name">;
-
 export type LabelGroup = SharedLabelGroup;

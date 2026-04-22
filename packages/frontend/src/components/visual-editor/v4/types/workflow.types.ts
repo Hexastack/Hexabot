@@ -20,8 +20,11 @@ import type { UseMutateFunction } from "@tanstack/react-query";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
+import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
-import type { IWorkflowAttributes } from "@/types/workfow.types";
+import type { EntityAttributes } from "@/types/base.types";
+
+type WorkflowAttributes = EntityAttributes<EntityType.WORKFLOW>;
 
 export interface IWorkflowContext {
   getWorkflowFromCache: (id: string) => Workflow | undefined;
@@ -40,14 +43,14 @@ export interface IWorkflowContext {
   updateDefinitionState: (nextDefinition: string | WorkflowDefinition) => void;
   workflow?: Workflow;
   workflows?: Workflow[];
-  debouncedWorkflowUpdate: ((params: Partial<IWorkflowAttributes>) => void) &
+  debouncedWorkflowUpdate: ((params: Partial<WorkflowAttributes>) => void) &
     Cancelable;
   updateWorkflow: UseMutateFunction<
     Workflow,
     Error,
     {
       id: string;
-      params: Partial<IWorkflowAttributes>;
+      params: Partial<WorkflowAttributes>;
     },
     Workflow
   >;

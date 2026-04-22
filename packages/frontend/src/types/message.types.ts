@@ -173,19 +173,6 @@ export type StdOutgoingMessage =
   | StdOutgoingListMessage
   | StdOutgoingAttachmentMessage;
 
-export interface IMessageAttributes {
-  mid?: string;
-  inReplyTo?: string;
-  thread: string;
-  sender?: string;
-  recipient?: string;
-  sentBy?: string;
-  message: StdOutgoingMessage | StdIncomingMessage;
-  read?: boolean;
-  delivery?: boolean;
-  handover?: boolean;
-}
-
 export interface IMessageFilters {}
 
 export type MessageStub = SharedMessageStub;

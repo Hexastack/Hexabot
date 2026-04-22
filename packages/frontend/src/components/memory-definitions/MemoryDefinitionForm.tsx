@@ -24,8 +24,8 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IMemoryDefinitionAttributes } from "@/types/memory-definition.types";
 import { validateJsonSchema } from "@/utils/jsonSchemaValidation";
 import { slugify } from "@/utils/string";
 
@@ -36,6 +36,8 @@ type MemoryDefinitionFormValues = {
   ttlSeconds: number | null;
   schema: SchemaNodeForm;
 };
+type MemoryDefinitionAttributes =
+  EntityAttributes<EntityType.MEMORY_DEFINITION>;
 
 const buildDefaultSchema = () => makeDefaultSchemaNode("object");
 
@@ -127,7 +129,7 @@ export const MemoryDefinitionForm: FC<ComponentFormProps<MemoryDefinition>> = ({
     }
 
     clearErrors("schema");
-    const payload: IMemoryDefinitionAttributes = {
+    const payload: MemoryDefinitionAttributes = {
       name,
       slug: params.slug.trim(),
       scope: params.scope,

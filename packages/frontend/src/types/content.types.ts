@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Content as SharedContent } from "@hexabot-ai/types";
-
 import { TNestedPaths } from "./base.types";
-
-export type IContentAttributes = Pick<
-  SharedContent,
-  "contentType" | "title" | "status" | "properties"
->;
 
 export interface IContentFilters
   extends TNestedPaths<{ contentType: { id: string } }> {

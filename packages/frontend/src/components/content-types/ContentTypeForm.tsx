@@ -21,13 +21,16 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IContentTypeAttributes } from "@/types/content-type.types";
 import { validateJsonSchema } from "@/utils/jsonSchemaValidation";
 
 import { CONTENT_TYPE_DEFAULT_PROPERTIES } from "./constants";
 
 const CONTEXT = "fieldInput" as const;
+
+type ContentTypeAttributes = EntityAttributes<EntityType.CONTENT_TYPE>;
+
 const buildDefaultSchema = () =>
   makeDefaultSchemaNode("object", CONTENT_TYPE_DEFAULT_PROPERTIES);
 
@@ -39,7 +42,7 @@ export const ContentTypeForm: FC<ComponentFormProps<ContentType>> = ({
 }) => {
   const { toast } = useToast();
   const { t } = useTranslate();
-  const form = useForm<ContentType>({
+  const form = useForm<ContentTypeAttributes>({
     defaultValues: {
       name: "",
       schema: buildDefaultSchema(),
@@ -78,7 +81,7 @@ export const ContentTypeForm: FC<ComponentFormProps<ContentType>> = ({
     EntityType.CONTENT_TYPE,
     options,
   );
-  const onSubmitForm = (params: IContentTypeAttributes) => {
+  const onSubmitForm = (params: ContentTypeAttributes) => {
     const name = params.name.trim();
     const schemaNode = { ...params.schema, title: name };
     const jsonSchema = toJsonSchema(schemaNode);
@@ -109,7 +112,7 @@ export const ContentTypeForm: FC<ComponentFormProps<ContentType>> = ({
     }
 
     clearErrors("schema");
-    const payload: IContentTypeAttributes = {
+    const payload: ContentTypeAttributes = {
       name,
       schema: jsonSchema as any,
     };

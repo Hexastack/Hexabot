@@ -4,32 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  WorkflowType,
-  type Workflow as SharedWorkflow,
-} from "@hexabot-ai/types";
-import type { ResizeControlDirection } from "@xyflow/system";
-import type { JSONSchema7 as JsonSchema } from "json-schema";
+import { WorkflowType } from "@hexabot-ai/types";
 
 export { WorkflowType };
-
-type SharedWorkflowCoreAttributes = Pick<
-  SharedWorkflow,
-  "name" | "description" | "schedule" | "type"
->;
-
-export type IWorkflowAttributes = SharedWorkflowCoreAttributes & {
-  builtin?: boolean;
-  inputSchema?: JsonSchema;
-  zoom?: number;
-  x?: number;
-  y?: number;
-  direction?: ResizeControlDirection;
-};
-
-export interface IWorkflowSubmitAttributes extends IWorkflowAttributes {
-  definitionYml?: string;
-}
 
 export interface IWorkflowFilters {
   name: string;

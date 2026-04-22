@@ -15,8 +15,10 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ILanguageAttributes } from "@/types/language.types";
+
+type LanguageAttributes = EntityAttributes<EntityType.LANGUAGE>;
 
 export const LanguageForm: FC<ComponentFormProps<Language>> = ({
   data: { defaultValues: language },
@@ -44,7 +46,7 @@ export const LanguageForm: FC<ComponentFormProps<Language>> = ({
     formState: { errors },
     handleSubmit,
     control,
-  } = useForm<ILanguageAttributes>({
+  } = useForm<LanguageAttributes>({
     defaultValues: {
       title: language?.title || "",
       code: language?.code || "",
@@ -59,7 +61,7 @@ export const LanguageForm: FC<ComponentFormProps<Language>> = ({
       required: t("message.code_is_required"),
     },
   };
-  const onSubmitForm = (params: ILanguageAttributes) => {
+  const onSubmitForm = (params: LanguageAttributes) => {
     if (language) {
       updateLanguage({ id: language.id, params });
     } else {

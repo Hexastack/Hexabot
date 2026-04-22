@@ -18,22 +18,6 @@ import { User } from "./user.types";
 
 export { AttachmentAccess, AttachmentCreatedByRef, AttachmentResourceRef };
 
-export interface IAttachmentAttributes
-  extends Pick<
-    SharedAttachment,
-    | "name"
-    | "type"
-    | "size"
-    | "location"
-    | "url"
-    | "channel"
-    | "resourceRef"
-    | "access"
-    | "createdBy"
-  > {
-  createdByRef?: AttachmentCreatedByRef;
-}
-
 export type IAttachmentStub = SharedAttachmentStub;
 
 export type Attachment = SharedAttachment;

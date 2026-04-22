@@ -10,15 +10,13 @@ import { IBaseSchema } from "./base.types";
 
 export { MenuType };
 
-export interface IMenuNodeAttributes {
+export interface IMenuNodeStub extends IBaseSchema {
   type: MenuType;
   url?: string | null;
   title: string;
   payload?: string | null;
   parent?: string | null;
 }
-
-export interface IMenuNodeStub extends IBaseSchema, IMenuNodeAttributes {}
 
 export interface IMenuNode extends IMenuNodeStub {
   call_to_actions?: string[];

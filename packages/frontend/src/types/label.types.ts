@@ -10,11 +10,6 @@ import type {
   LabelStub as SharedLabelStub,
 } from "@hexabot-ai/types";
 
-export type ILabelAttributes = Pick<
-  SharedLabel,
-  "title" | "name" | "description" | "builtin" | "group"
->;
-
 export type ILabelStub = SharedLabelStub & {
   subscriber_count?: number;
 };

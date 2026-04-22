@@ -4,12 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type {
-  StepExecutionRecord,
-  WorkflowRunStatus,
-  WorkflowSnapshot,
-} from "@hexabot-ai/agentic";
-import type { WorkflowRun as SharedWorkflowRun } from "@hexabot-ai/types";
+import type { WorkflowRunStatus } from "@hexabot-ai/agentic";
 
 export enum EWorkflowRunStatus {
   IDLE = "idle",
@@ -18,33 +13,6 @@ export enum EWorkflowRunStatus {
   FINISHED = "finished",
   FAILED = "failed",
 }
-export type IWorkflowRunAttributes = Pick<
-  SharedWorkflowRun,
-  | "workflow"
-  | "workflowVersion"
-  | "triggeredBy"
-  | "status"
-  | "input"
-  | "output"
-  | "context"
-  | "snapshot"
-  | "stepLog"
-  | "suspendedStep"
-  | "suspensionReason"
-  | "suspensionData"
-  | "lastResumeData"
-  | "error"
-  | "suspendedAt"
-  | "finishedAt"
-  | "failedAt"
-  | "duration"
-  | "metadata"
-> & {
-  thread?: string | null;
-  status: WorkflowRunStatus;
-  snapshot?: WorkflowSnapshot | null;
-  stepLog?: Record<string, StepExecutionRecord> | null;
-};
 
 export interface IWorkflowRunFilters {
   workflow: { id: string; name: string; type: string };

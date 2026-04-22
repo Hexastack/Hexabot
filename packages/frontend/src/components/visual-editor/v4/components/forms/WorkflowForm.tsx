@@ -26,12 +26,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IWorkflowSubmitAttributes } from "@/types/workfow.types";
 
 import { WorkflowTypeSelector } from "./WorkflowTypeSelector";
 
 type TranslateFn = ReturnType<typeof useTranslate>["t"];
+type WorkflowSubmitAttributes = EntityAttributes<EntityType.WORKFLOW> & {
+  definitionYml?: string;
+};
 
 const getConversationalWorkflowInputSchema = (t: TranslateFn): JsonSchema => ({
   type: "object",
@@ -239,7 +242,7 @@ export const WorkflowForm: FC<
   };
   const { mutate: createWorkflow, isPending: isCreating } = useCreate<
     EntityType.WORKFLOW,
-    IWorkflowSubmitAttributes
+    WorkflowSubmitAttributes
   >(EntityType.WORKFLOW, {
     ...options,
     onSuccess: (created) => {
@@ -249,7 +252,7 @@ export const WorkflowForm: FC<
   });
   const { mutate: updateWorkflow, isPending: isUpdating } = useUpdate<
     EntityType.WORKFLOW,
-    IWorkflowSubmitAttributes
+    WorkflowSubmitAttributes
   >(EntityType.WORKFLOW, {
     ...options,
     onSuccess: (updated) => {
@@ -267,7 +270,7 @@ export const WorkflowForm: FC<
     const shouldIncludeManualInputSchema =
       params.type === WorkflowType.manual &&
       (!workflow?.id || Boolean(dirtyFields.inputSchema));
-    const payload: IWorkflowSubmitAttributes = {
+    const payload: WorkflowSubmitAttributes = {
       name,
       description,
       type: params.type,

@@ -4,11 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Action, type Permission as SharedPermission } from "@hexabot-ai/types";
+import { Action } from "@hexabot-ai/types";
 
 export { Action };
-
-export type IPermissionAttributes = Pick<
-  SharedPermission,
-  "action" | "model" | "role" | "relation"
->;

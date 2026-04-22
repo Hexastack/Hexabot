@@ -16,11 +16,14 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IMenuItem, IMenuItemAttributes } from "@/types/menu.types";
+import { IMenuItem } from "@/types/menu.types";
 import { isAbsoluteUrl } from "@/utils/URL";
 
 const DEFAULT_VALUES = { title: "", type: MenuType.web_url, url: undefined };
+
+type MenuItemAttributes = EntityAttributes<EntityType.MENU>;
 
 export type MenuFormData = {
   row?: IMenuItem;
@@ -56,7 +59,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
     formState: { errors },
     resetField,
     handleSubmit,
-  } = useForm<IMenuItemAttributes>({
+  } = useForm<MenuItemAttributes>({
     defaultValues: DEFAULT_VALUES,
   });
   const validationRules = {
@@ -73,7 +76,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
   };
   const typeValue = watch("type");
   const titleValue = watch("title");
-  const onSubmitForm = (params: IMenuItemAttributes) => {
+  const onSubmitForm = (params: MenuItemAttributes) => {
     const { url, ...rest } = params;
     const payload = typeValue === "web_url" ? { ...rest, url } : rest;
 

@@ -4,20 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  WorkflowVersionAction,
-  type WorkflowVersion as SharedWorkflowVersion,
-} from "@hexabot-ai/types";
+import { WorkflowVersionAction } from "@hexabot-ai/types";
 
 export { WorkflowVersionAction };
-
-export type IWorkflowVersionAttributes = Pick<
-  SharedWorkflowVersion,
-  "definitionYml"
-> &
-  Partial<
-    Pick<
-      SharedWorkflowVersion,
-      "version" | "checksum" | "message" | "parentVersion" | "action"
-    >
-  >;

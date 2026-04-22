@@ -12,23 +12,6 @@ import type {
 
 type Channel = SharedSubscriber["channel"];
 
-export interface ISubscriberAttributes {
-  firstName: SharedSubscriber["firstName"];
-  lastName: SharedSubscriber["lastName"];
-  locale: SharedSubscriber["locale"];
-  gender: SharedSubscriber["gender"];
-  labels: string[];
-  assignedTo?: string | null;
-  assignedAt?: SharedSubscriber["assignedAt"];
-  lastvisit?: SharedSubscriber["lastvisit"];
-  retainedFrom?: SharedSubscriber["retainedFrom"];
-  channel: Channel;
-  timezone?: SharedSubscriber["timezone"];
-  language: SharedSubscriber["language"];
-  country?: SharedSubscriber["country"];
-  foreignId?: SharedSubscriber["foreignId"];
-}
-
 export interface ISubscriberFilters {
   firstName: string;
   lastName: string;

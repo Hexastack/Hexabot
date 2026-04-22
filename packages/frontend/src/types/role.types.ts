@@ -4,6 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Role as SharedRole } from "@hexabot-ai/types";
-
-export type IRoleAttributes = Pick<SharedRole, "name">;
+export {};

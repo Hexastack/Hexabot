@@ -9,14 +9,6 @@ import type {
   SettingStub as SharedSettingStub,
 } from "@hexabot-ai/types";
 
-export type ISettingAttributes = Pick<
-  SharedSetting,
-  "group" | "subgroup" | "label"
-> & {
-  subgroup?: string;
-  value: string | number | boolean | string[] | Record<string, unknown> | null;
-};
-
 export type ISettingStub = SharedSettingStub;
 
 export type Setting = SharedSetting;

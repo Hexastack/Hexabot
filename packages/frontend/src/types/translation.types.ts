@@ -12,11 +12,6 @@ import type {
 
 export type ITranslations = Record<string, string>;
 
-export type ITranslationAttributes = Pick<
-  SharedTranslation,
-  "str" | "translations"
->;
-
 export type ITranslationStub = SharedTranslationStub & {
   translated?: number;
 };
