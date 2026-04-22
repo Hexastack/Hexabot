@@ -1,47 +1,85 @@
 # @hexabot-ai/types
 
-Shared zod-first contracts for Hexabot entities.
+Shared zod-first runtime contracts for Hexabot API entity outputs.
 
-## What it exports
+## Migrated Modules
 
-- Attachment primitives:
-  - `AttachmentAccess`
-  - `AttachmentCreatedByRef`
-  - `AttachmentResourceRef`
-- User primitive:
-  - `UserProvider`
-- Entity schemas:
-  - `attachmentStubSchema`, `attachmentSchema`, `attachmentFullSchema`
-  - `userStubSchema`, `userSchema`, `userFullSchema`
-- Strict nested fragments used by those entities:
-  - role, label, subscriber, assigned profile, and owner schemas
-- Inferred types:
-  - `AttachmentStub`, `Attachment`, `AttachmentFull`
-  - `UserStub`, `User`, `UserFull`
-- Coercion helpers:
-  - `coerceAttachment*`, `coerceUser*`
+- `analytics`: `Stats*`
+- `chat`: `LabelGroup*`, `Label*`, `Subscriber*`, `Thread*`, `Message*`
+- `cms`: `ContentType*`, `Content*`, `Menu*`
+- `i18n`: `Language*`, `Translation*`
+- `setting`: `Setting*`, `Metadata*`
+- `user`: `UserProfile*`, `Model*`, `Permission*`, `Role*`, `Credential*`, `User*`
+- `workflow`: `Workflow*`, `WorkflowVersion*`, `WorkflowRun*`, `MemoryDefinition*`, `MemoryRecord*`, `McpServer*`
+- `utils/test/dummy`: `Dummy*`
+- `attachment`: `Attachment*`
 
-## Usage
+## Standard Export Pattern
+
+Each migrated entity exposes:
+
+- `*StubSchema`, `*Schema`, `*FullSchema`
+- `type *Stub`, `type *`, `type *Full`
+- `coerce*Stub`, `coerce*`, `coerce*Full`
+- `coerce*Nullable`, `coerce*Optional`
+
+Example:
 
 ```ts
 import {
-  coerceUser,
-  coerceUserFull,
-  userSchema,
-  type User,
-  type UserFull,
-} from '@hexabot-ai/types';
+  coerceSubscriberFull,
+  subscriberFullSchema,
+  type SubscriberFull,
+} from "@hexabot-ai/types";
 
-const plain: User = coerceUser(data);
-const full: UserFull = coerceUserFull(data);
-const parsed = userSchema.parse(data);
+const payload: SubscriberFull = coerceSubscriberFull(data);
+const parsed = subscriberFullSchema.parse(data);
 ```
 
-## Notes
+## Workflow Parser Bridge
 
-- Schemas are designed for runtime coercion of ORM outputs.
-- Alias mapping is supported where ORM relation IDs are exposed as alternate keys:
-  - `roleIds -> roles`
-  - `avatarId -> avatar`
-  - `createdById -> createdBy`
-- Unknown keys are stripped by zod object parsing.
+Use parser-aware full workflow coercion to preserve `definitionYml` and `definition` derivation:
+
+```ts
+import { coerceWorkflowFullWithParser } from "@hexabot-ai/types";
+
+const workflow = coerceWorkflowFullWithParser(data, (definitionYml) => {
+  // API-side parser with binding-aware validation
+  return parseWorkflowDefinition(definitionYml);
+});
+```
+
+You can also build a reusable schema:
+
+```ts
+import { createWorkflowFullSchema } from "@hexabot-ai/types";
+
+const schema = createWorkflowFullSchema({ parseDefinition });
+const workflow = schema.parse(data);
+```
+
+## Alias Compatibility
+
+Common ORM alias mappings from legacy class-transformer DTOs are preserved, including:
+
+- `groupId`, `contentTypeId`, `parentId`
+- `subscriberId`, `senderId`, `recipientId`, `sentById`, `threadId`
+- `ownerId`, `modelId`, `roleId`, `credentialId`
+- `currentVersionId`, `publishedVersionId`, `createdById`
+- `workflowId`, `workflowVersionId`, `triggeredById`
+- `definitionId`, `runId`
+
+Unknown keys are stripped by default.
+
+## Compatibility Notes
+
+- Legacy API enum/type paths can re-export from this package without value changes.
+- Coercion preserves nullable/optional normalization used by API entity outputs.
+- Mixed owner/triggeredBy contracts (`Subscriber | User`) are supported in workflow full contracts.
+- Sensitive output parity is preserved for credentials (`value` is not part of output contracts).
+
+## Breaking-Change Notes
+
+- Runtime DTO output classes are replaced by zod schemas + inferred TS types.
+- `@Type(() => OutputClass)` patterns should be replaced by zod coercion (`coerce*`) or direct schema parsing.
+- Consumers that previously instantiated output DTO classes (`new X()`) must use plain objects typed by exported `type X`.

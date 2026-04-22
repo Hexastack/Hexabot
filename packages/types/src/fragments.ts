@@ -103,7 +103,7 @@ export const subscriberChannelSchema = z.object({
   name: nullableStringSchema,
   data: preprocess(
     (value) => (value == null ? null : value),
-    z.record(z.string(), z.unknown()).nullable(),
+    z.record(z.string(), z.any()).nullable(),
   ).optional(),
 });
 
@@ -146,33 +146,10 @@ export const subscriberSchema = preprocess(
   subscriberObjectSchema,
 );
 
-export const roleSchema = preprocess(
-  (value) => {
-    const record = toRecord(value);
-    if (!record) {
-      return value;
-    }
-
-    const next = cloneWithPrototype(record);
-    const fallback = typeof next.name === "string" ? next.name : undefined;
-
-    if (next.code === undefined && fallback !== undefined) {
-      next.code = fallback;
-    }
-
-    if (next.label === undefined && fallback !== undefined) {
-      next.label = fallback;
-    }
-
-    return next;
-  },
-  baseStubSchema.extend({
-    code: z.string(),
-    label: z.string(),
-    name: z.string(),
-    active: z.coerce.boolean(),
-  }),
-);
+export const roleSchema = baseStubSchema.extend({
+  name: z.string(),
+  active: z.coerce.boolean(),
+});
 
 const userProfileAssignedAliasMap = {
   labelIds: "labels",

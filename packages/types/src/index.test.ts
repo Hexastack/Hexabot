@@ -8,10 +8,31 @@ import {
   AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
+  FieldType,
+  MemoryScope,
+  MenuType,
+  McpServerTransport,
+  StatsType,
+  WorkflowType,
+  WorkflowVersionAction,
   coerceAttachment,
   coerceAttachmentFull,
+  coerceContent,
+  coerceCredential,
+  coerceDummy,
+  coerceLabel,
+  coerceMemoryRecord,
+  coerceMcpServer,
+  coerceMenu,
+  coercePermission,
+  coerceSetting,
+  coerceSubscriber,
   coerceUser,
   coerceUserFull,
+  coerceWorkflowFullWithParser,
+  coerceWorkflowRun,
+  coerceWorkflowRunFull,
+  resolveRunDurationMs,
 } from "./index";
 
 describe("@hexabot-ai/types schemas", () => {
@@ -29,7 +50,7 @@ describe("@hexabot-ai/types schemas", () => {
       locale: null,
       gender: null,
       country: null,
-      foreignId: null,
+      foreignId: "foreign-u-1",
       assignedAt: null,
       lastvisit: null,
       retainedFrom: null,
@@ -65,7 +86,7 @@ describe("@hexabot-ai/types schemas", () => {
       locale: null,
       gender: null,
       country: null,
-      foreignId: null,
+      foreignId: "foreign-u-1",
       assignedAt: null,
       lastvisit: null,
       retainedFrom: null,
@@ -82,8 +103,6 @@ describe("@hexabot-ai/types schemas", () => {
           id: "r_1",
           createdAt: now,
           updatedAt: now,
-          code: "ADMIN",
-          label: "Admin",
           name: "admin",
           active: true,
           shouldDrop: true,
@@ -149,5 +168,317 @@ describe("@hexabot-ai/types schemas", () => {
     });
 
     expect(parsed.createdBy).toBeNull();
+  });
+
+  it("preserves alias mapping for chat/cms/user-access plain contracts", () => {
+    const label = coerceLabel({
+      id: "l_1",
+      createdAt: now,
+      updatedAt: now,
+      title: "VIP",
+      name: "VIP",
+      builtin: false,
+      groupId: "g_1",
+      users: [{ id: "s_1" }],
+    });
+    const subscriber = coerceSubscriber({
+      id: "s_1",
+      createdAt: now,
+      updatedAt: now,
+      firstName: "Ada",
+      lastName: "Lovelace",
+      language: "en",
+      timezone: 0,
+      locale: null,
+      gender: null,
+      country: null,
+      foreignId: "foreign-s-1",
+      assignedAt: null,
+      lastvisit: null,
+      retainedFrom: null,
+      channel: { name: "web", data: null },
+      labelIds: ["l_1"],
+      assignedToId: "u_1",
+      avatarId: "a_1",
+    });
+    const content = coerceContent({
+      id: "c_1",
+      createdAt: now,
+      updatedAt: now,
+      title: "Welcome",
+      status: true,
+      properties: { body: "hello" },
+      searchText: "Welcome hello",
+      contentTypeId: "ct_1",
+    });
+    const permission = coercePermission({
+      id: "p_1",
+      createdAt: now,
+      updatedAt: now,
+      action: "read",
+      relation: "role",
+      modelId: "m_1",
+      roleId: "r_1",
+    });
+
+    expect(label.group).toBe("g_1");
+    expect("users" in label).toBe(true);
+    expect(subscriber.labels).toEqual(["l_1"]);
+    expect(subscriber.assignedTo).toBe("u_1");
+    expect(subscriber.avatar).toBe("a_1");
+    expect(content.contentType).toBe("ct_1");
+    expect(permission.model).toBe("m_1");
+    expect(permission.role).toBe("r_1");
+  });
+
+  it("normalizes nullable and optional values for setting/menu/mcp", () => {
+    const setting = coerceSetting({
+      id: "st_1",
+      createdAt: now,
+      updatedAt: now,
+      group: "chatbot_settings",
+      subgroup: null,
+      label: "title",
+      value: "Hexabot",
+    });
+    const menu = coerceMenu({
+      id: "mn_1",
+      createdAt: now,
+      updatedAt: now,
+      title: "Home",
+      type: MenuType.nested,
+      parentId: null,
+      payload: null,
+      url: null,
+    });
+    const mcp = coerceMcpServer({
+      id: "mcp_1",
+      createdAt: now,
+      updatedAt: now,
+      name: "Filesystem",
+      enabled: true,
+      transport: McpServerTransport.stdio,
+      command: "npx",
+      args: ["-y", "@mcp/server-filesystem"],
+      url: null,
+      cwd: "/tmp",
+      credentialId: null,
+      shouldDrop: true,
+    });
+
+    expect(setting.subgroup).toBeNull();
+    expect(menu.parent).toBeNull();
+    expect(mcp.credential).toBeNull();
+    expect("shouldDrop" in mcp).toBe(false);
+  });
+
+  it("keeps credential outputs free of secret value fields", () => {
+    const credential = coerceCredential({
+      id: "cred_1",
+      createdAt: now,
+      updatedAt: now,
+      name: "OPENAI_API_KEY",
+      ownerId: "u_1",
+      value: "secret",
+    });
+
+    expect(credential.name).toBe("OPENAI_API_KEY");
+    expect(credential.owner).toBe("u_1");
+    expect("value" in credential).toBe(false);
+  });
+
+  it("computes workflow derived fields via parser bridge", () => {
+    const parser = jest.fn((yml: string) => ({
+      defs: {},
+      flow: [],
+      outputs: {},
+      yml,
+    }));
+    const parsed = coerceWorkflowFullWithParser(
+      {
+        id: "wf_1",
+        createdAt: now,
+        updatedAt: now,
+        name: "Main",
+        description: null,
+        type: WorkflowType.conversational,
+        schedule: null,
+        inputSchema: {},
+        builtin: false,
+        x: 0,
+        y: 0,
+        zoom: 1,
+        direction: "horizontal",
+        runAfterMs: 0,
+        createdBy: {
+          id: "u_1",
+          createdAt: now,
+          updatedAt: now,
+          firstName: "Ada",
+          lastName: "Lovelace",
+          language: "en",
+          timezone: 1,
+          locale: null,
+          gender: null,
+          country: null,
+          foreignId: "foreign-u-1",
+          assignedAt: null,
+          lastvisit: null,
+          retainedFrom: null,
+          channel: { name: "web" },
+          username: "ada",
+          email: "ada@example.com",
+          sendEmail: false,
+          state: true,
+          resetCount: 0,
+          resetToken: null,
+          roles: [],
+          labels: [],
+          assignedTo: null,
+          avatar: null,
+        },
+        currentVersion: {
+          id: "wfv_1",
+          createdAt: now,
+          updatedAt: now,
+          version: 1,
+          definitionYml: "defs: {}\nflow: []\noutputs: {}",
+          checksum: "sha",
+          message: null,
+          action: WorkflowVersionAction.create,
+          workflowId: "wf_1",
+          createdById: "u_1",
+          parentVersionId: null,
+        },
+        publishedVersion: null,
+      },
+      parser,
+    );
+
+    expect(parsed.definitionYml).toContain("defs");
+    expect(parsed.definition).toEqual({
+      defs: {},
+      flow: [],
+      outputs: {},
+      yml: "defs: {}\nflow: []\noutputs: {}",
+    });
+    expect(parser).toHaveBeenCalledTimes(1);
+  });
+
+  it("computes workflow run duration and mixed triggeredBy coercion", () => {
+    const run = coerceWorkflowRun({
+      id: "run_1",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:01:00.000Z",
+      status: "finished",
+      context: {},
+      workflowId: "wf_1",
+      workflowVersionId: "wfv_1",
+      triggeredById: "s_1",
+      threadId: "t_1",
+      finishedAt: "2026-01-01T00:02:00.000Z",
+    });
+    const full = coerceWorkflowRunFull({
+      id: "run_1",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:01:00.000Z",
+      status: "running",
+      context: {},
+      workflow: {
+        id: "wf_1",
+        createdAt: now,
+        updatedAt: now,
+        name: "Main",
+        description: null,
+        type: WorkflowType.conversational,
+        schedule: null,
+        inputSchema: {},
+        builtin: false,
+        x: 0,
+        y: 0,
+        zoom: 1,
+        direction: "horizontal",
+        currentVersion: null,
+        publishedVersion: null,
+        createdBy: "u_1",
+        runAfterMs: 0,
+      },
+      workflowVersion: null,
+      triggeredBy: {
+        id: "s_1",
+        createdAt: now,
+        updatedAt: now,
+        firstName: "Sub",
+        lastName: "User",
+        language: "en",
+        timezone: 0,
+        locale: null,
+        gender: null,
+        country: null,
+        foreignId: "foreign-s-1",
+        assignedAt: null,
+        lastvisit: null,
+        retainedFrom: null,
+        channel: { name: "web", data: {} },
+        labels: [],
+        assignedTo: null,
+        avatar: null,
+      },
+      thread: null,
+    });
+
+    expect(run.duration).toBe(120000);
+    expect(full.triggeredBy?.id).toBe("s_1");
+    expect(typeof resolveRunDurationMs(run)).toBe("number");
+  });
+
+  it("coerces workflow memory aliases and test dummy fixtures", () => {
+    const record = coerceMemoryRecord({
+      id: "mem_1",
+      createdAt: now,
+      updatedAt: now,
+      value: { counter: 1 },
+      ttlSeconds: 60,
+      expiresAt: null,
+      definitionId: "def_1",
+      ownerId: "u_1",
+      workflowId: "wf_1",
+      runId: "run_1",
+      threadId: "th_1",
+    });
+    const dummy = coerceDummy({
+      id: "d_1",
+      createdAt: now,
+      updatedAt: now,
+      dummy: "ok",
+      dynamicField: { field: FieldType.text },
+      shouldDrop: true,
+    });
+
+    expect(record.definition).toBe("def_1");
+    expect(record.owner).toBe("u_1");
+    expect(record.workflow).toBe("wf_1");
+    expect(record.run).toBe("run_1");
+    expect(record.thread).toBe("th_1");
+    expect(dummy.dynamicField).toEqual({ field: FieldType.text });
+    expect("shouldDrop" in dummy).toBe(false);
+  });
+
+  it("supports analytics enums in stats payloads", () => {
+    const stats = {
+      id: "st_1",
+      createdAt: now,
+      updatedAt: now,
+      type: StatsType.incoming,
+      day: now,
+      value: 15,
+      name: "incoming",
+    };
+
+    expect(stats.type).toBe(StatsType.incoming);
+  });
+
+  it("supports memory scope enum values", () => {
+    expect(MemoryScope.workflow).toBe("workflow");
   });
 });
