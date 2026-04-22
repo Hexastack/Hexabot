@@ -134,7 +134,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
     await schedulerService.onModuleInit();
     const job = schedulerRegistry.getCronJob(getJobName());
 
-    expect(job.running).toBe(true);
+    expect(job.isActive).toBe(true);
 
     job.fireOnTick();
     await flushCronCallbacks();
