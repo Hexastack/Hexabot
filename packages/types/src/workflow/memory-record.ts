@@ -46,14 +46,8 @@ const memoryRecordAliasMap = {
 } as const;
 const memoryRecordStubObjectSchema = baseStubSchema.extend({
   value: z.record(z.string(), z.unknown()),
-  ttlSeconds: preprocess(
-    (value) => (value === undefined ? undefined : value),
-    z.coerce.number().nullable().optional(),
-  ).optional(),
-  expiresAt: preprocess(
-    (value) => (value === undefined ? undefined : value),
-    z.coerce.date().nullable().optional(),
-  ).optional(),
+  ttlSeconds: z.coerce.number().nullable().optional(),
+  expiresAt: z.coerce.date().nullable().optional(),
 });
 
 export const memoryRecordStubSchema = memoryRecordStubObjectSchema;
@@ -87,23 +81,14 @@ export const memoryRecordSchema = preprocess(
 export const memoryRecordFullSchema = preprocess(
   (value) => withAliases(value, memoryRecordAliasMap),
   memoryRecordStubObjectSchema.extend({
-    definition: preprocess((value) => value, memoryDefinitionSchema),
+    definition: memoryDefinitionSchema,
     owner: preprocess(
       (value) => parseUserOrSubscriber(value),
       z.union([z.lazy(() => userSchema), subscriberSchema]),
     ),
-    workflow: preprocess(
-      (value) => (value == null ? null : value),
-      workflowSchema.nullable(),
-    ).optional(),
-    run: preprocess(
-      (value) => (value == null ? null : value),
-      workflowRunSchema.nullable(),
-    ).optional(),
-    thread: preprocess(
-      (value) => (value == null ? null : value),
-      threadSchema.nullable(),
-    ).optional(),
+    workflow: workflowSchema.nullable().optional(),
+    run: workflowRunSchema.nullable().optional(),
+    thread: threadSchema.nullable().optional(),
   }),
 );
 

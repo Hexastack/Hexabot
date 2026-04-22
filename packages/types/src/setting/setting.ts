@@ -7,7 +7,6 @@
 import { z } from "zod";
 
 import { baseStubSchema } from "../shared/base";
-import { preprocess } from "../shared/preprocess";
 
 export const settingValueSchema = z.union([
   z.null(),
@@ -20,10 +19,7 @@ export const settingValueSchema = z.union([
 
 const settingObjectSchema = baseStubSchema.extend({
   group: z.string(),
-  subgroup: preprocess(
-    (value) => (value == null ? null : value),
-    z.string().nullable().optional(),
-  ).optional(),
+  subgroup: z.string().nullable().optional(),
   label: z.string(),
   value: settingValueSchema,
 });

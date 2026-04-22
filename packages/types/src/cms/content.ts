@@ -40,7 +40,7 @@ export const contentSchema = preprocess(
 export const contentFullSchema = preprocess(
   (value) => withAliases(value, contentAliasMap),
   contentStubObjectSchema.extend({
-    contentType: preprocess((value) => value, contentTypeSchema),
+    contentType: contentTypeSchema,
   }),
 );
 

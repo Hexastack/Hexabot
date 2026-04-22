@@ -7,7 +7,6 @@
 import { z } from "zod";
 
 import { baseStubSchema } from "../shared/base";
-import { preprocess } from "../shared/preprocess";
 
 import { memoryScopeSchema } from "./domain";
 
@@ -16,10 +15,7 @@ const memoryDefinitionObjectSchema = baseStubSchema.extend({
   slug: z.string(),
   scope: memoryScopeSchema,
   schema: z.any(),
-  ttlSeconds: preprocess(
-    (value) => (value === undefined ? undefined : value),
-    z.coerce.number().nullable().optional(),
-  ).optional(),
+  ttlSeconds: z.coerce.number().nullable().optional(),
 });
 
 export const memoryDefinitionStubSchema = memoryDefinitionObjectSchema;

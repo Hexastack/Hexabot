@@ -12,14 +12,8 @@ import { preprocess } from "../shared/preprocess";
 
 import { subscriberSchema } from "./subscriber";
 
-const nullableOptionalDateSchema = preprocess(
-  (value) => (value == null ? undefined : value),
-  z.coerce.date().nullable().optional(),
-);
-const nullableOptionalStringSchema = preprocess(
-  (value) => (value == null ? undefined : value),
-  z.string().nullable().optional(),
-);
+const nullableOptionalDateSchema = z.coerce.date().nullable().optional();
+const nullableOptionalStringSchema = z.string().nullable().optional();
 const threadAliasMap = {
   subscriberId: "subscriber",
 } as const;
@@ -27,10 +21,7 @@ const threadStubObjectSchema = baseStubSchema.extend({
   status: z.enum(["open", "closed"]),
   lastMessageAt: nullableOptionalDateSchema,
   closedAt: nullableOptionalDateSchema,
-  closeReason: preprocess(
-    (value) => (value == null ? undefined : value),
-    z.enum(["manual", "inactivity"]).nullable().optional(),
-  ).optional(),
+  closeReason: z.enum(["manual", "inactivity"]).nullable().optional(),
   title: nullableOptionalStringSchema,
 });
 
@@ -49,7 +40,7 @@ export const threadSchema = preprocess(
 export const threadFullSchema = preprocess(
   (value) => withAliases(value, threadAliasMap),
   threadStubObjectSchema.extend({
-    subscriber: preprocess((value) => value, subscriberSchema),
+    subscriber: subscriberSchema,
   }),
 );
 

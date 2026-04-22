@@ -158,16 +158,13 @@ export const workflowRunSchema = preprocess(
 export const workflowRunFullSchema = preprocess(
   (value) => withAliases(withWorkflowRunDuration(value), workflowRunAliasMap),
   workflowRunStubObjectSchema.extend({
-    workflow: preprocess((value) => value, workflowSchema),
-    workflowVersion: preprocess(
-      (value) => (value == null ? null : value),
-      z.lazy(() => workflowVersionSchema).nullable(),
-    ).optional(),
+    workflow: workflowSchema,
+    workflowVersion: z
+      .lazy(() => workflowVersionSchema)
+      .nullable()
+      .optional(),
     triggeredBy: userOrSubscriberSchema,
-    thread: preprocess(
-      (value) => (value == null ? null : value),
-      threadSchema.nullable(),
-    ).optional(),
+    thread: threadSchema.nullable().optional(),
   }),
 );
 

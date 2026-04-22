@@ -25,10 +25,7 @@ const messagePayloadSchema = preprocess(
   z.any(),
 );
 const messageStubObjectSchema = baseStubSchema.extend({
-  mid: preprocess(
-    (value) => (value == null ? undefined : value),
-    z.string().optional(),
-  ),
+  mid: z.string().optional(),
   message: messagePayloadSchema,
   read: z.coerce.boolean(),
   delivery: z.coerce.boolean(),
@@ -62,19 +59,13 @@ export const messageSchema = preprocess(
 export const messageFullSchema = preprocess(
   (value) => withAliases(value, messageAliasMap),
   messageStubObjectSchema.extend({
-    sender: preprocess(
-      (value) => (value == null ? null : value),
-      subscriberSchema.nullable(),
-    ).optional(),
-    recipient: preprocess(
-      (value) => (value == null ? null : value),
-      subscriberSchema.nullable(),
-    ).optional(),
-    sentBy: preprocess(
-      (value) => (value == null ? null : value),
-      z.lazy(() => userSchema).nullable(),
-    ).optional(),
-    thread: preprocess((value) => value, threadSchema),
+    sender: subscriberSchema.nullable().optional(),
+    recipient: subscriberSchema.nullable().optional(),
+    sentBy: z
+      .lazy(() => userSchema)
+      .nullable()
+      .optional(),
+    thread: threadSchema,
   }),
 );
 

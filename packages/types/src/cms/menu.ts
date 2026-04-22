@@ -23,14 +23,8 @@ const menuAliasMap = {
 const menuStubObjectSchema = baseStubSchema.extend({
   title: z.string(),
   type: menuTypeSchema,
-  payload: preprocess(
-    (value) => (value == null ? undefined : value),
-    z.string().nullable().optional(),
-  ).optional(),
-  url: preprocess(
-    (value) => (value == null ? undefined : value),
-    z.string().nullable().optional(),
-  ).optional(),
+  payload: z.string().nullable().optional(),
+  url: z.string().nullable().optional(),
 });
 
 export const menuStubSchema = menuStubObjectSchema;
@@ -48,10 +42,7 @@ export const menuSchema = preprocess(
 export const menuFullSchema = preprocess(
   (value) => withAliases(value, menuAliasMap),
   menuStubObjectSchema.extend({
-    parent: preprocess(
-      (value) => (value == null ? null : value),
-      menuSchema.nullable(),
-    ).optional(),
+    parent: menuSchema.nullable().optional(),
     children: preprocess(
       (value) => (Array.isArray(value) ? value : []),
       z.array(menuSchema),
