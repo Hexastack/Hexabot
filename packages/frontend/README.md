@@ -34,7 +34,7 @@ MUI theme customization is centralized in `packages/frontend/src/layout/theme` (
 
 ## Development
 
-This package is part of the Hexabot PNPM workspace alongside API, widget, graph, and other packages. Run commands from the repository root so Turborepo can orchestrate tasks efficiently.
+This package is part of the Hexabot PNPM workspace alongside API, widget, graph, types, and other packages. Run commands from the repository root so Turborepo can orchestrate tasks efficiently.
 
 ```bash
 pnpm --filter @hexabot-ai/frontend run dev       # start the admin interface with Vite

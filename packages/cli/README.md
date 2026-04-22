@@ -155,10 +155,12 @@ For detailed information on how to get started, as well as in-depth user and dev
 
 You can also find specific documentation for different components of the project in the following locations:
 
-- [API Documentation](api/README.md)
-- [UI Documentation](frontend/README.md)
-- [Live Chat Widget Documentation](widget/README.md)
-- [NLU Engine Documentation](nlu/README.md)
+- [API Documentation](../api/README.md)
+- [UI Documentation](../frontend/README.md)
+- [Agentic Package Documentation](../agentic/README.md)
+- [Types Package Documentation](../types/README.md)
+- [Workflow Graph Documentation](../graph/README.md)
+- [Live Chat Widget Documentation](../widget/README.md)
 
 ## Contributing
 
