@@ -60,4 +60,4 @@ jobs:
       - name: Publish to npm
         if: env.release != 'none'
         working-directory: packages/api
-        run: npm publish
+        run: pnpm publish --access public --no-git-checks

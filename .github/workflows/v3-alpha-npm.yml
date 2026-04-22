@@ -48,6 +48,6 @@ jobs:
 
       - name: Publish to npm
         working-directory: ${{ matrix.working-directory }}
-        run: npm publish --tag alpha --access public
+        run: pnpm publish --tag alpha --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
