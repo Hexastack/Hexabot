@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "dev": "pnpm run start:dev",
-    "build": "pnpm run frontend:build && nest build && pnpm run copy-types && pnpm run frontend:copy",
+    "build": "pnpm run frontend:build && pnpm exec nest build -c nest-cli.build.json && pnpm run copy-types && pnpm run frontend:copy",
     "copy-types": "node ./scripts/copy-types.js",
     "frontend:build": "node ./scripts/frontend-build.js",
     "frontend:copy": "node ./scripts/frontend-copy.js",
