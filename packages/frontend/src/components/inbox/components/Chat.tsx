@@ -127,9 +127,7 @@ export function Chat() {
                             key={message.id}
                             title={subscriber.fullName}
                             subscriberId={
-                              message.sender
-                                ? subscriber.id
-                                : (message.sentBy ?? subscriber.id)
+                              message.sender ? subscriber.id : message.sentBy
                             }
                           />,
                         ]
