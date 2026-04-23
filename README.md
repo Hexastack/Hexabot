@@ -1,226 +1,118 @@
 <p align="center">
   <a href="https://hexabot.ai" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://i.imgur.com/Ov50Pwe.png">
-    <img alt="Logo" src="https://i.imgur.com/gz1FnM7.png" width="280"/>
-  </picture>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://i.imgur.com/Ov50Pwe.png" />
+      <img alt="Hexabot logo" src="https://i.imgur.com/gz1FnM7.png" width="280" />
+    </picture>
   </a>
 </p>
 
 <div align="center">
-  <strong>
-  <h2>Build Smooth AI Chatbots / Agents</h2><br />
-  </strong>
-  Hexabot provides everything you need to create and manage your own AI powered chatbot / agent,<br />Customizable, Multi-Channel, Multi-Lingual and Text-to-Action Capabilities.
+  <h2>Automate the Boring, Keep the Magic</h2>
+  <p>Build and run agentic workflows across channels with YAML, tools, MCP, memory and RAG.</p>
 </div>
 
 <p align="center">
-  <br />
-  <a href="https://hexabot.ai/extensions" rel="dofollow"><strong>Extensions Library</strong></a>
-  .
-  <a href="https://docs.hexabot.ai" rel="dofollow"><strong>Documentation</strong></a>
-  <br />
-
-  <br/>
-  <a href="https://www.youtube.com/watch?v=-SBwHcFQESg">Video Tutorial</a>
+  <a href="https://hexabot.ai"><strong>Website</strong></a>
   ·
-  <a href="https://discord.gg/rNb9t2MFkG">Join Our Discord</a>
+  <a href="https://docs.hexabot.ai"><strong>Documentation</strong></a>
+  ·
+  <a href="https://hexabot.ai/extensions"><strong>Extensions</strong></a>
+  ·
+  <a href="https://discord.gg/rNb9t2MFkG"><strong>Discord</strong></a>
 </p>
 
-<p align="center">
-  <video src="https://github.com/user-attachments/assets/623d94d1-12ae-4230-b6bb-fab64fc733c3" width="100%" />
-</p>
+Hexabot v3 is an automation platform with first-class AI capabilities, combining workflows, actions, and conversational channels in one runtime.
 
-## Description
-
-[Hexabot](https://hexabot.ai/) is an AI chatbot / agent solution. It  allows you to create and manage multi-channel, and multilingual chatbots / agents with ease. Hexabot is designed for flexibility and customization, offering powerful text-to-action capabilities. You can customize and extend the platform with [extensions](https://hexabot.ai/extensions).
-
-<a href="https://www.producthunt.com/posts/hexabot?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-hexabot" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=477532&theme=light" alt="Hexabot - Create&#0032;exceptional&#0032;chatbot&#0032;experiences&#0046;&#0032;100&#0037;&#0032;Open&#0032;Source&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-## Features
-
-- **LLMs & NLU Support:** Integrate with your favorite LLM model whether it's by using Ollama, ChatGPT, Mistral or Gemini ... Manage training datasets for machine learning models that detect user intent and language, providing intelligent responses.
-- **Multi-Channel Support:** Create consistent chatbot experiences across multiple channels like web, mobile, and social media platforms.
-- **Visual Editor:** Design and manage chatbot flows with an intuitive interface. Supports text messages, quick replies, carousels, and more.
-- **Plugin System:** Extend Hexabot's functionality by developing and installing extensions from the [Extension Library](https://hexabot.ai/extensions). Enable features like text-to-action responses, 3rd party system integrations, and more.
-- **Multi-lingual Support:** Define multiple languages, allowing the chatbot to interact with users in their preferred language.
-- **Knowledge Base:** Seamlessly integrate and manage dynamic content such as product catalogs and store lists for more engaging conversations.
-- **User Roles & Permissions:** Granular access control to manage user roles and permissions for different parts of the system.
-- **Contextual Data:** Define variables to collect and leverage relevant information about end-users to deliver personalized responses.
-- **Subscribers & Labels:** Organize users by assigning labels and customize their chat experience based on defined segments.
-- **Inbox & Handover:** Provides a real-time chat window where conversations can be monitored and handed over to human agents when necessary.
-- **Analytics Dashboard:** Monitor chatbot interactions and performance with insightful metrics and visualizations.
-
-## Directory Structure
-
-All workspace packages live under the `packages/` directory.
-
-- **packages/frontend:** The admin panel built with React/Vite for managing chatbot configuration, workflows, and operations.
-- **packages/graph:** Internal React + xyflow package responsible for workflow graph building, layout, rendering, and graph interactions.
-- **packages/agentic:** Shared workflow/domain package used for workflow definitions, compilation, and runtime-related contracts.
-- **packages/types:** Shared zod-first schemas and inferred entity contracts used across workspace packages.
-- **packages/api:** The backend API built with NestJS and connected to MongoDB for data storage and management.
-- **packages/widget:** A React-based live chat widget that can be embedded into any website to provide real-time interaction.
-- **packages/cli:** Command-line tooling for creating and operating Hexabot projects.
-- **docker:** A set of Docker Compose files for deploying the entire solution, making it easy to run Hexabot in any environment.
-
-## Workspace Tooling
-
-This repository is managed with a PNPM workspace and Turborepo for task orchestration.
-
-```bash
-pnpm install          # install all workspace dependencies
-pnpm dev              # run package dev servers in parallel
-pnpm build            # build all packages
-pnpm lint             # lint across the workspace
-pnpm test             # execute test suites
-pnpm --filter @hexabot-ai/api run dev        # run a package script
-```
-
-PNPM is bundled with Node.js via Corepack. Enable it with `corepack enable pnpm@9.12.0` if necessary.
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- Node.js >= 20.18.1
-- pnpm (via Corepack)
-- Docker installed
+- Node.js `^20.18.1`
+- One package manager (`npm`, `pnpm`, `yarn`, or `bun`)
+- Docker (optional, for Docker-based services)
 
-### Installation
+This Quick Start targets projects generated with the CLI.  
+If you are contributing to the Hexabot monorepo itself, use **PNPM** (see [CONTRIBUTING.md](./CONTRIBUTING.md)).
 
-Install Hexabot CLI globally to have easy access to its commands:
+### 1) Install the CLI (optional)
 
-```sh
+```bash
 npm install -g @hexabot-ai/cli
 ```
 
-### Usage
+Or run the CLI without a global install:
 
-1. **Create a new project**:
+```bash
+npx @hexabot-ai/cli --help
+```
 
-   ```sh
-   hexabot create my-chatbot
-   ```
+### 2) Create and run a project
 
-   This will create a new folder `my-chatbot` with all necessary files to get started.
+```bash
+hexabot create my-project
+cd my-project
+hexabot dev
+```
 
-2. **Navigate to your project folder**:
+No global install? Use `npx` equivalents:
 
-   ```sh
-   cd my-chatbot
-   ```
+```bash
+npx @hexabot-ai/cli create my-project
+cd my-project
+npx @hexabot-ai/cli dev
+```
 
-3. **Install dependencies**:
+`hexabot create` auto-detects your package manager. You can force one with `--pm`, for example:
 
-   ```sh
-   pnpm install
-   ```
+```bash
+hexabot create my-project --pm npm
+```
 
-4. **Initialize environment**:
+`hexabot create` prompts for initial admin credentials and requires an interactive terminal (TTY). In CI/non-interactive shells, run it from a local terminal first.
 
-   ```sh
-   hexabot init
-   ```
+Default local endpoints:
 
-   This command copies the `.env.example` file to `.env`, which you can edit to customize your configuration.
+- Admin UI: `http://localhost:8080`
+- API: `http://localhost:3000/api`
+- API docs (non-production): `http://localhost:3000/docs`
 
-5. **Run in development mode**:
+Useful CLI commands:
 
-   ```sh
-   hexabot dev --services ollama
-   ```
+- `hexabot create <project-name>`
+- `hexabot dev [--docker --services <list>]`
+- `hexabot start [--docker --services <list>]`
+- `hexabot docker <up|down|logs|ps|start>`
+- `hexabot env <init|list>`
+- `hexabot check`
+- `hexabot config <show|set>`
+- `hexabot migrate [args...]`
 
-   This starts the required services in development mode.
+For full CLI details, see [packages/cli/README.md](packages/cli/README.md).
 
+## Core Capabilities
 
-UI Admin Panel is accessible via http://localhost:8080.
-When you run `hexabot create`, the CLI prompts for admin first name, last name,
-email, and password, then stores them in `.env` as `SEED_ADMIN_*` values used
-by the initial API seed.
+- **Agentic workflows:** YAML workflow definitions with typed runtime contracts.
+- **Action-based execution:** actions define workflow behavior with schema-validated inputs/outputs/settings.
+- **Binding system:** reusable capability/config bindings separated from task logic.
+- **Memory support:** explicit memory definitions and runtime memory integration.
+- **MCP integration points:** Model Context Protocol support for tool/context interoperability.
+- **Multi-channel continuity:** channels and helpers remain core concepts.
+- **Schema-first architecture:** broad use of Zod for validation and shared contracts.
 
-## Documentation
+## Data Layer
 
-For detailed information on how to get started, as well as in-depth user and developer guides, please refer to our full documentation available in the docs folder or visit the [Documentation](https://docs.hexabot.ai).
-
-You can also find specific documentation for different components of the project in the following locations:
-
-- [CLI Documentation](packages/cli/README.md)
-- [API Documentation](packages/api/README.md)
-- [UI Documentation](packages/frontend/README.md)
-- [Agentic Package Documentation](packages/agentic/README.md)
-- [Types Package Documentation](packages/types/README.md)
-- [Workflow Graph Documentation](packages/graph/README.md)
-- [Live Chat Widget Documentation](packages/widget/README.md)
+- **TypeORM** is the standard backend data layer.
+- **SQLite** is the default local option.
+- **Postgres** is first-class for production setups.
+- Configure DB runtime using `DB_TYPE` and `DB_*` variables.
 
 ## Contributing
 
-We welcome contributions from the community! Whether you want to report a bug, suggest new features, or submit a pull request, your input is valuable to us.
-
-Please refer to our contribution policy first : [How to contribute to Hexabot](./CONTRIBUTING.md)
-
-
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
-
-Feel free to join us on [Discord](https://discord.gg/rNb9t2MFkG)
-
-1. **Clone the Repository:**
-
-```bash
-$ git clone https://github.com/hexastack/hexabot.git
-```
-
-2. **Installation:**
-Install node dependencies:
-```bash
-$ pnpm install
-```
-
-3. **Environment Setup:** To configure the environment variables, use the following command at the root folder for initialization:
-
-```bash
-$ hexabot init
-```
-
-This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
-
-4. **Running the Application:** Once your environment is set up, you can start the app. Use either of the following commands:
-
-
-For development mode:
-
-```bash
-$ hexabot dev
-```
-
-Otherwise, you can choose to download docker images rather than building them:
-```bash
-$ hexabot start 
-```
-
-You can also enable services such as Ollama (The services are declared under the `./docker` folder) :
-
-```bash
-$ hexabot dev --services ollama
-```
-
-**Note:** The first time you run the app, Docker will take some time to download all the required images.
+If you want to contribute to the Hexabot monorepo (architecture, package map, PNPM workspace, Turbo tasks, CI checks), use [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
 Copyright (c) 2025 Hexastack.
 
-This project is licensed under the **Fair Core License, Version 1.0**, with **Apache License 2.0** as the future license (abbrev. **FCL-1.0-ALv2**).
-
-**Change date.** For each version of the software, the Fair Core License converts to Apache-2.0 on the **second anniversary** of the date that version is made available.
-
-**Commercial features & license keys.** Certain features of Hexabot are protected by license-key checks. You **must not** remove, modify, disable, or circumvent those checks, nor enable access to protected functionality without a valid license key.
-
-**Competing uses (non-compete).** Use that competes with Hexastack’s business—for example, offering Hexabot (or a substantially similar service) as a hosted or commercial product—is not permitted until the conversion to Apache-2.0 for the applicable version.
-
-**Redistribution.** If you distribute copies, modifications, or derivatives, you must include this license and not remove copyright or proprietary notices.
-
-**Patents.** A limited patent license is granted for permitted uses and terminates on patent aggression.
-
-**Trademarks.** “Hexabot” and “Hexastack” are trademarks. Except to identify Hexastack as the origin of the software, no trademark rights are granted.
-
-**Disclaimer.** The software is provided “AS IS,” without warranties or conditions of any kind, and Hexastack will not be liable for any damages arising from its use.
+Licensed under **FCL-1.0-ALv2**. See [LICENSE.md](./LICENSE.md) for full terms.

@@ -9,7 +9,7 @@ This guide is for the current v3 development line.
 - `dev` is the active v3 branch. Open v3 pull requests against `dev`.
 - `main` tracks the v2 stable/maintenance line.
 - v3 pull requests targeting `dev` trigger `.github/workflows/v3-dev-ci.yml`.
-- The v3 CI gate runs: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`.
+- The CI gate runs: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`.
 
 ## Security vulnerabilities
 
@@ -34,6 +34,30 @@ From the repository root:
 corepack enable pnpm@9.12.0
 pnpm install
 ```
+
+## Monorepo architecture
+
+Hexabot uses a PNPM workspace monorepo orchestrated by Turborepo.
+
+| Package | Responsibility |
+| --- | --- |
+| `@hexabot-ai/api` | NestJS backend, TypeORM entities/repositories/migrations, workflow runtime APIs |
+| `@hexabot-ai/frontend` | React SPA admin app (Vite + React Router) |
+| `@hexabot-ai/widget` | Embeddable live chat widget |
+| `@hexabot-ai/agentic` | YAML DSL + typed workflow runtime |
+| `@hexabot-ai/graph` | Reusable workflow graph editor/rendering package |
+| `@hexabot-ai/types` | Shared Zod-first schemas/contracts |
+| `@hexabot-ai/cli` | CLI for project bootstrap and operations |
+
+## Package documentation
+
+- [CLI](packages/cli/README.md)
+- [API](packages/api/README.md)
+- [Frontend](packages/frontend/README.md)
+- [Agentic](packages/agentic/README.md)
+- [Graph](packages/graph/README.md)
+- [Types](packages/types/README.md)
+- [Widget](packages/widget/README.md)
 
 ## Contribution workflow
 
