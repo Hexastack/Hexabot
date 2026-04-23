@@ -772,6 +772,90 @@ describe("@hexabot-ai/types schemas", () => {
     expect(systemEnvelope.format).toBe(OutgoingMessageFormat.system);
   });
 
+  it("keeps outgoing quick replies and buttons in parsed message entities", () => {
+    const base = {
+      id: "msg_1",
+      createdAt: now,
+      updatedAt: now,
+      read: false,
+      delivery: false,
+      handover: false,
+      threadId: "th_1",
+    };
+    const quickRepliesMessage = messageSchema.parse({
+      ...base,
+      message: {
+        text: "Choose one",
+        quickReplies: [
+          { title: "Yes", payload: "yes" },
+          { title: "No", payload: "no" },
+        ],
+      },
+    });
+    const buttonsMessage = messageSchema.parse({
+      ...base,
+      id: "msg_2",
+      message: {
+        text: "Click one",
+        buttons: [
+          { type: "postback", title: "About", payload: "about" },
+          { type: "web_url", title: "Website", url: "https://hexabot.ai" },
+        ],
+      },
+    });
+
+    expect(quickRepliesMessage.message).toEqual({
+      text: "Choose one",
+      quickReplies: [
+        { title: "Yes", payload: "yes" },
+        { title: "No", payload: "no" },
+      ],
+    });
+    expect(buttonsMessage.message).toEqual({
+      text: "Click one",
+      buttons: [
+        { type: "postback", title: "About", payload: "about" },
+        { type: "web_url", title: "Website", url: "https://hexabot.ai" },
+      ],
+    });
+  });
+
+  it("maps legacy quick_replies keys when parsing message entities", () => {
+    const parsed = messageSchema.parse({
+      id: "msg_legacy",
+      createdAt: now,
+      updatedAt: now,
+      read: false,
+      delivery: false,
+      handover: false,
+      threadId: "th_1",
+      message: {
+        text: "Choose one",
+        quick_replies: [{ title: "Yes", payload: "yes" }],
+      },
+    });
+
+    expect(parsed.message).toEqual({
+      text: "Choose one",
+      quickReplies: [{ title: "Yes", payload: "yes" }],
+    });
+  });
+
+  it("keeps incoming postback payloads when parsing message entities", () => {
+    const parsed = messageSchema.parse({
+      id: "msg_postback",
+      createdAt: now,
+      updatedAt: now,
+      read: false,
+      delivery: false,
+      handover: false,
+      threadId: "th_1",
+      message: { text: "Clicked", postback: "about" },
+    });
+
+    expect(parsed.message).toEqual({ text: "Clicked", postback: "about" });
+  });
+
   it("rejects plain-string message payloads in strict message schema", () => {
     const base = {
       id: "msg_1",

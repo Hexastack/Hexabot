@@ -12,8 +12,15 @@ import { preprocess } from "../shared/preprocess";
 import { userSchema } from "../user/user";
 
 import {
-  StdOutgoingMessageSchema,
-  stdIncomingMessageSchema,
+  stdIncomingAttachmentMessageSchema,
+  stdIncomingLocationMessageSchema,
+  stdIncomingPostBackMessageSchema,
+  stdOutgoingAttachmentMessageSchema,
+  stdOutgoingButtonsMessageSchema,
+  stdOutgoingListMessageSchema,
+  stdOutgoingQuickRepliesMessageSchema,
+  type StdIncomingMessage,
+  type StdOutgoingMessage,
 } from "./message-contract";
 import { subscriberSchema } from "./subscriber";
 import { threadSchema } from "./thread";
@@ -24,10 +31,27 @@ const messageAliasMap = {
   sentById: "sentBy",
   threadId: "thread",
 } as const;
-const messagePayloadSchema = z.union([
-  stdIncomingMessageSchema,
-  StdOutgoingMessageSchema,
-]);
+const messagePayloadAliasMap = {
+  quick_replies: "quickReplies",
+} as const;
+const legacyTextMessageSchema = z
+  .object({
+    text: z.string(),
+  })
+  .passthrough();
+const messagePayloadSchema = preprocess(
+  (value) => withAliases(value, messagePayloadAliasMap),
+  z.union([
+    stdIncomingPostBackMessageSchema,
+    stdIncomingLocationMessageSchema,
+    stdIncomingAttachmentMessageSchema,
+    stdOutgoingQuickRepliesMessageSchema,
+    stdOutgoingButtonsMessageSchema,
+    stdOutgoingListMessageSchema,
+    stdOutgoingAttachmentMessageSchema,
+    legacyTextMessageSchema,
+  ]),
+) as z.ZodType<StdIncomingMessage | StdOutgoingMessage>;
 const messageStubObjectSchema = baseStubSchema.extend({
   mid: z.string().optional(),
   message: messagePayloadSchema,

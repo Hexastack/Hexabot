@@ -218,9 +218,25 @@ export function getMessageContent(
 
   let chips: { title: string }[] = [];
   let chipsIcon: ReactNode;
+  const normalizeChips = (items: unknown[]): { title: string }[] =>
+    items.flatMap((item) => {
+      const title =
+        item &&
+        typeof item === "object" &&
+        "title" in item &&
+        typeof (item as { title?: unknown }).title === "string"
+          ? (item as { title: string }).title
+          : undefined;
 
-  if ("buttons" in message) {
-    chips = message.buttons;
+      return title ? [{ title }] : [];
+    });
+  const quickReplies =
+    "quickReplies" in message ? (message.quickReplies as unknown) : undefined;
+  const legacyQuickReplies = (message as { quick_replies?: unknown })
+    .quick_replies;
+
+  if ("buttons" in message && Array.isArray(message.buttons)) {
+    chips = normalizeChips(message.buttons);
     chipsIcon = (
       <Box
         component="span"
@@ -230,8 +246,14 @@ export function getMessageContent(
       </Box>
     );
   }
-  if ("quickReplies" in message && Array.isArray(message.quickReplies)) {
-    chips = message.quickReplies as { title: string }[];
+  if (Array.isArray(quickReplies) || Array.isArray(legacyQuickReplies)) {
+    const quickReplyItems = Array.isArray(quickReplies)
+      ? quickReplies
+      : Array.isArray(legacyQuickReplies)
+        ? legacyQuickReplies
+        : [];
+
+    chips = normalizeChips(quickReplyItems);
     chipsIcon = (
       <Box
         component="span"
