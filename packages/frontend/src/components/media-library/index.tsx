@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { AttachmentResourceRef, type Attachment } from "@hexabot-ai/types";
 import { Box } from "@mui/material";
 import { GridColDef, GridEventListener } from "@mui/x-data-grid";
 import { FolderUp } from "lucide-react";
@@ -14,11 +15,6 @@ import useFormattedFileSize from "@/hooks/useFormattedFileSize";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { getDateTimeFormatter } from "@/utils/date";
-
-import {
-  AttachmentResourceRef,
-  Attachment,
-} from "../../types/attachment.types";
 
 type MediaLibraryProps = {
   showTitle?: boolean;

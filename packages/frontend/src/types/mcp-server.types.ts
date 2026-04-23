@@ -7,17 +7,11 @@
 import {
   McpServerTransport,
   type McpServer as SharedMcpServer,
-  type McpServerFull as SharedMcpServerFull,
-  type McpServerStub as SharedMcpServerStub,
 } from "@hexabot-ai/types";
 
 export { McpServerTransport };
 
-export type McpServerStub = SharedMcpServerStub;
-
 export type McpServer = SharedMcpServer;
-
-export type McpServerFull = SharedMcpServerFull;
 
 export interface IMcpServerToolAttributes {
   serverId: string;

@@ -4,17 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type {
-  Content as SharedContent,
-  Message as SharedMessage,
-  MessageFull as SharedMessageFull,
-  MessageStub as SharedMessageStub,
-} from "@hexabot-ai/types";
-
-import { Attachment } from "./attachment.types";
-import { Subscriber } from "./subscriber.types";
-import { Thread } from "./thread.types";
-import { User } from "./user.types";
+import type { Attachment, Content as SharedContent } from "@hexabot-ai/types";
 
 export enum OutgoingMessageFormat {
   text = "text",
@@ -172,17 +162,3 @@ export type StdOutgoingMessage =
   | StdOutgoingButtonsMessage
   | StdOutgoingListMessage
   | StdOutgoingAttachmentMessage;
-
-export type MessageStub = SharedMessageStub;
-
-export type Message = SharedMessage;
-
-export type MessageFull = Omit<
-  SharedMessageFull,
-  "thread" | "sender" | "recipient" | "sentBy"
-> & {
-  thread: Thread;
-  sender?: Subscriber | null;
-  recipient?: Subscriber | null;
-  sentBy?: User | null;
-};

@@ -6,7 +6,6 @@
 
 import type {
   User as SharedUser,
-  UserFull as SharedUserFull,
   UserStub as SharedUserStub,
 } from "@hexabot-ai/types";
 
@@ -60,11 +59,6 @@ export interface IProfileAttributes extends Partial<UserStub> {
 }
 
 export type User = SharedUser & {
-  fullName?: string;
-  license?: ILicense;
-};
-
-export type UserFull = SharedUserFull & {
   fullName?: string;
   license?: ILicense;
 };

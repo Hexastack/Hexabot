@@ -4,22 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import type {
-  Translation as SharedTranslation,
-  TranslationFull as SharedTranslationFull,
-  TranslationStub as SharedTranslationStub,
-} from "@hexabot-ai/types";
+import type { Translation as SharedTranslation } from "@hexabot-ai/types";
 
 export type ITranslations = Record<string, string>;
 
-export type ITranslationStub = SharedTranslationStub & {
-  translated?: number;
-};
-
 export type Translation = SharedTranslation & {
-  translated?: number;
-};
-
-export type TranslationFull = SharedTranslationFull & {
   translated?: number;
 };

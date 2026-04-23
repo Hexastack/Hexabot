@@ -4,20 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import type {
-  Label as SharedLabel,
-  LabelFull as SharedLabelFull,
-  LabelStub as SharedLabelStub,
-} from "@hexabot-ai/types";
-
-export type ILabelStub = SharedLabelStub & {
-  subscriber_count?: number;
-};
+import type { Label as SharedLabel } from "@hexabot-ai/types";
 
 export type Label = SharedLabel & {
-  subscriber_count?: number;
-};
-
-export type LabelFull = SharedLabelFull & {
   subscriber_count?: number;
 };

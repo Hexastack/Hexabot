@@ -6,7 +6,6 @@
 
 import type {
   Subscriber as SharedSubscriber,
-  SubscriberFull as SharedSubscriberFull,
   SubscriberStub as SharedSubscriberStub,
 } from "@hexabot-ai/types";
 
@@ -15,9 +14,5 @@ export type SubscriberStub = SharedSubscriberStub & {
 };
 
 export type Subscriber = SharedSubscriber & {
-  fullName?: string;
-};
-
-export type SubscriberFull = SharedSubscriberFull & {
   fullName?: string;
 };

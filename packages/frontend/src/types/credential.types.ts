@@ -4,17 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import type {
-  Credential as SharedCredential,
-  CredentialFull as SharedCredentialFull,
-  CredentialStub as SharedCredentialStub,
-} from "@hexabot-ai/types";
-
-export type ICredentialStub = SharedCredentialStub;
+import type { Credential as SharedCredential } from "@hexabot-ai/types";
 
 export type Credential = SharedCredential;
-
-export type CredentialFull = SharedCredentialFull;
 
 export type CredentialWithValue = Credential & {
   value?: string;

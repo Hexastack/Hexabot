@@ -45,8 +45,3 @@ export const POPULATE_BY_TYPE = {
 
 export type Populate<C extends EntityType> =
   (typeof POPULATE_BY_TYPE)[C][number];
-
-export type OmitPopulate<Attrs, C extends EntityType> = Omit<
-  Attrs,
-  Populate<C>
->;
