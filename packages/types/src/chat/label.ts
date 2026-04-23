@@ -38,19 +38,16 @@ export const labelSchema = preprocess(
   }),
 );
 
-export const labelFullSchema = preprocess(
-  (value) => withAliases(value, labelAliasMap),
-  labelStubObjectSchema.extend({
-    users: preprocess(
-      (value) => (Array.isArray(value) ? value : []),
-      z.array(z.lazy(() => subscriberSchema)),
-    ).optional(),
-    group: z
-      .lazy(() => labelGroupSchema)
-      .nullable()
-      .optional(),
-  }),
-);
+export const labelFullSchema = labelStubObjectSchema.extend({
+  users: preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(z.lazy(() => subscriberSchema)),
+  ).optional(),
+  group: z
+    .lazy(() => labelGroupSchema)
+    .nullable()
+    .optional(),
+});
 
 export type LabelStub = z.infer<typeof labelStubSchema>;
 

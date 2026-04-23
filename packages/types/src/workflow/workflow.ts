@@ -99,31 +99,28 @@ const withWorkflowDerivedFields = (
 
   return next;
 };
-const workflowFullObjectSchema = preprocess(
-  (value) => withAliases(value, workflowAliasMap),
-  workflowStubObjectSchema.extend({
-    currentVersion: preprocess(
-      (value) => (value == null ? null : value),
-      z.lazy(() => workflowVersionSchema).nullable(),
-    ),
-    publishedVersion: preprocess(
-      (value) => (value == null ? null : value),
-      z.lazy(() => workflowVersionSchema).nullable(),
-    ),
-    createdBy: preprocess(
-      (value) => (value == null ? null : value),
-      z.lazy(() => userSchema).nullable(),
-    ),
-    definitionYml: preprocess(
-      (value) => (value == null ? undefined : value),
-      z.string().optional(),
-    ).optional(),
-    definition: preprocess(
-      (value) => (value == null ? undefined : value),
-      workflowDefinitionSchema.optional(),
-    ).optional(),
-  }),
-);
+const workflowFullObjectSchema = workflowStubObjectSchema.extend({
+  currentVersion: preprocess(
+    (value) => (value == null ? null : value),
+    z.lazy(() => workflowVersionSchema).nullable(),
+  ),
+  publishedVersion: preprocess(
+    (value) => (value == null ? null : value),
+    z.lazy(() => workflowVersionSchema).nullable(),
+  ),
+  createdBy: preprocess(
+    (value) => (value == null ? null : value),
+    z.lazy(() => userSchema).nullable(),
+  ),
+  definitionYml: preprocess(
+    (value) => (value == null ? undefined : value),
+    z.string().optional(),
+  ).optional(),
+  definition: preprocess(
+    (value) => (value == null ? undefined : value),
+    workflowDefinitionSchema.optional(),
+  ).optional(),
+});
 
 export const workflowStubSchema = workflowStubObjectSchema;
 

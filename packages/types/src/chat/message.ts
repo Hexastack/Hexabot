@@ -56,18 +56,15 @@ export const messageSchema = preprocess(
   }),
 );
 
-export const messageFullSchema = preprocess(
-  (value) => withAliases(value, messageAliasMap),
-  messageStubObjectSchema.extend({
-    sender: subscriberSchema.nullable().optional(),
-    recipient: subscriberSchema.nullable().optional(),
-    sentBy: z
-      .lazy(() => userSchema)
-      .nullable()
-      .optional(),
-    thread: threadSchema,
-  }),
-);
+export const messageFullSchema = messageStubObjectSchema.extend({
+  sender: subscriberSchema.nullable().optional(),
+  recipient: subscriberSchema.nullable().optional(),
+  sentBy: z
+    .lazy(() => userSchema)
+    .nullable()
+    .optional(),
+  thread: threadSchema,
+});
 
 export type MessageStub = z.infer<typeof messageStubSchema>;
 

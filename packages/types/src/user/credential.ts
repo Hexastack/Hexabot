@@ -31,15 +31,12 @@ export const credentialSchema = preprocess(
   }),
 );
 
-export const credentialFullSchema = preprocess(
-  (value) => withAliases(value, credentialAliasMap),
-  credentialStubObjectSchema.extend({
-    owner: preprocess(
-      (value) => (value == null ? null : value),
-      z.lazy(() => userSchema).nullable(),
-    ),
-  }),
-);
+export const credentialFullSchema = credentialStubObjectSchema.extend({
+  owner: preprocess(
+    (value) => (value == null ? null : value),
+    z.lazy(() => userSchema).nullable(),
+  ),
+});
 
 export type CredentialStub = z.infer<typeof credentialStubSchema>;
 

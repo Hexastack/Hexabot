@@ -17,23 +17,34 @@ import {
   WorkflowVersionAction,
   attachmentFullSchema,
   attachmentSchema,
+  contentFullSchema,
   contentSchema,
   createWorkflowFullSchema,
+  credentialFullSchema,
   credentialSchema,
   dummySchema,
+  labelFullSchema,
   labelSchema,
+  mcpServerFullSchema,
   mcpServerSchema,
+  memoryRecordFullSchema,
   memoryRecordSchema,
+  menuFullSchema,
   menuSchema,
+  messageFullSchema,
+  permissionFullSchema,
   permissionSchema,
   resolveRunDurationMs,
   settingSchema,
   subscriberFullSchema,
   subscriberSchema,
+  threadFullSchema,
   userFullSchema,
   userSchema,
+  workflowFullSchema,
   workflowRunFullSchema,
   workflowRunSchema,
+  workflowVersionFullSchema,
 } from "./index";
 
 describe("@hexabot-ai/types schemas", () => {
@@ -191,6 +202,184 @@ describe("@hexabot-ai/types schemas", () => {
     expect(parsed.labels).toEqual([]);
     expect(parsed.assignedTo).toBeNull();
     expect(parsed.avatar).toBeNull();
+  });
+
+  it("does not alias relation id fields into other strict full relation objects", () => {
+    const assertInvalidRelationField = (
+      result:
+        | ReturnType<typeof permissionFullSchema.safeParse>
+        | ReturnType<typeof contentFullSchema.safeParse>
+        | ReturnType<typeof threadFullSchema.safeParse>
+        | ReturnType<typeof messageFullSchema.safeParse>
+        | ReturnType<typeof workflowVersionFullSchema.safeParse>
+        | ReturnType<typeof workflowRunFullSchema.safeParse>,
+      relationField: string,
+    ) => {
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(
+          result.error.issues.some((issue) => issue.path[0] === relationField),
+        ).toBe(true);
+      }
+    };
+
+    assertInvalidRelationField(
+      permissionFullSchema.safeParse({
+        id: "p_1",
+        createdAt: now,
+        updatedAt: now,
+        action: "read",
+        relation: "role",
+        modelId: "m_1",
+        roleId: "r_1",
+      }),
+      "model",
+    );
+
+    assertInvalidRelationField(
+      contentFullSchema.safeParse({
+        id: "c_1",
+        createdAt: now,
+        updatedAt: now,
+        title: "Welcome",
+        status: true,
+        properties: {},
+        searchText: "welcome",
+        contentTypeId: "ct_1",
+      }),
+      "contentType",
+    );
+
+    assertInvalidRelationField(
+      threadFullSchema.safeParse({
+        id: "th_1",
+        createdAt: now,
+        updatedAt: now,
+        status: "open",
+        subscriberId: "s_1",
+      }),
+      "subscriber",
+    );
+
+    assertInvalidRelationField(
+      messageFullSchema.safeParse({
+        id: "msg_1",
+        createdAt: now,
+        updatedAt: now,
+        message: "hello",
+        read: false,
+        delivery: false,
+        handover: false,
+        threadId: "th_1",
+      }),
+      "thread",
+    );
+
+    assertInvalidRelationField(
+      workflowVersionFullSchema.safeParse({
+        id: "wfv_1",
+        createdAt: now,
+        updatedAt: now,
+        version: 1,
+        definitionYml: "defs: {}\nflow: []\noutputs: {}",
+        checksum: "sha",
+        workflowId: "wf_1",
+        parentVersionId: null,
+        createdById: "u_1",
+      }),
+      "workflow",
+    );
+
+    assertInvalidRelationField(
+      workflowRunFullSchema.safeParse({
+        id: "run_1",
+        createdAt: now,
+        updatedAt: now,
+        status: "running",
+        context: {},
+        workflowId: "wf_1",
+        workflowVersionId: null,
+        triggeredById: "s_1",
+        threadId: "th_1",
+      }),
+      "workflow",
+    );
+
+    expect(() =>
+      memoryRecordFullSchema.parse({
+        id: "mem_1",
+        createdAt: now,
+        updatedAt: now,
+        value: { counter: 1 },
+        definitionId: "def_1",
+        ownerId: "u_1",
+        workflowId: "wf_1",
+        runId: "run_1",
+        threadId: "th_1",
+      }),
+    ).toThrow();
+  });
+
+  it("keeps nullable or optional full relation fields when only alias ids are provided", () => {
+    const credential = credentialFullSchema.parse({
+      id: "cred_1",
+      createdAt: now,
+      updatedAt: now,
+      name: "OPENAI_API_KEY",
+      ownerId: "u_1",
+    });
+    const label = labelFullSchema.parse({
+      id: "l_1",
+      createdAt: now,
+      updatedAt: now,
+      title: "VIP",
+      name: "vip",
+      builtin: false,
+      groupId: "g_1",
+    });
+    const menu = menuFullSchema.parse({
+      id: "mn_1",
+      createdAt: now,
+      updatedAt: now,
+      title: "Home",
+      type: MenuType.nested,
+      parentId: "mn_root",
+    });
+    const mcp = mcpServerFullSchema.parse({
+      id: "mcp_1",
+      createdAt: now,
+      updatedAt: now,
+      name: "Filesystem",
+      enabled: true,
+      transport: McpServerTransport.stdio,
+      credentialId: "cred_1",
+    });
+    const workflow = workflowFullSchema.parse({
+      id: "wf_1",
+      createdAt: now,
+      updatedAt: now,
+      name: "Main",
+      description: null,
+      type: WorkflowType.conversational,
+      schedule: null,
+      inputSchema: {},
+      builtin: false,
+      x: 0,
+      y: 0,
+      zoom: 1,
+      direction: "horizontal",
+      currentVersionId: "wfv_1",
+      publishedVersionId: "wfv_1",
+      createdById: "u_1",
+    });
+
+    expect(credential.owner).toBeNull();
+    expect(label.group).toBeUndefined();
+    expect(menu.parent).toBeUndefined();
+    expect(mcp.credential).toBeUndefined();
+    expect(workflow.currentVersion).toBeNull();
+    expect(workflow.publishedVersion).toBeNull();
+    expect(workflow.createdBy).toBeNull();
   });
 
   it("maps attachment aliases and strips unknown keys", () => {

@@ -156,7 +156,7 @@ export const workflowRunSchema = preprocess(
 );
 
 export const workflowRunFullSchema = preprocess(
-  (value) => withAliases(withWorkflowRunDuration(value), workflowRunAliasMap),
+  (value) => withWorkflowRunDuration(value),
   workflowRunStubObjectSchema.extend({
     workflow: workflowSchema,
     workflowVersion: z

@@ -78,19 +78,16 @@ export const memoryRecordSchema = preprocess(
   }),
 );
 
-export const memoryRecordFullSchema = preprocess(
-  (value) => withAliases(value, memoryRecordAliasMap),
-  memoryRecordStubObjectSchema.extend({
-    definition: memoryDefinitionSchema,
-    owner: preprocess(
-      (value) => parseUserOrSubscriber(value),
-      z.union([z.lazy(() => userSchema), subscriberSchema]),
-    ),
-    workflow: workflowSchema.nullable().optional(),
-    run: workflowRunSchema.nullable().optional(),
-    thread: threadSchema.nullable().optional(),
-  }),
-);
+export const memoryRecordFullSchema = memoryRecordStubObjectSchema.extend({
+  definition: memoryDefinitionSchema,
+  owner: preprocess(
+    (value) => parseUserOrSubscriber(value),
+    z.union([z.lazy(() => userSchema), subscriberSchema]),
+  ),
+  workflow: workflowSchema.nullable().optional(),
+  run: workflowRunSchema.nullable().optional(),
+  thread: threadSchema.nullable().optional(),
+});
 
 export type MemoryRecordStub = z.infer<typeof memoryRecordStubSchema>;
 

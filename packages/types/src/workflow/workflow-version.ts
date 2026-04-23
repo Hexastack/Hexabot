@@ -50,9 +50,8 @@ export const workflowVersionSchema = preprocess(
   }),
 );
 
-export const workflowVersionFullSchema = preprocess(
-  (value) => withAliases(value, workflowVersionAliasMap),
-  workflowVersionStubObjectSchema.extend({
+export const workflowVersionFullSchema = workflowVersionStubObjectSchema.extend(
+  {
     parentVersion: preprocess(
       nullishToNull,
       z.lazy(() => workflowVersionSchema).nullable(),
@@ -65,7 +64,7 @@ export const workflowVersionFullSchema = preprocess(
       (value) => (value == null ? null : value),
       z.lazy(() => userSchema).nullable(),
     ),
-  }),
+  },
 );
 
 export type WorkflowVersionStub = z.infer<typeof workflowVersionStubSchema>;

@@ -39,16 +39,13 @@ export const menuSchema = preprocess(
   }),
 );
 
-export const menuFullSchema = preprocess(
-  (value) => withAliases(value, menuAliasMap),
-  menuStubObjectSchema.extend({
-    parent: menuSchema.nullable().optional(),
-    children: preprocess(
-      (value) => (Array.isArray(value) ? value : []),
-      z.array(menuSchema),
-    ).optional(),
-  }),
-);
+export const menuFullSchema = menuStubObjectSchema.extend({
+  parent: menuSchema.nullable().optional(),
+  children: preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(menuSchema),
+  ).optional(),
+});
 
 export type MenuStub = z.infer<typeof menuStubSchema>;
 

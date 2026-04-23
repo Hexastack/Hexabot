@@ -177,12 +177,8 @@ export class ApiClient extends TranslatableMethods {
     const { data } = await this.request.patch<
       UserStub,
       AxiosResponse<UserStub>,
-      Partial<IProfileAttributes>
-    >(`${ROUTES.PROFILE}/${id}?_csrf=${_csrf}`, payload, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+      FormData
+    >(`${ROUTES.PROFILE}/${id}?_csrf=${_csrf}`, formData);
 
     return applyFullNameDerivedFields(data);
   }

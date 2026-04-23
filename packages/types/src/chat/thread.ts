@@ -37,12 +37,9 @@ export const threadSchema = preprocess(
   }),
 );
 
-export const threadFullSchema = preprocess(
-  (value) => withAliases(value, threadAliasMap),
-  threadStubObjectSchema.extend({
-    subscriber: subscriberSchema,
-  }),
-);
+export const threadFullSchema = threadStubObjectSchema.extend({
+  subscriber: subscriberSchema,
+});
 
 export type ThreadStub = z.infer<typeof threadStubSchema>;
 

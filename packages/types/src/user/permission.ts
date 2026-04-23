@@ -39,19 +39,16 @@ export const permissionSchema = preprocess(
   }),
 );
 
-export const permissionFullSchema = preprocess(
-  (value) => withAliases(value, permissionAliasMap),
-  permissionStubObjectSchema.extend({
-    model: preprocess(
-      (value) => value,
-      z.lazy(() => modelSchema),
-    ),
-    role: preprocess(
-      (value) => value,
-      z.lazy(() => roleSchema),
-    ),
-  }),
-);
+export const permissionFullSchema = permissionStubObjectSchema.extend({
+  model: preprocess(
+    (value) => value,
+    z.lazy(() => modelSchema),
+  ),
+  role: preprocess(
+    (value) => value,
+    z.lazy(() => roleSchema),
+  ),
+});
 
 export type PermissionStub = z.infer<typeof permissionStubSchema>;
 

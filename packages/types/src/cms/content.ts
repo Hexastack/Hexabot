@@ -37,12 +37,9 @@ export const contentSchema = preprocess(
   }),
 );
 
-export const contentFullSchema = preprocess(
-  (value) => withAliases(value, contentAliasMap),
-  contentStubObjectSchema.extend({
-    contentType: contentTypeSchema,
-  }),
-);
+export const contentFullSchema = contentStubObjectSchema.extend({
+  contentType: contentTypeSchema,
+});
 
 export type ContentStub = z.infer<typeof contentStubSchema>;
 

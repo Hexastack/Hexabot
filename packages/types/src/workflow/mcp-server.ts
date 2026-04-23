@@ -50,15 +50,12 @@ export const mcpServerSchema = preprocess(
   }),
 );
 
-export const mcpServerFullSchema = preprocess(
-  (value) => withAliases(value, mcpServerAliasMap),
-  mcpServerStubObjectSchema.extend({
-    credential: preprocess(
-      (value) => (value == null ? null : credentialSchema.parse(value)),
-      credentialSchema.nullable(),
-    ).optional(),
-  }),
-);
+export const mcpServerFullSchema = mcpServerStubObjectSchema.extend({
+  credential: preprocess(
+    (value) => (value == null ? null : credentialSchema.parse(value)),
+    credentialSchema.nullable(),
+  ).optional(),
+});
 
 export type McpServerStub = z.infer<typeof mcpServerStubSchema>;
 
