@@ -57,15 +57,15 @@ export abstract class MessageInboundEvent<
     const message = this.getMessage();
 
     if (
-      message.type === IncomingMessageType.message ||
+      message.type === IncomingMessageType.text ||
       message.type === IncomingMessageType.postback ||
-      message.type === IncomingMessageType.quick_reply
+      message.type === IncomingMessageType.quickReply
     ) {
       return message.data.text;
     }
 
-    if (message.type === IncomingMessageType.attachments) {
-      return message.data.serialized_text;
+    if (message.type === IncomingMessageType.attachment) {
+      return message.data.serializedText;
     }
 
     return '';

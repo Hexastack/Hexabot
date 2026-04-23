@@ -6,7 +6,7 @@
 
 import {
   FileType,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
 
@@ -33,7 +33,7 @@ describe('SendAttachmentAction', () => {
   it('builds an attachment envelope and delegates sending', async () => {
     const action = new SendAttachmentAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.attachment,
+      type: OutgoingMessageType.attachment,
       data: {
         attachment: { type: FileType.image, payload: { id: '123' } },
         quickReplies: [],

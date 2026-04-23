@@ -6,7 +6,7 @@
 
 import {
   ButtonType,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   ContentOptions,
   contentOptionsSchema,
 } from '@hexabot-ai/types';
@@ -137,9 +137,9 @@ export class SendListAction extends MessageAction<
       skip,
     );
     const envelope = prepared.envelopeFactory.buildListEnvelope(
-      contentOptions.display === OutgoingMessageFormat.carousel
-        ? OutgoingMessageFormat.carousel
-        : OutgoingMessageFormat.list,
+      contentOptions.display === OutgoingMessageType.carousel
+        ? OutgoingMessageType.carousel
+        : OutgoingMessageType.list,
       options,
       elements,
       pagination,

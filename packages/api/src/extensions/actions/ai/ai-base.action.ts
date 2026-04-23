@@ -365,35 +365,30 @@ export abstract class AiBaseAction<
       return undefined;
     }
 
-    if ('format' in payload) {
-      const data = payload.data;
-      if ('text' in data && typeof data.text === 'string') {
-        return data.text;
-      }
+    const data = payload.data as Record<string, unknown>;
 
-      return JSON.stringify(data);
+    if (typeof data.text === 'string') {
+      return data.text;
+    }
+
+    if (typeof data.serializedText === 'string') {
+      return data.serializedText;
     }
 
     if (
-      payload.type === IncomingMessageType.message ||
-      payload.type === IncomingMessageType.postback ||
-      payload.type === IncomingMessageType.quick_reply
+      payload.type === IncomingMessageType.location &&
+      typeof data.coordinates === 'object' &&
+      data.coordinates !== null &&
+      'lat' in data.coordinates &&
+      'lon' in data.coordinates
     ) {
-      return payload.data.text;
-    }
-
-    if (payload.type === IncomingMessageType.attachments) {
-      return payload.data.serialized_text;
-    }
-
-    if (payload.type === IncomingMessageType.location) {
-      const { lat, lon } = payload.data.coordinates;
+      const { lat, lon } = data.coordinates as { lat: number; lon: number };
 
       return `location:${lat},${lon}`;
     }
 
     try {
-      return JSON.stringify(payload);
+      return JSON.stringify(data);
     } catch {
       return String(payload);
     }

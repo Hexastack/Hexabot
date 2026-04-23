@@ -5,7 +5,7 @@
  */
 
 import {
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
 
@@ -32,7 +32,7 @@ describe('SendQuickRepliesAction', () => {
   it('builds a quick replies envelope and delegates sending', async () => {
     const action = new SendQuickRepliesAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.quickReplies,
+      type: OutgoingMessageType.quickReply,
       data: { text: 'processed', quickReplies: [] },
     };
     const prepared = {

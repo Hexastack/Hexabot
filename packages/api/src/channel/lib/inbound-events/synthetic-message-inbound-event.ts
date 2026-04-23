@@ -38,7 +38,7 @@ export class SyntheticMessageInboundEvent<
   override getPayload(): Payload | string | undefined {
     if (
       this.message.type === IncomingMessageType.postback ||
-      this.message.type === IncomingMessageType.quick_reply
+      this.message.type === IncomingMessageType.quickReply
     ) {
       return this.message.data.payload;
     }
@@ -53,7 +53,7 @@ export class SyntheticMessageInboundEvent<
       };
     }
 
-    if (this.message.type === IncomingMessageType.attachments) {
+    if (this.message.type === IncomingMessageType.attachment) {
       const attachment = Array.isArray(this.message.data.attachment)
         ? this.message.data.attachment[0]
         : this.message.data.attachment;
@@ -63,7 +63,7 @@ export class SyntheticMessageInboundEvent<
       }
 
       return {
-        type: PayloadType.attachments,
+        type: PayloadType.attachment,
         attachment,
       };
     }

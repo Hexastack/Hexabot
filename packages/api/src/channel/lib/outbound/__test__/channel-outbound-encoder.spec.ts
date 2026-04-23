@@ -5,7 +5,7 @@
  */
 
 import {
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
 
@@ -44,88 +44,84 @@ describe('channel outbound encoder helpers', () => {
 
   it('dispatches each outgoing message envelope format', () => {
     const handlers: EnvelopeHandlers<string, void> = {
-      [OutgoingMessageFormat.text]: () => OutgoingMessageFormat.text,
-      [OutgoingMessageFormat.quickReplies]: () =>
-        OutgoingMessageFormat.quickReplies,
-      [OutgoingMessageFormat.buttons]: () => OutgoingMessageFormat.buttons,
-      [OutgoingMessageFormat.attachment]: () =>
-        OutgoingMessageFormat.attachment,
-      [OutgoingMessageFormat.list]: () => OutgoingMessageFormat.list,
-      [OutgoingMessageFormat.carousel]: () => OutgoingMessageFormat.carousel,
+      [OutgoingMessageType.text]: () => OutgoingMessageType.text,
+      [OutgoingMessageType.quickReply]: () => OutgoingMessageType.quickReply,
+      [OutgoingMessageType.buttons]: () => OutgoingMessageType.buttons,
+      [OutgoingMessageType.attachment]: () => OutgoingMessageType.attachment,
+      [OutgoingMessageType.list]: () => OutgoingMessageType.list,
+      [OutgoingMessageType.carousel]: () => OutgoingMessageType.carousel,
     };
 
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.text,
+          type: OutgoingMessageType.text,
           data: textMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.text);
+    ).toEqual(OutgoingMessageType.text);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.quickReplies,
+          type: OutgoingMessageType.quickReply,
           data: quickRepliesMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.quickReplies);
+    ).toEqual(OutgoingMessageType.quickReply);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.buttons,
+          type: OutgoingMessageType.buttons,
           data: buttonsMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.buttons);
+    ).toEqual(OutgoingMessageType.buttons);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.attachment,
+          type: OutgoingMessageType.attachment,
           data: attachmentMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.attachment);
+    ).toEqual(OutgoingMessageType.attachment);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.list,
+          type: OutgoingMessageType.list,
           data: contentMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.list);
+    ).toEqual(OutgoingMessageType.list);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.carousel,
+          type: OutgoingMessageType.carousel,
           data: contentMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.carousel);
+    ).toEqual(OutgoingMessageType.carousel);
   });
 
   it('throws explicit error when dispatch receives unsupported format', () => {
     const handlers: EnvelopeHandlers<string, void> = {
-      [OutgoingMessageFormat.text]: () => OutgoingMessageFormat.text,
-      [OutgoingMessageFormat.quickReplies]: () =>
-        OutgoingMessageFormat.quickReplies,
-      [OutgoingMessageFormat.buttons]: () => OutgoingMessageFormat.buttons,
-      [OutgoingMessageFormat.attachment]: () =>
-        OutgoingMessageFormat.attachment,
-      [OutgoingMessageFormat.list]: () => OutgoingMessageFormat.list,
-      [OutgoingMessageFormat.carousel]: () => OutgoingMessageFormat.carousel,
+      [OutgoingMessageType.text]: () => OutgoingMessageType.text,
+      [OutgoingMessageType.quickReply]: () => OutgoingMessageType.quickReply,
+      [OutgoingMessageType.buttons]: () => OutgoingMessageType.buttons,
+      [OutgoingMessageType.attachment]: () => OutgoingMessageType.attachment,
+      [OutgoingMessageType.list]: () => OutgoingMessageType.list,
+      [OutgoingMessageType.carousel]: () => OutgoingMessageType.carousel,
     };
 
     expect(() =>
       encoder.dispatch(
         {
-          format: 'unknown',
+          type: 'unknown',
           data: textMessage,
         } as any,
         handlers as any,

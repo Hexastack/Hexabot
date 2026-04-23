@@ -31,12 +31,12 @@ export class TextMessageInboundEvent<
   }
 
   override getMessageType(): IncomingMessageType {
-    return IncomingMessageType.message;
+    return IncomingMessageType.text;
   }
 
   override toStdIncomingMessage(): StdIncomingMessage {
     return {
-      type: IncomingMessageType.message,
+      type: IncomingMessageType.text,
       data: {
         text: this.text,
       },

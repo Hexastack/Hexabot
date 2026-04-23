@@ -5,7 +5,7 @@
  */
 
 import {
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingQuickRepliesEnvelope,
   stdOutgoingQuickRepliesEnvelopeSchema,
   StdOutgoingTextEnvelope,
@@ -19,7 +19,7 @@ import { EnvelopeBuilder, getEnvelopeBuilder } from './envelope-builder';
 describe('EnvelopeBuilder', () => {
   it('should create a builder with chainable setters', () => {
     const builder = EnvelopeBuilder<StdOutgoingTextEnvelope>(
-      OutgoingMessageFormat.text,
+      OutgoingMessageType.text,
       {},
       stdOutgoingTextEnvelopeSchema,
     );
@@ -28,7 +28,7 @@ describe('EnvelopeBuilder', () => {
 
     const result = builder.build();
     expect(result).toEqual({
-      format: OutgoingMessageFormat.text,
+      type: OutgoingMessageType.text,
       data: {
         text: 'Hello',
       },
@@ -37,7 +37,7 @@ describe('EnvelopeBuilder', () => {
 
   it('should retrieve current field values when no argument is provided', () => {
     const builder = EnvelopeBuilder<StdOutgoingTextEnvelope>(
-      OutgoingMessageFormat.text,
+      OutgoingMessageType.text,
       {},
       stdOutgoingTextEnvelopeSchema,
     );
@@ -49,7 +49,7 @@ describe('EnvelopeBuilder', () => {
 
   it('should append items to array fields with appendToX methods', () => {
     const builder = EnvelopeBuilder<StdOutgoingQuickRepliesEnvelope>(
-      OutgoingMessageFormat.quickReplies,
+      OutgoingMessageType.quickReply,
       {},
       stdOutgoingQuickRepliesEnvelopeSchema,
     );
@@ -66,7 +66,7 @@ describe('EnvelopeBuilder', () => {
 
     const result = builder.build();
     expect(result).toEqual({
-      format: OutgoingMessageFormat.quickReplies,
+      type: OutgoingMessageType.quickReply,
       data: {
         text: 'Choose an option',
         quickReplies: [
@@ -79,7 +79,7 @@ describe('EnvelopeBuilder', () => {
 
   it('should validate the final envelope on build and throw on invalid data', () => {
     const builder = EnvelopeBuilder(
-      OutgoingMessageFormat.text,
+      OutgoingMessageType.text,
       {},
       stdOutgoingTextMessageSchema,
     );
@@ -90,16 +90,16 @@ describe('EnvelopeBuilder', () => {
 
 describe('getEnvelopeBuilder', () => {
   it('should return a builder for text format that passes validation with required field', () => {
-    const builder = getEnvelopeBuilder(OutgoingMessageFormat.text);
+    const builder = getEnvelopeBuilder(OutgoingMessageType.text);
     builder.setText('Hello from text envelope!');
 
     const envelope = builder.build();
-    expect(envelope.format).toBe(OutgoingMessageFormat.text);
+    expect(envelope.type).toBe(OutgoingMessageType.text);
     expect(envelope.data.text).toBe('Hello from text envelope!');
   });
 
   it('should return a builder for quickReplies format that can append items', () => {
-    const builder = getEnvelopeBuilder(OutgoingMessageFormat.quickReplies);
+    const builder = getEnvelopeBuilder(OutgoingMessageType.quickReply);
     builder.setText('Pick an option');
     builder.appendToQuickReplies({
       title: 'Option A',
@@ -107,7 +107,7 @@ describe('getEnvelopeBuilder', () => {
     });
 
     const envelope = builder.build();
-    expect(envelope.format).toBe(OutgoingMessageFormat.quickReplies);
+    expect(envelope.type).toBe(OutgoingMessageType.quickReply);
     expect(envelope.data.text).toBe('Pick an option');
     expect(envelope.data.quickReplies.length).toBe(1);
   });

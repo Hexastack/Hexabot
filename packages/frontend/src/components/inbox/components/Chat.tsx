@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { OutgoingMessageFormat } from "@hexabot-ai/types";
+import { OutgoingMessageType } from "@hexabot-ai/types";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
@@ -163,7 +163,7 @@ export function Chat() {
           activeThreadId &&
           createMessage({
             message: {
-              format: OutgoingMessageFormat.text,
+              type: OutgoingMessageType.text,
               data: { text: message },
             },
             sentBy: user.id,

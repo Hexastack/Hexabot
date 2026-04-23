@@ -10,7 +10,7 @@ import {
   Button,
   ButtonType,
   ContentElement,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingAttachmentMessageData,
   StdOutgoingButtonsMessageData,
   StdOutgoingListMessageData,
@@ -50,16 +50,16 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
     options: WebOutboundEncodeOptions = {},
   ): Promise<Web.OutboundMessageBase> {
     return await this.dispatchEnvelope(envelope, options, {
-      [OutgoingMessageFormat.text]: ({ data }) => this.encodeTextMessage(data),
-      [OutgoingMessageFormat.quickReplies]: ({ data }) =>
+      [OutgoingMessageType.text]: ({ data }) => this.encodeTextMessage(data),
+      [OutgoingMessageType.quickReply]: ({ data }) =>
         this.encodeQuickRepliesMessage(data),
-      [OutgoingMessageFormat.buttons]: ({ data }) =>
+      [OutgoingMessageType.buttons]: ({ data }) =>
         this.encodeButtonsMessage(data),
-      [OutgoingMessageFormat.attachment]: ({ data }) =>
+      [OutgoingMessageType.attachment]: ({ data }) =>
         this.encodeAttachmentMessage(data),
-      [OutgoingMessageFormat.list]: ({ data }, actionOptions) =>
+      [OutgoingMessageType.list]: ({ data }, actionOptions) =>
         this.encodeListMessage(data, actionOptions),
-      [OutgoingMessageFormat.carousel]: ({ data }, actionOptions) =>
+      [OutgoingMessageType.carousel]: ({ data }, actionOptions) =>
         this.encodeCarouselMessage(data, actionOptions),
     });
   }

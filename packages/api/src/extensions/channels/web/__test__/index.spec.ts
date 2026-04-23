@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { OutgoingMessageFormat, StdEventType } from '@hexabot-ai/types';
+import { OutgoingMessageType, StdEventType } from '@hexabot-ai/types';
 import { JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
@@ -202,7 +202,7 @@ describe('WebChannelHandler', () => {
     const response = await handler.sendMessage(
       event,
       {
-        format: OutgoingMessageFormat.text,
+        type: OutgoingMessageType.text,
         data: { text: 'hello world' },
       },
       {},
@@ -242,7 +242,7 @@ describe('WebChannelHandler', () => {
       handler.sendMessage(
         event,
         {
-          format: OutgoingMessageFormat.system,
+          type: OutgoingMessageType.system,
           data: { outcome: 'noop' },
         },
         {},

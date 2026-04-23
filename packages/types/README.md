@@ -41,8 +41,9 @@ import {
   ActionOptionsSchema,
   ButtonType,
   FileType,
-  OutgoingMessageFormat,
-  StdOutgoingMessageSchema,
+  IncomingMessageType,
+  OutgoingMessageType,
+  stdOutgoingMessageSchema,
   attachmentPayloadSchema,
   messageSchema,
   stdIncomingMessageSchema,
@@ -54,12 +55,12 @@ import {
 
 All outgoing messages use:
 
-- `{ format, data }`
+- `{ type, data }`
 
-`format` discriminator variants:
+`type` discriminator variants:
 
 - `text`: `data = { text }`
-- `quickReplies`: `data = { text, quickReplies }`
+- `quickReply`: `data = { text, quickReplies }`
 - `buttons`: `data = { text, buttons }`
 - `attachment`: `data = { attachment, quickReplies? }`
 - `list`: `data = { options, elements, pagination }`
@@ -68,8 +69,8 @@ All outgoing messages use:
 Example:
 
 ```ts
-const outgoing = StdOutgoingMessageSchema.parse({
-  format: OutgoingMessageFormat.quickReplies,
+const outgoing = stdOutgoingMessageSchema.parse({
+  type: OutgoingMessageType.quickReply,
   data: {
     text: "Choose one",
     quickReplies: [{ title: "Yes", payload: "yes" }],
@@ -85,11 +86,11 @@ All incoming messages use:
 
 `type` discriminator variants:
 
-- `message`: `data = { text }`
+- `text`: `data = { text }`
 - `postback`: `data = { text, payload }`
-- `quick_reply`: `data = { text, payload }`
+- `quickReply`: `data = { text, payload }`
 - `location`: `data = { coordinates: { lat, lon } }`
-- `attachments`: `data = { serialized_text, attachment }`
+- `attachment`: `data = { serializedText, attachment }`
   `attachment` can be a single attachment or an array.
 
 Example:
@@ -105,9 +106,9 @@ const incoming = stdIncomingMessageSchema.parse({
 
 ### Envelopes and Persistence
 
-- `StdOutgoingMessageEnvelope` is the same contract as `StdOutgoingMessage` (`{ format, data }`).
+- `StdOutgoingMessageEnvelope` is the same contract as `StdOutgoingMessage` (`{ type, data }`).
 - `StdOutgoingEnvelope` adds the system envelope variant:
-  - `format: OutgoingMessageFormat.system`
+  - `type: OutgoingMessageType.system`
   - `data: { outcome?: string; data?: unknown }`
 - Persisted chat message entities (`messageSchema`) validate `message` as:
   - `StdIncomingMessage | StdOutgoingMessage`

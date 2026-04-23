@@ -12,7 +12,7 @@ import {
   ContentOptions,
   ContentPagination,
   FileType,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdQuickReply,
 } from '@hexabot-ai/types';
 
@@ -48,7 +48,7 @@ describe('EnvelopeFactory', () => {
     it('should build a text envelope with processed text', () => {
       const input = 'Hello there';
       const envelope = factory.buildTextEnvelope(input);
-      expect(envelope.format).toBe(OutgoingMessageFormat.text);
+      expect(envelope.type).toBe(OutgoingMessageType.text);
       expect(envelope.data.text).toBe('Hello there');
     });
   });
@@ -67,7 +67,7 @@ describe('EnvelopeFactory', () => {
         },
       ] as StdQuickReply[];
       const envelope = factory.buildQuickRepliesEnvelope(input, quickReplies);
-      expect(envelope.format).toBe(OutgoingMessageFormat.quickReplies);
+      expect(envelope.type).toBe(OutgoingMessageType.quickReply);
       expect(envelope.data.text).toBe('Choose an option');
       expect(envelope.data.quickReplies).toHaveLength(2);
       expect(envelope.data.quickReplies[0].title).toBe('Yes');
@@ -93,7 +93,7 @@ describe('EnvelopeFactory', () => {
         },
       ];
       const envelope = factory.buildButtonsEnvelope(input, buttons);
-      expect(envelope.format).toBe(OutgoingMessageFormat.buttons);
+      expect(envelope.type).toBe(OutgoingMessageType.buttons);
       expect(envelope.data.text).toBe('Press a button');
       expect(envelope.data.buttons).toHaveLength(2);
       // For a postback button, both title and payload are processed.
@@ -125,7 +125,7 @@ describe('EnvelopeFactory', () => {
         attachment,
         quickReplies,
       );
-      expect(envelope.format).toBe(OutgoingMessageFormat.attachment);
+      expect(envelope.type).toBe(OutgoingMessageType.attachment);
       expect(envelope.data.attachment).toEqual(attachment);
       expect(envelope.data.quickReplies).toHaveLength(1);
       expect(envelope.data.quickReplies?.[0].title).toBe('Yes company');
@@ -141,7 +141,7 @@ describe('EnvelopeFactory', () => {
         { id: '3', title: 'Element 3' },
       ] as ContentElement[];
       // Test both carousel and list formats.
-      [OutgoingMessageFormat.carousel, OutgoingMessageFormat.list].forEach(
+      [OutgoingMessageType.carousel, OutgoingMessageType.list].forEach(
         (format) => {
           const options = {
             buttons: [],
@@ -159,14 +159,12 @@ describe('EnvelopeFactory', () => {
             limit: 3,
           } as ContentPagination;
           const envelope = factory.buildListEnvelope(
-            format as
-              | OutgoingMessageFormat.carousel
-              | OutgoingMessageFormat.list,
+            format as OutgoingMessageType.carousel | OutgoingMessageType.list,
             options,
             elements,
             pagination,
           );
-          expect(envelope.format).toBe(format);
+          expect(envelope.type).toBe(format);
           expect(envelope.data.options).toEqual(options);
           expect(envelope.data.elements).toEqual(elements);
           expect(envelope.data.pagination).toEqual(pagination);
@@ -180,7 +178,7 @@ describe('EnvelopeFactory', () => {
       const outcome = 'success';
       const data = { key: 'value' };
       const envelope = factory.buildSystemEnvelope(outcome, data);
-      expect(envelope.format).toBe(OutgoingMessageFormat.system);
+      expect(envelope.type).toBe(OutgoingMessageType.system);
       expect(envelope.data.outcome).toBe(outcome);
       expect(envelope.data.data).toEqual(data);
     });

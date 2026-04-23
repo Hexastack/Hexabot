@@ -102,7 +102,7 @@ export default abstract class ChannelHandler<
   /**
    * Send a channel Message to the end user
    * @param event - Incoming event/message being responded to
-   * @param envelope - The message to be sent {format, message}
+   * @param envelope - The message to be sent `{ type, data }`
    * @param options - Might contain additional settings
    * @returns {Promise} - The channel's response, otherwise an error
    

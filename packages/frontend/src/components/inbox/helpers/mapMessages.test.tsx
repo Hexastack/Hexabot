@@ -9,7 +9,7 @@ import {
   FileType,
   IncomingMessageType,
   Message,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingListMessageData,
 } from "@hexabot-ai/types";
 import { createTheme } from "@mui/material/styles";
@@ -79,7 +79,7 @@ describe("getMessageContent", () => {
     expect(
       renderMessage(
         {
-          format: OutgoingMessageFormat.text,
+          type: OutgoingMessageType.text,
           data: { text: "Outgoing text" },
         },
         true,
@@ -88,7 +88,7 @@ describe("getMessageContent", () => {
 
     const quickRepliesHtml = renderMessage(
       {
-        format: OutgoingMessageFormat.quickReplies,
+        type: OutgoingMessageType.quickReply,
         data: {
           text: "Quick reply prompt",
           quickReplies: [{ title: "Yes", payload: "yes" }],
@@ -102,7 +102,7 @@ describe("getMessageContent", () => {
 
     const buttonsHtml = renderMessage(
       {
-        format: OutgoingMessageFormat.buttons,
+        type: OutgoingMessageType.buttons,
         data: {
           text: "Buttons prompt",
           buttons: [
@@ -123,7 +123,7 @@ describe("getMessageContent", () => {
     expect(
       renderMessage(
         {
-          format: OutgoingMessageFormat.attachment,
+          type: OutgoingMessageType.attachment,
           data: {
             attachment: {
               type: FileType.image,
@@ -156,7 +156,7 @@ describe("getMessageContent", () => {
     expect(
       renderMessage(
         {
-          format: OutgoingMessageFormat.list,
+          type: OutgoingMessageType.list,
           data: listMessageData,
         },
         true,
@@ -166,7 +166,7 @@ describe("getMessageContent", () => {
     expect(
       renderMessage(
         {
-          format: OutgoingMessageFormat.carousel,
+          type: OutgoingMessageType.carousel,
           data: carouselMessageData,
         },
         true,
@@ -177,7 +177,7 @@ describe("getMessageContent", () => {
   it("renders all incoming discriminator variants", () => {
     expect(
       renderMessage({
-        type: IncomingMessageType.message,
+        type: IncomingMessageType.text,
         data: { text: "Incoming text" },
       }),
     ).toContain("Incoming text");
@@ -191,7 +191,7 @@ describe("getMessageContent", () => {
 
     expect(
       renderMessage({
-        type: IncomingMessageType.quick_reply,
+        type: IncomingMessageType.quickReply,
         data: { text: "Quick reply text", payload: "yes" },
       }),
     ).toContain("Quick reply text");
@@ -205,9 +205,9 @@ describe("getMessageContent", () => {
 
     expect(
       renderMessage({
-        type: IncomingMessageType.attachments,
+        type: IncomingMessageType.attachment,
         data: {
-          serialized_text: "file.jpg",
+          serializedText: "file.jpg",
           attachment: {
             type: FileType.file,
             payload: { url: "https://example.com/file.pdf" },
@@ -220,7 +220,7 @@ describe("getMessageContent", () => {
   it("does not use legacy quick_replies aliases", () => {
     const html = renderMessage(
       {
-        format: OutgoingMessageFormat.quickReplies,
+        type: OutgoingMessageType.quickReply,
         data: {
           text: "Only canonical quick replies",
           quickReplies: [],

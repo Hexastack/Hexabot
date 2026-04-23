@@ -11,7 +11,7 @@ import {
   IncomingMessageType,
   IncomingMessage,
   OutgoingMessage,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdEventType,
   StdOutgoingEnvelope,
 } from '@hexabot-ai/types';
@@ -212,7 +212,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     incoming: IncomingMessage,
   ): Promise<Web.InboundMessageBase> {
     switch (incoming.message.type) {
-      case IncomingMessageType.message:
+      case IncomingMessageType.text:
         return {
           type: Web.InboundMessageType.text,
           data: incoming.message.data,
@@ -222,7 +222,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           type: Web.InboundMessageType.postback,
           data: incoming.message.data,
         };
-      case IncomingMessageType.quick_reply:
+      case IncomingMessageType.quickReply:
         return {
           type: Web.InboundMessageType.quick_reply,
           data: incoming.message.data,
@@ -240,7 +240,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           },
         };
       }
-      case IncomingMessageType.attachments: {
+      case IncomingMessageType.attachment: {
         // @TODO : handle multiple files
         const attachmentPayload = Array.isArray(
           incoming.message.data.attachment,
@@ -278,8 +278,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   ): Promise<Web.OutboundMessageBase> {
     const envelope = outgoing.message;
     const options: ActionOptions =
-      envelope.format === OutgoingMessageFormat.list ||
-      envelope.format === OutgoingMessageFormat.carousel
+      envelope.type === OutgoingMessageType.list ||
+      envelope.type === OutgoingMessageType.carousel
         ? {
             content: envelope.data.options,
           }
@@ -824,7 +824,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           const sentMessage: MessageCreateDto = {
             mid: messageEvent.getId(),
             message: {
-              format: OutgoingMessageFormat.text,
+              type: OutgoingMessageType.text,
               data: { text: messageEvent.getText() },
             },
             recipient: profile.id,
@@ -963,7 +963,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * Send a Web Channel Message to the end-user
    *
    * @param event - Incoming event/message being responded to
-   * @param envelope - The message to be sent {format, message}
+   * @param envelope - The message to be sent `{ type, data }`
    * @param options - Might contain additional settings
    *
    * @returns The web's response, otherwise an error
@@ -973,8 +973,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     envelope: StdOutgoingEnvelope,
     options: ActionOptions,
   ): Promise<{ mid: string }> {
-    if (envelope.format === OutgoingMessageFormat.system) {
-      throw new UnsupportedOutgoingFormatError(envelope.format);
+    if (envelope.type === OutgoingMessageType.system) {
+      throw new UnsupportedOutgoingFormatError(envelope.type);
     }
 
     const messageBase = await this.outboundMessageEncoder.encode(

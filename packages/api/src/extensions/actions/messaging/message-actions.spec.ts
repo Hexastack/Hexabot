@@ -6,7 +6,7 @@
 
 import {
   IncomingMessageType,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
 import { z } from 'zod';
@@ -113,7 +113,7 @@ describe('MessageAction base', () => {
       getHandler: jest.fn(() => handler as any),
       getThreadId: jest.fn(() => 'thread-1'),
       getMessage: jest.fn(() => ({
-        type: IncomingMessageType.message,
+        type: IncomingMessageType.text,
         data: { text: 'incoming-message' },
       })),
     } as unknown as MockEvent;
@@ -161,7 +161,7 @@ describe('MessageAction base', () => {
     const context = buildWorkflowContext();
     const prepared = await (action as any).prepare(context);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.text,
+      type: OutgoingMessageType.text,
       data: { text: 'hi' },
     };
     const result = await (action as any).sendPreparedMessage(
@@ -205,7 +205,7 @@ describe('MessageAction base', () => {
       sent: {
         mid: 'server-mid',
         channel: 'web',
-        format: OutgoingMessageFormat.text,
+        type: OutgoingMessageType.text,
         envelope,
       },
     });
@@ -215,7 +215,7 @@ describe('MessageAction base', () => {
     const context = buildWorkflowContext();
     const prepared = await (action as any).prepare(context);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.quickReplies,
+      type: OutgoingMessageType.quickReply,
       data: { text: 'question', quickReplies: [] },
     };
     handler.sendMessage.mockResolvedValueOnce({});
@@ -236,7 +236,7 @@ describe('MessageAction base', () => {
       sent: {
         mid: undefined,
         channel: 'web',
-        format: OutgoingMessageFormat.quickReplies,
+        type: OutgoingMessageType.quickReply,
         envelope,
       },
     });
@@ -245,7 +245,7 @@ describe('MessageAction base', () => {
   it('delegates send flow through prepareAndSendMessage', async () => {
     const context = buildWorkflowContext();
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.text,
+      type: OutgoingMessageType.text,
       data: { text: 'hi' },
     };
     const prepared = await (action as any).prepare(context);

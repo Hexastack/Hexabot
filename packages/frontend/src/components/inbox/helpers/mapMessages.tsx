@@ -10,7 +10,7 @@ import type {
   StdIncomingMessage,
   StdOutgoingMessage,
 } from "@hexabot-ai/types";
-import { IncomingMessageType, OutgoingMessageFormat } from "@hexabot-ai/types";
+import { IncomingMessageType, OutgoingMessageType } from "@hexabot-ai/types";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
@@ -31,15 +31,15 @@ import { Carousel } from "../components/Carousel";
 import GeolocationMessage from "../components/GeolocationMessage";
 
 function isIncomingMessage(
-  message: MessageEntity["message"] | MessageFull["message"],
-): message is StdIncomingMessage {
-  return "type" in message;
+  messageEntity: MessageEntity | MessageFull,
+): boolean {
+  return !messageEntity.recipient;
 }
 
 function isOutgoingMessage(
-  message: MessageEntity["message"] | MessageFull["message"],
-): message is StdOutgoingMessage {
-  return "format" in message;
+  messageEntity: MessageEntity | MessageFull,
+): boolean {
+  return Boolean(messageEntity.recipient);
 }
 
 function hasSameSender(
@@ -231,30 +231,32 @@ export function getMessageContent(
       return title ? [{ title }] : [];
     });
 
-  if (isIncomingMessage(message)) {
-    switch (message.type) {
+  if (isIncomingMessage(messageEntity)) {
+    const incomingMessage = message as StdIncomingMessage;
+
+    switch (incomingMessage.type) {
       case IncomingMessageType.location:
         content.push(
           <Message.CustomContent key={`location-${messageEntity.id}`}>
-            <GeolocationMessage message={message} />
+            <GeolocationMessage message={incomingMessage} />
             {renderTimestamp(`location-${messageEntity.id}`)}
           </Message.CustomContent>,
         );
         break;
-      case IncomingMessageType.attachments:
+      case IncomingMessageType.attachment:
         content.push(
           <Message.CustomContent key={`attachment-${messageEntity.id}`}>
-            <MessageAttachmentsViewer message={message} />
+            <MessageAttachmentsViewer message={incomingMessage} />
             {renderTimestamp(`attachment-${messageEntity.id}`)}
           </Message.CustomContent>,
         );
         break;
-      case IncomingMessageType.message:
+      case IncomingMessageType.text:
       case IncomingMessageType.postback:
-      case IncomingMessageType.quick_reply:
+      case IncomingMessageType.quickReply:
         content.push(
           <Message.CustomContent key={messageEntity.id}>
-            {formatMessageText(message.data.text, theme)}
+            {formatMessageText(incomingMessage.data.text, theme)}
             {renderTimestamp(messageEntity.id)}
           </Message.CustomContent>,
         );
@@ -264,24 +266,26 @@ export function getMessageContent(
     }
   }
 
-  if (isOutgoingMessage(message)) {
-    switch (message.format) {
-      case OutgoingMessageFormat.text:
+  if (isOutgoingMessage(messageEntity)) {
+    const outgoingMessage = message as StdOutgoingMessage;
+
+    switch (outgoingMessage.type) {
+      case OutgoingMessageType.text:
         content.push(
           <Message.CustomContent key={messageEntity.id}>
-            {formatMessageText(message.data.text, theme)}
+            {formatMessageText(outgoingMessage.data.text, theme)}
             {renderTimestamp(messageEntity.id)}
           </Message.CustomContent>,
         );
         break;
-      case OutgoingMessageFormat.quickReplies:
+      case OutgoingMessageType.quickReply:
         content.push(
           <Message.CustomContent key={messageEntity.id}>
-            {formatMessageText(message.data.text, theme)}
+            {formatMessageText(outgoingMessage.data.text, theme)}
             {renderTimestamp(messageEntity.id)}
           </Message.CustomContent>,
         );
-        chips = normalizeChips(message.data.quickReplies);
+        chips = normalizeChips(outgoingMessage.data.quickReplies);
         chipsIcon = (
           <Box
             component="span"
@@ -291,14 +295,14 @@ export function getMessageContent(
           </Box>
         );
         break;
-      case OutgoingMessageFormat.buttons:
+      case OutgoingMessageType.buttons:
         content.push(
           <Message.CustomContent key={messageEntity.id}>
-            {formatMessageText(message.data.text, theme)}
+            {formatMessageText(outgoingMessage.data.text, theme)}
             {renderTimestamp(messageEntity.id)}
           </Message.CustomContent>,
         );
-        chips = normalizeChips(message.data.buttons);
+        chips = normalizeChips(outgoingMessage.data.buttons);
         chipsIcon = (
           <Box
             component="span"
@@ -308,14 +312,14 @@ export function getMessageContent(
           </Box>
         );
         break;
-      case OutgoingMessageFormat.attachment:
+      case OutgoingMessageType.attachment:
         content.push(
           <Message.CustomContent key={`attachment-${messageEntity.id}`}>
-            <MessageAttachmentsViewer message={message} />
+            <MessageAttachmentsViewer message={outgoingMessage} />
             {renderTimestamp(`attachment-${messageEntity.id}`)}
           </Message.CustomContent>,
         );
-        chips = normalizeChips(message.data.quickReplies ?? []);
+        chips = normalizeChips(outgoingMessage.data.quickReplies ?? []);
         chipsIcon = (
           <Box
             component="span"
@@ -325,11 +329,11 @@ export function getMessageContent(
           </Box>
         );
         break;
-      case OutgoingMessageFormat.list:
-      case OutgoingMessageFormat.carousel:
+      case OutgoingMessageType.list:
+      case OutgoingMessageType.carousel:
         content.push(
           <Message.CustomContent key={`carousel-${messageEntity.id}`}>
-            <Carousel message={message} />
+            <Carousel message={outgoingMessage} />
             {renderTimestamp(`carousel-${messageEntity.id}`)}
           </Message.CustomContent>,
         );

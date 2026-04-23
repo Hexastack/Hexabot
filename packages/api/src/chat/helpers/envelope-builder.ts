@@ -5,7 +5,7 @@
  */
 
 import {
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingAttachmentEnvelope,
   stdOutgoingAttachmentEnvelopeSchema,
   StdOutgoingButtonsEnvelope,
@@ -58,12 +58,12 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
 }
 
 /**
- * Builds an envelope object (containing a `format` and a `data` property)
+ * Builds an envelope object (containing a `type` and a `data` property)
  * and returns a proxy-based builder interface with chainable setter methods.
  * It also validates the final envelope against the provided `z.ZodSchema`.
  *
- * @param format - The format of the outgoing envelope.
- * Corresponds to `format` on the generic type `T`.
+ * @param type - The type of the outgoing envelope.
+ * Corresponds to `type` on the generic type `T`.
  * @param template - An optional initial message template.
  * It will be merged as you set or append properties through the returned builder.
  * @param schema - A Zod schema used to validate the final envelope object.
@@ -75,20 +75,20 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
  *
  * @example
  * // Build a simple text envelope:
- * const env1 = EnvelopeBuilder(OutgoingMessageFormat.text)
+ * const env1 = EnvelopeBuilder(OutgoingMessageType.text)
  *   .setText('Hello')
  *   .build();
  *
  * @example
  * // Build a text envelope with quick replies:
- * const env2 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
+ * const env2 = EnvelopeBuilder(OutgoingMessageType.quickReply)
  *   .setText('Hello')
  *   .setQuickReplies([])
  *   .build();
  *
  * @example
  * // Append multiple quickReplies items:
- * const env3 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
+ * const env3 = EnvelopeBuilder(OutgoingMessageType.quickReply)
  *   .setText('Are you interested?')
  *   .appendToQuickReplies({
  *     title: 'Yes',
@@ -102,17 +102,17 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
  *
  * @example
  * // Build a system envelope with an outcome:
- * const env4 = EnvelopeBuilder(OutgoingMessageFormat.system)
+ * const env4 = EnvelopeBuilder(OutgoingMessageType.system)
  *   .setOutcome('success')
  *   .build();
  */
 export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
-  format: T['format'],
+  type: T['type'],
   template: Partial<T['data']> = {},
   schema: z.ZodType,
 ): IEnvelopeBuilder<T> {
-  let built: { format: T['format']; data: Partial<T['data']> } = {
-    format,
+  let built: { type: T['type']; data: Partial<T['data']> } = {
+    type,
     data: template,
   };
 
@@ -125,7 +125,7 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
           return () => {
             const result = schema.parse(built);
             built = {
-              format,
+              type,
               data: template,
             };
 
@@ -168,39 +168,37 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
   return builder as IEnvelopeBuilder<T>;
 }
 
-type EnvelopeTypeByFormat<F extends OutgoingMessageFormat> =
-  F extends OutgoingMessageFormat.text
+type EnvelopeTypeByType<T extends OutgoingMessageType> =
+  T extends OutgoingMessageType.text
     ? StdOutgoingTextEnvelope
-    : F extends OutgoingMessageFormat.quickReplies
+    : T extends OutgoingMessageType.quickReply
       ? StdOutgoingQuickRepliesEnvelope
-      : F extends OutgoingMessageFormat.buttons
+      : T extends OutgoingMessageType.buttons
         ? StdOutgoingButtonsEnvelope
-        : F extends OutgoingMessageFormat.attachment
+        : T extends OutgoingMessageType.attachment
           ? StdOutgoingAttachmentEnvelope
-          : F extends OutgoingMessageFormat.carousel
+          : T extends OutgoingMessageType.carousel
             ? StdOutgoingListEnvelope
-            : F extends OutgoingMessageFormat.list
+            : T extends OutgoingMessageType.list
               ? StdOutgoingListEnvelope
-              : F extends OutgoingMessageFormat.system
+              : T extends OutgoingMessageType.system
                 ? StdOutgoingSystemEnvelope
                 : StdOutgoingMessageEnvelope;
 
-const ENVELOP_SCHEMAS_BY_FORMAT = {
-  [OutgoingMessageFormat.text]: stdOutgoingTextEnvelopeSchema,
-  [OutgoingMessageFormat.quickReplies]: stdOutgoingQuickRepliesEnvelopeSchema,
-  [OutgoingMessageFormat.buttons]: stdOutgoingButtonsEnvelopeSchema,
-  [OutgoingMessageFormat.attachment]: stdOutgoingAttachmentEnvelopeSchema,
-  [OutgoingMessageFormat.carousel]: stdOutgoingListEnvelopeSchema,
-  [OutgoingMessageFormat.list]: stdOutgoingListEnvelopeSchema,
-  [OutgoingMessageFormat.system]: stdOutgoingSystemEnvelopeSchema,
+const ENVELOPE_SCHEMAS_BY_TYPE = {
+  [OutgoingMessageType.text]: stdOutgoingTextEnvelopeSchema,
+  [OutgoingMessageType.quickReply]: stdOutgoingQuickRepliesEnvelopeSchema,
+  [OutgoingMessageType.buttons]: stdOutgoingButtonsEnvelopeSchema,
+  [OutgoingMessageType.attachment]: stdOutgoingAttachmentEnvelopeSchema,
+  [OutgoingMessageType.carousel]: stdOutgoingListEnvelopeSchema,
+  [OutgoingMessageType.list]: stdOutgoingListEnvelopeSchema,
+  [OutgoingMessageType.system]: stdOutgoingSystemEnvelopeSchema,
 };
 
-export const getEnvelopeBuilder = <F extends OutgoingMessageFormat>(
-  format: F,
-) => {
-  return EnvelopeBuilder<EnvelopeTypeByFormat<F>>(
-    format,
+export const getEnvelopeBuilder = <F extends OutgoingMessageType>(type: F) => {
+  return EnvelopeBuilder<EnvelopeTypeByType<F>>(
+    type,
     {},
-    ENVELOP_SCHEMAS_BY_FORMAT[format],
+    ENVELOPE_SCHEMAS_BY_TYPE[type],
   );
 };

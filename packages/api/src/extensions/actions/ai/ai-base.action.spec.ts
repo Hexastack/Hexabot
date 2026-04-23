@@ -6,7 +6,7 @@
 
 import { createGatewayProvider } from '@ai-sdk/gateway';
 import { createOpenAI } from '@ai-sdk/openai';
-import { Message, OutgoingMessageFormat } from '@hexabot-ai/types';
+import { Message, OutgoingMessageType } from '@hexabot-ai/types';
 import { LanguageModelUsage } from 'ai';
 import { z } from 'zod';
 
@@ -462,7 +462,7 @@ describe('AiBaseAction', () => {
         recipient: overrides.recipient,
         sentBy: overrides.sentBy,
         message: overrides.message ?? {
-          format: OutgoingMessageFormat.text,
+          type: OutgoingMessageType.text,
           data: { text: 'hello' },
         },
         read: overrides.read ?? false,
@@ -479,7 +479,7 @@ describe('AiBaseAction', () => {
           createdAt: new Date('2024-01-01T09:00:00Z'),
           sender: initiatorId,
           message: {
-            format: OutgoingMessageFormat.text,
+            type: OutgoingMessageType.text,
             data: { text: 'Hi' },
           },
         }),
@@ -489,7 +489,7 @@ describe('AiBaseAction', () => {
           sender: 'bot',
           recipient: initiatorId,
           message: {
-            format: OutgoingMessageFormat.text,
+            type: OutgoingMessageType.text,
             data: { text: 'Hello there' },
           },
         }),

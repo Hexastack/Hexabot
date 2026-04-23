@@ -25,7 +25,7 @@ export class QuickReplyInboundEvent<
     payloadValue: string,
     text: string,
   ) {
-    super(context, IncomingMessageType.quick_reply, payloadValue, text);
+    super(context, IncomingMessageType.quickReply, payloadValue, text);
   }
 }
 

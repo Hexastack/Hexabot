@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { OutgoingMessageFormat, ContentOptions } from '@hexabot-ai/types';
+import { OutgoingMessageType, ContentOptions } from '@hexabot-ai/types';
 
 import { ActionService } from '@/actions/actions.service';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
@@ -54,8 +54,8 @@ describe('SendListAction', () => {
 
   it('fetches content and delegates sending the list envelope', async () => {
     const envelope = {
-      format: OutgoingMessageFormat.list,
-      message: {
+      type: OutgoingMessageType.list,
+      data: {
         options: {},
         elements: [],
         pagination: { total: 1, skip: 1, limit: 2 },
@@ -99,7 +99,7 @@ describe('SendListAction', () => {
       1,
     );
     expect(prepared.envelopeFactory.buildListEnvelope).toHaveBeenCalledWith(
-      OutgoingMessageFormat.list,
+      OutgoingMessageType.list,
       { ...baseContentOptions, contentType: 'ct-id', query: { status: true } },
       contentResult.elements,
       contentResult.pagination,

@@ -5,14 +5,14 @@
  */
 
 import {
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
 
 export class UnsupportedOutgoingFormatError extends Error {
   constructor(
-    public readonly format: string,
-    message = `Unsupported outgoing message format "${format}".`,
+    public readonly type: string,
+    message = `Unsupported outgoing message type "${type}".`,
   ) {
     super(message);
     this.name = 'UnsupportedOutgoingFormatError';
@@ -21,45 +21,45 @@ export class UnsupportedOutgoingFormatError extends Error {
 }
 
 export type EnvelopeHandlers<Out, Opt = unknown> = {
-  [OutgoingMessageFormat.text]: (
+  [OutgoingMessageType.text]: (
     envelope: Extract<
       StdOutgoingMessageEnvelope,
-      { format: OutgoingMessageFormat.text }
+      { type: OutgoingMessageType.text }
     >,
     options: Opt,
   ) => Promise<Out> | Out;
-  [OutgoingMessageFormat.quickReplies]: (
+  [OutgoingMessageType.quickReply]: (
     envelope: Extract<
       StdOutgoingMessageEnvelope,
-      { format: OutgoingMessageFormat.quickReplies }
+      { type: OutgoingMessageType.quickReply }
     >,
     options: Opt,
   ) => Promise<Out> | Out;
-  [OutgoingMessageFormat.buttons]: (
+  [OutgoingMessageType.buttons]: (
     envelope: Extract<
       StdOutgoingMessageEnvelope,
-      { format: OutgoingMessageFormat.buttons }
+      { type: OutgoingMessageType.buttons }
     >,
     options: Opt,
   ) => Promise<Out> | Out;
-  [OutgoingMessageFormat.attachment]: (
+  [OutgoingMessageType.attachment]: (
     envelope: Extract<
       StdOutgoingMessageEnvelope,
-      { format: OutgoingMessageFormat.attachment }
+      { type: OutgoingMessageType.attachment }
     >,
     options: Opt,
   ) => Promise<Out> | Out;
-  [OutgoingMessageFormat.list]: (
+  [OutgoingMessageType.list]: (
     envelope: Extract<
       StdOutgoingMessageEnvelope,
-      { format: OutgoingMessageFormat.list }
+      { type: OutgoingMessageType.list }
     >,
     options: Opt,
   ) => Promise<Out> | Out;
-  [OutgoingMessageFormat.carousel]: (
+  [OutgoingMessageType.carousel]: (
     envelope: Extract<
       StdOutgoingMessageEnvelope,
-      { format: OutgoingMessageFormat.carousel }
+      { type: OutgoingMessageType.carousel }
     >,
     options: Opt,
   ) => Promise<Out> | Out;
@@ -76,30 +76,30 @@ export abstract class ChannelOutboundMessageEncoder<Out, Opt = unknown> {
     options: Opt,
     handlers: EnvelopeHandlers<Out, Opt>,
   ): Promise<Out> | Out {
-    switch (envelope.format) {
-      case OutgoingMessageFormat.text:
-        return handlers[OutgoingMessageFormat.text](envelope, options);
-      case OutgoingMessageFormat.quickReplies:
-        return handlers[OutgoingMessageFormat.quickReplies](envelope, options);
-      case OutgoingMessageFormat.buttons:
-        return handlers[OutgoingMessageFormat.buttons](envelope, options);
-      case OutgoingMessageFormat.attachment:
-        return handlers[OutgoingMessageFormat.attachment](envelope, options);
-      case OutgoingMessageFormat.list:
-        return handlers[OutgoingMessageFormat.list](envelope, options);
-      case OutgoingMessageFormat.carousel:
-        return handlers[OutgoingMessageFormat.carousel](envelope, options);
+    switch (envelope.type) {
+      case OutgoingMessageType.text:
+        return handlers[OutgoingMessageType.text](envelope, options);
+      case OutgoingMessageType.quickReply:
+        return handlers[OutgoingMessageType.quickReply](envelope, options);
+      case OutgoingMessageType.buttons:
+        return handlers[OutgoingMessageType.buttons](envelope, options);
+      case OutgoingMessageType.attachment:
+        return handlers[OutgoingMessageType.attachment](envelope, options);
+      case OutgoingMessageType.list:
+        return handlers[OutgoingMessageType.list](envelope, options);
+      case OutgoingMessageType.carousel:
+        return handlers[OutgoingMessageType.carousel](envelope, options);
       default:
         return this.assertNeverOutgoingEnvelope(envelope);
     }
   }
 
   protected assertNeverOutgoingEnvelope(value: never): never {
-    const unknownFormat =
-      typeof value === 'object' && value && 'format' in value
-        ? String((value as { format: unknown }).format)
+    const unknownType =
+      typeof value === 'object' && value && 'type' in value
+        ? String((value as { type: unknown }).type)
         : 'unknown';
 
-    throw new UnsupportedOutgoingFormatError(unknownFormat);
+    throw new UnsupportedOutgoingFormatError(unknownType);
   }
 }

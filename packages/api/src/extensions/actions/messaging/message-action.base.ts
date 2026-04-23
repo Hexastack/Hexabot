@@ -10,7 +10,7 @@ import {
   stdIncomingMessageSchema,
   StdOutgoingMessage,
   StdOutgoingMessageEnvelope,
-  StdOutgoingMessageSchema,
+  stdOutgoingMessageSchema,
 } from '@hexabot-ai/types';
 import { z } from 'zod';
 
@@ -26,7 +26,7 @@ import { WorkflowType } from '@/workflow/types';
 
 const sentFormats = [
   'text',
-  'quickReplies',
+  'quickReply',
   'buttons',
   'list',
   'carousel',
@@ -36,8 +36,8 @@ const sentFormats = [
 export const sentMessageSchema = z.object({
   mid: z.string().optional(),
   channel: z.string(),
-  format: z.enum(sentFormats),
-  envelope: StdOutgoingMessageSchema,
+  type: z.enum(sentFormats),
+  envelope: stdOutgoingMessageSchema,
 });
 
 type SentMessageFormat = (typeof sentFormats)[number];
@@ -45,7 +45,7 @@ type SentMessageFormat = (typeof sentFormats)[number];
 export type SentMessageInfo = {
   mid?: string;
   channel: string;
-  format: SentMessageFormat;
+  type: SentMessageFormat;
   envelope: StdOutgoingMessage;
 };
 
@@ -158,7 +158,7 @@ export abstract class MessageAction<
     const sent: SentMessageInfo = {
       mid,
       channel: event.getHandler().getName(),
-      format: envelope.format,
+      type: envelope.type,
       envelope,
     };
     const threadId = event.getThreadId();

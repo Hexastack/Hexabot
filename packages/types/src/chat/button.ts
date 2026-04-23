@@ -81,8 +81,8 @@ export const buttonSchema = z
 
 export enum PayloadType {
   location = "location",
-  attachments = "attachments",
-  quick_reply = "quick_reply",
+  attachment = "attachment",
+  quickReply = "quickReply",
   button = "button",
   outcome = "outcome",
   menu = "menu",

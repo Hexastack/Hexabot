@@ -20,7 +20,7 @@ export const payloadSchema = z.discriminatedUnion("type", [
     coordinates: coordinatesSchema,
   }),
   z.object({
-    type: z.literal(PayloadType.attachments),
+    type: z.literal(PayloadType.attachment),
     attachment: attachmentPayloadSchema,
   }),
 ]);

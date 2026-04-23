@@ -11,7 +11,7 @@ import {
   ContentElement,
   ContentOptions,
   ContentPagination,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingAttachmentEnvelope,
   StdOutgoingButtonsEnvelope,
   StdOutgoingListEnvelope,
@@ -37,14 +37,14 @@ export class EnvelopeFactory {
   }
 
   /**
-   * Returns an envelope builder instance for the specified message format.
+   * Returns an envelope builder instance for the specified message type.
    *
-   * @template F - The envelope message format extending OutgoingMessageFormat.
-   * @param format - The desired envelope message format.
-   * @returns A builder instance for creating envelopes of the specified format.
+   * @template F - The envelope message type extending OutgoingMessageType.
+   * @param type - The desired envelope message type.
+   * @returns A builder instance for creating envelopes of the specified type.
    */
-  getBuilder<F extends OutgoingMessageFormat>(format: F) {
-    return getEnvelopeBuilder<F>(format);
+  getBuilder<F extends OutgoingMessageType>(type: F) {
+    return getEnvelopeBuilder<F>(type);
   }
 
   /**
@@ -57,7 +57,7 @@ export class EnvelopeFactory {
    * @returns A finalized text envelope object.
    */
   buildTextEnvelope(text: string | string[]): StdOutgoingTextEnvelope {
-    const builder = this.getBuilder(OutgoingMessageFormat.text);
+    const builder = this.getBuilder(OutgoingMessageType.text);
     const processedText = this.processText(text);
 
     return builder.setText(processedText).build();
@@ -77,7 +77,7 @@ export class EnvelopeFactory {
     text: string | string[],
     quickReplies: StdQuickReply[],
   ): StdOutgoingQuickRepliesEnvelope {
-    const builder = this.getBuilder(OutgoingMessageFormat.quickReplies);
+    const builder = this.getBuilder(OutgoingMessageType.quickReply);
     const processedText = this.processText(text);
     const envelope = builder.setText(processedText);
 
@@ -107,7 +107,7 @@ export class EnvelopeFactory {
     text: string | string[],
     buttons: Button[],
   ): StdOutgoingButtonsEnvelope {
-    const builder = this.getBuilder(OutgoingMessageFormat.buttons);
+    const builder = this.getBuilder(OutgoingMessageType.buttons);
     const processedText = this.processText(text);
     const envelope = builder.setText(processedText);
 
@@ -142,7 +142,7 @@ export class EnvelopeFactory {
     attachment: AttachmentPayload,
     quickReplies: StdQuickReply[] = [],
   ): StdOutgoingAttachmentEnvelope {
-    const builder = this.getBuilder(OutgoingMessageFormat.attachment);
+    const builder = this.getBuilder(OutgoingMessageType.attachment);
     const envelope = builder.setAttachment(attachment);
 
     quickReplies.forEach((qr) => {
@@ -162,19 +162,19 @@ export class EnvelopeFactory {
    * This method builds a list envelope (applicable for both carousel and list formats)
    * by setting options, elements, and pagination details on the envelope.
    *
-   * @param format - The envelope format (carousel or list).
+   * @param type - The envelope type (carousel or list).
    * @param options - Options for content presentation.
    * @param elements - An array of content elements.
    * @param pagination - Pagination details for the content.
    * @returns A finalized list envelope object.
    */
   buildListEnvelope(
-    format: OutgoingMessageFormat.carousel | OutgoingMessageFormat.list,
+    type: OutgoingMessageType.carousel | OutgoingMessageType.list,
     options: ContentOptions,
     elements: ContentElement[],
     pagination: ContentPagination,
   ): StdOutgoingListEnvelope {
-    const builder = this.getBuilder(format);
+    const builder = this.getBuilder(type);
 
     return builder
       .setOptions(options)
@@ -197,7 +197,7 @@ export class EnvelopeFactory {
     outcome: string | undefined,
     data?: unknown,
   ): StdOutgoingSystemEnvelope {
-    const builder = this.getBuilder(OutgoingMessageFormat.system);
+    const builder = this.getBuilder(OutgoingMessageType.system);
 
     return builder.setOutcome(outcome).setData(data).build();
   }

@@ -44,7 +44,7 @@ export class AttachmentMessageInboundEvent<
   }
 
   override getMessageType(): IncomingMessageType {
-    return IncomingMessageType.attachments;
+    return IncomingMessageType.attachment;
   }
 
   setUploadedAttachment(attachment: Attachment): void {
@@ -108,7 +108,7 @@ export class AttachmentMessageInboundEvent<
     const fileType = this.resolveFileType(attachment);
 
     return {
-      type: PayloadType.attachments,
+      type: PayloadType.attachment,
       attachment: {
         type: fileType,
         payload: {
@@ -124,9 +124,9 @@ export class AttachmentMessageInboundEvent<
     const attachmentName = this.resolveAttachmentName(attachment, fileType);
 
     return {
-      type: IncomingMessageType.attachments,
+      type: IncomingMessageType.attachment,
       data: {
-        serialized_text: `attachment:${fileType}:${attachmentName}`,
+        serializedText: `attachment:${fileType}:${attachmentName}`,
         attachment: {
           type: fileType,
           payload: {

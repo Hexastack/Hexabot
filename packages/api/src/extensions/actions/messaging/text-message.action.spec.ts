@@ -5,7 +5,7 @@
  */
 
 import {
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
 
@@ -32,7 +32,7 @@ describe('SendTextMessageAction', () => {
   it('builds a text envelope and delegates sending', async () => {
     const action = new SendTextMessageAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.text,
+      type: OutgoingMessageType.text,
       data: { text: 'processed' },
     };
     const prepared = {

@@ -7,7 +7,7 @@
 import {
   FileType,
   ButtonType,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingAttachmentMessageData,
   StdOutgoingButtonsMessageData,
   StdOutgoingListMessageData,
@@ -103,7 +103,7 @@ const attachment: AttachmentOrmEntity = Object.assign(
 
 export const contentMessage: StdOutgoingListMessageData = {
   options: {
-    display: OutgoingMessageFormat.list,
+    display: OutgoingMessageType.list,
     fields: {
       title: 'title',
       subtitle: 'desc',

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { OutgoingMessageFormat, ContentOptions } from '@hexabot-ai/types';
+import { OutgoingMessageType, ContentOptions } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
@@ -132,7 +132,7 @@ describe('ContentService (TypeORM)', () => {
 
   describe('getContent', () => {
     const baseOptions: ContentOptions = {
-      display: OutgoingMessageFormat.list,
+      display: OutgoingMessageType.list,
       buttons: [],
       fields: {
         title: 'title',

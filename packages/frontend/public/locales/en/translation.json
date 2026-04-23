@@ -346,6 +346,7 @@
     "no_message": "- No message -",
     "plugin": "Plugin",
     "postback": "Postback",
+    "quickReply": "Quick Reply",
     "quick_reply": "Quick Reply",
     "attachment": "Attachment",
     "text": "Text",

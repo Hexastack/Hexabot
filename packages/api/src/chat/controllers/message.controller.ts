@@ -181,8 +181,8 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
       Record<string, unknown>
     >(
       eventContext,
-      { type: IncomingMessageType.message, data: { text: '' } },
-      IncomingMessageType.message,
+      { type: IncomingMessageType.text, data: { text: '' } },
+      IncomingMessageType.text,
       channelHandler,
     );
 

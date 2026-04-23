@@ -6,7 +6,7 @@
 
 import {
   ButtonType,
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
 
@@ -33,7 +33,7 @@ describe('SendButtonsAction', () => {
   it('builds a buttons envelope and delegates sending', async () => {
     const action = new SendButtonsAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.buttons,
+      type: OutgoingMessageType.buttons,
       data: { text: 'processed', buttons: [] },
     };
     const prepared = {

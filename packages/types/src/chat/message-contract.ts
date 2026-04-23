@@ -26,11 +26,11 @@ export enum StdEventType {
 }
 
 export enum IncomingMessageType {
-  message = "message",
+  text = "text",
   postback = "postback",
-  quick_reply = "quick_reply",
+  quickReply = "quickReply",
   location = "location",
-  attachments = "attachments",
+  attachment = "attachment",
   unknown = "",
 }
 
@@ -38,9 +38,9 @@ export const incomingMessageType = z.enum(IncomingMessageType);
 
 export type IncomingMessageTypeLiteral = z.infer<typeof incomingMessageType>;
 
-export enum OutgoingMessageFormat {
+export enum OutgoingMessageType {
   text = "text",
-  quickReplies = "quickReplies",
+  quickReply = "quickReply",
   buttons = "buttons",
   attachment = "attachment",
   list = "list",
@@ -48,10 +48,10 @@ export enum OutgoingMessageFormat {
   system = "system",
 }
 
-export const outgoingMessageFormatSchema = z.enum(OutgoingMessageFormat);
+export const outgoingMessageTypeSchema = z.enum(OutgoingMessageType);
 
-export type OutgoingMessageFormatLiteral = z.infer<
-  typeof outgoingMessageFormatSchema
+export type OutgoingMessageTypeLiteral = z.infer<
+  typeof outgoingMessageTypeSchema
 >;
 
 export const payloadTypeSchema = z.enum(PayloadType);
@@ -139,7 +139,7 @@ export type StdOutgoingSystemMessageData = z.infer<
 >;
 
 export const stdOutgoingTextMessageSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.text),
+  type: z.literal(OutgoingMessageType.text),
   data: stdOutgoingTextMessageDataSchema,
 });
 
@@ -148,7 +148,7 @@ export type StdOutgoingTextMessage = z.infer<
 >;
 
 export const stdOutgoingQuickRepliesMessageSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.quickReplies),
+  type: z.literal(OutgoingMessageType.quickReply),
   data: stdOutgoingQuickRepliesMessageDataSchema,
 });
 
@@ -157,7 +157,7 @@ export type StdOutgoingQuickRepliesMessage = z.infer<
 >;
 
 export const stdOutgoingButtonsMessageSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.buttons),
+  type: z.literal(OutgoingMessageType.buttons),
   data: stdOutgoingButtonsMessageDataSchema,
 });
 
@@ -166,7 +166,7 @@ export type StdOutgoingButtonsMessage = z.infer<
 >;
 
 export const stdOutgoingListMessageSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.list),
+  type: z.literal(OutgoingMessageType.list),
   data: stdOutgoingListMessageDataSchema,
 });
 
@@ -175,7 +175,7 @@ export type StdOutgoingListMessage = z.infer<
 >;
 
 export const stdOutgoingCarouselMessageSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.carousel),
+  type: z.literal(OutgoingMessageType.carousel),
   data: stdOutgoingListMessageDataSchema,
 });
 
@@ -184,7 +184,7 @@ export type StdOutgoingCarouselMessage = z.infer<
 >;
 
 export const stdOutgoingAttachmentMessageSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.attachment),
+  type: z.literal(OutgoingMessageType.attachment),
   data: stdOutgoingAttachmentMessageDataSchema,
 });
 
@@ -192,7 +192,7 @@ export type StdOutgoingAttachmentMessage = z.infer<
   typeof stdOutgoingAttachmentMessageSchema
 >;
 
-export const StdOutgoingMessageSchema = z.discriminatedUnion("format", [
+export const stdOutgoingMessageSchema = z.discriminatedUnion("type", [
   stdOutgoingTextMessageSchema,
   stdOutgoingQuickRepliesMessageSchema,
   stdOutgoingButtonsMessageSchema,
@@ -201,7 +201,7 @@ export const StdOutgoingMessageSchema = z.discriminatedUnion("format", [
   stdOutgoingAttachmentMessageSchema,
 ]);
 
-export type StdOutgoingMessage = z.infer<typeof StdOutgoingMessageSchema>;
+export type StdOutgoingMessage = z.infer<typeof stdOutgoingMessageSchema>;
 
 export const stdIncomingTextMessageDataSchema = z.object({
   text: z.string(),
@@ -232,7 +232,7 @@ export type StdIncomingLocationMessageData = z.infer<
 >;
 
 export const stdIncomingAttachmentMessageDataSchema = z.object({
-  serialized_text: z.string(),
+  serializedText: z.string(),
   attachment: z.union([
     attachmentPayloadSchema,
     z.array(attachmentPayloadSchema),
@@ -244,7 +244,7 @@ export type StdIncomingAttachmentMessageData = z.infer<
 >;
 
 export const stdIncomingTextMessageSchema = z.object({
-  type: z.literal(IncomingMessageType.message),
+  type: z.literal(IncomingMessageType.text),
   data: stdIncomingTextMessageDataSchema,
 });
 
@@ -262,7 +262,7 @@ export type StdIncomingPostBackMessage = z.infer<
 >;
 
 export const stdIncomingQuickReplyMessageSchema = z.object({
-  type: z.literal(IncomingMessageType.quick_reply),
+  type: z.literal(IncomingMessageType.quickReply),
   data: stdIncomingPayloadMessageDataSchema,
 });
 
@@ -280,7 +280,7 @@ export type StdIncomingLocationMessage = z.infer<
 >;
 
 export const stdIncomingAttachmentMessageSchema = z.object({
-  type: z.literal(IncomingMessageType.attachments),
+  type: z.literal(IncomingMessageType.attachment),
   data: stdIncomingAttachmentMessageDataSchema,
 });
 
@@ -326,7 +326,7 @@ export const stdOutgoingButtonsEnvelopeSchema = stdOutgoingButtonsMessageSchema;
 
 export type StdOutgoingButtonsEnvelope = StdOutgoingButtonsMessage;
 
-export const stdOutgoingListEnvelopeSchema = z.discriminatedUnion("format", [
+export const stdOutgoingListEnvelopeSchema = z.discriminatedUnion("type", [
   stdOutgoingListMessageSchema,
   stdOutgoingCarouselMessageSchema,
 ]);
@@ -341,7 +341,7 @@ export const stdOutgoingAttachmentEnvelopeSchema =
 export type StdOutgoingAttachmentEnvelope = StdOutgoingAttachmentMessage;
 
 export const stdOutgoingSystemMessageSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.system),
+  type: z.literal(OutgoingMessageType.system),
   data: stdOutgoingSystemMessageDataSchema,
 });
 
@@ -353,11 +353,11 @@ export const stdOutgoingSystemEnvelopeSchema = stdOutgoingSystemMessageSchema;
 
 export type StdOutgoingSystemEnvelope = StdOutgoingSystemMessage;
 
-export const stdOutgoingMessageEnvelopeSchema = StdOutgoingMessageSchema;
+export const stdOutgoingMessageEnvelopeSchema = stdOutgoingMessageSchema;
 
 export type StdOutgoingMessageEnvelope = StdOutgoingMessage;
 
-export const stdOutgoingEnvelopeSchema = z.discriminatedUnion("format", [
+export const stdOutgoingEnvelopeSchema = z.discriminatedUnion("type", [
   stdOutgoingTextMessageSchema,
   stdOutgoingQuickRepliesMessageSchema,
   stdOutgoingButtonsMessageSchema,

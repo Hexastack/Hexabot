@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { OutgoingMessageFormat } from '@hexabot-ai/types';
+import { OutgoingMessageType } from '@hexabot-ai/types';
 
 import {
   attachmentMessage,
@@ -58,7 +58,7 @@ describe('WebOutboundMessageEncoder', () => {
 
   it('renders text envelopes', async () => {
     const formatted = await render({
-      format: OutgoingMessageFormat.text,
+      type: OutgoingMessageType.text,
       data: textMessage,
     });
 
@@ -67,7 +67,7 @@ describe('WebOutboundMessageEncoder', () => {
 
   it('renders quick replies envelopes', async () => {
     const formatted = await render({
-      format: OutgoingMessageFormat.quickReplies,
+      type: OutgoingMessageType.quickReply,
       data: quickRepliesMessage,
     });
 
@@ -76,7 +76,7 @@ describe('WebOutboundMessageEncoder', () => {
 
   it('renders buttons envelopes', async () => {
     const formatted = await render({
-      format: OutgoingMessageFormat.buttons,
+      type: OutgoingMessageType.buttons,
       data: buttonsMessage,
     });
 
@@ -86,7 +86,7 @@ describe('WebOutboundMessageEncoder', () => {
   it('renders list envelopes', async () => {
     const formatted = await render(
       {
-        format: OutgoingMessageFormat.list,
+        type: OutgoingMessageType.list,
         data: contentMessage,
       },
       {
@@ -100,13 +100,13 @@ describe('WebOutboundMessageEncoder', () => {
   it('renders carousel envelopes', async () => {
     const formatted = await render(
       {
-        format: OutgoingMessageFormat.carousel,
+        type: OutgoingMessageType.carousel,
         data: contentMessage,
       },
       {
         content: {
           ...contentMessage.options,
-          display: OutgoingMessageFormat.carousel,
+          display: OutgoingMessageType.carousel,
         },
       },
     );
@@ -116,7 +116,7 @@ describe('WebOutboundMessageEncoder', () => {
 
   it('renders attachment envelopes and resolves public urls', async () => {
     const formatted = await render({
-      format: OutgoingMessageFormat.attachment,
+      type: OutgoingMessageType.attachment,
       data: attachmentMessage,
     });
 
@@ -131,7 +131,7 @@ describe('WebOutboundMessageEncoder', () => {
     await expect(
       encoder.encode(
         {
-          format: OutgoingMessageFormat.list,
+          type: OutgoingMessageType.list,
           data: contentMessage,
         },
         {},
@@ -143,7 +143,7 @@ describe('WebOutboundMessageEncoder', () => {
     await expect(
       encoder.encode(
         {
-          format: OutgoingMessageFormat.list,
+          type: OutgoingMessageType.list,
           data: {
             ...contentMessage,
             elements: [],
@@ -163,7 +163,7 @@ describe('WebOutboundMessageEncoder', () => {
     await expect(
       encoder.encode(
         {
-          format: OutgoingMessageFormat.carousel,
+          type: OutgoingMessageType.carousel,
           data: {
             ...contentMessage,
             elements: [],
@@ -172,7 +172,7 @@ describe('WebOutboundMessageEncoder', () => {
         {
           content: {
             ...contentMessage.options,
-            display: OutgoingMessageFormat.carousel,
+            display: OutgoingMessageType.carousel,
           },
         },
       ),
@@ -186,7 +186,7 @@ describe('WebOutboundMessageEncoder', () => {
     await expect(
       encoder.encode(
         {
-          format: OutgoingMessageFormat.system,
+          type: OutgoingMessageType.system,
           data: { outcome: 'noop' },
         } as any,
         {},

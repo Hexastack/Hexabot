@@ -31,7 +31,7 @@ export abstract class PayloadMessageInboundEvent<
     >,
     private readonly messageType:
       | IncomingMessageType.postback
-      | IncomingMessageType.quick_reply,
+      | IncomingMessageType.quickReply,
     private readonly payloadValue: string,
     private readonly text: string,
   ) {
