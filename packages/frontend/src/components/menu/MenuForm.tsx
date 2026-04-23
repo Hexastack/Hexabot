@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { MenuType } from "@hexabot-ai/types";
+import { MenuType, type Menu as IMenuItem } from "@hexabot-ai/types";
 import { MenuItem, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -18,7 +18,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IMenuItem } from "@/types/menu.types";
 import { isAbsoluteUrl } from "@/utils/URL";
 
 const DEFAULT_VALUES = { title: "", type: MenuType.web_url, url: undefined };
