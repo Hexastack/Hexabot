@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ThreadFull } from "@hexabot-ai/types";
 import {
   Dispatch,
   PropsWithChildren,
@@ -16,7 +17,6 @@ import {
 import { useGet } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
 import { Subscriber } from "@/types/subscriber.types";
-import { ThreadFull } from "@/types/thread.types";
 
 import { noop } from "../helpers/noop";
 

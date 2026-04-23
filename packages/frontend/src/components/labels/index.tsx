@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Action } from "@hexabot-ai/types";
+import { Action, Label } from "@hexabot-ai/types";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Tags } from "lucide-react";
 import { useState } from "react";
@@ -22,7 +22,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { Label } from "@/types/label.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { LabelFormDialog } from "./LabelFormDialog";

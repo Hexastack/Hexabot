@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Thread } from "@hexabot-ai/types";
 import { useMemo } from "react";
 
 import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType, Format } from "@/services/types";
 import { SearchPayload } from "@/types/search.types";
-import { Thread } from "@/types/thread.types";
 
 import { AssignedTo } from "../types";
 

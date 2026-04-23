@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { LabelGroup } from "@hexabot-ai/types";
+import type { Label, LabelGroup } from "@hexabot-ai/types";
 import {
   createFilterOptions,
   IconButton,
@@ -33,7 +33,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { Label } from "@/types/label.types";
 import { slugify } from "@/utils/string";
 
 const filter = createFilterOptions<LabelGroup>();
