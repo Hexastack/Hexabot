@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Language, Translation } from "@hexabot-ai/types";
 import { Action } from "@hexabot-ai/types";
-import type { Language } from "@hexabot-ai/types";
 import { Chip, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Languages, RefreshCw } from "lucide-react";
@@ -23,7 +23,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { Translation } from "@/types/translation.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { TranslationFormDialog } from "./TranslationFormDialog";

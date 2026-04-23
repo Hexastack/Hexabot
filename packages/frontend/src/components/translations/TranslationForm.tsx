@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Language } from "@hexabot-ai/types";
+import type { Language, Translation } from "@hexabot-ai/types";
 import { FormLabel, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment } from "react";
@@ -18,7 +18,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { Translation, ITranslations } from "@/types/translation.types";
 
 type TranslationAttributes = EntityAttributes<EntityType.TRANSLATION>;
 
@@ -91,7 +90,7 @@ export const TranslationForm: FC<ComponentFormProps<Translation>> = ({
             .map((language) => (
               <ContentItem key={language.code}>
                 <Controller
-                  name={`translations.${language.code as keyof ITranslations}`}
+                  name={`translations.${language.code as keyof Translation["translations"]}`}
                   control={control}
                   render={({ field }) => (
                     <TranslationInput field={field} language={language} />
