@@ -65,6 +65,15 @@ import { WebSessionService } from './services/web-session.service';
 import { Web } from './types';
 import { WEB_CHANNEL_NAME } from './web-channel.settings';
 
+/**
+ * Base handler for the Socket.IO-backed "web" channel.
+ *
+ * Responsibilities:
+ * - resolves per-channel helpers via `@ExtensionInject()` (encoder/decoder, session, history)
+ * - enforces web-channel CORS rules for the HTTP socket transport endpoints
+ * - manages web session bootstrap and thread resolution
+ * - decodes inbound web events and broadcasts outbound messages over Socket.IO
+ */
 @Injectable()
 export default abstract class BaseWebChannelHandler<N extends ChannelName>
   extends WebSocketChannelHandler<N>
@@ -92,20 +101,14 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     super(name);
   }
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
-
   async onModuleInit() {
     await super.onModuleInit();
     this.logger.debug('initialization ...');
   }
 
-  // ── Capabilities ───────────────────────────────────────────────────────────
-
   getCapabilities(): ChannelCapabilities {
     return { ...DEFAULT_CHANNEL_CAPABILITIES, typingIndicator: true };
   }
-
-  // ── Identity helpers ───────────────────────────────────────────────────────
 
   generateId(): string {
     return `${this.name}-${uuidv4()}`;
@@ -121,8 +124,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     };
   }
 
-  // ── Private format context factory ────────────────────────────────────────
-
   private formatCtx(): WebFormatContext {
     return {
       encoder: this.outboundMessageEncoder,
@@ -130,8 +131,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       generateId: () => this.generateId(),
     };
   }
-
-  // ── Socket.IO events ───────────────────────────────────────────────────────
 
   @OnEvent('hook:websocket:connection', { async: true })
   async onWebSocketConnection(client: Socket) {
@@ -207,8 +206,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     this.broadcast(subscriber, StdEventType.error, response, [socket.id]);
   }
 
-  // ── CORS (wrapper keeps the method accessible to tests + sub-classes) ──────
-
+  /**
+   * Verify the origin against whitelisted domains.
+   *
+   * @param req
+   * @param res
+   */
   private async ensureValidCors(
     req: SocketRequest,
     res: Response | SocketResponse,
@@ -217,8 +220,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     await this.sessionService.validateCors(req, res, settings.allowed_domains);
   }
 
-  // ── Session (wrappers delegate to WebSessionService) ──────────────────────
-
+  /**
+   * Makes sure that message request is legitimate.
+   *
+   * @param req
+   * @param res
+   */
   private async validateSession(
     req: SocketRequest,
     res: Response | SocketResponse,
@@ -253,8 +260,15 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     });
   }
 
-  // ── History (wrapper delegates to WebHistoryService) ──────────────────────
-
+  /**
+   * Fetches the messaging history from the DB.
+   *
+   * @param req - Either an HTTP Express request or a WS SocketRequest (synthetic)
+   * @param [until=new Date()] - Date before which to fetch
+   * @param [n=30] - Number of messages to fetch
+   * @returns Promise resolving to an array of messages.
+   * Fetches the last 'n' messages for the session profile up to the given date.
+   */
   protected async fetchHistory(
     req: SocketRequest,
     until?: Date,
@@ -269,8 +283,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     );
   }
 
-  // ── Subscription flow ──────────────────────────────────────────────────────
-
+  /**
+   * Allow the subscription to a web's webhook after verification
+   *
+   * @param req
+   * @param res
+   */
   protected async subscribe(
     req: SocketRequest,
     res: Response | SocketResponse,
@@ -302,8 +320,16 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     }
   }
 
-  // ── File upload ────────────────────────────────────────────────────────────
-
+  /**
+   * Handles upload via WebSocket.
+   *
+   * @param req - The WebSocket request containing the session and the file data.
+   * @returns A Promise that resolves to the stored `Attachment`, or `null` if
+   *          the session is invalid or no file is provided.
+   * @throws Error if missing file payload.
+   * @throws Error if the max upload size is exceeded.
+   * @throws Error when storing the uploaded file fails.
+   */
   async handleWsUpload(req: SocketRequest): Promise<Attachment | null> {
     try {
       const { type, data } = req.body as Web.InboundMessage;
@@ -347,8 +373,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     }
   }
 
-  // ── Inbound event dispatch ─────────────────────────────────────────────────
-
+  /**
+   * Handle channel event (probably a message)
+   *
+   * @param req - WS request (Synthetic Object)
+   * @param res - Either a HTTP Express response or a WS response (Synthetic Object)
+   */
   async handleEvent(
     req: SocketRequest,
     res: Response | SocketResponse,
@@ -494,8 +524,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     res.status(200).json(responseBody);
   }
 
-  // ── Socket transport hooks ─────────────────────────────────────────────────
-
   protected async processSocketGet(
     req: SocketRequest,
     res: Response | SocketResponse,
@@ -527,8 +555,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       res.status(403).json({ err: 'Web Channel Handler : Unauthorized!' });
     }
   }
-
-  // ── Outbound ───────────────────────────────────────────────────────────────
 
   protected async doSendMessage(
     event: MessageInboundEvent<N>,
@@ -573,6 +599,13 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     return send();
   }
 
+  /**
+   * Fetch the end-user profile data
+   *
+   * @param event - The message event received
+   *
+   * @returns The web's response, otherwise an error
+   */
   async getSubscriberData(
     event: MessageInboundEvent<N>,
   ): Promise<SubscriberCreateDto> {
@@ -582,8 +615,15 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     return { ...rest, channel: sender.channel as SubscriberChannelData<N> };
   }
 
-  // ── Download access ────────────────────────────────────────────────────────
-
+  /**
+   * Checks if the request is authorized to download a given attachment file.
+   * Can be overridden by the channel handler to customize, by default it shouldn't
+   * allow any client to download a subscriber attachment for example.
+   *
+   * @param attachment The attachment object
+   * @param req - The HTTP express request object.
+   * @return True, if requester is authorized to download the attachment
+   */
   public async hasDownloadAccess(attachment: Attachment, req: Request) {
     const subscriberId = req.session.web?.profile?.id;
 

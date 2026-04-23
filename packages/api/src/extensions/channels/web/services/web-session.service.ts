@@ -18,9 +18,9 @@ import { SocketResponse } from '@/websocket/utils/socket-response';
 /**
  * Handles all web-channel session and CORS concerns.
  *
- * Created per-channel via ModuleRef.create() in BaseWebChannelHandler.onModuleInit()
- * so it participates in NestJS DI for its own dependencies without needing to be
- * registered as a global provider.
+ * Instantiated per-channel through `@ExtensionInject()` on the channel handler.
+ * The base `ChannelHandler` resolves these providers during `onModuleInit()` via
+ * `ModuleRef.create()`, so each channel gets its own DI-scoped instance.
  */
 @Injectable()
 export class WebSessionService {
@@ -29,8 +29,6 @@ export class WebSessionService {
     private readonly threadService: ThreadService,
     private readonly logger: LoggerService,
   ) {}
-
-  // ── Thread ID helpers ──────────────────────────────────────────────────────
 
   normalizeThreadId(raw: unknown): string | undefined {
     if (typeof raw !== 'string') return undefined;
@@ -51,12 +49,12 @@ export class WebSessionService {
     return this.normalizeThreadId(body?.thread_id);
   }
 
-  // ── CORS ───────────────────────────────────────────────────────────────────
-
   /**
    * Validates the request Origin against the configured allow-list and sets
    * the appropriate CORS response headers. Throws on any violation.
    *
+   * @param req - Socket request
+   * @param res - Socket request
    * @param allowedDomains - Comma-separated list of allowed origins (or "*").
    */
   async validateCors(
@@ -104,12 +102,13 @@ export class WebSessionService {
     }
   }
 
-  // ── Session ────────────────────────────────────────────────────────────────
-
   /**
    * Returns the subscriber from the active session, or attempts to recover it
    * from the message `author` field. Writes a 403 and returns null when no
    * valid identity can be established.
+   *
+   * @param req
+   * @param res
    */
   async validateSession(
     req: SocketRequest,
@@ -160,6 +159,7 @@ export class WebSessionService {
    * Returns the existing subscriber for this session, or creates a new one
    * using the provided factory. Updates `req.session.web` accordingly.
    *
+   * @param req
    * @param buildProfile - Called only when no session exists; returns the DTO
    *   for the new subscriber (channel name, generated ID, etc. are caller's
    *   responsibility since they are channel-specific).
@@ -194,10 +194,9 @@ export class WebSessionService {
   }
 
   /**
-   * Resolves the thread for history pagination, reading the thread ID from
-   * the request query/body and writing it back to the session.
+   * Resolves a thread for the given subscriber, optionally using an explicit
+   * thread id. Does not read from or write to the request/session.
    */
-  /** Direct thread resolution without reading from the request. */
   async resolveThread(
     subscriberId: string,
     explicitThreadId?: string,

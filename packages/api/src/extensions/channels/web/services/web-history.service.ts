@@ -18,7 +18,6 @@ import {
   OutgoingMessage,
 } from '@/chat/types/message';
 import { ActionOptions } from '@/chat/types/options';
-import { LoggerService } from '@/logger/logger.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 
 import { WebOutboundMessageEncoder } from '../outbound/web-outbound-message-encoder';
@@ -40,23 +39,22 @@ export interface WebFormatContext {
  * Handles message history fetching and all wire-format conversion for the
  * web / console channels.
  *
- * Created per-channel via ModuleRef.create() in BaseWebChannelHandler.onModuleInit().
+ * Instantiated per-channel through `@ExtensionInject()` on the channel handler.
+ * The base `ChannelHandler` resolves these providers during `onModuleInit()` via
+ * `ModuleRef.create()`, so each channel gets its own DI-scoped instance.
  */
 @Injectable()
 export class WebHistoryService {
   constructor(
     private readonly messageService: MessageService,
     private readonly channelAttachmentService: ChannelAttachmentService,
-    private readonly logger: LoggerService,
   ) {}
-
-  // ── Public API ─────────────────────────────────────────────────────────────
 
   /**
    * Fetches the message history for the subscriber's thread and converts it
    * to the web wire format.
    *
-   * @param thread   - Resolved thread (null → returns empty array).
+   * @param thread   - Resolved thread (null returns empty array).
    * @param ctx      - Channel-specific formatting context.
    * @param until    - Return messages older than this date (default: now).
    * @param n        - Maximum number of messages (default: 30).
@@ -80,7 +78,7 @@ export class WebHistoryService {
 
   /**
    * Resolves a thread from the request session, then fetches and formats the
-   * history. Convenience wrapper used by the GET subscription flow.
+   * history. Convenience wrapper used by the subscribe/history flows.
    */
   async fetchHistoryForRequest(
     req: SocketRequest,
@@ -137,8 +135,6 @@ export class WebHistoryService {
 
     return result;
   }
-
-  // ── Private helpers ────────────────────────────────────────────────────────
 
   private isIncomingMessage(msg: AnyMessage): msg is IncomingMessage {
     return 'sender' in msg && !!msg.sender;
