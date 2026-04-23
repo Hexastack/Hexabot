@@ -47,10 +47,12 @@ const withSchemaDefaults = (
   }
 };
 
-type JsonSchemaFormProps = {
+type JsonSchemaFormProps<
+  D extends Record<string, unknown> = Record<string, unknown>,
+> = {
   schema: RJSFSchema;
   formData: Record<string, unknown>;
-  onFormDataChange: (data: Record<string, unknown>, errors?: unknown[]) => void;
+  onFormDataChange: (data: D, errors?: unknown[]) => void;
   idPrefix?: string;
   uiSchema?: UiSchema;
   liveValidate?: "onChange" | "onBlur" | boolean;
@@ -60,7 +62,9 @@ type JsonSchemaFormProps = {
   validateOnMount?: boolean;
 };
 
-export const JsonSchemaForm = ({
+export const JsonSchemaForm = <
+  D extends Record<string, unknown> = Record<string, unknown>,
+>({
   schema,
   formData,
   onFormDataChange,
@@ -71,7 +75,7 @@ export const JsonSchemaForm = ({
   formContext,
   onVisibleErrorsChange,
   validateOnMount = false,
-}: JsonSchemaFormProps) => {
+}: JsonSchemaFormProps<D>) => {
   const formRef = useRef<RJSFForm<Record<string, unknown>, RJSFSchema> | null>(
     null,
   );
@@ -140,7 +144,7 @@ export const JsonSchemaForm = ({
         reportFieldVisibleError,
       }}
       onChange={(event) => {
-        const nextFormData = (event.formData ?? {}) as Record<string, unknown>;
+        const nextFormData = event.formData ?? {};
 
         setLiveFormData(nextFormData);
         onFormDataChange(nextFormData, event.errors);
