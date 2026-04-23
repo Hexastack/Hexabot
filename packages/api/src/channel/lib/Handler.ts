@@ -40,6 +40,7 @@ import {
   DEFAULT_CHANNEL_CAPABILITIES,
 } from './channel-capabilities';
 import { ChannelEventBus } from './channel-event-bus';
+import { collectExtensionInjectMeta } from './extension-inject.decorator';
 import { UnsupportedOutgoingFormatError } from './outbound';
 
 @Injectable()
@@ -80,6 +81,15 @@ export default abstract class ChannelHandler<
     this.channelService.setChannel(
       this.getName(),
       this as unknown as ChannelHandler<N>,
+    );
+
+    const metas = collectExtensionInjectMeta(this);
+    await Promise.all(
+      metas.map(async ({ propertyKey, factory }) => {
+        (this as any)[propertyKey] = await this.createModuleRef(
+          factory(this.getName()),
+        );
+      }),
     );
   }
 

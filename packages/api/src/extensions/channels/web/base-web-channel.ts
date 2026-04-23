@@ -27,6 +27,7 @@ import {
   ChannelCapabilities,
   DEFAULT_CHANNEL_CAPABILITIES,
 } from '@/channel/lib/channel-capabilities';
+import { ExtensionInject } from '@/channel/lib/extension-inject.decorator';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { WebSocketChannelHandler } from '@/channel/lib/transports';
 import { ChannelName } from '@/channel/types';
@@ -74,12 +75,16 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   @Inject(MessageService)
   private readonly messageService: MessageService;
 
+  @ExtensionInject((name) => createWebOutboundMessageEncoder(name))
   private outboundMessageEncoder!: WebOutboundMessageEncoder;
 
+  @ExtensionInject((name) => createWebInboundEventDecoder(name))
   private inboundEventDecoder!: WebInboundEventDecoder<N>;
 
+  @ExtensionInject(WebSessionService)
   private sessionService!: WebSessionService;
 
+  @ExtensionInject(WebHistoryService)
   private historyService!: WebHistoryService;
 
   constructor(name: N) {
@@ -90,19 +95,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
   async onModuleInit() {
     await super.onModuleInit();
-
-    const [encoder, decoder, session, history] = await Promise.all([
-      this.createModuleRef(createWebOutboundMessageEncoder(this.getName())),
-      this.createModuleRef(createWebInboundEventDecoder(this.getName())),
-      this.createModuleRef(WebSessionService),
-      this.createModuleRef(WebHistoryService),
-    ]);
-
-    this.outboundMessageEncoder = encoder as WebOutboundMessageEncoder;
-    this.inboundEventDecoder = decoder as WebInboundEventDecoder<N>;
-    this.sessionService = session;
-    this.historyService = history;
-
     this.logger.debug('initialization ...');
   }
 

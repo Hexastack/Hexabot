@@ -20,6 +20,8 @@ export * from './lib/inbound-events';
 
 export * from './lib/outbound';
 
+export * from './lib/extension-inject.decorator';
+
 export * from './lib/Handler';
 
 export * from './lib/transports';
