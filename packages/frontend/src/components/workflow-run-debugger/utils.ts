@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { EWorkflowRunStatus } from "@hexabot-ai/agentic";
+
 import type { BadgeWithTitleProps } from "@/app-components/displays/Badge";
 import { WORKFLOW_STATUS } from "@/constants/workflow.constants";
-import { EWorkflowRunStatus } from "@/types/workflow-run.types";
 import { normalizeDate } from "@/utils/date";
 
 import type { InitiatorIdentity } from "./types";

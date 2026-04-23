@@ -5,9 +5,10 @@
  */
 
 import {
-  StepExecutionRecord,
-  WorkflowRunStatus,
-  WorkflowSnapshot,
+  WORKFLOW_RUN_STATUSES,
+  type StepExecutionRecord,
+  type WorkflowRunStatus,
+  type WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
 import { workflowRunFullSchema, workflowRunSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
@@ -24,8 +25,6 @@ import {
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
-
-import { WORKFLOW_RUN_STATUSES } from '../entities/workflow-run.entity';
 
 export class WorkflowRunCreateDto {
   @ApiProperty({ description: 'Workflow to execute', type: String })

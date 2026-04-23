@@ -6,7 +6,11 @@
 
 import { stringify as stringifyYaml } from 'yaml';
 
-import type { BaseWorkflowContext, WorkflowSnapshot } from './context';
+import {
+  EWorkflowRunStatus,
+  type BaseWorkflowContext,
+  type WorkflowSnapshot,
+} from './context';
 import {
   TASK_KIND,
   WorkflowDefinition,
@@ -345,11 +349,11 @@ export class Workflow {
       context,
     });
 
-    if (result.status === 'finished') {
+    if (result.status === EWorkflowRunStatus.FINISHED) {
       return result.output;
     }
 
-    if (result.status === 'failed') {
+    if (result.status === EWorkflowRunStatus.FAILED) {
       throw result.error instanceof Error
         ? result.error
         : new Error(String(result.error));

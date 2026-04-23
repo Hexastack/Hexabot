@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { EWorkflowRunStatus } from "@hexabot-ai/agentic";
 import { WorkflowType } from "@hexabot-ai/types";
 import {
   Check,
@@ -18,7 +19,6 @@ import {
 
 import type { TTranslationKeys } from "@/i18n/i18n.types";
 import { theme } from "@/layout/theme";
-import { EWorkflowRunStatus } from "@/types/workflow-run.types";
 
 import type { FlowTypeInfo } from "../components/visual-editor/v4/components/main/FlowsDrawer/types";
 import { WORKFLOW_STEP_GRAPH_THEME } from "../components/visual-editor/v4/constants/workflow-graph-theme.constants";

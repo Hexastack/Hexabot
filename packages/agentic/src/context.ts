@@ -17,12 +17,23 @@ import type {
  * - finished: all steps completed and outputs were evaluated successfully.
  * - failed: an uncaught error bubbled out of a step or continuation.
  */
-export type WorkflowRunStatus =
-  | 'idle'
-  | 'running'
-  | 'suspended'
-  | 'finished'
-  | 'failed';
+export enum EWorkflowRunStatus {
+  IDLE = 'idle',
+  RUNNING = 'running',
+  SUSPENDED = 'suspended',
+  FINISHED = 'finished',
+  FAILED = 'failed',
+}
+
+export type WorkflowRunStatus = `${EWorkflowRunStatus}`;
+
+export const WORKFLOW_RUN_STATUSES: WorkflowRunStatus[] = [
+  EWorkflowRunStatus.IDLE,
+  EWorkflowRunStatus.RUNNING,
+  EWorkflowRunStatus.SUSPENDED,
+  EWorkflowRunStatus.FINISHED,
+  EWorkflowRunStatus.FAILED,
+];
 
 /**
  * Lifecycle of an individual action/step captured in snapshots:

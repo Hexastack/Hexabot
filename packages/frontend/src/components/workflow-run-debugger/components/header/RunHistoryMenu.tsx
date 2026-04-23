@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { EWorkflowRunStatus } from "@hexabot-ai/agentic";
 import type { WorkflowRun, WorkflowRunFull } from "@hexabot-ai/types";
 import { Menu, MenuItem, Stack, Typography } from "@mui/material";
 
@@ -12,7 +13,6 @@ import { VersionChip } from "@/app-components/displays/VersionChip";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { EWorkflowRunStatus } from "@/types/workflow-run.types";
 
 import {
   formatRunTimestamp,

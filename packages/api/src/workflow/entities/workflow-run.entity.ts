@@ -5,9 +5,11 @@
  */
 
 import {
-  StepExecutionRecord,
-  WorkflowRunStatus,
-  WorkflowSnapshot,
+  EWorkflowRunStatus,
+  WORKFLOW_RUN_STATUSES,
+  type StepExecutionRecord,
+  type WorkflowRunStatus,
+  type WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
 import { workflowRunSchema, workflowRunFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
@@ -25,14 +27,6 @@ import { WorkflowRunDto } from '../dto/workflow-run.dto';
 
 import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 import { WorkflowOrmEntity } from './workflow.entity';
-
-export const WORKFLOW_RUN_STATUSES: WorkflowRunStatus[] = [
-  'idle',
-  'running',
-  'suspended',
-  'finished',
-  'failed',
-];
 
 @Entity({ name: 'workflow_runs' })
 export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunDto> {
@@ -93,7 +87,10 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunDto> {
   private readonly threadId?: string | null;
 
   /** Lifecycle status of the run (idle, running, suspended, finished, failed). */
-  @EnumColumn({ enum: WORKFLOW_RUN_STATUSES, default: 'idle' })
+  @EnumColumn({
+    enum: WORKFLOW_RUN_STATUSES,
+    default: EWorkflowRunStatus.IDLE,
+  })
   status!: WorkflowRunStatus;
 
   /** Input payload provided at run start. */
