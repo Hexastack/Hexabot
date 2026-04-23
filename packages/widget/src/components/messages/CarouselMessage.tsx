@@ -7,7 +7,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 
-import { Button, Direction } from "../../types/message.types";
+import { Button, UiMessage } from "../../types/message.types";
 import { processContent } from "../../utils/text";
 
 import ButtonsMessage from "./ButtonMessage";
@@ -18,13 +18,6 @@ interface Element {
   subtitle?: string;
   image_url?: string;
   buttons?: Button[];
-}
-
-interface MessageCarousel {
-  direction?: Direction;
-  data: {
-    elements: Element[];
-  };
 }
 
 type CarouselItemProps = {
@@ -60,12 +53,16 @@ const CarouselItem: React.FC<CarouselItemProps> = ({ message }) => (
 );
 
 interface CarouselMessageProps {
-  messageCarousel: MessageCarousel;
+  messageCarousel: UiMessage;
 }
 
 const CarouselMessage: React.FC<CarouselMessageProps> = ({
   messageCarousel,
 }) => {
+  if (!("elements" in messageCarousel.data)) {
+    throw new Error("Unable to find carousel elements");
+  }
+
   const [activeIndex, setActiveIndex] = useState(0);
   const items = messageCarousel.data.elements;
   const goToPrevious = () => {
