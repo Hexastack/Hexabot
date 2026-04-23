@@ -36,12 +36,12 @@ export enum DirectionType {
   VERTICAL = "vertical",
 }
 
-export const workflowTypeSchema = z.nativeEnum(WorkflowType);
+export const workflowTypeSchema = z.enum(WorkflowType);
 
-export const workflowVersionActionSchema = z.nativeEnum(WorkflowVersionAction);
+export const workflowVersionActionSchema = z.enum(WorkflowVersionAction);
 
-export const memoryScopeSchema = z.nativeEnum(MemoryScope);
+export const memoryScopeSchema = z.enum(MemoryScope);
 
-export const mcpServerTransportSchema = z.nativeEnum(McpServerTransport);
+export const mcpServerTransportSchema = z.enum(McpServerTransport);
 
-export const directionTypeSchema = z.nativeEnum(DirectionType);
+export const directionTypeSchema = z.enum(DirectionType);

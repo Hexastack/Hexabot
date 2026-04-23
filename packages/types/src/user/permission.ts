@@ -19,7 +19,7 @@ const permissionAliasMap = {
   roleId: "role",
 } as const;
 const permissionStubObjectSchema = baseStubSchema.extend({
-  action: z.nativeEnum(Action),
+  action: z.enum(Action),
   relation: relationSchema,
 });
 

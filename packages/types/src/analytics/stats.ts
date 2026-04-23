@@ -18,7 +18,7 @@ export enum StatsType {
   echo = "echo",
 }
 
-const statsTypeSchema = z.nativeEnum(StatsType);
+const statsTypeSchema = z.enum(StatsType);
 const statsObjectSchema = baseStubSchema.extend({
   type: statsTypeSchema,
   day: z.coerce.date(),

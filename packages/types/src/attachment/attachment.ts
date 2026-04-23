@@ -44,9 +44,9 @@ const attachmentStubObjectSchema = baseStubSchema.extend({
     (value) => (value == null ? undefined : value),
     z.record(z.string(), z.unknown()).optional(),
   ).optional(),
-  createdByRef: z.nativeEnum(AttachmentCreatedByRef).optional(),
-  resourceRef: z.nativeEnum(AttachmentResourceRef),
-  access: z.nativeEnum(AttachmentAccess),
+  createdByRef: z.enum(AttachmentCreatedByRef).optional(),
+  resourceRef: z.enum(AttachmentResourceRef),
+  access: z.enum(AttachmentAccess),
   url: preprocess((value) => (value == null ? "" : value), z.string()),
 });
 

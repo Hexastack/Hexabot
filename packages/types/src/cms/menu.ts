@@ -16,7 +16,7 @@ export enum MenuType {
   nested = "nested",
 }
 
-const menuTypeSchema = z.nativeEnum(MenuType);
+const menuTypeSchema = z.enum(MenuType);
 const menuAliasMap = {
   parentId: "parent",
 } as const;
