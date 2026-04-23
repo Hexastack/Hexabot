@@ -34,7 +34,7 @@ const payload: SubscriberFull = subscriberFullSchema.parse(data);
 
 ## Shared Chat Message Contracts
 
-Chat message payload contracts are now centralized in `@hexabot-ai/types` and exported from package root.
+Chat message contracts are centralized in `@hexabot-ai/types` and are strictly discriminator-based.
 
 ```ts
 import {
@@ -50,15 +50,69 @@ import {
 } from "@hexabot-ai/types";
 ```
 
-Notable chat exports:
+### Outgoing Contract (`StdOutgoingMessage`)
 
-- Attachment contracts: `FileType`, `attachmentRefSchema`, `attachmentPayloadSchema`, `AttachmentPayload`, `IAttachmentPayload`, `TAttachmentForeignKey`
-- Button contracts: `ButtonType`, `PayloadType`, `buttonSchema`, `Button`, `AnyButton`
-- Quick replies: `stdQuickReplySchema`, `payloadSchema`, `StdQuickReply`, `Payload`
-- Content/action options: `contentOptionsSchema`, `fallbackOptionsSchema`, `ActionOptionsSchema`
-- Message payload + envelope contracts: `StdOutgoingMessageSchema`, `stdIncomingMessageSchema`, `stdOutgoingEnvelopeSchema`, `OutgoingMessageFormat`, `IncomingMessageType`
+All outgoing messages use:
 
-The shared `messageSchema` is strict and validates `message` as a `StdIncomingMessage | StdOutgoingMessage` union (plain string payloads are rejected).
+- `{ format, data }`
+
+`format` discriminator variants:
+
+- `text`: `data = { text }`
+- `quickReplies`: `data = { text, quickReplies }`
+- `buttons`: `data = { text, buttons }`
+- `attachment`: `data = { attachment, quickReplies? }`
+- `list`: `data = { options, elements, pagination }`
+- `carousel`: `data = { options, elements, pagination }`
+
+Example:
+
+```ts
+const outgoing = StdOutgoingMessageSchema.parse({
+  format: OutgoingMessageFormat.quickReplies,
+  data: {
+    text: "Choose one",
+    quickReplies: [{ title: "Yes", payload: "yes" }],
+  },
+});
+```
+
+### Incoming Contract (`StdIncomingMessage`)
+
+All incoming messages use:
+
+- `{ type, data }`
+
+`type` discriminator variants:
+
+- `message`: `data = { text }`
+- `postback`: `data = { text, payload }`
+- `quick_reply`: `data = { text, payload }`
+- `location`: `data = { coordinates: { lat, lon } }`
+- `attachments`: `data = { serialized_text, attachment }`
+  `attachment` can be a single attachment or an array.
+
+Example:
+
+```ts
+const incoming = stdIncomingMessageSchema.parse({
+  type: IncomingMessageType.location,
+  data: {
+    coordinates: { lat: 36.8, lon: 10.2 },
+  },
+});
+```
+
+### Envelopes and Persistence
+
+- `StdOutgoingMessageEnvelope` is the same contract as `StdOutgoingMessage` (`{ format, data }`).
+- `StdOutgoingEnvelope` adds the system envelope variant:
+  - `format: OutgoingMessageFormat.system`
+  - `data: { outcome?: string; data?: unknown }`
+- Persisted chat message entities (`messageSchema`) validate `message` as:
+  - `StdIncomingMessage | StdOutgoingMessage`
+
+Legacy flat payloads and alias-based message shapes are intentionally unsupported.
 
 ## Workflow Parser Bridge
 
