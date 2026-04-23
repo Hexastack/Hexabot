@@ -8,7 +8,7 @@ import { ChevronRight } from "lucide-react";
 import React from "react";
 
 import { IMenuNode } from "../types/menu.type";
-import { IPayload } from "../types/message.types";
+import { Web } from "../types/message.types";
 
 import "./MenuItem.scss";
 
@@ -16,7 +16,7 @@ interface MenuItemProps {
   item: IMenuNode;
   parent?: IMenuNode;
   onOpenSubItems: (item: IMenuNode) => void;
-  onPostback: (data: IPayload) => void;
+  onPostback: (data: Web.InboundPayloadMessageData) => void;
 }
 
 const MenuItem: React.FC<MenuItemProps> = ({
@@ -34,7 +34,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
         onOpenSubItems({ ...item, _parent: parent });
         break;
       case "postback":
-        onPostback({ text: item.title, payload: item.payload });
+        onPostback({ text: item.title, payload: item.payload ?? "" });
         break;
     }
   };

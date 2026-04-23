@@ -19,15 +19,14 @@ import { useTranslation } from "../hooks/useTranslation";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
-  ISubscriber,
-  ISuggestion,
+  PostMessageEvent,
   SocketErrorHandlers,
   SocketErrorResponse,
   SubscribeResponse,
-  TEvent,
-  TMessage,
-  TOutgoingMessageType,
-  TPostMessageEvent,
+  Suggestion,
+  SubscriberFull,
+  UiMessage,
+  Web,
 } from "../types/message.types";
 import {
   ChatScreen,
@@ -43,35 +42,75 @@ import { ChannelSettings, useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
 
-export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
-  message && "data" in message && "quick_replies" in message.data
-    ? (message.data.quick_replies || []).map(
-        (qr) =>
-          ({
-            text: qr.title,
-            payload: qr.payload,
-          }) as ISuggestion,
-      )
-    : [];
-export const preprocessMessages = (
-  messages: TMessage[],
-  participants: Participant[],
-  profile?: ISubscriber,
-) => {
-  const quickReplies = getQuickReplies(messages[messages.length - 1]);
-  const arrangedMessages = messages.map((message) => {
-    const direction =
-      message.author === profile?.foreignId || message.author === profile?.id
-        ? Direction.sent
-        : Direction.received;
+const normalizeDate = (value: unknown): Date => {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? new Date() : value;
+  }
 
-    return {
-      ...message,
-      direction,
-      read: direction === Direction.sent || message.read,
-      delivery: direction === Direction.sent || message.delivery,
-    } as TMessage;
-  });
+  if (typeof value === "string" || typeof value === "number") {
+    const parsed = new Date(value);
+
+    return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  }
+
+  return new Date();
+};
+const normalizeMessageIdentity = (message: Web.Message) => {
+  const candidate = message as {
+    mid?: unknown;
+    author?: unknown;
+    createdAt?: unknown;
+  };
+
+  return {
+    mid:
+      typeof candidate.mid === "string" && candidate.mid.length > 0
+        ? candidate.mid
+        : `widget-${Date.now()}`,
+    author:
+      typeof candidate.author === "string" && candidate.author.length > 0
+        ? candidate.author
+        : "chatbot",
+    createdAt: normalizeDate(candidate.createdAt),
+  };
+};
+const toUiMessage = (
+  message: Web.Message,
+  profile?: SubscriberFull,
+): UiMessage => {
+  const normalized = normalizeMessageIdentity(message);
+  const isSentByProfile =
+    normalized.author === profile?.foreignId || normalized.author === profile?.id;
+  const direction = isSentByProfile ? Direction.sent : Direction.received;
+  const status = message as {
+    read?: unknown;
+    delivery?: unknown;
+  };
+
+  return {
+    ...message,
+    ...normalized,
+    direction,
+    read: direction === Direction.sent || status.read === true,
+    delivery: direction === Direction.sent || status.delivery === true,
+  };
+};
+
+export const getQuickReplies = (message?: UiMessage): Suggestion[] =>
+  message && "data" in message && "quick_replies" in message.data
+    ? (message.data.quick_replies || []).map((quickReply) => ({
+        text: quickReply.title,
+        payload: quickReply.payload,
+      }))
+    : [];
+
+export const preprocessMessages = (
+  messages: Web.Message[],
+  participants: Participant[],
+  profile?: SubscriberFull,
+) => {
+  const arrangedMessages = messages.map((message) => toUiMessage(message, profile));
+  const quickReplies = getQuickReplies(arrangedMessages[arrangedMessages.length - 1]);
   const participantsList: Participant[] = profile
     ? [
         participants[0],
@@ -126,14 +165,14 @@ interface ChatContextType {
   /**
    * Array of messages exchanged in the chat.
    */
-  messages: TMessage[];
-  setMessages: (messages: TMessage[]) => void;
+  messages: UiMessage[];
+  setMessages: (messages: UiMessage[]) => void;
 
   /**
    * List of suggestions available in the chat context.
    */
-  suggestions: ISuggestion[];
-  setSuggestions: (suggestions: ISuggestion[]) => void;
+  suggestions: Suggestion[];
+  setSuggestions: (suggestions: Suggestion[]) => void;
 
   /**
    * Indicator of whether typing indicators are visible.
@@ -144,8 +183,8 @@ interface ChatContextType {
   /**
    * The latest new IO (coming from websocket) message event or null if none.
    */
-  newIOMessage: TEvent | null;
-  setNewIOMessage: (IOMessage: TEvent | null) => void;
+  newIOMessage: UiMessage | null;
+  setNewIOMessage: (IOMessage: UiMessage | null) => void;
 
   /**
    * The count of new messages since the last read. This is mainly used to show a badge on the chat icon.
@@ -184,7 +223,7 @@ interface ChatContextType {
   }: {
     event?: SyntheticEvent;
     source?: string;
-    data: TPostMessageEvent;
+    data: PostMessageEvent;
   }) => void;
 
   /**
@@ -195,7 +234,7 @@ interface ChatContextType {
    * @param lastName
    */
   handleSubscription: (firstName?: string, lastName?: string) => void;
-  profile?: ISubscriber;
+  profile?: SubscriberFull;
   subscribe: (
     first_name?: string,
     last_name?: string,
@@ -237,13 +276,15 @@ const defaultCtx: ChatContextType = {
   handleSubscription: () => {},
   profile: undefined,
   subscribe: async () => {
-    return new Promise(() => {});
+    throw new Error("ChatProvider.subscribe is not available outside provider");
   },
   sendGetStarted: async () => {
-    return new Promise(() => {});
+    throw new Error(
+      "ChatProvider.sendGetStarted is not available outside provider",
+    );
   },
 };
-const ChatContext = createContext<ChatContextType>(defaultCtx);
+const ChatContext = createContext<ChatContextType | undefined>(undefined);
 const ChatProvider: React.FC<{
   wantToConnect?: () => void;
   defaultConnectionState?: ConnectionState;
@@ -263,17 +304,17 @@ const ChatProvider: React.FC<{
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     defaultConnectionState,
   );
-  const [messages, setMessages] = useState<TMessage[]>([]);
+  const [messages, setMessages] = useState<UiMessage[]>([]);
   const [newMessagesCount, updateNewMessagesCount] = useState<number>(
     defaultCtx.newMessagesCount,
   );
   const [showTypingIndicator, setShowTypingIndicator] = useState(
     defaultCtx.showTypingIndicator,
   );
-  const [suggestions, setSuggestions] = useState<ISuggestion[]>(
+  const [suggestions, setSuggestions] = useState<Suggestion[]>(
     defaultCtx.suggestions,
   );
-  const [newIOMessage, setNewIOMessage] = useState<TEvent | null>(
+  const [newIOMessage, setNewIOMessage] = useState<UiMessage | null>(
     defaultCtx.newIOMessage,
   );
   const [message, setMessage] = useState<string>(defaultCtx.message);
@@ -281,7 +322,7 @@ const ChatProvider: React.FC<{
     useState<OutgoingMessageState>(defaultCtx.outgoingMessageState);
   const [file, setFile] = useState<File | null>(defaultCtx.file);
   const [webviewUrl, setWebviewUrl] = useState<string>(defaultCtx.webviewUrl);
-  const [profile, setProfile] = useState<undefined | ISubscriber>();
+  const [profile, setProfile] = useState<undefined | SubscriberFull>();
   const getWebhookUrl = useCallback(
     (query?: URLSearchParams | Record<string, string>) =>
       buildWebhookUrl({
@@ -298,43 +339,29 @@ const ChatProvider: React.FC<{
       settings.alwaysScrollToBottom &&
       setScroll(101);
   };
-  const handleNewIOMessage = (newIOMessage: TEvent | null) => {
-    setNewIOMessage(newIOMessage);
-    if (
-      newIOMessage &&
-      "type" in newIOMessage &&
-      newIOMessage.type === "typing"
-    ) {
-      return showTypingIndicator === true;
+  const handleNewIOMessage = (newMessage: Web.OutboundMessage | null) => {
+    if (!newMessage) {
+      return;
     }
+
+    const normalizedMessage = toUiMessage(newMessage, profile);
+
+    setNewIOMessage(normalizedMessage);
     setShowTypingIndicator(false);
 
-    if (
-      newIOMessage &&
-      "mid" in newIOMessage &&
-      !messages.find((msg) => newIOMessage.mid === msg.mid)
-    ) {
-      if ("author" in newIOMessage) {
-        newIOMessage.direction =
-          newIOMessage.author === "chatbot"
-            ? Direction.received
-            : Direction.sent;
-        newIOMessage.read = true;
-        newIOMessage.delivery = true;
-
-        if (!isOpen && newIOMessage.direction === Direction.received) {
-          updateNewMessagesCount((prevMessagesCount) => prevMessagesCount + 1);
-        }
+    if (!messages.find((msg) => normalizedMessage.mid === msg.mid)) {
+      if (!isOpen && normalizedMessage.direction === Direction.received) {
+        updateNewMessagesCount((prevMessagesCount) => prevMessagesCount + 1);
       }
 
       setMessages((prevMessages) => [
-        ...prevMessages.filter((message) => message.mid !== newIOMessage.mid),
-        newIOMessage as TMessage,
+        ...prevMessages.filter((msg) => msg.mid !== normalizedMessage.mid),
+        normalizedMessage,
       ]);
       setScroll(0);
     }
 
-    const quickReplies = getQuickReplies(newIOMessage as TMessage);
+    const quickReplies = getQuickReplies(normalizedMessage);
 
     setSuggestions(quickReplies);
 
@@ -346,20 +373,20 @@ const ChatProvider: React.FC<{
   }: {
     event?: SyntheticEvent;
     source?: string;
-    data: TPostMessageEvent;
+    data: PostMessageEvent;
   }) => {
     setOutgoingMessageState(
-      data.type === "file"
+      data.type === Web.InboundMessageType.file
         ? OutgoingMessageState.uploading
         : OutgoingMessageState.sending,
     );
     setMessage("");
     try {
       // when the request timeout it throws exception & break frontend
-      await socket.post<TMessage>(getWebhookUrl(), {
+      await socket.post<Web.Message>(getWebhookUrl(), {
         data: {
           ...data,
-          author: data.author ?? participants[1].id,
+          author: data.author ?? participants[1]?.id,
         },
       });
     } catch (error) {
@@ -383,13 +410,13 @@ const ChatProvider: React.FC<{
           firstName && lastName
             ? { first_name: firstName, last_name: lastName }
             : {};
-        const { body } = await socket.get<{
-          messages: TMessage[];
-          profile: ISubscriber;
-        }>(getWebhookUrl(queryParams));
+        const { body } = await socket.get<SubscribeResponse>(
+          getWebhookUrl(queryParams),
+        );
         const { quickReplies, arrangedMessages, participantsList } =
           preprocessMessages(body.messages, participants, body.profile);
 
+        setProfile(body.profile);
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
         setParticipants(participantsList);
@@ -422,12 +449,14 @@ const ChatProvider: React.FC<{
       getWebhookUrl({ first_name, last_name }),
     );
 
+    setProfile(body.profile);
+
     return body;
   };
   const sendGetStarted = async (foreign_id: string) => {
     await handleSend({
       data: {
-        type: TOutgoingMessageType.postback,
+        type: Web.InboundMessageType.postback,
         data: {
           text: t("messages.get_started"),
           payload: "GET_STARTED",
@@ -442,7 +471,7 @@ const ChatProvider: React.FC<{
     }, 500);
   };
 
-  useSubscribe<TMessage>(StdEventType.message, handleNewIOMessage);
+  useSubscribe<Web.OutboundMessage>(StdEventType.message, handleNewIOMessage);
 
   useSubscribe<boolean>(StdEventType.typing, setShowTypingIndicator);
 
@@ -530,12 +559,7 @@ const ChatProvider: React.FC<{
     setOutgoingMessageState,
     connectionState,
     setConnectionState: updateConnectionState,
-    messages: messages.sort((a, b) => {
-      const aDate = Date.parse(a.createdAt);
-      const bDate = Date.parse(b.createdAt);
-
-      return +new Date(aDate) - +new Date(bDate);
-    }),
+    messages: messages.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
     setMessages,
     newMessagesCount,
     setNewMessagesCount: updateNewMessagesCount,
@@ -558,9 +582,7 @@ const ChatProvider: React.FC<{
     sendGetStarted,
   };
 
-  return (
-    <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>
-  );
+  return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
 };
 
 export const useChat = () => {

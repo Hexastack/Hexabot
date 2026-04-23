@@ -7,7 +7,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 
-import { Direction, TButton, TMessage } from "../../types/message.types";
+import { Button, UiMessage } from "../../types/message.types";
 import { processContent } from "../../utils/text";
 
 import ButtonsMessage from "./ButtonMessage";
@@ -17,19 +17,11 @@ interface Element {
   title: string;
   subtitle?: string;
   image_url?: string;
-  buttons?: TButton[];
-}
-
-interface MessageCarousel {
-  direction?: Direction;
-  data: {
-    elements: Element[];
-  };
+  buttons?: Button[];
 }
 
 type CarouselItemProps = {
   message: Element;
-  idx: number;
 };
 
 const CarouselItem: React.FC<CarouselItemProps> = ({ message }) => (
@@ -53,7 +45,7 @@ const CarouselItem: React.FC<CarouselItemProps> = ({ message }) => (
       </div>
       {message.buttons && (
         <ButtonsMessage
-          message={{ data: { buttons: message.buttons } } as TMessage}
+          message={{ data: { buttons: message.buttons } }}
         />
       )}
     </div>
@@ -61,12 +53,16 @@ const CarouselItem: React.FC<CarouselItemProps> = ({ message }) => (
 );
 
 interface CarouselMessageProps {
-  messageCarousel: MessageCarousel;
+  messageCarousel: UiMessage;
 }
 
 const CarouselMessage: React.FC<CarouselMessageProps> = ({
   messageCarousel,
 }) => {
+  if (!("elements" in messageCarousel.data)) {
+    throw new Error("Unable to find carousel elements");
+  }
+
   const [activeIndex, setActiveIndex] = useState(0);
   const items = messageCarousel.data.elements;
   const goToPrevious = () => {
@@ -88,7 +84,7 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
         style={{ transform: `translateX(-${activeIndex * 100}%)` }}
       >
         {items.map((message, idx) => (
-          <CarouselItem key={idx} message={message} idx={idx} />
+          <CarouselItem key={idx} message={message} />
         ))}
       </div>
       {shouldDisplayNavigationButtons && (

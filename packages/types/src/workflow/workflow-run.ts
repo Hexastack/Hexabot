@@ -6,14 +6,17 @@
 
 import { z } from "zod";
 
-import { subscriberSchema } from "../chat/subscriber";
 import { threadSchema } from "../chat/thread";
 import { asId, withAliases } from "../shared/aliases";
 import { baseStubSchema } from "../shared/base";
 import { cloneWithPrototype, toRecord } from "../shared/object";
 import { preprocess } from "../shared/preprocess";
-import { userSchema } from "../user/user";
 
+import {
+  nullishToNull,
+  parseUserOrSubscriber,
+  userOrSubscriberSchema,
+} from "./helpers";
 import { workflowSchema } from "./workflow";
 import { workflowVersionSchema } from "./workflow-version";
 
@@ -60,28 +63,6 @@ export const resolveRunDurationMs = (run: {
   return Math.max(0, endAtMs - createdAtMs);
 };
 
-const isUserLike = (value: unknown): boolean => {
-  const record = toRecord(value);
-  if (!record) {
-    return false;
-  }
-
-  return (
-    "username" in record ||
-    "email" in record ||
-    "sendEmail" in record ||
-    "roles" in record ||
-    "roleIds" in record
-  );
-};
-const parseUserOrSubscriber = (value: unknown): unknown => {
-  return isUserLike(value)
-    ? userSchema.parse(value)
-    : subscriberSchema.parse(value);
-};
-const nullishToNull = (value: unknown): unknown => {
-  return value == null ? null : value;
-};
 const workflowRunAliasMap = {
   workflowId: "workflow",
   workflowVersionId: "workflowVersion",
@@ -127,9 +108,9 @@ const withWorkflowRunDuration = (value: unknown): unknown => {
 
   return next;
 };
-const userOrSubscriberSchema = preprocess(
+const nullableUserOrSubscriberSchema = preprocess(
   (value) => (value == null ? null : parseUserOrSubscriber(value)),
-  z.union([z.lazy(() => userSchema), subscriberSchema]).nullable(),
+  userOrSubscriberSchema.nullable(),
 );
 
 export const workflowRunStubSchema = preprocess(
@@ -163,7 +144,7 @@ export const workflowRunFullSchema = preprocess(
       .lazy(() => workflowVersionSchema)
       .nullable()
       .optional(),
-    triggeredBy: userOrSubscriberSchema,
+    triggeredBy: nullableUserOrSubscriberSchema,
     thread: threadSchema.nullable().optional(),
   }),
 );

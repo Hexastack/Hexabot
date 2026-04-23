@@ -11,7 +11,7 @@ import { useTranslation } from "../hooks/useTranslation";
 import { useChat } from "../providers/ChatProvider";
 import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
-import { TOutgoingMessageType } from "../types/message.types";
+import { Web } from "../types/message.types";
 import { OutgoingMessageState } from "../types/state.types";
 
 import EmojiButton from "./buttons/EmojiButton";
@@ -88,7 +88,7 @@ const UserInput: React.FC = () => {
         event,
         source,
         data: {
-          type: TOutgoingMessageType.text,
+          type: Web.InboundMessageType.text,
           data: { text: message },
         },
       });
@@ -109,7 +109,7 @@ const UserInput: React.FC = () => {
           event,
           source,
           data: {
-            type: TOutgoingMessageType.file,
+            type: Web.InboundMessageType.file,
             data: {
               name: file.name,
               size: file.size,

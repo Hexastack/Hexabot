@@ -8,22 +8,22 @@ import React from "react";
 
 import { useChat } from "../../providers/ChatProvider";
 import {
-  TButton,
-  TMessage,
-  TOutgoingMessageType,
+  Button,
+  UiMessage,
+  Web,
 } from "../../types/message.types";
 
 import "./ButtonMessage.scss";
 
 interface ButtonsMessageProps {
-  message: TMessage;
+  message: UiMessage | { data: { buttons: Button[] } };
 }
 
 const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
   const { send, setWebviewUrl } = useChat();
   const handleClick = (
     event: React.MouseEvent<HTMLButtonElement>,
-    button: TButton,
+    button: Button,
   ) => {
     if (button.type === "web_url" && button.url) {
       if (button.messenger_extensions) {
@@ -36,7 +36,7 @@ const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
         event,
         source: "post-back",
         data: {
-          type: TOutgoingMessageType.postback,
+          type: Web.InboundMessageType.postback,
           data: {
             text: button.title,
             payload: button.payload,

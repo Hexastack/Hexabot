@@ -688,6 +688,91 @@ describe("@hexabot-ai/types schemas", () => {
     expect(typeof resolveRunDurationMs(run)).toBe("number");
   });
 
+  it("falls back to subscriber parsing when user keys exist but are undefined", () => {
+    const subscriberWithUndefinedUserFields = {
+      id: "s_2",
+      createdAt: now,
+      updatedAt: now,
+      firstName: "Sub",
+      lastName: "User",
+      language: "en",
+      timezone: 0,
+      locale: null,
+      gender: null,
+      country: null,
+      foreignId: "foreign-s-2",
+      assignedAt: null,
+      lastvisit: null,
+      retainedFrom: null,
+      channel: { name: "web", data: {} },
+      labels: [],
+      assignedTo: null,
+      avatar: null,
+      type: "SubscriberOrmEntity",
+      username: undefined,
+      email: undefined,
+      sendEmail: undefined,
+      resetCount: undefined,
+    };
+    const run = workflowRunFullSchema.parse({
+      id: "run_2",
+      createdAt: now,
+      updatedAt: now,
+      status: "running",
+      context: {},
+      workflow: {
+        id: "wf_2",
+        createdAt: now,
+        updatedAt: now,
+        name: "Main",
+        description: null,
+        type: WorkflowType.conversational,
+        schedule: null,
+        inputSchema: {},
+        builtin: false,
+        x: 0,
+        y: 0,
+        zoom: 1,
+        direction: "horizontal",
+        currentVersion: null,
+        publishedVersion: null,
+        createdBy: "u_1",
+        runAfterMs: 0,
+      },
+      workflowVersion: null,
+      triggeredBy: subscriberWithUndefinedUserFields,
+      thread: null,
+    });
+    const memoryRecord = memoryRecordFullSchema.parse({
+      id: "mem_2",
+      createdAt: now,
+      updatedAt: now,
+      value: { counter: 2 },
+      definition: {
+        id: "def_2",
+        createdAt: now,
+        updatedAt: now,
+        name: "Session",
+        slug: "session",
+        scope: MemoryScope.workflow,
+        schema: {},
+      },
+      owner: subscriberWithUndefinedUserFields,
+      workflow: null,
+      run: null,
+      thread: null,
+    });
+
+    expect(run.triggeredBy?.id).toBe("s_2");
+    expect(
+      Object.prototype.hasOwnProperty.call(run.triggeredBy ?? {}, "username"),
+    ).toBe(false);
+    expect(memoryRecord.owner.id).toBe("s_2");
+    expect(
+      Object.prototype.hasOwnProperty.call(memoryRecord.owner, "username"),
+    ).toBe(false);
+  });
+
   it("coerces workflow memory aliases and test dummy fixtures", () => {
     const record = memoryRecordSchema.parse({
       id: "mem_1",

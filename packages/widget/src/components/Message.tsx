@@ -12,7 +12,7 @@ import { MessageCircle } from "lucide-react";
 import React, { PropsWithChildren, useState } from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { TMessage } from "../types/message.types";
+import { UiMessage, Web } from "../types/message.types";
 
 import "./Message.scss";
 import ButtonsMessage from "./messages/ButtonMessage";
@@ -27,7 +27,7 @@ dayjs.extend(relativeTime);
 
 type MessageProps = PropsWithChildren<{
   Avatar?: () => JSX.Element;
-  message: TMessage;
+  message: UiMessage;
 }>;
 
 const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
@@ -42,7 +42,7 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
   const handleTime = () => {
     setIsTimeVisible(!isTimeVisible);
   };
-  const fromNow = (time: string) => {
+  const fromNow = (time: Date) => {
     return dayjs(time).fromNow();
   };
 
@@ -70,15 +70,21 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
           {message.data && "text" in message.data && (
             <TextMessage message={message} />
           )}
-          {message.type === "file" && <FileMessage message={message} />}
-          {message.type === "location" && (
+          {message.type === Web.InboundMessageType.file && (
+            <FileMessage message={message} />
+          )}
+          {message.type === Web.InboundMessageType.location && (
             <GeolocationMessage message={message} />
           )}
-          {message.type === "list" && <ListMessage messageList={message} />}
-          {message.type === "carousel" && (
+          {message.type === Web.OutboundMessageType.list && (
+            <ListMessage messageList={message} />
+          )}
+          {message.type === Web.OutboundMessageType.carousel && (
             <CarouselMessage messageCarousel={message} />
           )}
-          {message.type === "buttons" && <ButtonsMessage message={message} />}
+          {message.type === Web.OutboundMessageType.buttons && (
+            <ButtonsMessage message={message} />
+          )}
 
           <div className="hb-message--meta">
             {message.direction === "sent" && (

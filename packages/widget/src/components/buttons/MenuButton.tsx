@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useChat } from "../../providers/ChatProvider";
 import { useSettings } from "../../providers/SettingsProvider";
 import { IMenuNode, MenuType } from "../../types/menu.type";
-import { IPayload, TOutgoingMessageType } from "../../types/message.types";
+import { Web } from "../../types/message.types";
 import MenuItem from "../MenuItem";
 
 import "./MenuButton.scss";
@@ -53,16 +53,14 @@ const MenuButton: React.FC = () => {
   const openSubItems = (item: IMenuNode) => {
     setCurrent(item);
   };
-  const handlePostback = (item: IPayload) => {
+  const handlePostback = (item: Web.InboundPayloadMessageData) => {
     send({
-      // @ts-expect-error todo
-      event: new Event("postback"),
       source: "persistent-menu",
       data: {
-        type: TOutgoingMessageType.postback,
+        type: Web.InboundMessageType.postback,
         data: {
-          payload: item.payload as string,
-          text: item.text as string,
+          payload: item.payload,
+          text: item.text,
         },
       },
     });

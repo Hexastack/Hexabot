@@ -7,19 +7,15 @@
 import { Check } from "lucide-react";
 import React from "react";
 
-import { TMessage } from "../types/message.types";
+import { UiMessage } from "../types/message.types";
 
 import "./MessageStatus.scss";
 
 interface MessageStatusProps {
-  message: TMessage;
+  message: UiMessage;
 }
 
 const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
-  if (!("delivery" in message && "read" in message)) {
-    throw new Error("Unable to find delivery/read attributes");
-  }
-
   return (
     <div className="hb--status">
       {message.read && (
