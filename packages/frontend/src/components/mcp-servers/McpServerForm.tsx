@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Credential } from "@hexabot-ai/types";
 import { FormControlLabel, MenuItem, Switch, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -18,8 +19,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { Credential } from "@/types/credential.types";
-import { McpServerTransport, McpServer } from "@/types/mcp-server.types";
+import { McpServer, McpServerTransport } from "@/types/mcp-server.types";
 import { isAbsoluteUrl } from "@/utils/URL";
 
 type McpServerAttributes = EntityAttributes<EntityType.MCP_SERVER>;

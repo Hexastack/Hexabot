@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Credential } from "@hexabot-ai/types";
 import { TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -16,7 +17,10 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { Credential, CredentialWithValue } from "@/types/credential.types";
+
+type CredentialWithValue = Credential & {
+  value?: string;
+};
 
 type CredentialAttributes = EntityAttributes<EntityType.CREDENTIAL>;
 

@@ -13,18 +13,23 @@ import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
 
 import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
+import { JsonSchemaType } from "@/app-components/inputs/JsonSchemaObjectBuilder";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import {
-  ContentField,
-  ContentSchemaProperties,
-} from "@/types/content-type.types";
 
 import { getSchemaProperties } from "../visual-editor/v4/utils/schema-defaults.utils";
+
+export type ContentField = {
+  title: string;
+  type: JsonSchemaType<"fieldInput">;
+  name: string;
+};
+
+export type ContentSchemaProperties = Record<string, ContentField>;
 
 type ContentFormData = Record<string, unknown> & {
   contentType: string;

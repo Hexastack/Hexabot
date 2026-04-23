@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Action } from "@hexabot-ai/types";
+import { Action, Credential } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
 import { KeyRound, Plus } from "lucide-react";
 
@@ -20,7 +20,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { Credential } from "@/types/credential.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { CredentialFormDialog } from "./CredentialFormDialog";
