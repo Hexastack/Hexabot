@@ -190,7 +190,7 @@ export const Settings = () => {
   };
   const handleFormDataChange = (
     groupName: string,
-    nextFormData: Record<string, unknown>,
+    nextFormData: Record<string, SettingValue>,
   ) => {
     const settingsByLabel = settingsByGroupAndLabel[groupName] || {};
 
@@ -249,7 +249,7 @@ export const Settings = () => {
                       </Typography>
                     ) : (
                       <FormControl>
-                        <JsonSchemaForm
+                        <JsonSchemaForm<Record<string, SettingValue>>
                           schema={schema}
                           formData={formDataByGroup[groupName] || {}}
                           onFormDataChange={(data, errors) => {
