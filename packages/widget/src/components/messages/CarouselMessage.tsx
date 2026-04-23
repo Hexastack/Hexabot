@@ -7,7 +7,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 
-import { Direction, TButton, TMessage } from "../../types/message.types";
+import { Button, Direction } from "../../types/message.types";
 import { processContent } from "../../utils/text";
 
 import ButtonsMessage from "./ButtonMessage";
@@ -17,7 +17,7 @@ interface Element {
   title: string;
   subtitle?: string;
   image_url?: string;
-  buttons?: TButton[];
+  buttons?: Button[];
 }
 
 interface MessageCarousel {
@@ -53,7 +53,7 @@ const CarouselItem: React.FC<CarouselItemProps> = ({ message }) => (
       </div>
       {message.buttons && (
         <ButtonsMessage
-          message={{ data: { buttons: message.buttons } } as TMessage}
+          message={{ data: { buttons: message.buttons } }}
         />
       )}
     </div>

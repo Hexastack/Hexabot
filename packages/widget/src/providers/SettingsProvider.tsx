@@ -17,7 +17,7 @@ import React, {
 import { useTranslation } from "../hooks/useTranslation";
 import { ThemeOverrides } from "../theme/theme.types";
 import { IMenuNode } from "../types/menu.type";
-import { ISubscriber, TMessage } from "../types/message.types";
+import { SubscriberFull, Web } from "../types/message.types";
 import { SessionStorage } from "../utils/sessionStorage";
 
 import { useConfig } from "./ConfigProvider";
@@ -53,8 +53,9 @@ export type ChannelSettings = {
   show_location: boolean;
   allowed_upload_types: string;
   greeting_message: string;
-  messages?: TMessage[];
-  profile?: ISubscriber;
+  messages?: Web.Message[];
+  profile?: SubscriberFull;
+  thread_id?: string | null;
 };
 
 export type ChatSettings = {

@@ -8,7 +8,7 @@ import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
 
 import { useChat } from "../providers/ChatProvider";
 import { useWidget } from "../providers/WidgetProvider";
-import { TMessage } from "../types/message.types";
+import { UiMessage } from "../types/message.types";
 
 import Message from "./Message";
 import "./Messages.scss";
@@ -23,7 +23,7 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
   const { messages, showTypingIndicator, setNewIOMessage } = useChat();
   const scrollListRef = useRef<HTMLDivElement>(null);
   const [lastReceivedMessage, setLastReceivedMessage] = useState<
-    TMessage | undefined
+    UiMessage | undefined
   >();
 
   useEffect(() => {

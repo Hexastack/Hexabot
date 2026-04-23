@@ -7,7 +7,7 @@
 import React from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { ISuggestion, TOutgoingMessageType } from "../types/message.types";
+import { Suggestion, Web } from "../types/message.types";
 
 import "./Suggestions.scss";
 
@@ -15,13 +15,13 @@ const Suggestions: React.FC = () => {
   const { send, suggestions } = useChat();
   const sendSuggestion = (
     event: React.MouseEvent<HTMLButtonElement>,
-    suggestion: ISuggestion,
+    suggestion: Suggestion,
   ) => {
     send({
       event,
       source: "quick-reply",
       data: {
-        type: TOutgoingMessageType.quick_reply,
+        type: Web.InboundMessageType.quick_reply,
         data: suggestion,
       },
     });

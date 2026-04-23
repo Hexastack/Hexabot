@@ -6,7 +6,7 @@
 
 import React from "react";
 
-import { TMessage } from "../../types/message.types";
+import { UiMessage } from "../../types/message.types";
 import { processContent } from "../../utils/text";
 
 import ButtonsMessage from "./ButtonMessage";
@@ -14,7 +14,7 @@ import ButtonsMessage from "./ButtonMessage";
 import "./ListMessage.scss";
 
 interface ListMessageProps {
-  messageList: TMessage;
+  messageList: UiMessage;
 }
 
 const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
@@ -69,7 +69,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
             </div>
             {message.buttons && (
               <ButtonsMessage
-                message={{ data: { buttons: message.buttons } } as TMessage}
+                message={{ data: { buttons: message.buttons } }}
               />
             )}
           </div>
@@ -79,7 +79,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
         Array.isArray(messageList.data.buttons) &&
         messageList.data.buttons.length > 0 && (
           <div className="hb-message--list-element-bottom">
-            <ButtonsMessage message={messageList as TMessage} />
+            <ButtonsMessage message={messageList} />
           </div>
         )}
     </div>

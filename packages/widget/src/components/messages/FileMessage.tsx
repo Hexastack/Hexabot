@@ -8,11 +8,11 @@ import { File } from "lucide-react";
 import React, { useState } from "react";
 
 import { useTranslation } from "../../hooks/useTranslation";
-import { TMessage } from "../../types/message.types";
+import { UiMessage } from "../../types/message.types";
 import "./FileMessage.scss";
 
 const getFileMessageType = (
-  message: TMessage,
+  message: UiMessage,
 ): "image" | "audio" | "video" | "file" | "unknown" => {
   if (!("type" in message.data)) {
     throw new Error("Unable to detect type for file message");
@@ -31,8 +31,8 @@ const getFileMessageType = (
   throw new Error("Unknown type for file message");
 };
 const hasUrl = (
-  message: TMessage,
-): message is TMessage & { data: { url: string } } => {
+  message: UiMessage,
+): message is UiMessage & { data: { url: string } } => {
   return (
     typeof message === "object" &&
     message !== null &&
@@ -45,7 +45,7 @@ const hasUrl = (
 };
 
 interface FileMessageProps {
-  message: TMessage;
+  message: UiMessage;
 }
 
 const FileMessage: React.FC<FileMessageProps> = ({ message }) => {

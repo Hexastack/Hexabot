@@ -8,12 +8,12 @@ import DOMPurify from "dompurify";
 import { marked } from "marked";
 import React, { useMemo } from "react";
 
-import { Direction, TMessage } from "../../types/message.types";
+import { Direction, UiMessage } from "../../types/message.types";
 
 import "./TextMessage.scss";
 
 interface TextMessageProps {
-  message: TMessage;
+  message: UiMessage;
 }
 
 const TextMessage: React.FC<TextMessageProps> = ({ message }) => {

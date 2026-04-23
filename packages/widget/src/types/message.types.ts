@@ -11,42 +11,12 @@ export enum Direction {
   received = "received",
 }
 
-export interface IQuickReply {
-  title?: string;
-  payload?: string;
-}
-
-export interface IPayload {
-  text?: string;
-  payload?: string;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
-}
-
 export enum FileType {
   image = "image",
   video = "video",
   audio = "audio",
   file = "file",
-  unknkown = "unknown",
-}
-
-export interface ISubscriber {
-  id: string;
-  firstName: string;
-  lastName: string;
-  locale: string;
-  gender: string;
-  assignedAt?: Date | null;
-  lastvisit?: Date;
-  retainedFrom?: Date;
-  channel: TChannelData;
-  timezone?: number;
-  language: string;
-  country?: string;
-  foreignId: string;
+  unknown = "unknown",
 }
 
 export enum ButtonType {
@@ -54,13 +24,13 @@ export enum ButtonType {
   web_url = "web_url",
 }
 
-export type TPostBackButton = {
+export type PostBackButton = {
   type: ButtonType.postback;
   title: string;
   payload: string;
 };
 
-export type TWebUrlButton = {
+export type WebUrlButton = {
   type: ButtonType.web_url;
   title: string;
   url: string;
@@ -68,236 +38,293 @@ export type TWebUrlButton = {
   webview_height_ratio?: "compact" | "tall" | "full";
 };
 
-export type TButton = TPostBackButton | TWebUrlButton;
+export type Button = PostBackButton | WebUrlButton;
 
-export type TChannelData = {
+export type StdQuickReply = {
+  title: string;
+  payload: string;
+};
+
+export type SubscriberChannelData = {
   isSocket: boolean;
   ipAddress: string;
   agent: string;
 };
 
-export type TRequestSession = {
-  web?: {
-    profile: ISubscriber;
-    isSocket: boolean;
-  };
-};
-
-export enum TStatusEventType {
-  delivery = "delivery",
-  read = "read",
-  typing = "typing",
-}
-
-export enum TOutgoingMessageType {
-  text = "text",
-  quick_reply = "quick_reply",
-  postback = "postback",
-  location = "location",
-  file = "file",
-}
-
-export type TEventType = TStatusEventType | TOutgoingMessageType;
-
-export enum IncomingMessageType {
-  text = "text",
-  buttons = "buttons",
-  quick_replies = "quick_replies",
-  file = "file",
-  list = "list",
-  carousel = "carousel",
-}
-
-export type TOutgoingTextMessageData = { text: string };
-
-export type TOutgoingPayloadMessageData = TOutgoingTextMessageData & {
-  payload: string; // Quick reply and button payload are the same
-};
-
-export type TOutgoingLocationMessageData = {
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-};
-
-export type TOutgoingAttachmentMessageData = {
-  type: string; // mime type in a file case
-  url?: string; // file url
-  // Only when uploaded
-  size?: number; // file size
-  name?: string;
-  file?: File;
-};
-
-export type TOutgoingMessageData =
-  | TOutgoingTextMessageData
-  | TOutgoingPayloadMessageData
-  | TOutgoingLocationMessageData
-  | TOutgoingAttachmentMessageData;
-
-export type TStatusDeliveryEvent = {
-  type: TStatusEventType.delivery;
-  mid: string;
-};
-
-export type TStatusReadEvent = {
-  type: TStatusEventType.read;
-  watermark: number;
-};
-
-export type TStatusTypingEvent = {
-  type: TStatusEventType.typing;
-};
-
-export type TStatusEvent =
-  | TStatusDeliveryEvent
-  | TStatusReadEvent
-  | TStatusTypingEvent;
-
-export type TOutgoingTextMessage = {
-  type: TOutgoingMessageType.text;
-  data: TOutgoingTextMessageData;
-};
-
-export type TOutgoingPayloadMessage = {
-  type: TOutgoingMessageType.postback | TOutgoingMessageType.quick_reply;
-  data: TOutgoingPayloadMessageData;
-};
-
-export type TOutgoingLocationMessage = {
-  type: TOutgoingMessageType.location;
-  data: TOutgoingLocationMessageData;
-};
-
-export type TOutgoingAttachmentMessage = {
-  type: TOutgoingMessageType.file;
-  data: TOutgoingAttachmentMessageData;
-};
-
-export type TOutgoingMessageBase =
-  | TOutgoingTextMessage
-  | TOutgoingPayloadMessage
-  | TOutgoingLocationMessage
-  | TOutgoingAttachmentMessage;
-
-export type TOutgoingMessage<
-  T =
-    | TOutgoingTextMessage
-    | TOutgoingPayloadMessage
-    | TOutgoingLocationMessage
-    | TOutgoingAttachmentMessage,
-> = T & {
-  mid?: string;
-  author?: string;
-  read?: boolean;
-  delivery?: boolean;
-  // Whether it's a synchronization
-  // This is used when message sent by the chatbot from the client side
-  sync?: boolean;
-  createdAt: string;
-  direction: Direction.sent;
-};
-
-export type TEvent = TIncomingMessage | TOutgoingMessage | TStatusEvent;
-
-export interface IMessageElement {
-  title: string;
-  subtitle?: string;
-  image_url?: string;
-  default_action?: Omit<TWebUrlButton, "title">;
-  buttons?: TButton[];
-}
-
-export type TIncomingTextMessageData = { text: string };
-
-export type TIncomingQuickRepliesMessageData = TIncomingTextMessageData & {
-  quick_replies: IQuickReply[];
-};
-
-export type TIncomingButtonsMessageData = TIncomingTextMessageData & {
-  buttons: TButton[];
-};
-
-export type TIncomingFileMessageData = {
-  quick_replies?: IQuickReply[];
-  type: FileType;
-  url: string;
-};
-
-export type TIncomingCarouselMessageData = {
-  elements: IMessageElement[];
-};
-
-export type TIncomingListMessageData = TIncomingCarouselMessageData & {
-  top_element_style?: "large" | "compact";
-  buttons: TButton[];
-};
-
-export type TIncomingMessageData =
-  | TIncomingTextMessageData
-  | TIncomingQuickRepliesMessageData
-  | TIncomingButtonsMessageData
-  | TIncomingFileMessageData
-  | TIncomingCarouselMessageData
-  | TIncomingListMessageData;
-
-export type TIncomingMessageBase =
+export type SubscriberChannel =
+  | SubscriberChannelData
   | {
-      type: IncomingMessageType.text;
-      data: TIncomingTextMessageData;
-    }
-  | {
-      type: IncomingMessageType.quick_replies;
-      data: TIncomingQuickRepliesMessageData;
-    }
-  | {
-      type: IncomingMessageType.buttons;
-      data: TIncomingButtonsMessageData;
-    }
-  | {
-      type: IncomingMessageType.file;
-      data: TIncomingFileMessageData;
-    }
-  | {
-      type: IncomingMessageType.carousel;
-      data: TIncomingCarouselMessageData;
-    }
-  | {
-      type: IncomingMessageType.list;
-      data: TIncomingListMessageData;
+      name: string | null;
+      data?: Record<string, unknown> | null;
     };
 
-export type TIncomingMessage = TIncomingMessageBase & {
+export type SubscriberFull = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  locale: string | null;
+  gender: string | null;
+  assignedAt?: Date | null;
+  lastvisit?: Date | null;
+  retainedFrom?: Date | null;
+  channel: SubscriberChannel;
+  timezone?: number;
+  language: string;
+  country?: string | null;
+  foreignId: string;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace Web {
+  export type RequestSession = {
+    web?: {
+      profile: SubscriberFull;
+      threadId?: string;
+    };
+  };
+
+  export enum StatusEventType {
+    delivery = "delivery",
+    read = "read",
+    typing = "typing",
+  }
+
+  export enum InboundMessageType {
+    text = "text",
+    quick_reply = "quick_reply",
+    postback = "postback",
+    location = "location",
+    file = "file",
+  }
+
+  export type EventType = Web.StatusEventType | Web.InboundMessageType;
+
+  export enum OutboundMessageType {
+    text = "text",
+    buttons = "buttons",
+    quick_replies = "quick_replies",
+    file = "file",
+    list = "list",
+    carousel = "carousel",
+  }
+
+  export type InboundEventMetadata = {
+    mid?: string;
+    author?: string;
+    thread_id?: string;
+    read?: boolean;
+    delivery?: boolean;
+    // Whether it's a synchronization
+    // This is used when message sent by the chatbot from the client side
+    sync?: boolean;
+    createdAt?: Date;
+  };
+
+  export type InboundTextMessageData = {
+    text: string;
+  };
+
+  export type InboundPayloadMessageData = {
+    text: string;
+    payload: string;
+  };
+
+  export type InboundLocationMessageData = {
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
+
+  export type InboundAttachmentHistoryMessageData = {
+    type: FileType;
+    url: string;
+  };
+
+  export type InboundAttachmentUploadMessageData = {
+    type: string;
+    size: number;
+    name: string;
+    file?: File;
+  };
+
+  export type InboundAttachmentMessageData =
+    | InboundAttachmentHistoryMessageData
+    | InboundAttachmentUploadMessageData;
+
+  export type InboundMessageData =
+    | InboundTextMessageData
+    | InboundPayloadMessageData
+    | InboundLocationMessageData
+    | InboundAttachmentMessageData;
+
+  export type StatusDeliveryEvent = {
+    type: StatusEventType.delivery;
+    mid: string;
+  };
+
+  export type StatusReadEvent = {
+    type: StatusEventType.read;
+    watermark: number;
+  };
+
+  export type StatusTypingEvent = {
+    type: StatusEventType.typing;
+  };
+
+  export type StatusEvent =
+    | StatusDeliveryEvent
+    | StatusReadEvent
+    | StatusTypingEvent;
+
+  export type InboundTextMessage = {
+    type: InboundMessageType.text;
+    data: InboundTextMessageData;
+  } & InboundEventMetadata;
+
+  export type InboundPostbackMessage = {
+    type: InboundMessageType.postback;
+    data: InboundPayloadMessageData;
+  } & InboundEventMetadata;
+
+  export type InboundQuickReplyMessage = {
+    type: InboundMessageType.quick_reply;
+    data: InboundPayloadMessageData;
+  } & InboundEventMetadata;
+
+  export type InboundPayloadMessage =
+    | InboundPostbackMessage
+    | InboundQuickReplyMessage;
+
+  export type InboundLocationMessage = {
+    type: InboundMessageType.location;
+    data: InboundLocationMessageData;
+  } & InboundEventMetadata;
+
+  export type InboundAttachmentMessage = {
+    type: InboundMessageType.file;
+    data: InboundAttachmentMessageData;
+  } & InboundEventMetadata;
+
+  export type InboundMessageBase =
+    | InboundTextMessage
+    | InboundPayloadMessage
+    | InboundLocationMessage
+    | InboundAttachmentMessage;
+
+  export type InboundMessage<T extends InboundMessageBase = InboundMessageBase> =
+    T;
+
+  export type Event = StatusEvent | InboundMessageBase;
+
+  export interface MessageElement {
+    title: string;
+    subtitle?: string;
+    image_url?: string;
+    default_action?: Omit<WebUrlButton, "title">;
+    buttons?: Button[];
+  }
+
+  export type OutboundTextMessageData = {
+    text: string;
+  };
+
+  export type OutboundQuickRepliesMessageData = OutboundTextMessageData & {
+    quick_replies: StdQuickReply[];
+  };
+
+  export type OutboundButtonsMessageData = OutboundTextMessageData & {
+    buttons: Button[];
+  };
+
+  export type OutboundFileMessageData = {
+    quick_replies?: StdQuickReply[];
+    type: FileType;
+    url: string;
+  };
+
+  export type OutboundCarouselMessageData = {
+    elements: MessageElement[];
+  };
+
+  export type OutboundListMessageData = OutboundCarouselMessageData & {
+    top_element_style?: "large" | "compact";
+    buttons: Button[];
+  };
+
+  export type OutboundMessageData =
+    | OutboundTextMessageData
+    | OutboundQuickRepliesMessageData
+    | OutboundButtonsMessageData
+    | OutboundFileMessageData
+    | OutboundCarouselMessageData
+    | OutboundListMessageData;
+
+  export type OutboundMessageBase =
+    | {
+        type: OutboundMessageType.text;
+        data: OutboundTextMessageData;
+      }
+    | {
+        type: OutboundMessageType.quick_replies;
+        data: OutboundQuickRepliesMessageData;
+      }
+    | {
+        type: OutboundMessageType.buttons;
+        data: OutboundButtonsMessageData;
+      }
+    | {
+        type: OutboundMessageType.file;
+        data: OutboundFileMessageData;
+      }
+    | {
+        type: OutboundMessageType.carousel;
+        data: OutboundCarouselMessageData;
+      }
+    | {
+        type: OutboundMessageType.list;
+        data: OutboundListMessageData;
+      };
+
+  export type OutboundMessage = OutboundMessageBase & {
+    mid: string;
+    author: string;
+    thread_id?: string;
+    read?: boolean;
+    createdAt: Date;
+    handover: boolean;
+  };
+
+  export type Message = OutboundMessage | InboundMessage;
+}
+
+export type Suggestion = {
+  text: string;
+  payload: string;
+};
+
+export type UiMessage = Omit<
+  Web.Message,
+  "mid" | "author" | "read" | "delivery" | "createdAt"
+> & {
   mid: string;
   author: string;
   read?: boolean;
   delivery?: boolean;
-  createdAt: string;
-  handover: boolean;
-  direction: Direction.received;
+  createdAt: Date;
+  direction: Direction;
 };
 
-export type TMessage = TIncomingMessage | TOutgoingMessage;
-
-export interface ISuggestion {
-  text: string;
-  payload: string;
-}
-
-export type TPostMessageEvent<
-  T =
-    | TOutgoingTextMessage
-    | TOutgoingPayloadMessage
-    | TOutgoingLocationMessage
-    | TOutgoingAttachmentMessage,
-> = T & {
-  author?: string;
-};
+export type PostMessageEvent<T extends Web.InboundMessageBase = Web.InboundMessageBase> =
+  T & {
+    author?: string;
+    thread_id?: string;
+  };
 
 export interface SubscribeResponse {
-  messages: TMessage[];
-  profile: ISubscriber;
+  messages: Web.Message[];
+  profile: SubscriberFull;
+  thread_id: string | null;
 }
 
 export interface SocketErrorResponse {

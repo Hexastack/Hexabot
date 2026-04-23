@@ -7,12 +7,12 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import { useWidget } from "../../providers/WidgetProvider";
-import { TMessage } from "../../types/message.types";
+import { UiMessage } from "../../types/message.types";
 
 import "./GeolocationMessage.scss";
 
 interface GeolocationMessageProps {
-  message: TMessage;
+  message: UiMessage;
 }
 
 const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {

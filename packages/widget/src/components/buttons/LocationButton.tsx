@@ -8,7 +8,7 @@ import { MapPin } from "lucide-react";
 import React from "react";
 
 import { useChat } from "../../providers/ChatProvider";
-import { TOutgoingMessageType } from "../../types/message.types";
+import { Web } from "../../types/message.types";
 
 const LocationButton: React.FC = () => {
   const { send } = useChat();
@@ -20,7 +20,7 @@ const LocationButton: React.FC = () => {
             event,
             source: "geo-location",
             data: {
-              type: TOutgoingMessageType.location,
+              type: Web.InboundMessageType.location,
               data: {
                 coordinates: {
                   lat: position.coords.latitude,
