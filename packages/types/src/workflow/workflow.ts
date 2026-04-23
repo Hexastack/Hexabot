@@ -13,13 +13,10 @@ import { preprocess } from "../shared/preprocess";
 import { userSchema } from "../user/user";
 
 import { directionTypeSchema, workflowTypeSchema } from "./domain";
+import { nullishToNull } from "./helpers";
 import { workflowVersionSchema } from "./workflow-version";
 
 export type WorkflowDefinitionParser = (definitionYml: string) => unknown;
-
-const nullishToNull = (value: unknown): unknown => {
-  return value == null ? null : value;
-};
 const workflowAliasMap = {
   currentVersionId: "currentVersion",
   publishedVersionId: "publishedVersion",

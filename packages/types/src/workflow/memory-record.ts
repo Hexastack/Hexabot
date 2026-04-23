@@ -6,35 +6,15 @@
 
 import { z } from "zod";
 
-import { subscriberSchema } from "../chat/subscriber";
 import { threadSchema } from "../chat/thread";
 import { asId, withAliases } from "../shared/aliases";
 import { baseStubSchema } from "../shared/base";
-import { toRecord } from "../shared/object";
 import { preprocess } from "../shared/preprocess";
-import { userSchema } from "../user/user";
 
+import { parseUserOrSubscriber, userOrSubscriberSchema } from "./helpers";
 import { memoryDefinitionSchema } from "./memory-definition";
 import { workflowSchema } from "./workflow";
 import { workflowRunSchema } from "./workflow-run";
-
-const parseUserOrSubscriber = (value: unknown): unknown => {
-  const record = toRecord(value);
-
-  if (record?.type === "UserOrmEntity") {
-    return userSchema.parse(value);
-  }
-  if (record?.type === "SubscriberOrmEntity") {
-    return subscriberSchema.parse(value);
-  }
-
-  const parsedUser = userSchema.safeParse(value);
-  if (parsedUser.success) {
-    return parsedUser.data;
-  }
-
-  return subscriberSchema.parse(value);
-};
 const memoryRecordAliasMap = {
   definitionId: "definition",
   ownerId: "owner",
@@ -78,10 +58,7 @@ export const memoryRecordSchema = preprocess(
 
 export const memoryRecordFullSchema = memoryRecordStubObjectSchema.extend({
   definition: memoryDefinitionSchema,
-  owner: preprocess(
-    (value) => parseUserOrSubscriber(value),
-    z.union([z.lazy(() => userSchema), subscriberSchema]),
-  ),
+  owner: preprocess(parseUserOrSubscriber, userOrSubscriberSchema),
   workflow: workflowSchema.nullable().optional(),
   run: workflowRunSchema.nullable().optional(),
   thread: threadSchema.nullable().optional(),

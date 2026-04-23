@@ -6,14 +6,17 @@
 
 import { z } from "zod";
 
-import { subscriberSchema } from "../chat/subscriber";
 import { threadSchema } from "../chat/thread";
 import { asId, withAliases } from "../shared/aliases";
 import { baseStubSchema } from "../shared/base";
 import { cloneWithPrototype, toRecord } from "../shared/object";
 import { preprocess } from "../shared/preprocess";
-import { userSchema } from "../user/user";
 
+import {
+  nullishToNull,
+  parseUserOrSubscriber,
+  userOrSubscriberSchema,
+} from "./helpers";
 import { workflowSchema } from "./workflow";
 import { workflowVersionSchema } from "./workflow-version";
 
@@ -60,25 +63,6 @@ export const resolveRunDurationMs = (run: {
   return Math.max(0, endAtMs - createdAtMs);
 };
 
-const parseUserOrSubscriber = (value: unknown): unknown => {
-  const record = toRecord(value);
-  if (record?.type === "UserOrmEntity") {
-    return userSchema.parse(value);
-  }
-  if (record?.type === "SubscriberOrmEntity") {
-    return subscriberSchema.parse(value);
-  }
-
-  const parsedUser = userSchema.safeParse(value);
-  if (parsedUser.success) {
-    return parsedUser.data;
-  }
-
-  return subscriberSchema.parse(value);
-};
-const nullishToNull = (value: unknown): unknown => {
-  return value == null ? null : value;
-};
 const workflowRunAliasMap = {
   workflowId: "workflow",
   workflowVersionId: "workflowVersion",
@@ -124,9 +108,9 @@ const withWorkflowRunDuration = (value: unknown): unknown => {
 
   return next;
 };
-const userOrSubscriberSchema = preprocess(
+const nullableUserOrSubscriberSchema = preprocess(
   (value) => (value == null ? null : parseUserOrSubscriber(value)),
-  z.union([z.lazy(() => userSchema), subscriberSchema]).nullable(),
+  userOrSubscriberSchema.nullable(),
 );
 
 export const workflowRunStubSchema = preprocess(
@@ -160,7 +144,7 @@ export const workflowRunFullSchema = preprocess(
       .lazy(() => workflowVersionSchema)
       .nullable()
       .optional(),
-    triggeredBy: userOrSubscriberSchema,
+    triggeredBy: nullableUserOrSubscriberSchema,
     thread: threadSchema.nullable().optional(),
   }),
 );

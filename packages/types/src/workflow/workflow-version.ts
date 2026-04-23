@@ -12,11 +12,8 @@ import { preprocess } from "../shared/preprocess";
 import { userSchema } from "../user/user";
 
 import { workflowVersionActionSchema } from "./domain";
+import { nullishToNull } from "./helpers";
 import { workflowSchema } from "./workflow";
-
-const nullishToNull = (value: unknown): unknown => {
-  return value == null ? null : value;
-};
 const workflowVersionAliasMap = {
   parentVersionId: "parentVersion",
   workflowId: "workflow",
