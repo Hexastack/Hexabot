@@ -40,7 +40,7 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot shar
   - `type *Stub`, `type *`, `type *Full` inferred from the corresponding schemas.
 - Alias compatibility is implemented with `withAliases` in `packages/types/src/shared/aliases.ts` and should preserve legacy API payload keys.
 - ID normalization should use shared helpers (`asId`, `asIdArray`) instead of ad-hoc conversions.
-- Preprocessing should use the local `preprocess` wrapper from `packages/types/src/shared/preprocess.ts` to keep inference stable.
+- Use the local `preprocess` wrapper from `packages/types/src/shared/preprocess.ts` only when input transformation or normalization is needed; avoid identity preprocess wrappers.
 - Workflow full contracts have a parser-aware bridge via `createWorkflowFullSchema` (`packages/types/src/workflow/workflow.ts`) for optional `definition` derivation from `definitionYml`.
 
 ## Coding conventions and guardrails

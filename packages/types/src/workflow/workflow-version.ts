@@ -56,10 +56,7 @@ export const workflowVersionFullSchema = workflowVersionStubObjectSchema.extend(
       nullishToNull,
       z.lazy(() => workflowVersionSchema).nullable(),
     ),
-    workflow: preprocess(
-      (value) => value,
-      z.lazy(() => workflowSchema),
-    ),
+    workflow: z.lazy(() => workflowSchema),
     createdBy: preprocess(
       (value) => (value == null ? null : value),
       z.lazy(() => userSchema).nullable(),
