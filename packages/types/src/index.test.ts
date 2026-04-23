@@ -28,6 +28,7 @@ import {
   permissionSchema,
   resolveRunDurationMs,
   settingSchema,
+  subscriberFullSchema,
   subscriberSchema,
   userFullSchema,
   userSchema,
@@ -127,6 +128,69 @@ describe("@hexabot-ai/types schemas", () => {
     expect(parsed.roles[0].id).toBe("r_1");
     expect("shouldDrop" in parsed.roles[0]).toBe(false);
     expect(parsed.avatar?.createdBy).toBe("u_1");
+  });
+
+  it("does not alias relation id fields into user full relation objects", () => {
+    const parsed = userFullSchema.parse({
+      id: "u_1",
+      createdAt: now,
+      updatedAt: now,
+      firstName: "Ada",
+      lastName: "Lovelace",
+      language: "en",
+      timezone: 1,
+      locale: null,
+      gender: null,
+      country: null,
+      foreignId: "foreign-u-1",
+      assignedAt: null,
+      lastvisit: null,
+      retainedFrom: null,
+      channel: { name: "web", data: { id: "sub_1" } },
+      username: "ada",
+      email: "ada@example.com",
+      sendEmail: false,
+      state: true,
+      resetCount: 0,
+      resetToken: null,
+      provider: { strategy: "local" },
+      roleIds: ["r_1"],
+      avatarId: "a_1",
+      labelIds: ["l_1"],
+      assignedToId: "u_2",
+    });
+
+    expect(parsed.roles).toEqual([]);
+    expect(parsed.avatar).toBeNull();
+    expect(parsed.labels).toEqual([]);
+    expect(parsed.assignedTo).toBeNull();
+  });
+
+  it("does not alias relation id fields into subscriber full relation objects", () => {
+    const parsed = subscriberFullSchema.parse({
+      id: "s_1",
+      createdAt: now,
+      updatedAt: now,
+      firstName: "Ada",
+      lastName: "Lovelace",
+      language: "en",
+      timezone: 0,
+      locale: null,
+      gender: null,
+      country: null,
+      foreignId: "foreign-s-1",
+      assignedAt: null,
+      lastvisit: null,
+      retainedFrom: null,
+      channel: { name: "web", data: null },
+      labelIds: ["l_1"],
+      assignedToId: "u_1",
+      avatarId: "a_1",
+    });
+
+    expect(parsed.labels).toEqual([]);
+    expect(parsed.assignedTo).toBeNull();
+    expect(parsed.avatar).toBeNull();
   });
 
   it("maps attachment aliases and strips unknown keys", () => {

@@ -61,27 +61,24 @@ export const userSchema = preprocess(
   }),
 );
 
-export const userFullSchema = preprocess(
-  (value) => withAliases(value, userAliasMap),
-  userStubObjectSchema.extend({
-    labels: preprocess(
-      (value) => (Array.isArray(value) ? value : []),
-      z.array(z.lazy(() => labelSchema)),
-    ),
-    assignedTo: preprocess(
-      (value) => (value == null ? null : value),
-      userProfileAssignedSchema.nullable(),
-    ),
-    roles: preprocess(
-      (value) => (Array.isArray(value) ? value : []),
-      z.array(z.lazy(() => roleSchema)),
-    ),
-    avatar: preprocess(
-      (value) => (value == null ? null : value),
-      attachmentSchema.nullable(),
-    ),
-  }),
-);
+export const userFullSchema = userStubObjectSchema.extend({
+  labels: preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(z.lazy(() => labelSchema)),
+  ),
+  assignedTo: preprocess(
+    (value) => (value == null ? null : value),
+    userProfileAssignedSchema.nullable(),
+  ),
+  roles: preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(z.lazy(() => roleSchema)),
+  ),
+  avatar: preprocess(
+    (value) => (value == null ? null : value),
+    attachmentSchema.nullable(),
+  ),
+});
 
 export type UserStub = z.infer<typeof userStubSchema>;
 

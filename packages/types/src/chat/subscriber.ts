@@ -41,23 +41,20 @@ export const subscriberSchema = preprocess(
   subscriberObjectSchema,
 );
 
-export const subscriberFullSchema = preprocess(
-  (value) => withAliases(value, subscriberAliasMap),
-  subscriberBaseSchema.extend({
-    labels: preprocess(
-      (value) => (Array.isArray(value) ? value : []),
-      z.array(z.lazy(() => labelSchema)),
-    ),
-    assignedTo: preprocess(
-      (value) => (value == null ? null : value),
-      userProfileAssignedSchema.nullable(),
-    ),
-    avatar: preprocess(
-      (value) => (value == null ? null : value),
-      attachmentSchema.nullable(),
-    ),
-  }),
-);
+export const subscriberFullSchema = subscriberBaseSchema.extend({
+  labels: preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(z.lazy(() => labelSchema)),
+  ),
+  assignedTo: preprocess(
+    (value) => (value == null ? null : value),
+    userProfileAssignedSchema.nullable(),
+  ),
+  avatar: preprocess(
+    (value) => (value == null ? null : value),
+    attachmentSchema.nullable(),
+  ),
+});
 
 export type SubscriberStub = z.infer<typeof subscriberStubSchema>;
 
