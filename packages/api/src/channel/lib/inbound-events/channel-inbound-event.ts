@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Subscriber } from '@hexabot-ai/types';
+import { Subscriber, StdEventType } from '@hexabot-ai/types';
 
 import { SubscriberChannelData } from '@/chat/types/channel';
-import { StdEventType } from '@/chat/types/message';
 import { WorkflowType } from '@/workflow/types';
 
 import { TriggerEventWrapper } from '../../../workflow/lib/trigger-event-wrapper';

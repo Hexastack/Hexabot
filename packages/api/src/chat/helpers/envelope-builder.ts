@@ -4,10 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { z } from 'zod';
-
 import {
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingAttachmentEnvelope,
   stdOutgoingAttachmentEnvelopeSchema,
   StdOutgoingButtonsEnvelope,
@@ -22,21 +20,22 @@ import {
   stdOutgoingSystemEnvelopeSchema,
   StdOutgoingTextEnvelope,
   stdOutgoingTextEnvelopeSchema,
-} from '../types/message';
+} from '@hexabot-ai/types';
+import { z } from 'zod';
 
 type ArrayKeys<T> = {
   [K in keyof T]: NonNullable<T[K]> extends Array<any> ? K : never;
 }[keyof T];
 
 export type IEnvelopeBuilder<T extends StdOutgoingEnvelope> = {
-  [K in keyof T['message'] as `set${Capitalize<string & K>}`]-?: (
-    arg: T['message'][K],
+  [K in keyof T['data'] as `set${Capitalize<string & K>}`]-?: (
+    arg: T['data'][K],
   ) => IEnvelopeBuilder<T>;
 } & {
-  [K in keyof T['message'] as `get${Capitalize<string & K>}`]-?: () => T['message'][K];
+  [K in keyof T['data'] as `get${Capitalize<string & K>}`]-?: () => T['data'][K];
 } & {
-  [K in ArrayKeys<T['message']> as `appendTo${Capitalize<string & K>}`]: (
-    item: NonNullable<T['message'][K]> extends (infer U)[] ? U : never,
+  [K in ArrayKeys<T['data']> as `appendTo${Capitalize<string & K>}`]: (
+    item: NonNullable<T['data'][K]> extends (infer U)[] ? U : never,
   ) => IEnvelopeBuilder<T>;
 } & {
   build(): T;
@@ -53,18 +52,18 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
   // e.g. "appendToButtons" => "Buttons"
   const rawKey = prop.toString().replace(prefix, '');
   // e.g. "Buttons" -> "buttons"
-  const messageKey = rawKey.charAt(0).toLowerCase() + rawKey.slice(1);
+  const dataKey = rawKey.charAt(0).toLowerCase() + rawKey.slice(1);
 
-  return messageKey;
+  return dataKey;
 }
 
 /**
- * Builds an envelope object (containing a `format` and a `message` property)
+ * Builds an envelope object (containing a `type` and a `data` property)
  * and returns a proxy-based builder interface with chainable setter methods.
  * It also validates the final envelope against the provided `z.ZodSchema`.
  *
- * @param format - The format of the outgoing envelope.
- * Corresponds to `format` on the generic type `T`.
+ * @param type - The type of the outgoing envelope.
+ * Corresponds to `type` on the generic type `T`.
  * @param template - An optional initial message template.
  * It will be merged as you set or append properties through the returned builder.
  * @param schema - A Zod schema used to validate the final envelope object.
@@ -76,20 +75,20 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
  *
  * @example
  * // Build a simple text envelope:
- * const env1 = EnvelopeBuilder(OutgoingMessageFormat.text)
+ * const env1 = EnvelopeBuilder(OutgoingMessageType.text)
  *   .setText('Hello')
  *   .build();
  *
  * @example
  * // Build a text envelope with quick replies:
- * const env2 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
+ * const env2 = EnvelopeBuilder(OutgoingMessageType.quickReply)
  *   .setText('Hello')
  *   .setQuickReplies([])
  *   .build();
  *
  * @example
  * // Append multiple quickReplies items:
- * const env3 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
+ * const env3 = EnvelopeBuilder(OutgoingMessageType.quickReply)
  *   .setText('Are you interested?')
  *   .appendToQuickReplies({
  *     title: 'Yes',
@@ -103,18 +102,18 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
  *
  * @example
  * // Build a system envelope with an outcome:
- * const env4 = EnvelopeBuilder(OutgoingMessageFormat.system)
+ * const env4 = EnvelopeBuilder(OutgoingMessageType.system)
  *   .setOutcome('success')
  *   .build();
  */
 export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
-  format: T['format'],
-  template: Partial<T['message']> = {},
+  type: T['type'],
+  template: Partial<T['data']> = {},
   schema: z.ZodType,
 ): IEnvelopeBuilder<T> {
-  let built: { format: T['format']; message: Partial<T['message']> } = {
-    format,
-    message: template,
+  let built: { type: T['type']; data: Partial<T['data']> } = {
+    type,
+    data: template,
   };
 
   const builder = new Proxy(
@@ -126,8 +125,8 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
           return () => {
             const result = schema.parse(built);
             built = {
-              format,
-              message: template,
+              type,
+              data: template,
             };
 
             return result;
@@ -135,14 +134,14 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
         }
 
         if (typeof prop === 'string' && prop.startsWith('appendTo')) {
-          const messageKey = getAttributeNameFromProp(prop, /^appendTo/);
+          const dataKey = getAttributeNameFromProp(prop, /^appendTo/);
 
           return (item: unknown) => {
             // Initialize the array if needed
-            if (!Array.isArray(built.message[messageKey])) {
-              built.message[messageKey] = [];
+            if (!Array.isArray(built.data[dataKey])) {
+              built.data[dataKey] = [];
             }
-            (built.message[messageKey] as unknown[]).push(item);
+            (built.data[dataKey] as unknown[]).push(item);
 
             return builder;
           };
@@ -151,17 +150,14 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
         return (...args: unknown[]): unknown => {
           // If no arguments passed return current value.
           if (0 === args.length) {
-            const messageKey = getAttributeNameFromProp(
-              prop.toString(),
-              /^get/,
-            );
+            const dataKey = getAttributeNameFromProp(prop.toString(), /^get/);
 
-            return built.message[messageKey];
+            return built.data[dataKey];
           }
 
           const value = args[0];
-          const messageKey = getAttributeNameFromProp(prop.toString(), /^set/);
-          built.message[messageKey] = value;
+          const dataKey = getAttributeNameFromProp(prop.toString(), /^set/);
+          built.data[dataKey] = value;
 
           return builder;
         };
@@ -172,39 +168,37 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
   return builder as IEnvelopeBuilder<T>;
 }
 
-type EnvelopeTypeByFormat<F extends OutgoingMessageFormat> =
-  F extends OutgoingMessageFormat.text
+type EnvelopeTypeByType<T extends OutgoingMessageType> =
+  T extends OutgoingMessageType.text
     ? StdOutgoingTextEnvelope
-    : F extends OutgoingMessageFormat.quickReplies
+    : T extends OutgoingMessageType.quickReply
       ? StdOutgoingQuickRepliesEnvelope
-      : F extends OutgoingMessageFormat.buttons
+      : T extends OutgoingMessageType.buttons
         ? StdOutgoingButtonsEnvelope
-        : F extends OutgoingMessageFormat.attachment
+        : T extends OutgoingMessageType.attachment
           ? StdOutgoingAttachmentEnvelope
-          : F extends OutgoingMessageFormat.carousel
+          : T extends OutgoingMessageType.carousel
             ? StdOutgoingListEnvelope
-            : F extends OutgoingMessageFormat.list
+            : T extends OutgoingMessageType.list
               ? StdOutgoingListEnvelope
-              : F extends OutgoingMessageFormat.system
+              : T extends OutgoingMessageType.system
                 ? StdOutgoingSystemEnvelope
                 : StdOutgoingMessageEnvelope;
 
-const ENVELOP_SCHEMAS_BY_FORMAT = {
-  [OutgoingMessageFormat.text]: stdOutgoingTextEnvelopeSchema,
-  [OutgoingMessageFormat.quickReplies]: stdOutgoingQuickRepliesEnvelopeSchema,
-  [OutgoingMessageFormat.buttons]: stdOutgoingButtonsEnvelopeSchema,
-  [OutgoingMessageFormat.attachment]: stdOutgoingAttachmentEnvelopeSchema,
-  [OutgoingMessageFormat.carousel]: stdOutgoingListEnvelopeSchema,
-  [OutgoingMessageFormat.list]: stdOutgoingListEnvelopeSchema,
-  [OutgoingMessageFormat.system]: stdOutgoingSystemEnvelopeSchema,
+const ENVELOPE_SCHEMAS_BY_TYPE = {
+  [OutgoingMessageType.text]: stdOutgoingTextEnvelopeSchema,
+  [OutgoingMessageType.quickReply]: stdOutgoingQuickRepliesEnvelopeSchema,
+  [OutgoingMessageType.buttons]: stdOutgoingButtonsEnvelopeSchema,
+  [OutgoingMessageType.attachment]: stdOutgoingAttachmentEnvelopeSchema,
+  [OutgoingMessageType.carousel]: stdOutgoingListEnvelopeSchema,
+  [OutgoingMessageType.list]: stdOutgoingListEnvelopeSchema,
+  [OutgoingMessageType.system]: stdOutgoingSystemEnvelopeSchema,
 };
 
-export const getEnvelopeBuilder = <F extends OutgoingMessageFormat>(
-  format: F,
-) => {
-  return EnvelopeBuilder<EnvelopeTypeByFormat<F>>(
-    format,
+export const getEnvelopeBuilder = <F extends OutgoingMessageType>(type: F) => {
+  return EnvelopeBuilder<EnvelopeTypeByType<F>>(
+    type,
     {},
-    ENVELOP_SCHEMAS_BY_FORMAT[format],
+    ENVELOPE_SCHEMAS_BY_TYPE[type],
   );
 };

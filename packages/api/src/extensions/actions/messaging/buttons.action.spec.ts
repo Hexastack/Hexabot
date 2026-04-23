@@ -4,12 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionService } from '@/actions/actions.service';
-import { ButtonType } from '@/chat/types/button';
 import {
-  OutgoingMessageFormat,
+  ButtonType,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
+} from '@hexabot-ai/types';
+
+import { ActionService } from '@/actions/actions.service';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { SendButtonsAction } from './buttons.action';
@@ -32,8 +33,8 @@ describe('SendButtonsAction', () => {
   it('builds a buttons envelope and delegates sending', async () => {
     const action = new SendButtonsAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.buttons,
-      message: { text: 'processed', buttons: [] },
+      type: OutgoingMessageType.buttons,
+      data: { text: 'processed', buttons: [] },
     };
     const prepared = {
       envelopeFactory: {

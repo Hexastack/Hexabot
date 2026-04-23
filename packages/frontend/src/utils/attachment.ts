@@ -5,8 +5,7 @@
  */
 
 import type { Attachment } from "@hexabot-ai/types";
-
-import { FileType, TAttachmentForeignKey } from "@/types/message.types";
+import { FileType, TAttachmentForeignKey } from "@hexabot-ai/types";
 
 import { buildURL } from "./URL";
 

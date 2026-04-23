@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionService } from '@/actions/actions.service';
 import {
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
+} from '@hexabot-ai/types';
+
+import { ActionService } from '@/actions/actions.service';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { MessageActionSettings } from './message-action.base';
@@ -31,8 +32,8 @@ describe('SendQuickRepliesAction', () => {
   it('builds a quick replies envelope and delegates sending', async () => {
     const action = new SendQuickRepliesAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.quickReplies,
-      message: { text: 'processed', quickReplies: [] },
+      type: OutgoingMessageType.quickReply,
+      data: { text: 'processed', quickReplies: [] },
     };
     const prepared = {
       envelopeFactory: {

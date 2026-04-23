@@ -80,5 +80,6 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot admi
 - New TS/TSX files must include the license header; ESLint `header/header` enforces it.
 - Avoid `console.*`; ESLint forbids it.
 - Use `Format.FULL` + `POPULATE_BY_TYPE` when you need nested relations; do not hand-roll populate params.
+- Chat rendering contract: branch by discriminators from `@hexabot-ai/types`.
 - When adding a new entity type, update: `packages/frontend/src/services/types.ts`, `packages/frontend/src/services/entities.ts`, and `packages/frontend/src/types/base.types.ts`.
 - When adding a new route, update `packages/frontend/src/routes/routeConfig.tsx` and (if needed) menu configuration in `packages/frontend/src/utils/menu.util.ts`.

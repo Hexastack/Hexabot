@@ -5,14 +5,17 @@
  */
 
 import type { Attachment } from '@hexabot-ai/types';
+import {
+  FileType,
+  PayloadType,
+  IncomingMessageType,
+  StdIncomingMessage,
+  Payload,
+} from '@hexabot-ai/types';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { ChannelInboundEventContext } from '@/channel/lib/inbound-events';
 import { ChannelName } from '@/channel/types';
-import { FileType } from '@/chat/types/attachment';
-import { PayloadType } from '@/chat/types/button';
-import { IncomingMessageType, StdIncomingMessage } from '@/chat/types/message';
-import { Payload } from '@/chat/types/quick-reply';
 
 import { Web } from '../../../types';
 
@@ -41,7 +44,7 @@ export class AttachmentMessageInboundEvent<
   }
 
   override getMessageType(): IncomingMessageType {
-    return IncomingMessageType.attachments;
+    return IncomingMessageType.attachment;
   }
 
   setUploadedAttachment(attachment: Attachment): void {
@@ -105,7 +108,7 @@ export class AttachmentMessageInboundEvent<
     const fileType = this.resolveFileType(attachment);
 
     return {
-      type: PayloadType.attachments,
+      type: PayloadType.attachment,
       attachment: {
         type: fileType,
         payload: {
@@ -121,12 +124,14 @@ export class AttachmentMessageInboundEvent<
     const attachmentName = this.resolveAttachmentName(attachment, fileType);
 
     return {
-      type: PayloadType.attachments,
-      serialized_text: `attachment:${fileType}:${attachmentName}`,
-      attachment: {
-        type: fileType,
-        payload: {
-          id: attachment.id,
+      type: IncomingMessageType.attachment,
+      data: {
+        serializedText: `attachment:${fileType}:${attachmentName}`,
+        attachment: {
+          type: fileType,
+          payload: {
+            id: attachment.id,
+          },
         },
       },
     };

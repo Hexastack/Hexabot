@@ -33,6 +33,10 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot shar
 
 ## Contract architecture
 - This package is zod-first: runtime validation schemas are the source of truth and TS types are inferred from them.
+- Chat message contracts are strict discriminated unions:
+  - Outgoing: `{ format, data }` via `StdOutgoingMessageSchema`.
+  - Incoming: `{ type, data }` via `stdIncomingMessageSchema`.
+  - Outgoing envelope: `StdOutgoingEnvelope` extends outgoing with `system` only.
 - Standard entity pattern is:
   - `*StubSchema` for minimal entity shape.
   - `*Schema` for normalized relation IDs.
@@ -51,6 +55,7 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot shar
   - TS types are PascalCase (for example `WorkflowFull`).
 - Preserve unknown-key stripping behavior unless a change explicitly requires stricter handling.
 - Keep alias map behavior backward compatible for existing payload fields unless breaking change work is explicitly requested.
+- Do not reintroduce legacy chat payload shapes (for example flat `message.text` outgoing payloads without discriminators or `quick_replies` aliases) unless the task explicitly asks for compatibility.
 - Keep enum values stable in domain modules (`src/*/domain.ts`) unless contract changes are requested.
 - Do not edit generated outputs directly:
   - `packages/types/dist/**`

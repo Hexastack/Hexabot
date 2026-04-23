@@ -4,25 +4,26 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  ActionOptions,
+  AttachmentRef,
+  Button,
+  ButtonType,
+  ContentElement,
+  OutgoingMessageType,
+  StdOutgoingAttachmentMessageData,
+  StdOutgoingButtonsMessageData,
+  StdOutgoingListMessageData,
+  StdOutgoingMessageEnvelope,
+  StdOutgoingQuickRepliesMessageData,
+  StdOutgoingTextMessageData,
+} from '@hexabot-ai/types';
 import { Injectable, Type } from '@nestjs/common';
 
 import { ChannelOutboundMessageEncoder } from '@/channel/lib/outbound';
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { ChannelName } from '@/channel/types';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
-import { AttachmentRef } from '@/chat/types/attachment';
-import { Button, ButtonType } from '@/chat/types/button';
-import {
-  ContentElement,
-  OutgoingMessageFormat,
-  StdOutgoingAttachmentMessage,
-  StdOutgoingButtonsMessage,
-  StdOutgoingListMessage,
-  StdOutgoingMessageEnvelope,
-  StdOutgoingQuickRepliesMessage,
-  StdOutgoingTextMessage,
-} from '@/chat/types/message';
-import { ActionOptions } from '@/chat/types/options';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { I18nService } from '@/i18n';
 import { LoggerService } from '@/logger';
@@ -49,23 +50,22 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
     options: WebOutboundEncodeOptions = {},
   ): Promise<Web.OutboundMessageBase> {
     return await this.dispatchEnvelope(envelope, options, {
-      [OutgoingMessageFormat.text]: ({ message }) =>
-        this.encodeTextMessage(message),
-      [OutgoingMessageFormat.quickReplies]: ({ message }) =>
-        this.encodeQuickRepliesMessage(message),
-      [OutgoingMessageFormat.buttons]: ({ message }) =>
-        this.encodeButtonsMessage(message),
-      [OutgoingMessageFormat.attachment]: ({ message }) =>
-        this.encodeAttachmentMessage(message),
-      [OutgoingMessageFormat.list]: ({ message }, actionOptions) =>
-        this.encodeListMessage(message, actionOptions),
-      [OutgoingMessageFormat.carousel]: ({ message }, actionOptions) =>
-        this.encodeCarouselMessage(message, actionOptions),
+      [OutgoingMessageType.text]: ({ data }) => this.encodeTextMessage(data),
+      [OutgoingMessageType.quickReply]: ({ data }) =>
+        this.encodeQuickRepliesMessage(data),
+      [OutgoingMessageType.buttons]: ({ data }) =>
+        this.encodeButtonsMessage(data),
+      [OutgoingMessageType.attachment]: ({ data }) =>
+        this.encodeAttachmentMessage(data),
+      [OutgoingMessageType.list]: ({ data }, actionOptions) =>
+        this.encodeListMessage(data, actionOptions),
+      [OutgoingMessageType.carousel]: ({ data }, actionOptions) =>
+        this.encodeCarouselMessage(data, actionOptions),
     });
   }
 
   protected encodeTextMessage(
-    message: StdOutgoingTextMessage,
+    message: StdOutgoingTextMessageData,
   ): Web.OutboundMessageBase {
     return {
       type: Web.OutboundMessageType.text,
@@ -74,7 +74,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected encodeQuickRepliesMessage(
-    message: StdOutgoingQuickRepliesMessage,
+    message: StdOutgoingQuickRepliesMessageData,
   ): Web.OutboundMessageBase {
     return {
       type: Web.OutboundMessageType.quick_replies,
@@ -86,7 +86,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected encodeButtonsMessage(
-    message: StdOutgoingButtonsMessage,
+    message: StdOutgoingButtonsMessageData,
   ): Web.OutboundMessageBase {
     return {
       type: Web.OutboundMessageType.buttons,
@@ -98,7 +98,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected async encodeAttachmentMessage(
-    message: StdOutgoingAttachmentMessage,
+    message: StdOutgoingAttachmentMessageData,
   ): Promise<Web.OutboundMessageBase> {
     const payload: Web.OutboundMessageBase = {
       type: Web.OutboundMessageType.file,
@@ -200,7 +200,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected async encodeListMessage(
-    message: StdOutgoingListMessage,
+    message: StdOutgoingListMessageData,
     options: ActionOptions,
   ): Promise<Web.OutboundMessageBase> {
     const data = message.elements || [];
@@ -241,7 +241,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected async encodeCarouselMessage(
-    message: StdOutgoingListMessage,
+    message: StdOutgoingListMessageData,
     options: ActionOptions,
   ): Promise<Web.OutboundMessageBase> {
     const data = message.elements || [];

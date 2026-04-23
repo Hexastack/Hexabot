@@ -4,8 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FileType } from '@/chat/types/attachment';
-import { IncomingMessageType, StdEventType } from '@/chat/types/message';
+import { FileType, IncomingMessageType, StdEventType } from '@hexabot-ai/types';
 
 import { Web } from '../types';
 
@@ -96,7 +95,7 @@ export const webEvents: [string, Web.InboundMessage, any][] = [
       channelData: textChannelData,
       id: webEventText.mid,
       eventType: StdEventType.message,
-      messageType: IncomingMessageType.message,
+      messageType: IncomingMessageType.text,
       payload: undefined,
       message: {
         text: webEventText.data.text,
@@ -134,9 +133,9 @@ export const webEvents: [string, Web.InboundMessage, any][] = [
       channelData: fileChannelData,
       id: webEventFile.mid,
       eventType: StdEventType.message,
-      messageType: IncomingMessageType.attachments,
+      messageType: IncomingMessageType.attachment,
       payload: {
-        type: IncomingMessageType.attachments,
+        type: IncomingMessageType.attachment,
         attachment: {
           type: FileType.image,
           payload: {
@@ -151,8 +150,8 @@ export const webEvents: [string, Web.InboundMessage, any][] = [
           },
           type: FileType.image,
         },
-        serialized_text: 'attachment:image:filename.extension',
-        type: IncomingMessageType.attachments,
+        serializedText: 'attachment:image:filename.extension',
+        type: IncomingMessageType.attachment,
       },
     },
   ],

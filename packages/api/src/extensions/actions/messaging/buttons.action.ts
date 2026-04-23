@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { buttonSchema, ButtonType } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
-import { buttonSchema, ButtonType } from '@/chat/types/button';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {

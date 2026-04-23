@@ -4,28 +4,29 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  FileType,
+  ButtonType,
+  OutgoingMessageType,
+  StdOutgoingAttachmentMessageData,
+  StdOutgoingButtonsMessageData,
+  StdOutgoingListMessageData,
+  StdOutgoingQuickRepliesMessageData,
+  StdOutgoingTextMessageData,
+} from '@hexabot-ai/types';
+
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { FileType } from '@/chat/types/attachment';
-import { ButtonType } from '@/chat/types/button';
-import {
-  OutgoingMessageFormat,
-  StdOutgoingAttachmentMessage,
-  StdOutgoingButtonsMessage,
-  StdOutgoingListMessage,
-  StdOutgoingQuickRepliesMessage,
-  StdOutgoingTextMessage,
-} from '@/chat/types/message';
 
-export const textMessage: StdOutgoingTextMessage = {
+export const textMessage: StdOutgoingTextMessageData = {
   text: 'Hello World',
 };
 
-export const quickRepliesMessage: StdOutgoingQuickRepliesMessage = {
+export const quickRepliesMessage: StdOutgoingQuickRepliesMessageData = {
   text: 'Choose one option',
   quickReplies: [
     {
@@ -39,7 +40,7 @@ export const quickRepliesMessage: StdOutgoingQuickRepliesMessage = {
   ],
 };
 
-export const buttonsMessage: StdOutgoingButtonsMessage = {
+export const buttonsMessage: StdOutgoingButtonsMessageData = {
   text: 'Hit one of these buttons :',
   buttons: [
     {
@@ -57,7 +58,7 @@ export const buttonsMessage: StdOutgoingButtonsMessage = {
   ],
 };
 
-export const urlButtonsMessage: StdOutgoingButtonsMessage = {
+export const urlButtonsMessage: StdOutgoingButtonsMessageData = {
   text: 'Hit one of these buttons :',
   buttons: [
     {
@@ -100,9 +101,9 @@ const attachment: AttachmentOrmEntity = Object.assign(
   },
 );
 
-export const contentMessage: StdOutgoingListMessage = {
+export const contentMessage: StdOutgoingListMessageData = {
   options: {
-    display: OutgoingMessageFormat.list,
+    display: OutgoingMessageType.list,
     fields: {
       title: 'title',
       subtitle: 'desc',
@@ -158,7 +159,7 @@ export const contentMessage: StdOutgoingListMessage = {
   },
 };
 
-export const attachmentMessage: StdOutgoingAttachmentMessage = {
+export const attachmentMessage: StdOutgoingAttachmentMessageData = {
   attachment: {
     type: FileType.image,
     payload: { id: attachment.id },

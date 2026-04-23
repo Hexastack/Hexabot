@@ -4,7 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Subscriber } from '@hexabot-ai/types';
+import {
+  Subscriber,
+  StdIncomingMessage,
+  stdIncomingMessageSchema,
+  StdOutgoingMessage,
+  StdOutgoingMessageEnvelope,
+  stdOutgoingMessageSchema,
+} from '@hexabot-ai/types';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
@@ -14,19 +21,12 @@ import { StatsType } from '@/analytics/entities/stats.entity';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
-import {
-  StdIncomingMessage,
-  stdIncomingMessageSchema,
-  StdOutgoingMessage,
-  StdOutgoingMessageEnvelope,
-  StdOutgoingMessageSchema,
-} from '@/chat/types/message';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { WorkflowType } from '@/workflow/types';
 
 const sentFormats = [
   'text',
-  'quickReplies',
+  'quickReply',
   'buttons',
   'list',
   'carousel',
@@ -36,8 +36,8 @@ const sentFormats = [
 export const sentMessageSchema = z.object({
   mid: z.string().optional(),
   channel: z.string(),
-  format: z.enum(sentFormats),
-  envelope: StdOutgoingMessageSchema,
+  type: z.enum(sentFormats),
+  envelope: stdOutgoingMessageSchema,
 });
 
 type SentMessageFormat = (typeof sentFormats)[number];
@@ -45,7 +45,7 @@ type SentMessageFormat = (typeof sentFormats)[number];
 export type SentMessageInfo = {
   mid?: string;
   channel: string;
-  format: SentMessageFormat;
+  type: SentMessageFormat;
   envelope: StdOutgoingMessage;
 };
 
@@ -158,8 +158,8 @@ export abstract class MessageAction<
     const sent: SentMessageInfo = {
       mid,
       channel: event.getHandler().getName(),
-      format: envelope.format,
-      envelope: envelope.message,
+      type: envelope.type,
+      envelope,
     };
     const threadId = event.getThreadId();
     if (!threadId) {
@@ -167,7 +167,7 @@ export abstract class MessageAction<
     }
     const sentMessage: MessageCreateDto = {
       mid: mid ?? '',
-      message: envelope.message,
+      message: envelope,
       recipient: recipient.id,
       thread: threadId,
       handover: false,

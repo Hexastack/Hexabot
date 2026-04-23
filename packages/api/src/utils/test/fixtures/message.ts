@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Message } from '@hexabot-ai/types';
+import { Message, OutgoingMessageType } from '@hexabot-ai/types';
 import { DataSource } from 'typeorm';
 
 import { MessageCreateDto } from '@/chat/dto/message.dto';
@@ -25,7 +25,10 @@ const messages: TMessageFixtures['values'][] = [
     recipient: '1',
     thread: '1',
     sentBy: '0',
-    message: { text: 'Hello from the past' },
+    message: {
+      type: OutgoingMessageType.text,
+      data: { text: 'Hello from the past' },
+    },
     read: true,
     delivery: true,
   },
@@ -35,7 +38,10 @@ const messages: TMessageFixtures['values'][] = [
     recipient: '1',
     thread: '1',
     sentBy: '0',
-    message: { text: 'Hello' },
+    message: {
+      type: OutgoingMessageType.text,
+      data: { text: 'Hello' },
+    },
     delivery: true,
   },
   {
@@ -44,7 +50,10 @@ const messages: TMessageFixtures['values'][] = [
     recipient: '1',
     thread: '1',
     sentBy: '0',
-    message: { text: 'Hello back' },
+    message: {
+      type: OutgoingMessageType.text,
+      data: { text: 'Hello back' },
+    },
   },
 ];
 

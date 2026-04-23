@@ -4,11 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionService } from '@/actions/actions.service';
 import {
-  OutgoingMessageFormat,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
+} from '@hexabot-ai/types';
+
+import { ActionService } from '@/actions/actions.service';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { MessageActionSettings } from './message-action.base';
@@ -31,8 +32,8 @@ describe('SendTextMessageAction', () => {
   it('builds a text envelope and delegates sending', async () => {
     const action = new SendTextMessageAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.text,
-      message: { text: 'processed' },
+      type: OutgoingMessageType.text,
+      data: { text: 'processed' },
     };
     const prepared = {
       envelopeFactory: { buildTextEnvelope: jest.fn(() => envelope) },

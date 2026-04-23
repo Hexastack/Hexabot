@@ -4,7 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { messageFullSchema, messageSchema } from '@hexabot-ai/types';
+import {
+  messageFullSchema,
+  messageSchema,
+  StdIncomingMessage,
+  StdOutgoingMessage,
+  stdOutgoingMessageSchema,
+} from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -17,12 +23,6 @@ import {
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { TDto } from '@/utils/types/dto.types';
-
-import {
-  StdIncomingMessage,
-  StdOutgoingMessage,
-  validMessageTextSchema,
-} from '../types/message';
 
 export class MessageCreateDto {
   @ApiProperty({ description: 'Message id', type: String })
@@ -61,7 +61,7 @@ export class MessageCreateDto {
   @ApiProperty({ description: 'Message', type: Object })
   @IsObject()
   @IsNotEmpty()
-  @Validate(validMessageTextSchema)
+  @Validate(stdOutgoingMessageSchema)
   message: StdOutgoingMessage | StdIncomingMessage;
 
   @ApiPropertyOptional({ description: 'Message is read', type: Boolean })
@@ -83,6 +83,14 @@ export class MessageCreateDto {
 }
 
 export class MessageUpdateDto extends PartialType(MessageCreateDto) {}
+
+export class MessageSendDto extends MessageCreateDto {
+  @ApiProperty({ description: 'Message', type: Object })
+  @IsObject()
+  @IsNotEmpty()
+  @Validate(stdOutgoingMessageSchema)
+  declare message: StdOutgoingMessage;
+}
 
 export type MessageDto = TDto<
   {

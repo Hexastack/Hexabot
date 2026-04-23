@@ -4,13 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ContentFull, ContentType } from '@hexabot-ai/types';
+import {
+  ContentFull,
+  ContentType,
+  StdOutgoingListMessageData,
+  ContentOptions,
+} from '@hexabot-ai/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import Papa from 'papaparse';
 import { FindManyOptions, FindOptionsWhere } from 'typeorm';
 
-import { StdOutgoingListMessage } from '@/chat/types/message';
-import { ContentOptions } from '@/chat/types/options';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { ContentCreateDto } from '../dto/content.dto';
@@ -74,7 +77,7 @@ export class ContentService extends BaseOrmService<ContentOrmEntity> {
   async getContent(
     options: ContentOptions,
     skip: number,
-  ): Promise<Omit<StdOutgoingListMessage, 'options'>> {
+  ): Promise<Omit<StdOutgoingListMessageData, 'options'>> {
     const where: FindOptionsWhere<ContentOrmEntity> = {
       status: true,
       ...(options.query as FindOptionsWhere<ContentOrmEntity> | undefined),

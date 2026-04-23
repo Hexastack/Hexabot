@@ -23,6 +23,8 @@ import {
   credentialFullSchema,
   credentialSchema,
   dummySchema,
+  messageSchema,
+  IncomingMessageType,
   labelFullSchema,
   labelSchema,
   mcpServerFullSchema,
@@ -31,6 +33,10 @@ import {
   memoryRecordSchema,
   menuFullSchema,
   menuSchema,
+  OutgoingMessageType,
+  stdOutgoingMessageSchema,
+  stdIncomingMessageSchema,
+  stdOutgoingEnvelopeSchema,
   messageFullSchema,
   permissionFullSchema,
   permissionSchema,
@@ -730,5 +736,275 @@ describe("@hexabot-ai/types schemas", () => {
 
   it("supports memory scope enum values", () => {
     expect(MemoryScope.workflow).toBe("workflow");
+  });
+
+  it("parses shared incoming and outgoing message payload contracts", () => {
+    const expectedQuickReplies = [{ title: "Yes", payload: "yes" }];
+    const outgoing = stdOutgoingMessageSchema.parse({
+      type: OutgoingMessageType.quickReply,
+      data: {
+        text: "Hello from bot",
+        quickReplies: expectedQuickReplies,
+      },
+    });
+    const incoming = stdIncomingMessageSchema.parse({
+      type: IncomingMessageType.location,
+      data: {
+        coordinates: { lat: 36.8, lon: 10.2 },
+      },
+    });
+
+    expect(outgoing).toEqual({
+      type: OutgoingMessageType.quickReply,
+      data: {
+        text: "Hello from bot",
+        quickReplies: expectedQuickReplies,
+      },
+    });
+    expect(incoming).toEqual({
+      type: IncomingMessageType.location,
+      data: {
+        coordinates: { lat: 36.8, lon: 10.2 },
+      },
+    });
+  });
+
+  it("parses shared outgoing message envelopes including system type", () => {
+    const textEnvelope = stdOutgoingEnvelopeSchema.parse({
+      type: OutgoingMessageType.text,
+      data: { text: "Hi" },
+    });
+    const systemEnvelope = stdOutgoingEnvelopeSchema.parse({
+      type: OutgoingMessageType.system,
+      data: { outcome: "ok", data: { source: "test" } },
+    });
+
+    expect(textEnvelope.type).toBe(OutgoingMessageType.text);
+    expect(systemEnvelope.type).toBe(OutgoingMessageType.system);
+    expect(stdOutgoingMessageSchema.safeParse(systemEnvelope).success).toBe(
+      false,
+    );
+  });
+
+  it("keeps outgoing quick replies and buttons in parsed message entities", () => {
+    const base = {
+      id: "msg_1",
+      createdAt: now,
+      updatedAt: now,
+      read: false,
+      delivery: false,
+      handover: false,
+      threadId: "th_1",
+    };
+    const quickRepliesMessage = messageSchema.parse({
+      ...base,
+      message: {
+        type: OutgoingMessageType.quickReply,
+        data: {
+          text: "Choose one",
+          quickReplies: [
+            { title: "Yes", payload: "yes" },
+            { title: "No", payload: "no" },
+          ],
+        },
+      },
+    });
+    const buttonsMessage = messageSchema.parse({
+      ...base,
+      id: "msg_2",
+      message: {
+        type: OutgoingMessageType.buttons,
+        data: {
+          text: "Click one",
+          buttons: [
+            { type: "postback", title: "About", payload: "about" },
+            { type: "web_url", title: "Website", url: "https://hexabot.ai" },
+          ],
+        },
+      },
+    });
+
+    expect(quickRepliesMessage.message).toEqual({
+      type: OutgoingMessageType.quickReply,
+      data: {
+        text: "Choose one",
+        quickReplies: [
+          { title: "Yes", payload: "yes" },
+          { title: "No", payload: "no" },
+        ],
+      },
+    });
+    expect(buttonsMessage.message).toEqual({
+      type: OutgoingMessageType.buttons,
+      data: {
+        text: "Click one",
+        buttons: [
+          { type: "postback", title: "About", payload: "about" },
+          { type: "web_url", title: "Website", url: "https://hexabot.ai" },
+        ],
+      },
+    });
+  });
+
+  it("keeps incoming postback payloads when parsing message entities", () => {
+    const parsed = messageSchema.parse({
+      id: "msg_postback",
+      createdAt: now,
+      updatedAt: now,
+      read: false,
+      delivery: false,
+      handover: false,
+      threadId: "th_1",
+      message: {
+        type: IncomingMessageType.postback,
+        data: { text: "Clicked", payload: "about" },
+      },
+    });
+
+    expect(parsed.message).toEqual({
+      type: IncomingMessageType.postback,
+      data: { text: "Clicked", payload: "about" },
+    });
+  });
+
+  it("rejects legacy flat payloads and envelope aliases", () => {
+    const legacyOutgoing = stdOutgoingMessageSchema.safeParse({
+      text: "Hello from bot",
+    });
+    const legacyOutgoingFormatKey = stdOutgoingMessageSchema.safeParse({
+      format: OutgoingMessageType.text,
+      data: { text: "Hello from bot" },
+    });
+    const legacyIncomingTextValue = stdIncomingMessageSchema.safeParse({
+      type: "message",
+      data: { text: "Hello from user" },
+    });
+    const legacyIncomingQuickReplyValue = stdIncomingMessageSchema.safeParse({
+      type: "quick_reply",
+      data: { text: "Reply", payload: "yes" },
+    });
+    const legacyIncomingAttachmentValue = stdIncomingMessageSchema.safeParse({
+      type: "attachments",
+      data: {
+        serializedText: "attachment:image:file.jpg",
+        attachment: {
+          type: "image",
+          payload: { id: null, url: "https://example.com/file.jpg" },
+        },
+      },
+    });
+    const legacyIncomingSerializedTextKey = stdIncomingMessageSchema.safeParse({
+      type: IncomingMessageType.attachment,
+      data: {
+        serialized_text: "attachment:image:file.jpg",
+        attachment: {
+          type: "image",
+          payload: { id: null, url: "https://example.com/file.jpg" },
+        },
+      },
+    });
+    const legacyIncoming = stdIncomingMessageSchema.safeParse({
+      type: IncomingMessageType.location,
+      coordinates: { lat: 36.8, lon: 10.2 },
+    });
+    const legacyQuickRepliesAlias = stdOutgoingMessageSchema.safeParse({
+      type: OutgoingMessageType.quickReply,
+      data: {
+        text: "Choose one",
+        quick_replies: [{ title: "Yes", payload: "yes" }],
+      },
+    });
+    const legacyEnvelopeShape = stdOutgoingEnvelopeSchema.safeParse({
+      type: OutgoingMessageType.text,
+      message: { text: "Hi" },
+    });
+
+    expect(legacyOutgoing.success).toBe(false);
+    expect(legacyOutgoingFormatKey.success).toBe(false);
+    expect(legacyIncomingTextValue.success).toBe(false);
+    expect(legacyIncomingQuickReplyValue.success).toBe(false);
+    expect(legacyIncomingAttachmentValue.success).toBe(false);
+    expect(legacyIncomingSerializedTextKey.success).toBe(false);
+    expect(legacyIncoming.success).toBe(false);
+    expect(legacyQuickRepliesAlias.success).toBe(false);
+    expect(legacyEnvelopeShape.success).toBe(false);
+  });
+
+  it("rejects plain-string message payloads in strict message schema", () => {
+    const base = {
+      id: "msg_1",
+      createdAt: now,
+      updatedAt: now,
+      read: false,
+      delivery: false,
+      handover: false,
+      threadId: "th_1",
+    };
+    const valid = messageSchema.safeParse({
+      ...base,
+      message: {
+        type: OutgoingMessageType.text,
+        data: { text: "Hello there" },
+      },
+    });
+    const invalid = messageSchema.safeParse({
+      ...base,
+      message: "legacy-string-payload",
+    });
+
+    expect(valid.success).toBe(true);
+    expect(invalid.success).toBe(false);
+  });
+
+  it("uses sender/recipient direction to validate ambiguous message types", () => {
+    const base = {
+      id: "msg_direction",
+      createdAt: now,
+      updatedAt: now,
+      read: false,
+      delivery: false,
+      handover: false,
+      threadId: "th_1",
+    };
+    const outgoingText = messageSchema.safeParse({
+      ...base,
+      recipient: "sub_1",
+      message: {
+        type: OutgoingMessageType.text,
+        data: { text: "Bot text" },
+      },
+    });
+    const incomingText = messageSchema.safeParse({
+      ...base,
+      sender: "sub_1",
+      message: {
+        type: IncomingMessageType.text,
+        data: { text: "User text" },
+      },
+    });
+    const invalidOutgoingAsIncoming = messageSchema.safeParse({
+      ...base,
+      recipient: "sub_1",
+      message: {
+        type: IncomingMessageType.postback,
+        data: { text: "Clicked", payload: "go" },
+      },
+    });
+    const invalidIncomingAsOutgoing = messageSchema.safeParse({
+      ...base,
+      sender: "sub_1",
+      message: {
+        type: OutgoingMessageType.buttons,
+        data: {
+          text: "Choose",
+          buttons: [{ type: "postback", title: "Go", payload: "go" }],
+        },
+      },
+    });
+
+    expect(outgoingText.success).toBe(true);
+    expect(incomingText.success).toBe(true);
+    expect(invalidOutgoingAsIncoming.success).toBe(false);
+    expect(invalidIncomingAsOutgoing.success).toBe(false);
   });
 });

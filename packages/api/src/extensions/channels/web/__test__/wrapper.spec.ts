@@ -5,9 +5,7 @@
  */
 
 import type { Attachment } from '@hexabot-ai/types';
-
-import { FileType } from '@/chat/types/attachment';
-import { IncomingMessageType, StdEventType } from '@/chat/types/message';
+import { FileType, IncomingMessageType, StdEventType } from '@hexabot-ai/types';
 
 import {
   AttachmentMessageInboundEvent,
@@ -47,7 +45,7 @@ describe('Web inbound events decoder', () => {
       },
       TextMessageInboundEvent,
       StdEventType.message,
-      IncomingMessageType.message,
+      IncomingMessageType.text,
     ],
     [
       'quick reply',
@@ -59,7 +57,7 @@ describe('Web inbound events decoder', () => {
       },
       QuickReplyInboundEvent,
       StdEventType.message,
-      IncomingMessageType.quick_reply,
+      IncomingMessageType.quickReply,
     ],
     [
       'postback',
@@ -100,7 +98,7 @@ describe('Web inbound events decoder', () => {
       },
       AttachmentMessageInboundEvent,
       StdEventType.message,
-      IncomingMessageType.attachments,
+      IncomingMessageType.attachment,
     ],
     [
       'delivery',
@@ -202,7 +200,7 @@ describe('Web inbound events decoder', () => {
     } as Attachment);
 
     expect(attachmentEvent.getPayload()).toEqual({
-      type: IncomingMessageType.attachments,
+      type: IncomingMessageType.attachment,
       attachment: {
         type: FileType.image,
         payload: {
@@ -237,8 +235,11 @@ describe('Web inbound events decoder', () => {
     expect(event.getId()).toBe('msg-200');
     expect(event.getPayload()).toBe('GET_STARTED');
     expect(event.getMessage()).toEqual({
-      postback: 'GET_STARTED',
-      text: 'Get Started',
+      data: {
+        payload: 'GET_STARTED',
+        text: 'Get Started',
+      },
+      type: 'postback',
     });
     expect(event.buildInput()).toEqual(
       expect.objectContaining({

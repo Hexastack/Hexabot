@@ -63,4 +63,5 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot API.
 - ESLint enforces import ordering and disallows `console.*`; prefer `LoggerService`.
 - DTO validation relies on class-validator + `ValidationPipe` (whitelist + transform); keep DTOs in sync with entities.
 - Keep API output contract changes aligned with `@hexabot-ai/types` schemas and update `packages/types/README.md` when exported contracts change.
+- Chat contract rule: use discriminator-based contracts from `@hexabot-ai/types` only.
 - Swagger docs are available at `/docs` in non-production or via `pnpm --filter @hexabot-ai/api run doc`.

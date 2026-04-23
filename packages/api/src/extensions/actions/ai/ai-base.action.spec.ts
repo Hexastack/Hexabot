@@ -6,7 +6,7 @@
 
 import { createGatewayProvider } from '@ai-sdk/gateway';
 import { createOpenAI } from '@ai-sdk/openai';
-import { Message } from '@hexabot-ai/types';
+import { Message, OutgoingMessageType } from '@hexabot-ai/types';
 import { LanguageModelUsage } from 'ai';
 import { z } from 'zod';
 
@@ -461,7 +461,10 @@ describe('AiBaseAction', () => {
         sender: overrides.sender,
         recipient: overrides.recipient,
         sentBy: overrides.sentBy,
-        message: overrides.message ?? { text: 'hello' },
+        message: overrides.message ?? {
+          type: OutgoingMessageType.text,
+          data: { text: 'hello' },
+        },
         read: overrides.read ?? false,
         delivery: overrides.delivery ?? false,
         handover: overrides.handover ?? false,
@@ -475,14 +478,20 @@ describe('AiBaseAction', () => {
           id: 'message-1',
           createdAt: new Date('2024-01-01T09:00:00Z'),
           sender: initiatorId,
-          message: { text: 'Hi' },
+          message: {
+            type: OutgoingMessageType.text,
+            data: { text: 'Hi' },
+          },
         }),
         createMessage({
           id: 'message-2',
           createdAt: new Date('2024-01-01T10:00:00Z'),
           sender: 'bot',
           recipient: initiatorId,
-          message: { text: 'Hello there' },
+          message: {
+            type: OutgoingMessageType.text,
+            data: { text: 'Hello there' },
+          },
         }),
       ];
       const messageService = {

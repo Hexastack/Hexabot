@@ -6,6 +6,16 @@
 
 import type { Attachment, Subscriber, Thread } from '@hexabot-ai/types';
 import {
+  ActionOptions,
+  AnyMessage,
+  IncomingMessageType,
+  IncomingMessage,
+  OutgoingMessage,
+  OutgoingMessageType,
+  StdEventType,
+  StdOutgoingEnvelope,
+} from '@hexabot-ai/types';
+import {
   HttpException,
   HttpStatus,
   Inject,
@@ -25,10 +35,7 @@ import {
 } from '@/attachment/types';
 import ChannelHandler from '@/channel/lib/Handler';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
-import {
-  inferOutgoingMessageEnvelope,
-  UnsupportedOutgoingFormatError,
-} from '@/channel/lib/outbound';
+import { UnsupportedOutgoingFormatError } from '@/channel/lib/outbound';
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
@@ -36,17 +43,6 @@ import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ThreadService } from '@/chat/services/thread.service';
-import { PayloadType } from '@/chat/types/button';
-import {
-  AnyMessage,
-  IncomingMessage,
-  OutgoingMessage,
-  OutgoingMessageFormat,
-  StdEventType,
-  StdOutgoingEnvelope,
-  StdOutgoingMessage,
-} from '@/chat/types/message';
-import { ActionOptions } from '@/chat/types/options';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
 import { SocketRequest } from '@/websocket/utils/socket-request';
@@ -215,10 +211,24 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   private async formatIncomingHistoryMessage(
     incoming: IncomingMessage,
   ): Promise<Web.InboundMessageBase> {
-    // Format incoming message
-    if ('type' in incoming.message) {
-      if (incoming.message.type === PayloadType.location) {
-        const coordinates = incoming.message.coordinates;
+    switch (incoming.message.type) {
+      case IncomingMessageType.text:
+        return {
+          type: Web.InboundMessageType.text,
+          data: incoming.message.data,
+        };
+      case IncomingMessageType.postback:
+        return {
+          type: Web.InboundMessageType.postback,
+          data: incoming.message.data,
+        };
+      case IncomingMessageType.quickReply:
+        return {
+          type: Web.InboundMessageType.quick_reply,
+          data: incoming.message.data,
+        };
+      case IncomingMessageType.location: {
+        const coordinates = incoming.message.data.coordinates;
 
         return {
           type: Web.InboundMessageType.location,
@@ -229,11 +239,14 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
             },
           },
         };
-      } else {
+      }
+      case IncomingMessageType.attachment: {
         // @TODO : handle multiple files
-        const attachmentPayload = Array.isArray(incoming.message.attachment)
-          ? incoming.message.attachment[0]
-          : incoming.message.attachment;
+        const attachmentPayload = Array.isArray(
+          incoming.message.data.attachment,
+        )
+          ? incoming.message.data.attachment[0]
+          : incoming.message.data.attachment;
 
         return {
           type: Web.InboundMessageType.file,
@@ -246,11 +259,11 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           },
         };
       }
-    } else {
-      return {
-        type: Web.InboundMessageType.text,
-        data: incoming.message,
-      };
+      default:
+        return {
+          type: Web.InboundMessageType.text,
+          data: { text: '' },
+        };
     }
   }
 
@@ -263,11 +276,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   private async formatOutgoingHistoryMessage(
     outgoing: OutgoingMessage,
   ): Promise<Web.OutboundMessageBase> {
-    const envelope = inferOutgoingMessageEnvelope(outgoing.message);
+    const envelope = outgoing.message;
     const options: ActionOptions =
-      'options' in outgoing.message
+      envelope.type === OutgoingMessageType.list ||
+      envelope.type === OutgoingMessageType.carousel
         ? {
-            content: outgoing.message.options,
+            content: envelope.data.options,
           }
         : {};
 
@@ -809,7 +823,10 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           }
           const sentMessage: MessageCreateDto = {
             mid: messageEvent.getId(),
-            message: messageEvent.getMessage() as StdOutgoingMessage,
+            message: {
+              type: OutgoingMessageType.text,
+              data: { text: messageEvent.getText() },
+            },
             recipient: profile.id,
             thread: thread.id,
             read: true,
@@ -946,7 +963,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
    * Send a Web Channel Message to the end-user
    *
    * @param event - Incoming event/message being responded to
-   * @param envelope - The message to be sent {format, message}
+   * @param envelope - The message to be sent `{ type, data }`
    * @param options - Might contain additional settings
    *
    * @returns The web's response, otherwise an error
@@ -956,8 +973,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     envelope: StdOutgoingEnvelope,
     options: ActionOptions,
   ): Promise<{ mid: string }> {
-    if (envelope.format === OutgoingMessageFormat.system) {
-      throw new UnsupportedOutgoingFormatError(envelope.format);
+    if (envelope.type === OutgoingMessageType.system) {
+      throw new UnsupportedOutgoingFormatError(envelope.type);
     }
 
     const messageBase = await this.outboundMessageEncoder.encode(
