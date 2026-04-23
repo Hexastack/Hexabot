@@ -103,22 +103,6 @@ export abstract class ChannelInboundEvent<
     return senderForeignId;
   }
 
-  /**
-   * Returns the sender's platform identifier, or null for events where the
-   * sender is not the end-user (e.g. delivery receipts whose "sender" is the
-   * bot page / phone number).
-   */
-  getSenderForeignId(): string | null {
-    return this.context.getSenderForeignId();
-  }
-
-  /**
-   * Returns the recipient's platform identifier, or null when not set.
-   */
-  getRecipientForeignId(): string | null {
-    return this.context.getRecipientForeignId();
-  }
-
   protected setSenderForeignId(senderForeignId: string | null): void {
     this.context.setSenderForeignId(senderForeignId);
   }
