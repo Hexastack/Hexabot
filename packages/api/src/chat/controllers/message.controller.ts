@@ -6,7 +6,13 @@
 
 import { randomUUID } from 'crypto';
 
-import { Message, MessageFull, Thread } from '@hexabot-ai/types';
+import {
+  Message,
+  MessageFull,
+  Thread,
+  IncomingMessageType,
+  OutgoingMessage,
+} from '@hexabot-ai/types';
 import {
   BadRequestException,
   Body,
@@ -32,19 +38,11 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { MessageCreateDto } from '../dto/message.dto';
+import { MessageSendDto } from '../dto/message.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
 import { ThreadService } from '../services/thread.service';
-import {
-  IncomingMessageType,
-  OutgoingMessage,
-  OutgoingMessageFormat,
-  StdOutgoingEnvelope,
-  StdOutgoingMessage,
-  StdOutgoingTextMessage,
-} from '../types/message';
 
 @Controller('message')
 export class MessageController extends BaseOrmController<MessageOrmEntity> {
@@ -113,7 +111,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
   }
 
   @Post()
-  async create(@Body() messageDto: MessageCreateDto, @Req() req: Request) {
+  async create(@Body() messageDto: MessageSendDto, @Req() req: Request) {
     if (!messageDto.thread) {
       throw new BadRequestException(
         'MessageController send : thread id is required',
@@ -151,10 +149,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
       throw new BadRequestException(`Subscriber foreign ID is missing`);
     }
 
-    const envelope: StdOutgoingEnvelope = {
-      format: OutgoingMessageFormat.text,
-      message: messageDto.message as StdOutgoingTextMessage,
-    };
+    const envelope = messageDto.message;
     const latestMessageId = messageDto.inReplyTo
       ? messageDto.inReplyTo
       : (
@@ -184,7 +179,12 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     const event = new SyntheticMessageInboundEvent<
       ChannelName,
       Record<string, unknown>
-    >(eventContext, { text: '' }, IncomingMessageType.message, channelHandler);
+    >(
+      eventContext,
+      { type: IncomingMessageType.text, data: { text: '' } },
+      IncomingMessageType.text,
+      channelHandler,
+    );
 
     event.setInitiator(subscriber);
     event.setThreadId(thread.id);
@@ -195,7 +195,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
         mid,
         recipient: subscriber.id,
         thread: thread.id,
-        message: messageDto.message as StdOutgoingMessage,
+        message: messageDto.message,
         sentBy: req.session.passport?.user?.id,
         read: false,
         delivery: false,

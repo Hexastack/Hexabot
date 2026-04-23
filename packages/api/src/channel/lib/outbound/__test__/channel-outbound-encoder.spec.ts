@@ -5,21 +5,21 @@
  */
 
 import {
+  OutgoingMessageType,
+  StdOutgoingMessageEnvelope,
+} from '@hexabot-ai/types';
+
+import {
   attachmentMessage,
   buttonsMessage,
   contentMessage,
   quickRepliesMessage,
   textMessage,
 } from '@/channel/lib/__test__/common.mock';
-import {
-  OutgoingMessageFormat,
-  StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
 
 import {
   ChannelOutboundMessageEncoder,
   EnvelopeHandlers,
-  inferOutgoingMessageEnvelope,
   UnsupportedOutgoingFormatError,
 } from '../channel-outbound-encoder';
 
@@ -42,118 +42,87 @@ class TestChannelOutboundEncoder extends ChannelOutboundMessageEncoder<
 describe('channel outbound encoder helpers', () => {
   const encoder = new TestChannelOutboundEncoder();
 
-  it('infers outgoing envelope format from message payload', () => {
-    expect(inferOutgoingMessageEnvelope(textMessage).format).toEqual(
-      OutgoingMessageFormat.text,
-    );
-    expect(inferOutgoingMessageEnvelope(quickRepliesMessage).format).toEqual(
-      OutgoingMessageFormat.quickReplies,
-    );
-    expect(inferOutgoingMessageEnvelope(buttonsMessage).format).toEqual(
-      OutgoingMessageFormat.buttons,
-    );
-    expect(inferOutgoingMessageEnvelope(attachmentMessage).format).toEqual(
-      OutgoingMessageFormat.attachment,
-    );
-    expect(inferOutgoingMessageEnvelope(contentMessage).format).toEqual(
-      OutgoingMessageFormat.list,
-    );
-    expect(
-      inferOutgoingMessageEnvelope({
-        ...contentMessage,
-        options: {
-          ...contentMessage.options,
-          display: OutgoingMessageFormat.carousel,
-        },
-      }).format,
-    ).toEqual(OutgoingMessageFormat.carousel);
-  });
-
   it('dispatches each outgoing message envelope format', () => {
     const handlers: EnvelopeHandlers<string, void> = {
-      [OutgoingMessageFormat.text]: () => OutgoingMessageFormat.text,
-      [OutgoingMessageFormat.quickReplies]: () =>
-        OutgoingMessageFormat.quickReplies,
-      [OutgoingMessageFormat.buttons]: () => OutgoingMessageFormat.buttons,
-      [OutgoingMessageFormat.attachment]: () =>
-        OutgoingMessageFormat.attachment,
-      [OutgoingMessageFormat.list]: () => OutgoingMessageFormat.list,
-      [OutgoingMessageFormat.carousel]: () => OutgoingMessageFormat.carousel,
+      [OutgoingMessageType.text]: () => OutgoingMessageType.text,
+      [OutgoingMessageType.quickReply]: () => OutgoingMessageType.quickReply,
+      [OutgoingMessageType.buttons]: () => OutgoingMessageType.buttons,
+      [OutgoingMessageType.attachment]: () => OutgoingMessageType.attachment,
+      [OutgoingMessageType.list]: () => OutgoingMessageType.list,
+      [OutgoingMessageType.carousel]: () => OutgoingMessageType.carousel,
     };
 
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.text,
-          message: textMessage,
+          type: OutgoingMessageType.text,
+          data: textMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.text);
+    ).toEqual(OutgoingMessageType.text);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.quickReplies,
-          message: quickRepliesMessage,
+          type: OutgoingMessageType.quickReply,
+          data: quickRepliesMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.quickReplies);
+    ).toEqual(OutgoingMessageType.quickReply);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.buttons,
-          message: buttonsMessage,
+          type: OutgoingMessageType.buttons,
+          data: buttonsMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.buttons);
+    ).toEqual(OutgoingMessageType.buttons);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.attachment,
-          message: attachmentMessage,
+          type: OutgoingMessageType.attachment,
+          data: attachmentMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.attachment);
+    ).toEqual(OutgoingMessageType.attachment);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.list,
-          message: contentMessage,
+          type: OutgoingMessageType.list,
+          data: contentMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.list);
+    ).toEqual(OutgoingMessageType.list);
     expect(
       encoder.dispatch(
         {
-          format: OutgoingMessageFormat.carousel,
-          message: contentMessage,
+          type: OutgoingMessageType.carousel,
+          data: contentMessage,
         },
         handlers,
       ),
-    ).toEqual(OutgoingMessageFormat.carousel);
+    ).toEqual(OutgoingMessageType.carousel);
   });
 
   it('throws explicit error when dispatch receives unsupported format', () => {
     const handlers: EnvelopeHandlers<string, void> = {
-      [OutgoingMessageFormat.text]: () => OutgoingMessageFormat.text,
-      [OutgoingMessageFormat.quickReplies]: () =>
-        OutgoingMessageFormat.quickReplies,
-      [OutgoingMessageFormat.buttons]: () => OutgoingMessageFormat.buttons,
-      [OutgoingMessageFormat.attachment]: () =>
-        OutgoingMessageFormat.attachment,
-      [OutgoingMessageFormat.list]: () => OutgoingMessageFormat.list,
-      [OutgoingMessageFormat.carousel]: () => OutgoingMessageFormat.carousel,
+      [OutgoingMessageType.text]: () => OutgoingMessageType.text,
+      [OutgoingMessageType.quickReply]: () => OutgoingMessageType.quickReply,
+      [OutgoingMessageType.buttons]: () => OutgoingMessageType.buttons,
+      [OutgoingMessageType.attachment]: () => OutgoingMessageType.attachment,
+      [OutgoingMessageType.list]: () => OutgoingMessageType.list,
+      [OutgoingMessageType.carousel]: () => OutgoingMessageType.carousel,
     };
 
     expect(() =>
       encoder.dispatch(
         {
-          format: 'unknown',
-          message: textMessage,
+          type: 'unknown',
+          data: textMessage,
         } as any,
         handlers as any,
       ),

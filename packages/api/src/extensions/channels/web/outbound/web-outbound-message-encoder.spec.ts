@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { OutgoingMessageType } from '@hexabot-ai/types';
+
 import {
   attachmentMessage,
   buttonsMessage,
@@ -12,7 +14,6 @@ import {
   textMessage,
 } from '@/channel/lib/__test__/common.mock';
 import { UnsupportedOutgoingFormatError } from '@/channel/lib/outbound';
-import { OutgoingMessageFormat } from '@/chat/types/message';
 
 import {
   webAttachment,
@@ -57,8 +58,8 @@ describe('WebOutboundMessageEncoder', () => {
 
   it('renders text envelopes', async () => {
     const formatted = await render({
-      format: OutgoingMessageFormat.text,
-      message: textMessage,
+      type: OutgoingMessageType.text,
+      data: textMessage,
     });
 
     expect(formatted).toEqual(webText);
@@ -66,8 +67,8 @@ describe('WebOutboundMessageEncoder', () => {
 
   it('renders quick replies envelopes', async () => {
     const formatted = await render({
-      format: OutgoingMessageFormat.quickReplies,
-      message: quickRepliesMessage,
+      type: OutgoingMessageType.quickReply,
+      data: quickRepliesMessage,
     });
 
     expect(formatted).toEqual(webQuickReplies);
@@ -75,8 +76,8 @@ describe('WebOutboundMessageEncoder', () => {
 
   it('renders buttons envelopes', async () => {
     const formatted = await render({
-      format: OutgoingMessageFormat.buttons,
-      message: buttonsMessage,
+      type: OutgoingMessageType.buttons,
+      data: buttonsMessage,
     });
 
     expect(formatted).toEqual(webButtons);
@@ -85,8 +86,8 @@ describe('WebOutboundMessageEncoder', () => {
   it('renders list envelopes', async () => {
     const formatted = await render(
       {
-        format: OutgoingMessageFormat.list,
-        message: contentMessage,
+        type: OutgoingMessageType.list,
+        data: contentMessage,
       },
       {
         content: contentMessage.options,
@@ -99,13 +100,13 @@ describe('WebOutboundMessageEncoder', () => {
   it('renders carousel envelopes', async () => {
     const formatted = await render(
       {
-        format: OutgoingMessageFormat.carousel,
-        message: contentMessage,
+        type: OutgoingMessageType.carousel,
+        data: contentMessage,
       },
       {
         content: {
           ...contentMessage.options,
-          display: OutgoingMessageFormat.carousel,
+          display: OutgoingMessageType.carousel,
         },
       },
     );
@@ -115,8 +116,8 @@ describe('WebOutboundMessageEncoder', () => {
 
   it('renders attachment envelopes and resolves public urls', async () => {
     const formatted = await render({
-      format: OutgoingMessageFormat.attachment,
-      message: attachmentMessage,
+      type: OutgoingMessageType.attachment,
+      data: attachmentMessage,
     });
 
     expect(formatted).toEqual(webAttachment);
@@ -130,8 +131,8 @@ describe('WebOutboundMessageEncoder', () => {
     await expect(
       encoder.encode(
         {
-          format: OutgoingMessageFormat.list,
-          message: contentMessage,
+          type: OutgoingMessageType.list,
+          data: contentMessage,
         },
         {},
       ),
@@ -142,8 +143,8 @@ describe('WebOutboundMessageEncoder', () => {
     await expect(
       encoder.encode(
         {
-          format: OutgoingMessageFormat.list,
-          message: {
+          type: OutgoingMessageType.list,
+          data: {
             ...contentMessage,
             elements: [],
           },
@@ -162,8 +163,8 @@ describe('WebOutboundMessageEncoder', () => {
     await expect(
       encoder.encode(
         {
-          format: OutgoingMessageFormat.carousel,
-          message: {
+          type: OutgoingMessageType.carousel,
+          data: {
             ...contentMessage,
             elements: [],
           },
@@ -171,7 +172,7 @@ describe('WebOutboundMessageEncoder', () => {
         {
           content: {
             ...contentMessage.options,
-            display: OutgoingMessageFormat.carousel,
+            display: OutgoingMessageType.carousel,
           },
         },
       ),
@@ -185,8 +186,8 @@ describe('WebOutboundMessageEncoder', () => {
     await expect(
       encoder.encode(
         {
-          format: OutgoingMessageFormat.system,
-          message: { outcome: 'noop' },
+          type: OutgoingMessageType.system,
+          data: { outcome: 'noop' },
         } as any,
         {},
       ),

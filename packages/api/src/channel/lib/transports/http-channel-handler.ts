@@ -4,11 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Subscriber } from '@hexabot-ai/types';
+import { StdEventType, Subscriber } from '@hexabot-ai/types';
 import { Inject, Injectable } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-import { StdEventType } from '@/chat/types/message';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 

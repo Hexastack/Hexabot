@@ -4,12 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SubscriberFull } from '@hexabot-ai/types';
+import {
+  SubscriberFull,
+  FileType,
+  Button,
+  WebUrlButton,
+  StdQuickReply,
+} from '@hexabot-ai/types';
 import { z } from 'zod';
-
-import { FileType } from '@/chat/types/attachment';
-import { Button, WebUrlButton } from '@/chat/types/button';
-import { StdQuickReply } from '@/chat/types/quick-reply';
 
 export namespace Web {
   export type RequestSession = {

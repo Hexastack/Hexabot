@@ -5,6 +5,7 @@
  */
 
 import type { Attachment } from '@hexabot-ai/types';
+import { AttachmentRef } from '@hexabot-ai/types';
 import {
   ForbiddenException,
   Injectable,
@@ -16,7 +17,6 @@ import { Request } from 'express';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { AttachmentRef } from '@/chat/types/attachment';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { buildURL } from '@/utils/helpers/URL';

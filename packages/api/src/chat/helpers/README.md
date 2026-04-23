@@ -1,6 +1,6 @@
 # Envelope Helpers : Envelope Builder & Envelope Factory
 
-The envelope helpers introduce two key components to streamline outgoing message envelope creation: the **Envelope Builder** and the **Envelope Factory**. Together, they offer a comprehensive solution for constructing and validating messages in various formats with minimal boilerplate.
+The envelope helpers introduce two key components to streamline outgoing message envelope creation: the **Envelope Builder** and the **Envelope Factory**. Together, they offer a comprehensive solution for constructing and validating messages in various types with minimal boilerplate.
 
 ---
 
@@ -27,8 +27,8 @@ The envelope helpers introduce two key components to streamline outgoing message
 - **Schema Validation:**  
   Uses Zod to validate envelopes against predefined schemas, ensuring message integrity and compliance with expected formats.
 
-- **Format-Specific Construction:**  
-  Pre-configured through `getEnvelopeBuilder` to support various message formats (text, quick replies, buttons, attachment, carousel, list, and system).
+- **Type-Specific Construction:**  
+  Pre-configured through `getEnvelopeBuilder` to support various message types (text, quick reply, buttons, attachment, carousel, list, and system).
 
 ### Envelope Factory
 
@@ -52,12 +52,12 @@ The envelope helpers introduce two key components to streamline outgoing message
 
 ```typescript
 // Build a simple text envelope:
-const env1 = EnvelopeBuilder(OutgoingMessageFormat.text)
+const env1 = EnvelopeBuilder(OutgoingMessageType.text)
   .setText('Hello')
   .build();
 
 // Append multiple quick replies:
-const env2 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
+const env2 = EnvelopeBuilder(OutgoingMessageType.quickReply)
   .setText('Are you interested?')
   .appendToQuickReplies({
     content_type: QuickReplyType.text,
@@ -98,7 +98,7 @@ const quickRepliesEnvelope = envelopeFactory.buildQuickRepliesEnvelope(
   The Envelope Builder leverages JavaScript Proxies to intercept property accesses, enabling both setter and getter behaviors, as well as dynamic array appending for enhanced flexibility.
 
 - **Type Safety with Generics:**  
-  Both components use TypeScript generics and strict typing to ensure that each envelope adheres to its specific format, reducing runtime errors and enforcing schema compliance.
+  Both components use TypeScript generics and strict typing to ensure that each envelope adheres to its specific type, reducing runtime errors and enforcing schema compliance.
 
 - **Schema Mapping:**  
-  A mapping between message formats and their corresponding Zod schemas guarantees that envelopes are built and validated against the correct structure.
+  A mapping between message types and their corresponding Zod schemas guarantees that envelopes are built and validated against the correct structure.

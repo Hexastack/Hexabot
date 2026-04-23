@@ -32,6 +32,89 @@ import {
 const payload: SubscriberFull = subscriberFullSchema.parse(data);
 ```
 
+## Shared Chat Message Contracts
+
+Chat message contracts are centralized in `@hexabot-ai/types` and are strictly discriminator-based.
+
+```ts
+import {
+  ActionOptionsSchema,
+  ButtonType,
+  FileType,
+  IncomingMessageType,
+  OutgoingMessageType,
+  stdOutgoingMessageSchema,
+  attachmentPayloadSchema,
+  messageSchema,
+  stdIncomingMessageSchema,
+  stdOutgoingEnvelopeSchema,
+} from "@hexabot-ai/types";
+```
+
+### Outgoing Contract (`StdOutgoingMessage`)
+
+All outgoing messages use:
+
+- `{ type, data }`
+
+`type` discriminator variants:
+
+- `text`: `data = { text }`
+- `quickReply`: `data = { text, quickReplies }`
+- `buttons`: `data = { text, buttons }`
+- `attachment`: `data = { attachment, quickReplies? }`
+- `list`: `data = { options, elements, pagination }`
+- `carousel`: `data = { options, elements, pagination }`
+
+Example:
+
+```ts
+const outgoing = stdOutgoingMessageSchema.parse({
+  type: OutgoingMessageType.quickReply,
+  data: {
+    text: "Choose one",
+    quickReplies: [{ title: "Yes", payload: "yes" }],
+  },
+});
+```
+
+### Incoming Contract (`StdIncomingMessage`)
+
+All incoming messages use:
+
+- `{ type, data }`
+
+`type` discriminator variants:
+
+- `text`: `data = { text }`
+- `postback`: `data = { text, payload }`
+- `quickReply`: `data = { text, payload }`
+- `location`: `data = { coordinates: { lat, lon } }`
+- `attachment`: `data = { serializedText, attachment }`
+  `attachment` can be a single attachment or an array.
+
+Example:
+
+```ts
+const incoming = stdIncomingMessageSchema.parse({
+  type: IncomingMessageType.location,
+  data: {
+    coordinates: { lat: 36.8, lon: 10.2 },
+  },
+});
+```
+
+### Envelopes and Persistence
+
+- `StdOutgoingMessageEnvelope` is the same contract as `StdOutgoingMessage` (`{ type, data }`).
+- `StdOutgoingEnvelope` adds the system envelope variant:
+  - `type: OutgoingMessageType.system`
+  - `data: { outcome?: string; data?: unknown }`
+- Persisted chat message entities (`messageSchema`) validate `message` as:
+  - `StdIncomingMessage | StdOutgoingMessage`
+
+Legacy flat payloads and alias-based message shapes are intentionally unsupported.
+
 ## Workflow Parser Bridge
 
 Use a parser-aware full workflow schema to preserve `definitionYml` and `definition` derivation:

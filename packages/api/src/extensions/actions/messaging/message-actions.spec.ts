@@ -4,16 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  IncomingMessageType,
+  OutgoingMessageType,
+  StdOutgoingMessageEnvelope,
+} from '@hexabot-ai/types';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { StatsType } from '@/analytics/entities/stats.entity';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
-import {
-  OutgoingMessageFormat,
-  StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {
@@ -111,7 +112,10 @@ describe('MessageAction base', () => {
       getSenderForeignId: jest.fn(() => 'foreign-123'),
       getHandler: jest.fn(() => handler as any),
       getThreadId: jest.fn(() => 'thread-1'),
-      getMessage: jest.fn(() => ({ text: 'incoming-message' })),
+      getMessage: jest.fn(() => ({
+        type: IncomingMessageType.text,
+        data: { text: 'incoming-message' },
+      })),
     } as unknown as MockEvent;
     workflow = {
       suspend: jest.fn(),
@@ -157,8 +161,8 @@ describe('MessageAction base', () => {
     const context = buildWorkflowContext();
     const prepared = await (action as any).prepare(context);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.text,
-      message: { text: 'hi' },
+      type: OutgoingMessageType.text,
+      data: { text: 'hi' },
     };
     const result = await (action as any).sendPreparedMessage(
       context,
@@ -188,7 +192,7 @@ describe('MessageAction base', () => {
       'hook:chatbot:sent',
       {
         mid: 'server-mid',
-        message: envelope.message,
+        message: envelope,
         recipient: recipient.id,
         thread: 'thread-1',
         handover: false,
@@ -201,8 +205,8 @@ describe('MessageAction base', () => {
       sent: {
         mid: 'server-mid',
         channel: 'web',
-        format: OutgoingMessageFormat.text,
-        envelope: envelope.message,
+        type: OutgoingMessageType.text,
+        envelope,
       },
     });
   });
@@ -211,8 +215,8 @@ describe('MessageAction base', () => {
     const context = buildWorkflowContext();
     const prepared = await (action as any).prepare(context);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.quickReplies,
-      message: { text: 'question', quickReplies: [] },
+      type: OutgoingMessageType.quickReply,
+      data: { text: 'question', quickReplies: [] },
     };
     handler.sendMessage.mockResolvedValueOnce({});
 
@@ -232,8 +236,8 @@ describe('MessageAction base', () => {
       sent: {
         mid: undefined,
         channel: 'web',
-        format: OutgoingMessageFormat.quickReplies,
-        envelope: envelope.message,
+        type: OutgoingMessageType.quickReply,
+        envelope,
       },
     });
   });
@@ -241,8 +245,8 @@ describe('MessageAction base', () => {
   it('delegates send flow through prepareAndSendMessage', async () => {
     const context = buildWorkflowContext();
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.text,
-      message: { text: 'hi' },
+      type: OutgoingMessageType.text,
+      data: { text: 'hi' },
     };
     const prepared = await (action as any).prepare(context);
     const sendSpy = jest

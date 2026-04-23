@@ -4,7 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Attachment, Subscriber } from '@hexabot-ai/types';
+import type {
+  Attachment,
+  StdOutgoingMessageEnvelope,
+  Subscriber,
+} from '@hexabot-ai/types';
+import {
+  ActionOptions,
+  AnyMessage,
+  IncomingMessage,
+  IncomingMessageType,
+  OutgoingMessage,
+  OutgoingMessageType,
+  StdEventType,
+} from '@hexabot-ai/types';
 import {
   HttpException,
   HttpStatus,
@@ -26,21 +39,15 @@ import {
 import {
   ChannelCapabilities,
   DEFAULT_CHANNEL_CAPABILITIES,
-} from '@/channel/lib/channel-capabilities';
-import { ExtensionInject } from '@/channel/lib/extension-inject.decorator';
+  ExtensionInject,
+  WebSocketChannelHandler,
+} from '@/channel';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
-import { WebSocketChannelHandler } from '@/channel/lib/transports';
 import { ChannelName } from '@/channel/types';
 import { SubscriberChannelData } from '@/chat';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { MessageService } from '@/chat/services/message.service';
-import {
-  StdEventType,
-  StdOutgoingMessage,
-  StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
-import { ActionOptions } from '@/chat/types/options';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
 import { SocketRequest } from '@/websocket/utils/socket-request';
@@ -204,6 +211,163 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     }
 
     this.broadcast(subscriber, StdEventType.error, response, [socket.id]);
+  }
+
+  /**
+   * Adapt incoming message structure for web channel
+   *
+   * @param incoming - Incoming message
+   * @returns Formatted web message
+   */
+  private async formatIncomingHistoryMessage(
+    incoming: IncomingMessage,
+  ): Promise<Web.InboundMessageBase> {
+    switch (incoming.message.type) {
+      case IncomingMessageType.text:
+        return {
+          type: Web.InboundMessageType.text,
+          data: incoming.message.data,
+        };
+      case IncomingMessageType.postback:
+        return {
+          type: Web.InboundMessageType.postback,
+          data: incoming.message.data,
+        };
+      case IncomingMessageType.quickReply:
+        return {
+          type: Web.InboundMessageType.quick_reply,
+          data: incoming.message.data,
+        };
+      case IncomingMessageType.location: {
+        const coordinates = incoming.message.data.coordinates;
+
+        return {
+          type: Web.InboundMessageType.location,
+          data: {
+            coordinates: {
+              lat: coordinates.lat,
+              lng: coordinates.lon,
+            },
+          },
+        };
+      }
+      case IncomingMessageType.attachment: {
+        // @TODO : handle multiple files
+        const attachmentPayload = Array.isArray(
+          incoming.message.data.attachment,
+        )
+          ? incoming.message.data.attachment[0]
+          : incoming.message.data.attachment;
+
+        return {
+          type: Web.InboundMessageType.file,
+          data: {
+            type: attachmentPayload.type,
+            url: await this.channelAttachmentService.getPublicUrl(
+              this.getName(),
+              attachmentPayload.payload,
+            ),
+          },
+        };
+      }
+      default:
+        return {
+          type: Web.InboundMessageType.text,
+          data: { text: '' },
+        };
+    }
+  }
+
+  /**
+   * Adapt the outgoing message structure for web channel
+   *
+   * @param outgoing - The outgoing message
+   * @returns Formatted web message
+   */
+  private async formatOutgoingHistoryMessage(
+    outgoing: OutgoingMessage,
+  ): Promise<Web.OutboundMessageBase> {
+    const envelope = outgoing.message;
+    const options: ActionOptions =
+      envelope.type === OutgoingMessageType.list ||
+      envelope.type === OutgoingMessageType.carousel
+        ? {
+            content: envelope.data.options,
+          }
+        : {};
+
+    return await this.outboundMessageEncoder.encode(envelope, options);
+  }
+
+  /**
+   * Checks if a given message is an IncomingMessage
+   *
+   * @param message Any type of message
+   * @returns True, if it's a incoming message
+   */
+  private isIncomingMessage(message: AnyMessage): message is IncomingMessage {
+    return 'sender' in message && !!message.sender;
+  }
+
+  /**
+   * Adapt the message structure for web channel
+   *
+   * @param messages - The messages to be formatted
+   *
+   * @returns Formatted message
+   */
+  protected async formatMessages(
+    messages: AnyMessage[],
+  ): Promise<Web.Message[]> {
+    const formattedMessages: Web.Message[] = [];
+
+    for (const anyMessage of messages) {
+      const messageMid = anyMessage.mid ?? this.generateId();
+      if (this.isIncomingMessage(anyMessage)) {
+        const message = await this.formatIncomingHistoryMessage(anyMessage);
+        formattedMessages.push({
+          ...message,
+          author: anyMessage.sender,
+          read: true, // Temporary fix as read is false in the bd
+          mid: messageMid,
+          createdAt: anyMessage.createdAt,
+        });
+      } else {
+        const message = await this.formatOutgoingHistoryMessage(anyMessage);
+        formattedMessages.push({
+          ...message,
+          author: 'chatbot',
+          read: true, // Temporary fix as read is false in the bd
+          mid: messageMid,
+          handover: !!anyMessage.handover,
+          createdAt: anyMessage.createdAt,
+        });
+      }
+    }
+
+    return formattedMessages;
+  }
+
+  private normalizeThreadId(raw: unknown): string | undefined {
+    if (typeof raw !== 'string') {
+      return undefined;
+    }
+    const value = raw.trim();
+
+    return value.length > 0 ? value : undefined;
+  }
+
+  private getThreadIdFromQuery(req: SocketRequest): string | undefined {
+    const raw = req.query.thread_id;
+    const candidate = Array.isArray(raw) ? raw[0] : raw;
+
+    return this.normalizeThreadId(candidate);
+  }
+
+  private getThreadIdFromBody(req: SocketRequest): string | undefined {
+    const body = req.body as { thread_id?: unknown } | undefined;
+
+    return this.normalizeThreadId(body?.thread_id);
   }
 
   /**
@@ -486,7 +650,10 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
           const sentMessage: MessageCreateDto = {
             mid: messageEvent.getId(),
-            message: messageEvent.getMessage() as StdOutgoingMessage,
+            message: {
+              type: OutgoingMessageType.text,
+              data: { text: messageEvent.getText() },
+            },
             recipient: profile.id,
             thread: thread.id,
             read: true,

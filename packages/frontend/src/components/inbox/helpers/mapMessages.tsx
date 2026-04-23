@@ -4,7 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Message as MessageEntity, MessageFull } from "@hexabot-ai/types";
+import type {
+  Message as MessageEntity,
+  MessageFull,
+  StdIncomingMessage,
+  StdOutgoingMessage,
+} from "@hexabot-ai/types";
+import { IncomingMessageType, OutgoingMessageType } from "@hexabot-ai/types";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
@@ -23,6 +29,18 @@ import { Message, MessageModel } from "../chat-ui-kit";
 import { MessageAttachmentsViewer } from "../components/AttachmentViewer";
 import { Carousel } from "../components/Carousel";
 import GeolocationMessage from "../components/GeolocationMessage";
+
+function isIncomingMessage(
+  messageEntity: MessageEntity | MessageFull,
+): boolean {
+  return !messageEntity.recipient;
+}
+
+function isOutgoingMessage(
+  messageEntity: MessageEntity | MessageFull,
+): boolean {
+  return Boolean(messageEntity.recipient);
+}
 
 function hasSameSender(
   m1: MessageEntity | MessageFull,
@@ -198,51 +216,134 @@ export function getMessageContent(
         )
       : null;
 
-  if ("coordinates" in message) {
-    content.push(
-      <Message.CustomContent key={message.type}>
-        <GeolocationMessage message={message} key={message.type} />
-        {renderTimestamp(message.type)}
-      </Message.CustomContent>,
-    );
-  }
-
-  if ("text" in message) {
-    content.push(
-      <Message.CustomContent key={messageEntity.id}>
-        {formatMessageText(message.text, theme)}
-        {renderTimestamp(messageEntity.id)}
-      </Message.CustomContent>,
-    );
-  }
-
   let chips: { title: string }[] = [];
-  let chipsIcon: ReactNode;
+  let chipsIcon: ReactNode | null = null;
+  const normalizeChips = (items: unknown[]): { title: string }[] =>
+    items.flatMap((item) => {
+      const title =
+        item &&
+        typeof item === "object" &&
+        "title" in item &&
+        typeof (item as { title?: unknown }).title === "string"
+          ? (item as { title: string }).title
+          : undefined;
 
-  if ("buttons" in message) {
-    chips = message.buttons;
-    chipsIcon = (
-      <Box
-        component="span"
-        sx={{ display: "inline-flex", color: "text.disabled" }}
-      >
-        <Menu size={16} />
-      </Box>
-    );
-  }
-  if ("quickReplies" in message && Array.isArray(message.quickReplies)) {
-    chips = message.quickReplies as { title: string }[];
-    chipsIcon = (
-      <Box
-        component="span"
-        sx={{ display: "inline-flex", color: "text.disabled" }}
-      >
-        <Reply size={16} />
-      </Box>
-    );
+      return title ? [{ title }] : [];
+    });
+
+  if (isIncomingMessage(messageEntity)) {
+    const incomingMessage = message as StdIncomingMessage;
+
+    switch (incomingMessage.type) {
+      case IncomingMessageType.location:
+        content.push(
+          <Message.CustomContent key={`location-${messageEntity.id}`}>
+            <GeolocationMessage message={incomingMessage} />
+            {renderTimestamp(`location-${messageEntity.id}`)}
+          </Message.CustomContent>,
+        );
+        break;
+      case IncomingMessageType.attachment:
+        content.push(
+          <Message.CustomContent key={`attachment-${messageEntity.id}`}>
+            <MessageAttachmentsViewer message={incomingMessage} />
+            {renderTimestamp(`attachment-${messageEntity.id}`)}
+          </Message.CustomContent>,
+        );
+        break;
+      case IncomingMessageType.text:
+      case IncomingMessageType.postback:
+      case IncomingMessageType.quickReply:
+        content.push(
+          <Message.CustomContent key={messageEntity.id}>
+            {formatMessageText(incomingMessage.data.text, theme)}
+            {renderTimestamp(messageEntity.id)}
+          </Message.CustomContent>,
+        );
+        break;
+      default:
+        break;
+    }
   }
 
-  if (chips.length > 0) {
+  if (isOutgoingMessage(messageEntity)) {
+    const outgoingMessage = message as StdOutgoingMessage;
+
+    switch (outgoingMessage.type) {
+      case OutgoingMessageType.text:
+        content.push(
+          <Message.CustomContent key={messageEntity.id}>
+            {formatMessageText(outgoingMessage.data.text, theme)}
+            {renderTimestamp(messageEntity.id)}
+          </Message.CustomContent>,
+        );
+        break;
+      case OutgoingMessageType.quickReply:
+        content.push(
+          <Message.CustomContent key={messageEntity.id}>
+            {formatMessageText(outgoingMessage.data.text, theme)}
+            {renderTimestamp(messageEntity.id)}
+          </Message.CustomContent>,
+        );
+        chips = normalizeChips(outgoingMessage.data.quickReplies);
+        chipsIcon = (
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", color: "text.disabled" }}
+          >
+            <Reply size={16} />
+          </Box>
+        );
+        break;
+      case OutgoingMessageType.buttons:
+        content.push(
+          <Message.CustomContent key={messageEntity.id}>
+            {formatMessageText(outgoingMessage.data.text, theme)}
+            {renderTimestamp(messageEntity.id)}
+          </Message.CustomContent>,
+        );
+        chips = normalizeChips(outgoingMessage.data.buttons);
+        chipsIcon = (
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", color: "text.disabled" }}
+          >
+            <Menu size={16} />
+          </Box>
+        );
+        break;
+      case OutgoingMessageType.attachment:
+        content.push(
+          <Message.CustomContent key={`attachment-${messageEntity.id}`}>
+            <MessageAttachmentsViewer message={outgoingMessage} />
+            {renderTimestamp(`attachment-${messageEntity.id}`)}
+          </Message.CustomContent>,
+        );
+        chips = normalizeChips(outgoingMessage.data.quickReplies ?? []);
+        chipsIcon = (
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", color: "text.disabled" }}
+          >
+            <Reply size={16} />
+          </Box>
+        );
+        break;
+      case OutgoingMessageType.list:
+      case OutgoingMessageType.carousel:
+        content.push(
+          <Message.CustomContent key={`carousel-${messageEntity.id}`}>
+            <Carousel message={outgoingMessage} />
+            {renderTimestamp(`carousel-${messageEntity.id}`)}
+          </Message.CustomContent>,
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (chips.length > 0 && chipsIcon) {
     content.push(
       <Message.Footer sx={{ mt: 0.75 }} key={`chips-${messageEntity.id}`}>
         <Stack
@@ -263,25 +364,6 @@ export function getMessageContent(
           ))}
         </Stack>
       </Message.Footer>,
-    );
-  }
-
-  // If there's an attachment, create a component that handles its display
-  if ("attachment" in message) {
-    content.push(
-      <Message.CustomContent key={`attachment-${messageEntity.id}`}>
-        <MessageAttachmentsViewer message={message} />
-        {renderTimestamp(`attachment-${messageEntity.id}`)}
-      </Message.CustomContent>,
-    );
-  }
-
-  if ("options" in message) {
-    content.push(
-      <Message.CustomContent key={`carousel-${messageEntity.id}`}>
-        <Carousel {...message} />
-        {renderTimestamp(`carousel-${messageEntity.id}`)}
-      </Message.CustomContent>,
     );
   }
 

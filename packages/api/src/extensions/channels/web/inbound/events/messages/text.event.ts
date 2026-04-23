@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { IncomingMessageType, StdIncomingMessage } from '@hexabot-ai/types';
+
 import { ChannelInboundEventContext } from '@/channel/lib/inbound-events';
 import { ChannelName } from '@/channel/types';
-import { IncomingMessageType, StdIncomingMessage } from '@/chat/types/message';
 
 import { Web } from '../../../types';
 
@@ -30,12 +31,15 @@ export class TextMessageInboundEvent<
   }
 
   override getMessageType(): IncomingMessageType {
-    return IncomingMessageType.message;
+    return IncomingMessageType.text;
   }
 
   override toStdIncomingMessage(): StdIncomingMessage {
     return {
-      text: this.text,
+      type: IncomingMessageType.text,
+      data: {
+        text: this.text,
+      },
     };
   }
 }

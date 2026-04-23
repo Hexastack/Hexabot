@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { IncomingMessageType } from '@hexabot-ai/types';
+
 import { ChannelInboundEventContext } from '@/channel/lib/inbound-events';
 import { ChannelName } from '@/channel/types';
-import { IncomingMessageType } from '@/chat/types/message';
 
 import { Web } from '../../../types';
 
@@ -24,7 +25,7 @@ export class QuickReplyInboundEvent<
     payloadValue: string,
     text: string,
   ) {
-    super(context, IncomingMessageType.quick_reply, payloadValue, text);
+    super(context, IncomingMessageType.quickReply, payloadValue, text);
   }
 }
 

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StdOutgoingEnvelope } from '@/chat/types/message';
+import { StdOutgoingEnvelope } from '@hexabot-ai/types';
 
 import type { ChannelName } from '../types';
 

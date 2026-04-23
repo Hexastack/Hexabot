@@ -6,7 +6,13 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { ProviderV2, ProviderV3 } from '@ai-sdk/provider';
-import { Message, Thread } from '@hexabot-ai/types';
+import {
+  IncomingMessageType,
+  Message,
+  Thread,
+  StdIncomingMessage,
+  StdOutgoingMessage,
+} from '@hexabot-ai/types';
 import {
   LanguageModel,
   LanguageModelUsage,
@@ -20,7 +26,6 @@ import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
 import { ActionMetadata, ActionName } from '@/actions/types';
 import { RuntimeBindings } from '@/bindings/runtime-bindings';
-import { StdIncomingMessage, StdOutgoingMessage } from '@/chat/types/message';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 import { McpToolBindingDefinitions } from '@/workflow/types';
 
@@ -360,19 +365,30 @@ export abstract class AiBaseAction<
       return undefined;
     }
 
-    if ('text' in payload && typeof payload.text === 'string') {
-      return payload.text;
+    const data = payload.data as Record<string, unknown>;
+
+    if (typeof data.text === 'string') {
+      return data.text;
     }
 
-    const serialized =
-      (payload as { serialized_text?: unknown }).serialized_text ?? undefined;
+    if (typeof data.serializedText === 'string') {
+      return data.serializedText;
+    }
 
-    if (typeof serialized === 'string') {
-      return serialized;
+    if (
+      payload.type === IncomingMessageType.location &&
+      typeof data.coordinates === 'object' &&
+      data.coordinates !== null &&
+      'lat' in data.coordinates &&
+      'lon' in data.coordinates
+    ) {
+      const { lat, lon } = data.coordinates as { lat: number; lon: number };
+
+      return `location:${lat},${lon}`;
     }
 
     try {
-      return JSON.stringify(payload);
+      return JSON.stringify(data);
     } catch {
       return String(payload);
     }

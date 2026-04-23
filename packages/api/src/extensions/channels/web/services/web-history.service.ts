@@ -4,20 +4,18 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Thread } from '@hexabot-ai/types';
-import { Injectable } from '@nestjs/common';
-
-import { inferOutgoingMessageEnvelope } from '@/channel/lib/outbound';
-import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
-import { ChannelName } from '@/channel/types';
-import { MessageService } from '@/chat/services/message.service';
-import { PayloadType } from '@/chat/types/button';
 import {
   AnyMessage,
   IncomingMessage,
+  IncomingMessageType,
   OutgoingMessage,
-} from '@/chat/types/message';
-import { ActionOptions } from '@/chat/types/options';
+  Thread,
+} from '@hexabot-ai/types';
+import { Injectable } from '@nestjs/common';
+
+import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
+import { ChannelName } from '@/channel/types';
+import { MessageService } from '@/chat/services/message.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 
 import { WebOutboundMessageEncoder } from '../outbound/web-outbound-message-encoder';
@@ -144,36 +142,29 @@ export class WebHistoryService {
     incoming: IncomingMessage,
     ctx: WebFormatContext,
   ): Promise<Web.InboundMessageBase> {
-    if ('type' in incoming.message) {
-      if (incoming.message.type === PayloadType.location) {
-        const { lat, lon } = incoming.message.coordinates;
-
-        return {
-          type: Web.InboundMessageType.location,
-          data: { coordinates: { lat, lng: lon } },
-        };
-      }
-
-      // Attachment — use first item when stored as array
-      const attachmentPayload = Array.isArray(incoming.message.attachment)
-        ? incoming.message.attachment[0]
-        : incoming.message.attachment;
+    if (incoming.message.type === IncomingMessageType.location) {
+      const { lat, lon } = incoming.message.data.coordinates;
 
       return {
-        type: Web.InboundMessageType.file,
-        data: {
-          type: attachmentPayload.type,
-          url: await this.channelAttachmentService.getPublicUrl(
-            ctx.channelName,
-            attachmentPayload.payload,
-          ),
-        },
+        type: Web.InboundMessageType.location,
+        data: { coordinates: { lat, lng: lon } },
       };
     }
 
+    // Attachment — use first item when stored as array
+    const attachmentPayload = Array.isArray(incoming.message.data)
+      ? incoming.message.data[0]
+      : incoming.message.data;
+
     return {
-      type: Web.InboundMessageType.text,
-      data: incoming.message,
+      type: Web.InboundMessageType.file,
+      data: {
+        type: attachmentPayload.type,
+        url: await this.channelAttachmentService.getPublicUrl(
+          ctx.channelName,
+          attachmentPayload.payload,
+        ),
+      },
     };
   }
 
@@ -181,12 +172,6 @@ export class WebHistoryService {
     outgoing: OutgoingMessage,
     ctx: WebFormatContext,
   ): Promise<Web.OutboundMessageBase> {
-    const envelope = inferOutgoingMessageEnvelope(outgoing.message);
-    const options: ActionOptions =
-      'options' in outgoing.message
-        ? { content: outgoing.message.options }
-        : {};
-
-    return ctx.encoder.encode(envelope, options);
+    return ctx.encoder.encode(outgoing.message);
   }
 }

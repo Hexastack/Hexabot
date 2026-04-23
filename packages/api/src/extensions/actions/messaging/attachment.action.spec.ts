@@ -4,12 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionService } from '@/actions/actions.service';
-import { FileType } from '@/chat/types/attachment';
 import {
-  OutgoingMessageFormat,
+  FileType,
+  OutgoingMessageType,
   StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
+} from '@hexabot-ai/types';
+
+import { ActionService } from '@/actions/actions.service';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { SendAttachmentAction } from './attachment.action';
@@ -32,8 +33,8 @@ describe('SendAttachmentAction', () => {
   it('builds an attachment envelope and delegates sending', async () => {
     const action = new SendAttachmentAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
-      format: OutgoingMessageFormat.attachment,
-      message: {
+      type: OutgoingMessageType.attachment,
+      data: {
         attachment: { type: FileType.image, payload: { id: '123' } },
         quickReplies: [],
       },

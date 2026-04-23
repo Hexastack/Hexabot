@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { AnyMessage } from '@/chat/types/message';
+import { AnyMessage } from '@hexabot-ai/types';
 
 import { HelperName, HelperType, LLM } from '../types';
 

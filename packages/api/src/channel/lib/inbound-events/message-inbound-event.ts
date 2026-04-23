@@ -8,8 +8,9 @@ import {
   IncomingMessageType,
   StdEventType,
   StdIncomingMessage,
-} from '@/chat/types/message';
-import { Payload } from '@/chat/types/quick-reply';
+  Payload,
+} from '@hexabot-ai/types';
+
 import { ConversationalWorkflowInput } from '@/workflow/schemas/workflow-input-schemas';
 
 import { ChannelName } from '../../types';
@@ -55,12 +56,16 @@ export abstract class MessageInboundEvent<
   getText(): string {
     const message = this.getMessage();
 
-    if ('text' in message) {
-      return message.text;
+    if (
+      message.type === IncomingMessageType.text ||
+      message.type === IncomingMessageType.postback ||
+      message.type === IncomingMessageType.quickReply
+    ) {
+      return message.data.text;
     }
 
-    if ('serialized_text' in message) {
-      return message.serialized_text;
+    if (message.type === IncomingMessageType.attachment) {
+      return message.data.serializedText;
     }
 
     return '';

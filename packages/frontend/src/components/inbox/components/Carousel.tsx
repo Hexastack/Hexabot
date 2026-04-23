@@ -4,6 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  AnyButton as ButtonType,
+  OutgoingPopulatedListMessage,
+  StdOutgoingCarouselMessage,
+  StdOutgoingListMessage,
+} from "@hexabot-ai/types";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -18,11 +24,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 
 import { useGetAttachmentMetadata } from "@/hooks/useGetAttachmentMetadata";
-import {
-  AnyButton as ButtonType,
-  OutgoingPopulatedListMessage,
-  StdOutgoingListMessage,
-} from "@/types/message.types";
 
 const CARD_WIDTH = 300;
 const CARD_GAP_PX = 10;
@@ -105,14 +106,15 @@ const Shadow = (
   />
 );
 
-export const Carousel = (props: StdOutgoingListMessage) => {
+type CarouselMessage = StdOutgoingListMessage | StdOutgoingCarouselMessage;
+
+export const Carousel = ({ message }: { message: CarouselMessage }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [scrollTo, setScrollTo] = useState<number>(0);
+  const { elements, options } = message.data;
   const incrementScroll = () => {
     setScrollTo((current) =>
-      current + 1 >= props.elements.length
-        ? props.elements.length - 1
-        : current + 1,
+      current + 1 >= elements.length ? elements.length - 1 : current + 1,
     );
   };
   const decrementScroll = () => {
@@ -139,7 +141,7 @@ export const Carousel = (props: StdOutgoingListMessage) => {
       left: CARD_WIDTH * scrollTo + Math.max(CARD_GAP_PX * (scrollTo - 1), 0),
       top: 0,
     });
-  }, [props.elements, scrollTo]);
+  }, [elements, scrollTo]);
 
   return (
     <Box
@@ -152,12 +154,12 @@ export const Carousel = (props: StdOutgoingListMessage) => {
       }}
     >
       <StyledCarouselDiv ref={ref}>
-        {props.elements.map((element) => (
+        {elements.map((element) => (
           <ListCard
-            buttons={props.options.buttons}
+            buttons={options.buttons}
             content={
               Object.fromEntries(
-                Object.entries(props.options.fields).map(
+                Object.entries(options.fields).map(
                   ([key, value]) => [key, element[value as string]] as const,
                 ),
               ) as OutgoingPopulatedListMessage
@@ -181,8 +183,7 @@ export const Carousel = (props: StdOutgoingListMessage) => {
       <StyledIconButton
         sx={{
           right: 0.5,
-          visibility:
-            scrollTo === props.elements.length - 1 ? "hidden" : "visible",
+          visibility: scrollTo === elements.length - 1 ? "hidden" : "visible",
         }}
         onClick={incrementScroll}
       >
@@ -190,7 +191,7 @@ export const Carousel = (props: StdOutgoingListMessage) => {
       </StyledIconButton>
 
       <Shadow left visible={scrollTo !== 0} />
-      <Shadow left={false} visible={scrollTo !== props.elements.length - 1} />
+      <Shadow left={false} visible={scrollTo !== elements.length - 1} />
     </Box>
   );
 };

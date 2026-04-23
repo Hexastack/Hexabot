@@ -4,7 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Attachment } from '@hexabot-ai/types';
+import type {
+  ActionOptions,
+  Attachment,
+  AttachmentRef,
+  StdOutgoingMessageEnvelope,
+} from '@hexabot-ai/types';
+import { StdOutgoingEnvelope } from '@hexabot-ai/types';
 import { Inject, Injectable, OnModuleInit, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Request, Response } from 'express';
@@ -20,12 +26,6 @@ import {
 } from '@/attachment/types';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { AttachmentRef } from '@/chat/types/attachment';
-import {
-  StdOutgoingEnvelope,
-  StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
-import type { ActionOptions } from '@/chat/types/options';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
@@ -116,8 +116,8 @@ export default abstract class ChannelHandler<
   private assertCapability(envelope: StdOutgoingEnvelope): void {
     const caps = this.getCapabilities();
     // caps[system] is undefined (not in ChannelCapabilities) → always throws
-    if (!caps[envelope.format as keyof ChannelCapabilities]) {
-      throw new UnsupportedOutgoingFormatError(envelope.format);
+    if (!caps[envelope.type as keyof ChannelCapabilities]) {
+      throw new UnsupportedOutgoingFormatError(envelope.type);
     }
   }
 
@@ -145,11 +145,12 @@ export default abstract class ChannelHandler<
   ): any;
 
   /**
-   * Send a channel message to the end user.
-   *
-   * Guards the capability contract before delegating to `doSendMessage`.
-   * Throws `UnsupportedOutgoingFormatError` when the envelope format is not
-   * supported by this channel (including the internal `system` format).
+   * Send a channel Message to the end user
+   * @param event - Incoming event/message being responded to
+   * @param envelope - The message to be sent `{ type, data }`
+   * @param options - Might contain additional settings
+   * @returns {Promise} - The channel's response, otherwise an error
+   
    */
   async sendMessage(
     event: MessageInboundEvent<N>,

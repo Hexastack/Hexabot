@@ -4,10 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  IncomingMessageType,
+  StdIncomingMessage,
+  Payload,
+} from '@hexabot-ai/types';
+
 import { ChannelInboundEventContext } from '@/channel/lib/inbound-events';
 import { ChannelName } from '@/channel/types';
-import { IncomingMessageType, StdIncomingMessage } from '@/chat/types/message';
-import { Payload } from '@/chat/types/quick-reply';
 
 import { Web } from '../../../types';
 
@@ -27,7 +31,7 @@ export abstract class PayloadMessageInboundEvent<
     >,
     private readonly messageType:
       | IncomingMessageType.postback
-      | IncomingMessageType.quick_reply,
+      | IncomingMessageType.quickReply,
     private readonly payloadValue: string,
     private readonly text: string,
   ) {
@@ -44,8 +48,11 @@ export abstract class PayloadMessageInboundEvent<
 
   override toStdIncomingMessage(): StdIncomingMessage {
     return {
-      postback: this.payloadValue,
-      text: this.text,
+      type: this.messageType,
+      data: {
+        payload: this.payloadValue,
+        text: this.text,
+      },
     };
   }
 }

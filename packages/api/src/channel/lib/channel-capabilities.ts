@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { OutgoingMessageFormat } from '@/chat/types/message';
+import { OutgoingMessageType } from '@hexabot-ai/types';
 
 /**
  * Declares which outgoing message formats and transport features a channel
@@ -14,24 +14,24 @@ import { OutgoingMessageFormat } from '@/chat/types/message';
  * Set `maxTextLength` to 0 to indicate no known limit.
  */
 export interface ChannelCapabilities {
-  [OutgoingMessageFormat.text]: boolean;
-  [OutgoingMessageFormat.quickReplies]: boolean;
-  [OutgoingMessageFormat.buttons]: boolean;
-  [OutgoingMessageFormat.attachment]: boolean;
-  [OutgoingMessageFormat.list]: boolean;
-  [OutgoingMessageFormat.carousel]: boolean;
+  [OutgoingMessageType.text]: boolean;
+  [OutgoingMessageType.quickReply]: boolean;
+  [OutgoingMessageType.buttons]: boolean;
+  [OutgoingMessageType.attachment]: boolean;
+  [OutgoingMessageType.list]: boolean;
+  [OutgoingMessageType.carousel]: boolean;
   typingIndicator: boolean;
   maxTextLength: number;
 }
 
 /** Full-featured default — channels override specific fields to restrict. */
 export const DEFAULT_CHANNEL_CAPABILITIES: Readonly<ChannelCapabilities> = {
-  [OutgoingMessageFormat.text]: true,
-  [OutgoingMessageFormat.quickReplies]: true,
-  [OutgoingMessageFormat.buttons]: true,
-  [OutgoingMessageFormat.attachment]: true,
-  [OutgoingMessageFormat.list]: true,
-  [OutgoingMessageFormat.carousel]: true,
+  [OutgoingMessageType.text]: true,
+  [OutgoingMessageType.quickReply]: true,
+  [OutgoingMessageType.buttons]: true,
+  [OutgoingMessageType.attachment]: true,
+  [OutgoingMessageType.list]: true,
+  [OutgoingMessageType.carousel]: true,
   typingIndicator: false,
   maxTextLength: 0,
 };

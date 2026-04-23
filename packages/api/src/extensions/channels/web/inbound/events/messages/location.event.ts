@@ -4,11 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  PayloadType,
+  IncomingMessageType,
+  StdIncomingMessage,
+  Payload,
+} from '@hexabot-ai/types';
+
 import { ChannelInboundEventContext } from '@/channel/lib/inbound-events';
 import { ChannelName } from '@/channel/types';
-import { PayloadType } from '@/chat/types/button';
-import { IncomingMessageType, StdIncomingMessage } from '@/chat/types/message';
-import { Payload } from '@/chat/types/quick-reply';
 
 import { Web } from '../../../types';
 
@@ -48,10 +52,12 @@ export class LocationMessageInboundEvent<
 
   override toStdIncomingMessage(): StdIncomingMessage {
     return {
-      type: PayloadType.location,
-      coordinates: {
-        lat: this.latitude,
-        lon: this.longitude,
+      type: IncomingMessageType.location,
+      data: {
+        coordinates: {
+          lat: this.latitude,
+          lon: this.longitude,
+        },
       },
     };
   }

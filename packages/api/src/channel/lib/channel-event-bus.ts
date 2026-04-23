@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { StdEventType } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { MessageCreateDto } from '@/chat/dto/message.dto';
-import { StdEventType } from '@/chat/types/message';
 
 import type ChannelInboundEvent from './inbound-events/channel-inbound-event';
 import type MessageInboundEvent from './inbound-events/message-inbound-event';
