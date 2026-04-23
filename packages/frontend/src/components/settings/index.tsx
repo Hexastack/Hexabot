@@ -93,26 +93,22 @@ export const Settings = () => {
   const { refetchUser } = useAuth();
   const router = useAppRouter();
   const rawGroup = router.query.group;
-  const group = Array.isArray(rawGroup) ? rawGroup.at(-1) : rawGroup;
+  const routeGroup = Array.isArray(rawGroup) ? rawGroup.at(-1) : rawGroup;
   const { toast } = useToast();
   const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState(
-    group || DEFAULT_SETTINGS_GROUP,
-  );
   const [formDataByGroup, setFormDataByGroup] = useState<
     Record<string, Record<string, unknown>>
   >({});
-  const { data: settings = [] } = useFind(
+  const { data: settings = [], isLoading: isLoadingSettings } = useFind(
     { entity: EntityType.SETTING },
     {
       hasCount: false,
     },
   );
-  const { data: schemas = {} } = useApiClientQuery("getSettingSchemas");
+  const { data: schemas = {}, isLoading: isLoadingSchemas } =
+    useApiClientQuery("getSettingSchemas");
   const { mutate: updateSetting } = useUpdate(EntityType.SETTING, {
-    onError: (error) => {
-      toast.error(error);
-    },
+    onError: (error) => toast.error(error),
     onSuccess: async (data) => {
       if (data.group === "chatbot_settings" && data.label === "license_key") {
         const hasLicenseValue =
@@ -157,22 +153,14 @@ export const Settings = () => {
 
     return schemaGroups.concat(extraGroups);
   }, [groupedSettings, schemas]);
+  const activeTab = useMemo(() => {
+    const fallback = DEFAULT_SETTINGS_GROUP;
 
-  useEffect(() => {
-    const incomingGroup = group || DEFAULT_SETTINGS_GROUP;
+    if (groups.length === 0) return routeGroup || fallback;
+    if (routeGroup && groups.includes(routeGroup)) return routeGroup;
 
-    setSelectedTab(incomingGroup);
-  }, [group]);
-
-  useEffect(() => {
-    if (groups.length === 0) {
-      return;
-    }
-
-    if (!groups.includes(selectedTab)) {
-      setSelectedTab(groups[0]);
-    }
-  }, [groups, selectedTab]);
+    return groups.includes(fallback) ? fallback : groups[0];
+  }, [groups, routeGroup]);
 
   useEffect(() => {
     const nextFormDataByGroup = toGroupFormData(groupedSettings);
@@ -191,21 +179,13 @@ export const Settings = () => {
     [updateSetting],
   );
   const debouncedUpdate = useMemo(
-    () =>
-      debounce((settingId: string, value: SettingValue) => {
-        handleUpdate(settingId, value);
-      }, 400),
+    () => debounce(handleUpdate, 400),
     [handleUpdate],
   );
 
-  useEffect(() => {
-    return () => {
-      debouncedUpdate.clear();
-    };
-  }, [debouncedUpdate]);
+  useEffect(() => () => debouncedUpdate.clear(), [debouncedUpdate]);
 
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
-    setSelectedTab(newValue);
     router.push(`/${RouterType.SETTINGS}/groups/${newValue}`);
   };
   const handleFormDataChange = (
@@ -217,16 +197,14 @@ export const Settings = () => {
     Object.entries(nextFormData).forEach(([label, nextValue]) => {
       const setting = settingsByLabel[label];
 
-      if (!setting) {
-        return;
-      }
-      if (areSettingValuesEqual(setting.value, nextValue)) {
-        return;
-      }
-
-      debouncedUpdate(setting.id, nextValue as SettingValue);
+      if (!setting || areSettingValuesEqual(setting.value, nextValue)) return;
+      debouncedUpdate(setting.id, nextValue);
     });
   };
+
+  if (isLoadingSettings || isLoadingSchemas) {
+    return null;
+  }
 
   return (
     <Grid container gap={3} flexDirection="column">
@@ -241,7 +219,7 @@ export const Settings = () => {
             <Tabs
               orientation="vertical"
               variant="scrollable"
-              value={selectedTab}
+              value={activeTab}
               onChange={handleChange}
             >
               {groups.map((group, index) => (
@@ -261,16 +239,13 @@ export const Settings = () => {
                 return (
                   <TabPanel
                     sx={{ gap: 2 }}
-                    value={selectedTab}
+                    value={activeTab}
                     index={groupName}
                     key={groupName}
                   >
                     {!schema ? (
                       <Typography variant="body2" color="text.secondary">
-                        {t("message.no_settings_schema", {
-                          defaultValue:
-                            "No settings schema is available for this group.",
-                        })}
+                        {t("message.no_settings_schema")}
                       </Typography>
                     ) : (
                       <FormControl>

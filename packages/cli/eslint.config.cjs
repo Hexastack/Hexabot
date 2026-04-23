@@ -42,7 +42,7 @@ const createConfig = ({ headerYear = '2025' } = {}) => {
       languageOptions: {
         parser: tsParser,
         parserOptions: {
-          project: path.join(__dirname, 'tsconfig.json'),
+          project: path.join(__dirname, 'tsconfig.eslint.json'),
           tsconfigRootDir: __dirname,
           sourceType: 'module',
         },

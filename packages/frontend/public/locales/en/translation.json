@@ -187,7 +187,8 @@
     "user_management_locked_description": "Your current license does not include access to user management.",
     "user_management_locked_hint": "Upgrade to Pro or enter a valid license key to continue.",
     "users_quota_reached": "User limit reached for your current plan.",
-    "workflows_quota_reached": "Workflow limit reached for your current plan."
+    "workflows_quota_reached": "Workflow limit reached for your current plan.",
+    "no_settings_schema": "No settings schema is available for this group."
   },
   "menu": {
     "terms": "Terms of Use",

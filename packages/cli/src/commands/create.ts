@@ -206,6 +206,20 @@ const validateEmail = (value: string) => {
 
   return true;
 };
+const validateAdminPassword = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return 'Password is required.';
+  }
+
+  // Keep the rule simple and explicit for CLI UX. Complexity policies vary by org.
+  const minLength = 12;
+  if (trimmed.length < minLength) {
+    return `Password must be at least ${minLength} characters.`;
+  }
+
+  return true;
+};
 const assertInteractiveTerminal = () => {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
     throw new Error(
@@ -216,28 +230,48 @@ const assertInteractiveTerminal = () => {
 const promptSeedAdminCredentials = async (): Promise<AdminSeedCredentials> => {
   assertInteractiveTerminal();
 
+  console.log('\n');
+  console.log(chalk.bold('Admin account (initial credentials)'));
+  console.log(
+    chalk.gray(
+      'These details are used to seed the first admin user. You can change them later in your env file.',
+    ),
+  );
+  console.log('\n');
+
   const firstName = (
     await input({
-      message: 'Admin first name',
+      message: 'First name (e.g. Jhon)',
       validate: requireValue('First name'),
     })
   ).trim();
   const lastName = (
     await input({
-      message: 'Admin last name',
+      message: 'Last name (e.g. Doe)',
       validate: requireValue('Last name'),
     })
   ).trim();
   const email = (
     await input({
-      message: 'Admin email',
+      message: 'Email (e.g. admin@company.com)',
       validate: validateEmail,
     })
   ).trim();
   const adminPassword = await password({
-    message: 'Admin password',
+    message: 'Password (min 12 chars)',
     mask: '*',
-    validate: requireValue('Password'),
+    validate: validateAdminPassword,
+  });
+  await password({
+    message: 'Confirm password',
+    mask: '*',
+    validate: (value: string) => {
+      if (value !== adminPassword) {
+        return 'Passwords do not match.';
+      }
+
+      return true;
+    },
   });
 
   return {
