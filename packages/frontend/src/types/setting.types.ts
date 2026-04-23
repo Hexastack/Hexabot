@@ -4,15 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import type {
-  Setting as SharedSetting,
-  SettingStub as SharedSettingStub,
-} from "@hexabot-ai/types";
-
-export type ISettingStub = SharedSettingStub;
-
-export type Setting = SharedSetting;
-
 export interface ISettingSchemaDefinition {
   schema: Record<string, any>;
   scope: "global" | "extension";
