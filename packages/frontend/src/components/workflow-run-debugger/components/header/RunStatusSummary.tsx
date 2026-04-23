@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowRun } from "@hexabot-ai/types";
 import { Button, Stack, Typography } from "@mui/material";
 import { ChevronDown } from "lucide-react";
 import { MouseEvent, useMemo, useState } from "react";
 
 import { WorkflowRunStatusBadge } from "@/app-components/workflow/WorkflowRunStatusBadge";
 import { useTranslate } from "@/hooks/useTranslate";
-import { type IWorkflowRun } from "@/types/workflow-run.types";
 import { formatDurationMs } from "@/utils/date";
 
 import { formatRunTimestamp } from "../../utils";
@@ -18,9 +18,9 @@ import { formatRunTimestamp } from "../../utils";
 import { RunHistoryMenu } from "./RunHistoryMenu";
 
 type RunStatusSummaryProps = {
-  workflowRuns: Array<IWorkflowRun>;
+  workflowRuns: Array<WorkflowRun>;
   isFetching: boolean;
-  selectedRun?: IWorkflowRun;
+  selectedRun?: WorkflowRun;
   onSelectRun: (runId: string) => void;
 };
 

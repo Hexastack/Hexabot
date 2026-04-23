@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Subscriber } from '@hexabot-ai/types';
 import { DataSource } from 'typeorm';
 
-import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { EUserProfileType } from '@/user/entities/user-profile.entity';

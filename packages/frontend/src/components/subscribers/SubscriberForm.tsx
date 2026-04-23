@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment, useEffect } from "react";
@@ -17,11 +18,13 @@ import { isCountOrCollectionQuery } from "@/hooks/useEntityMutationSubscription"
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { PermissionAction } from "@/types/permission.types";
-import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
+import { Subscriber } from "@/types/subscriber.types";
 
-export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
+type SubscriberAttributes = EntityAttributes<EntityType.SUBSCRIBER>;
+
+export const SubscriberForm: FC<ComponentFormProps<Subscriber>> = ({
   data: { defaultValues: subscriber },
   Wrapper = Fragment,
   WrapperProps,
@@ -44,8 +47,8 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
     control,
     formState: { errors },
     handleSubmit,
-  } = useForm<ISubscriberAttributes>();
-  const onSubmitForm = (params: ISubscriberAttributes) => {
+  } = useForm<SubscriberAttributes>();
+  const onSubmitForm = (params: SubscriberAttributes) => {
     if (subscriber?.id)
       updateSubscriber(
         { id: subscriber.id, params },
@@ -93,7 +96,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                     return (
                       <WithEntityButton
                         entity={EntityType.LABEL}
-                        permissionAction={PermissionAction.CREATE}
+                        permissionAction={Action.CREATE}
                         enableEntityAddButton
                       >
                         <AutoCompleteEntityDistinctSelect

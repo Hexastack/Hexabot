@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { AttachmentResourceRef } from "@hexabot-ai/types";
 import { Box, Typography } from "@mui/material";
 import type { FieldProps, RJSFSchema } from "@rjsf/utils";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { useTranslate } from "@/hooks/useTranslate";
-import { AttachmentResourceRef } from "@/types/attachment.types";
 import { getFileType, MIME_TYPES } from "@/utils/attachment";
 
 import { getDescription, LabelWithTooltip } from "../widgets/shared";

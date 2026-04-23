@@ -5,6 +5,8 @@
  */
 
 import type { WorkflowDefinition } from "@hexabot-ai/agentic";
+import { WorkflowType } from "@hexabot-ai/types";
+import type { Workflow } from "@hexabot-ai/types";
 import { TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import type { JSONSchema7 as JsonSchema } from "json-schema";
@@ -24,16 +26,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import {
-  IWorkflowSubmitAttributes,
-  WorkflowType,
-  type IWorkflow,
-} from "@/types/workfow.types";
 
 import { WorkflowTypeSelector } from "./WorkflowTypeSelector";
 
 type TranslateFn = ReturnType<typeof useTranslate>["t"];
+type WorkflowSubmitAttributes = EntityAttributes<EntityType.WORKFLOW> & {
+  definitionYml?: string;
+};
 
 const getConversationalWorkflowInputSchema = (t: TranslateFn): JsonSchema => ({
   type: "object",
@@ -122,8 +123,8 @@ const buildInputSchemaNode = (
 type WorkflowFormPreset = {
   definition?: WorkflowDefinition;
   definitionYaml?: string;
-  onCreated?: (workflow: IWorkflow) => void;
-  onUpdated?: (workflow: IWorkflow) => void;
+  onCreated?: (workflow: Workflow) => void;
+  onUpdated?: (workflow: Workflow) => void;
 };
 
 type WorkflowFormValues = {
@@ -135,7 +136,7 @@ type WorkflowFormValues = {
 };
 
 export const WorkflowForm: FC<
-  ComponentFormProps<IWorkflow, WorkflowFormPreset>
+  ComponentFormProps<Workflow, WorkflowFormPreset>
 > = ({
   data: { defaultValues: workflow, presetValues },
   Wrapper = Fragment,
@@ -241,7 +242,7 @@ export const WorkflowForm: FC<
   };
   const { mutate: createWorkflow, isPending: isCreating } = useCreate<
     EntityType.WORKFLOW,
-    IWorkflowSubmitAttributes
+    WorkflowSubmitAttributes
   >(EntityType.WORKFLOW, {
     ...options,
     onSuccess: (created) => {
@@ -251,7 +252,7 @@ export const WorkflowForm: FC<
   });
   const { mutate: updateWorkflow, isPending: isUpdating } = useUpdate<
     EntityType.WORKFLOW,
-    IWorkflowSubmitAttributes
+    WorkflowSubmitAttributes
   >(EntityType.WORKFLOW, {
     ...options,
     onSuccess: (updated) => {
@@ -269,7 +270,7 @@ export const WorkflowForm: FC<
     const shouldIncludeManualInputSchema =
       params.type === WorkflowType.manual &&
       (!workflow?.id || Boolean(dirtyFields.inputSchema));
-    const payload: IWorkflowSubmitAttributes = {
+    const payload: WorkflowSubmitAttributes = {
       name,
       description,
       type: params.type,

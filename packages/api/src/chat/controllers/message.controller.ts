@@ -6,6 +6,7 @@
 
 import { randomUUID } from 'crypto';
 
+import { Message, MessageFull, Thread } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Body,
@@ -31,8 +32,7 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { Message, MessageCreateDto, MessageFull } from '../dto/message.dto';
-import { Thread } from '../dto/thread.dto';
+import { MessageCreateDto } from '../dto/message.dto';
 import { MessageOrmEntity } from '../entities/message.entity';
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
@@ -143,9 +143,12 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
     }
 
     const channelData = subscriber.channel;
-
-    if (!this.channelService.findChannel(channelData.name)) {
+    const channelName = channelData.name;
+    if (!channelName || !this.channelService.findChannel(channelName)) {
       throw new BadRequestException(`Subscriber channel not found`);
+    }
+    if (!subscriber.foreignId) {
+      throw new BadRequestException(`Subscriber foreign ID is missing`);
     }
 
     const envelope: StdOutgoingEnvelope = {
@@ -160,14 +163,15 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
             1,
           )
         ).at(0)?.mid;
-    const channelName = channelData.name as ChannelName;
-    const channelHandler = this.channelService.getChannelHandler(channelName);
+    const typedChannelName = channelName as ChannelName;
+    const channelHandler =
+      this.channelService.getChannelHandler(typedChannelName);
     const eventContext = new ChannelInboundEventContext<
       ChannelName,
       Record<string, unknown>,
       Record<string, unknown>
     >(
-      channelName,
+      typedChannelName,
       {
         source: 'message-controller',
       },

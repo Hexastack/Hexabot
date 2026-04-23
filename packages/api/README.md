@@ -7,6 +7,7 @@
 - **REST + WebSocket API:** NestJS REST endpoints (prefixed with `/api`) plus Socket.IO for real-time events.
 - **Extensible Channels/Actions/Helpers:** Dynamic providers load built-in and external extensions at runtime.
 - **Workflow Engine:** Agentic workflows with runs, scheduling, and memory definitions.
+- **Shared Output Contracts:** Runtime entity schemas and inferred types from `@hexabot-ai/types`.
 - **Content & Localization:** CMS for content types/menus and i18n languages/translations.
 - **Security & Auth:** Session-based auth, role/permission guard, CSRF protection, and JWT-backed flows (invite/reset/confirm).
 - **Operational Tooling:** TypeORM migrations, auto-seeding in non-production when the DB is empty, and optional static UI hosting.

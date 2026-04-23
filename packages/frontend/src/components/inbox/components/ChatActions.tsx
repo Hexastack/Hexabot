@@ -59,23 +59,30 @@ export const ChatActions = () => {
             label={t("label.assign_to")}
             select
           >
-            {(users || []).map((chatUser) => (
-              <MenuItem key={chatUser.id} value={chatUser.id}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Avatar
-                    alt={chatUser.fullName}
-                    size={24}
-                    subscriberId={chatUser.id}
-                  />
-                  <Typography
-                    variant="body2"
-                    sx={{ textTransform: "capitalize" }}
-                  >
-                    {chatUser.fullName}
-                  </Typography>
-                </Stack>
-              </MenuItem>
-            ))}
+            {(users || []).map((chatUser) => {
+              const displayName =
+                `${chatUser.firstName} ${chatUser.lastName}`.trim() ||
+                chatUser.email ||
+                chatUser.id;
+
+              return (
+                <MenuItem key={chatUser.id} value={chatUser.id}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Avatar
+                      alt={displayName}
+                      size={24}
+                      subscriberId={chatUser.id}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{ textTransform: "capitalize" }}
+                    >
+                      {displayName}
+                    </Typography>
+                  </Stack>
+                </MenuItem>
+              );
+            })}
           </TextField>
         </Box>
       )}

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Attachment } from '@hexabot-ai/types';
 import { Inject, Injectable, OnModuleInit, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -11,7 +12,6 @@ import { Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,

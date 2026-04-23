@@ -8,14 +8,14 @@ import { UseMutationResult } from "@tanstack/react-query";
 import { createContext, Dispatch, SetStateAction } from "react";
 
 import { ILoginAttributes } from "@/types/auth/login.types";
-import { IUser } from "@/types/user.types";
+import { User } from "@/types/user.types";
 
 export interface AuthContextValue {
-  user: IUser | undefined;
+  user: User | undefined;
   isAuthenticated: boolean;
-  refetchUser: () => Promise<IUser | undefined>;
+  refetchUser: () => Promise<User | undefined>;
   loginMutation: UseMutationResult<
-    IUser,
+    User,
     Error,
     [payload: ILoginAttributes],
     unknown
@@ -37,7 +37,7 @@ export const AuthContext = createContext<AuthContextValue>({
   isAuthenticated: false,
   refetchUser: async () => undefined,
   loginMutation: {} as UseMutationResult<
-    IUser,
+    User,
     Error,
     [payload: ILoginAttributes],
     unknown

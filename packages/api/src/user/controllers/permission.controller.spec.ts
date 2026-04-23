@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Role, Model, Permission, PermissionFull } from '@hexabot-ai/types';
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
@@ -11,13 +12,7 @@ import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permissi
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Model } from '../dto/model.dto';
-import {
-  Permission,
-  PermissionCreateDto,
-  PermissionFull,
-} from '../dto/permission.dto';
-import { Role } from '../dto/role.dto';
+import { PermissionCreateDto } from '../dto/permission.dto';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';

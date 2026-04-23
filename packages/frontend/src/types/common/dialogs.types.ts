@@ -122,14 +122,6 @@ export interface OpenConfirmDialog {
   (msg: ComponentType, options?: ConfirmOptions): Promise<boolean>;
 }
 
-export interface DialogHook {
-  // alert: OpenAlertDialog;
-  confirm: OpenConfirmDialog;
-  // prompt: OpenPromptDialog;
-  open: OpenDialog;
-  close: CloseDialog;
-}
-
 export interface DialogStackEntry<P, R> {
   key: string;
   open: boolean;

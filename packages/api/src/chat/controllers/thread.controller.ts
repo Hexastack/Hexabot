@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Thread, ThreadFull } from '@hexabot-ai/types';
 import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
@@ -13,12 +14,7 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 import { TFilterNestedKeysOfType } from '@/utils/types/filter.types';
 
-import {
-  Thread,
-  ThreadCreateDto,
-  ThreadFull,
-  ThreadUpdateDto,
-} from '../dto/thread.dto';
+import { ThreadCreateDto, ThreadUpdateDto } from '../dto/thread.dto';
 import { ThreadOrmEntity } from '../entities/thread.entity';
 import { ThreadService } from '../services/thread.service';
 

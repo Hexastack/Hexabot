@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Setting } from "@hexabot-ai/types";
 import {
   FormControl,
   Paper,
@@ -29,7 +30,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, RouterType } from "@/services/types";
-import { ISetting } from "@/types/setting.types";
+import type { EntityAttributes } from "@/types/base.types";
 
 import LicenseActivatedModal from "../license/LicenseActivatedModal";
 
@@ -40,17 +41,17 @@ import {
 
 const StyledFormContainer = styled("div")();
 const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
-const toGroupedSettings = (settings: ISetting[]) => {
+const toGroupedSettings = (settings: Setting[]) => {
   return settings.reduce(
     (acc, curr) => {
       acc[curr.group] = acc[curr.group] ? acc[curr.group].concat(curr) : [curr];
 
       return acc;
     },
-    {} as Record<string, ISetting[]>,
+    {} as Record<string, Setting[]>,
   );
 };
-const toGroupFormData = (settingsByGroup: Record<string, ISetting[]>) => {
+const toGroupFormData = (settingsByGroup: Record<string, Setting[]>) => {
   return Object.entries(settingsByGroup).reduce(
     (acc, [group, settings]) => {
       acc[group] = settings.reduce(
@@ -67,7 +68,7 @@ const toGroupFormData = (settingsByGroup: Record<string, ISetting[]>) => {
     {} as Record<string, Record<string, unknown>>,
   );
 };
-const toSettingsByGroupAndLabel = (settings: ISetting[]) => {
+const toSettingsByGroupAndLabel = (settings: Setting[]) => {
   return settings.reduce(
     (acc, setting) => {
       const byLabel = acc[setting.group] || {};
@@ -77,12 +78,15 @@ const toSettingsByGroupAndLabel = (settings: ISetting[]) => {
 
       return acc;
     },
-    {} as Record<string, Record<string, ISetting>>,
+    {} as Record<string, Record<string, Setting>>,
   );
 };
 const areSettingValuesEqual = (left: unknown, right: unknown): boolean => {
   return JSON.stringify(left) === JSON.stringify(right);
 };
+
+type SettingAttributes = EntityAttributes<EntityType.SETTING>;
+type SettingValue = SettingAttributes["value"];
 
 export const Settings = () => {
   const { t } = useTranslate();
@@ -169,7 +173,7 @@ export const Settings = () => {
   }, [groupedSettings]);
 
   const handleUpdate = useCallback(
-    (settingId: string, value: unknown) => {
+    (settingId: string, value: SettingValue) => {
       updateSetting({ id: settingId, params: { value } });
     },
     [updateSetting],
@@ -186,7 +190,7 @@ export const Settings = () => {
   };
   const handleFormDataChange = (
     groupName: string,
-    nextFormData: Record<string, unknown>,
+    nextFormData: Record<string, SettingValue>,
   ) => {
     const settingsByLabel = settingsByGroupAndLabel[groupName] || {};
 
@@ -245,7 +249,7 @@ export const Settings = () => {
                       </Typography>
                     ) : (
                       <FormControl>
-                        <JsonSchemaForm
+                        <JsonSchemaForm<Record<string, SettingValue>>
                           schema={schema}
                           formData={formDataByGroup[groupName] || {}}
                           onFormDataChange={(data, errors) => {

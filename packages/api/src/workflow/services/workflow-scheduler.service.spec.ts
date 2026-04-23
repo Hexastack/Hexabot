@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Workflow } from '@hexabot-ai/types';
 import { BadRequestException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -13,6 +14,7 @@ import { FindOneOptions } from 'typeorm';
 
 import { UserService } from '@/user';
 import { EHook, InferActionsDto } from '@/utils';
+import { userFixtureIds } from '@/utils/test/fixtures/user';
 import { installScheduledWorkflowFixturesTypeOrm } from '@/utils/test/fixtures/workflow';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import {
@@ -25,7 +27,6 @@ import {
   InsertEntityEvent,
   UpdateEntityEvent,
 } from '@/utils/types/entity-event.types';
-import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowType } from '@/workflow/types';
 
 import { ScheduledWorkflowContext } from '../contexts/scheduled-workflow.context';
@@ -177,7 +178,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
       description: 'Created by workflow scheduler test',
       type: WorkflowType.scheduled,
       schedule: workflow.schedule ?? '*/10 * * * * *',
-      createdBy: workflow.createdBy,
+      createdBy: workflow.createdBy ?? userFixtureIds.admin,
     });
 
     expect(

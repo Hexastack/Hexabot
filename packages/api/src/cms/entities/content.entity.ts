@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { contentSchema, contentFullSchema, Content } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -23,7 +24,7 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { Content, ContentDto, ContentFull } from '../dto/content.dto';
+import { ContentDto } from '../dto/content.dto';
 
 import { ContentTypeOrmEntity } from './content-type.entity';
 
@@ -31,9 +32,9 @@ import { ContentTypeOrmEntity } from './content-type.entity';
 @Index(['title'])
 @Index(['searchText'])
 export class ContentOrmEntity extends BaseOrmEntity<ContentDto> {
-  plainCls = Content;
+  plainCls = contentSchema;
 
-  fullCls = ContentFull;
+  fullCls = contentFullSchema;
 
   /**
    * The content type of this content.

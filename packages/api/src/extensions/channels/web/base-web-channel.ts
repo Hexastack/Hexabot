@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Attachment, Subscriber, Thread } from '@hexabot-ai/types';
 import {
   HttpException,
   HttpStatus,
@@ -16,7 +17,6 @@ import { Request, Response } from 'express';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
@@ -32,8 +32,7 @@ import {
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
-import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { Thread } from '@/chat/dto/thread.dto';
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ThreadService } from '@/chat/services/thread.service';
@@ -586,8 +585,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     this.logger.debug('subscribe (isSocket=true)');
     try {
       const profile = await this.getOrCreateSession(req);
+      const profileForeignId = profile.foreignId;
+      if (!profileForeignId) {
+        throw new Error('Session profile foreignId is missing');
+      }
       try {
-        await req.socket.join(profile.foreignId);
+        await req.socket.join(profileForeignId);
       } catch (err) {
         this.logger.error('Unable to subscribe via websocket', err);
       }
@@ -824,6 +827,9 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         // Generate unique ID and handle message
         messageEvent.setMessageId(this.generateId());
         // Force author id from session
+        if (!profile.foreignId) {
+          throw new Error('Session profile foreignId is missing');
+        }
         messageEvent.setAuthorForeignId(profile.foreignId);
         // Use a server-side timestamp so realtime clients can sort deterministically.
         messageEvent.setCreatedAt(new Date());
@@ -1035,7 +1041,11 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     } = sender;
     const subscriber: SubscriberCreateDto = {
       ...rest,
-      channel: sender.channel,
+      channel: {
+        ...sender.channel,
+        name: sender.channel.name ?? this.name,
+        data: sender.channel.data ?? undefined,
+      },
     };
 
     return subscriber;

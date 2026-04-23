@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
+import type { Role } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
 import { Accessibility } from "lucide-react";
 
@@ -18,8 +20,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
-import { IRole } from "@/types/role.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { PermissionBodyDialog } from "./PermissionsBodyDialog";
@@ -37,7 +37,7 @@ export const Roles = () => {
       toast.success(t("message.item_delete_success"));
     },
   });
-  const actionColumns = useActionColumns<IRole>(
+  const actionColumns = useActionColumns<Role>(
     EntityType.ROLE,
     [
       {
@@ -56,7 +56,7 @@ export const Roles = () => {
         onClick: (row) => {
           dialogs.open(RoleFormDialog, { defaultValues: row });
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
@@ -67,12 +67,12 @@ export const Roles = () => {
             deleteRole(id);
           }
         },
-        requires: [PermissionAction.DELETE],
+        requires: [Action.DELETE],
       },
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<IRole>[] = [
+  const columns: GridColDef<Role>[] = [
     { field: "id", headerName: "ID" },
     {
       flex: 3,
@@ -109,7 +109,7 @@ export const Roles = () => {
       entity={EntityType.ROLE}
       buttons={[
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           children: t("button.add"),
           onClick: () => {
             dialogs.open(RoleFormDialog, { defaultValues: null });

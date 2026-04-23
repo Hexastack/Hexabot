@@ -7,7 +7,9 @@
       "@hexabot-ai/agentic": ["../agentic/src"],
       "@hexabot-ai/agentic/*": ["../agentic/src/*"],
       "@hexabot-ai/graph": ["../graph/src"],
-      "@hexabot-ai/graph/*": ["../graph/src/*"]
+      "@hexabot-ai/graph/*": ["../graph/src/*"],
+      "@hexabot-ai/types": ["../types/src"],
+      "@hexabot-ai/types/*": ["../types/src/*"]
     }
   }
 }

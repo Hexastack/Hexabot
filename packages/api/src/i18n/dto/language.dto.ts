@@ -4,30 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { languageFullSchema, languageSchema } from '@hexabot-ai/types';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { BaseStub, TDto } from '@/utils/types/dto.types';
-
-@Exclude()
-export class LanguageStub extends BaseStub {
-  @Expose()
-  title!: string;
-
-  @Expose()
-  code!: string;
-
-  @Expose()
-  isDefault!: boolean;
-
-  @Expose()
-  isRTL!: boolean;
-}
-
-@Exclude()
-export class Language extends LanguageStub {}
+import { TDto } from '@/utils/types/dto.types';
 
 export class LanguageCreateDto {
   @ApiProperty({ description: 'Language Title', type: String })
@@ -54,8 +36,8 @@ export class LanguageUpdateDto extends PartialType(LanguageCreateDto) {}
 
 export type LanguageDto = TDto<
   {
-    plain: typeof Language;
-    full: typeof Language;
+    plain: typeof languageSchema;
+    full: typeof languageFullSchema;
   },
   {
     create: LanguageCreateDto;

@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MemoryScope } from "@hexabot-ai/types";
+import type { MemoryDefinition } from "@hexabot-ai/types";
 import { FormHelperText, MenuItem, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment, useEffect } from "react";
@@ -22,12 +24,8 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import {
-  IMemoryDefinition,
-  IMemoryDefinitionAttributes,
-  MemoryScope,
-} from "@/types/memory-definition.types";
 import { validateJsonSchema } from "@/utils/jsonSchemaValidation";
 import { slugify } from "@/utils/string";
 
@@ -38,12 +36,12 @@ type MemoryDefinitionFormValues = {
   ttlSeconds: number | null;
   schema: SchemaNodeForm;
 };
+type MemoryDefinitionAttributes =
+  EntityAttributes<EntityType.MEMORY_DEFINITION>;
 
 const buildDefaultSchema = () => makeDefaultSchemaNode("object");
 
-export const MemoryDefinitionForm: FC<
-  ComponentFormProps<IMemoryDefinition>
-> = ({
+export const MemoryDefinitionForm: FC<ComponentFormProps<MemoryDefinition>> = ({
   data: { defaultValues: memoryDefinition },
   Wrapper = Fragment,
   WrapperProps,
@@ -131,7 +129,7 @@ export const MemoryDefinitionForm: FC<
     }
 
     clearErrors("schema");
-    const payload: IMemoryDefinitionAttributes = {
+    const payload: MemoryDefinitionAttributes = {
       name,
       slug: params.slug.trim(),
       scope: params.scope,

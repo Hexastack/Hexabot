@@ -4,12 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-export enum StatsType {
-  outgoing = 'outgoing',
-  new_users = 'new_users',
-  all_messages = 'all_messages',
-  incoming = 'incoming',
-  returning_users = 'returning_users',
-  retention = 'retention',
-  echo = 'echo',
-}
+export { StatsType } from '@hexabot-ai/types';

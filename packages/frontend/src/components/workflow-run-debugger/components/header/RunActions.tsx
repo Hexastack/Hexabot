@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowType } from "@hexabot-ai/types";
+import type { Workflow } from "@hexabot-ai/types";
 import { Button, Stack } from "@mui/material";
 import type { RJSFSchema } from "@rjsf/utils";
 import { PlayCircle } from "lucide-react";
@@ -17,12 +19,10 @@ import { useApiClient } from "@/hooks/useApiClient";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, QueryType } from "@/services/types";
-import type { IWorkflow } from "@/types/workfow.types";
-import { WorkflowType } from "@/types/workfow.types";
 import validator from "@/utils/rjsf-zod-validator";
 
 type RunActionsProps = {
-  workflow?: IWorkflow | null;
+  workflow?: Workflow | null;
   workflowInput?: Record<string, unknown>;
 };
 

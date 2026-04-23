@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ContentType } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -22,7 +23,6 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
-  ContentType,
   ContentTypeCreateDto,
   ContentTypeUpdateDto,
 } from '../dto/contentType.dto';

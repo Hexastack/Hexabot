@@ -4,41 +4,42 @@
  * Full terms: see LICENSE.md.
  */
 
-import { IMessage } from "@/types/message.types";
-import { ISubscriber } from "@/types/subscriber.types";
+import type { Message } from "@hexabot-ai/types";
+
+import { Subscriber } from "@/types/subscriber.types";
 
 export interface MessageSentEvent {
   op: "messageSent";
   speakerId: string;
-  msg: IMessage;
+  msg: Message;
 }
 
 export interface MessageReceivedEvent {
   op: "messageReceived";
   speakerId: string;
-  msg: IMessage;
+  msg: Message;
 }
 
 export interface messageDeliveredEvent {
   op: "messageDelivered";
   speakerId: string;
-  msg: IMessage;
+  msg: Message;
 }
 
 export interface messageReadEvent {
   op: "messageRead";
   speakerId: string;
-  msg: IMessage;
+  msg: Message;
 }
 
 export interface newSubscriberEvent {
   op: "newSubscriber";
-  profile: ISubscriber;
+  profile: Subscriber;
 }
 
 export interface subscriberUpdateEvent {
   op: "updateSubscriber";
-  profile: ISubscriber;
+  profile: Subscriber;
 }
 
 export type SocketEvent =

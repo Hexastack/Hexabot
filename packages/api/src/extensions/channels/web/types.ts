@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { SubscriberFull } from '@hexabot-ai/types';
 import { z } from 'zod';
 
-import { SubscriberFull } from '@/chat/dto/subscriber.dto';
 import { FileType } from '@/chat/types/attachment';
 import { Button, WebUrlButton } from '@/chat/types/button';
 import { StdQuickReply } from '@/chat/types/quick-reply';

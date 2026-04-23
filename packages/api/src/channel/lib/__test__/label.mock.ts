@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Label } from '@/chat/dto/label.dto';
+import { Label } from '@hexabot-ai/types';
 
 import { modelInstance } from './base.mock';
 

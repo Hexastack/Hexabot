@@ -4,15 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { type ISubscriberStub } from "@/types/subscriber.types";
-import { type IUserStub } from "@/types/user.types";
+type NameableEntity = {
+  firstName: string;
+  lastName: string;
+  fullName?: string;
+};
 
-export const applyFullNameDerivedFields = <
-  T extends IUserStub | ISubscriberStub,
->(
+export const applyFullNameDerivedFields = <T extends NameableEntity>(
   entity: T,
-): T => {
-  entity.fullName = `${entity.firstName} ${entity.lastName}`;
-
-  return entity;
+): T & { fullName: string } => {
+  return {
+    ...entity,
+    fullName: `${entity.firstName} ${entity.lastName}`,
+  };
 };

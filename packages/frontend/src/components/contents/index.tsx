@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
+import type { Content } from "@hexabot-ai/types";
 import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { AlignLeft } from "lucide-react";
@@ -28,8 +30,6 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { IContent } from "@/types/content.types";
-import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { ContentFormDialog } from "./ContentFormDialog";
@@ -55,7 +55,7 @@ export const Contents = () => {
     },
   });
   const getEntityFromCache = useGetFromCache(EntityType.CONTENT_TYPE);
-  const actionColumns = useActionColumns<IContent>(
+  const actionColumns = useActionColumns<Content>(
     EntityType.CONTENT,
     [
       {
@@ -66,7 +66,7 @@ export const Contents = () => {
             presetValues: contentType,
           });
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
@@ -77,7 +77,7 @@ export const Contents = () => {
             deleteContent(id);
           }
         },
-        requires: [PermissionAction.DELETE],
+        requires: [Action.DELETE],
       },
     ],
     t("label.operations"),
@@ -111,7 +111,7 @@ export const Contents = () => {
   const handleImportChange = (file: File) => {
     importDataset(file);
   };
-  const columns: GridColDef<IContent>[] = [
+  const columns: GridColDef<Content>[] = [
     { field: "title", headerName: t("label.title"), flex: 1 },
     {
       field: "contentType",
@@ -134,7 +134,7 @@ export const Contents = () => {
           checked={params.value}
           color="primary"
           slotProps={{ input: { "aria-label": "primary checkbox" } }}
-          disabled={!hasPermission(EntityType.CONTENT, PermissionAction.UPDATE)}
+          disabled={!hasPermission(EntityType.CONTENT, Action.UPDATE)}
           onChange={() => {
             updateContent({
               id: params.row.id,
@@ -174,14 +174,14 @@ export const Contents = () => {
       entity={EntityType.CONTENT}
       buttons={[
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           onClick: () =>
             dialogs.open(ContentFormDialog, {
               presetValues: contentType,
             }),
         },
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           children: (
             <FileUploadButton
               accept="text/csv"

@@ -4,41 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import { modelFullSchema, modelSchema } from '@hexabot-ai/types';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
 import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import { TRelation } from '../types/index.type';
 import { TModel } from '../types/model.type';
-
-import { Permission } from './permission.dto';
-
-@Exclude()
-export class ModelStub extends BaseStub {
-  @Expose()
-  name: string;
-
-  @Expose()
-  identity: string;
-
-  @Expose()
-  attributes: object;
-
-  @Expose()
-  relation?: TRelation;
-}
-
-@Exclude()
-export class Model extends ModelStub {}
-
-@Exclude()
-export class ModelFull extends ModelStub {
-  @Expose()
-  @Type(() => Permission)
-  permissions?: Permission[];
-}
 
 export class ModelCreateDto {
   @ApiProperty({ description: 'Name of the model', type: String })
@@ -71,8 +44,8 @@ export class ModelCreateDto {
 
 export type ModelDto = TDto<
   {
-    plain: typeof Model;
-    full: typeof ModelFull;
+    plain: typeof modelSchema;
+    full: typeof modelFullSchema;
   },
   {
     create: ModelCreateDto;

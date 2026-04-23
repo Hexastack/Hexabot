@@ -1,0 +1,78 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2026 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+export {
+  Action,
+  MethodToAction,
+  type ModelPermissionsPerRole,
+  type PermissionsTree,
+  type TModel,
+  type TRelation,
+} from "./domain";
+
+export {
+  userProfileFullSchema,
+  userProfileSchema,
+  userProfileStubSchema,
+  type UserProfile,
+  type UserProfileFull,
+  type UserProfileStub,
+} from "./user-profile";
+
+export {
+  userProfileAssignedFullSchema,
+  userProfileAssignedSchema,
+  userProfileAssignedStubSchema,
+  type UserProfileAssigned,
+  type UserProfileAssignedFull,
+  type UserProfileAssignedStub,
+  type UserProvider,
+} from "./user-profile-assigned";
+
+export {
+  userFullSchema,
+  userSchema,
+  userStubSchema,
+  type User,
+  type UserFull,
+  type UserStub,
+} from "./user";
+
+export {
+  roleFullSchema,
+  roleSchema,
+  roleStubSchema,
+  type Role,
+  type RoleFull,
+  type RoleStub,
+} from "./role";
+
+export {
+  modelFullSchema,
+  modelSchema,
+  modelStubSchema,
+  type Model,
+  type ModelFull,
+  type ModelStub,
+} from "./model";
+
+export {
+  permissionFullSchema,
+  permissionSchema,
+  permissionStubSchema,
+  type Permission,
+  type PermissionFull,
+  type PermissionStub,
+} from "./permission";
+
+export {
+  credentialFullSchema,
+  credentialSchema,
+  credentialStubSchema,
+  type Credential,
+  type CredentialFull,
+  type CredentialStub,
+} from "./credential";

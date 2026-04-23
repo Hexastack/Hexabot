@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { messageSchema, messageFullSchema } from '@hexabot-ai/types';
 import {
   Check,
   Column,
@@ -18,7 +19,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { Message, MessageDto, MessageFull } from '../dto/message.dto';
+import { MessageDto } from '../dto/message.dto';
 import { StdIncomingMessage, StdOutgoingMessage } from '../types/message';
 
 import { SubscriberOrmEntity } from './subscriber.entity';
@@ -30,9 +31,9 @@ import { ThreadOrmEntity } from './thread.entity';
 )
 @Entity({ name: 'messages' })
 export class MessageOrmEntity extends BaseOrmEntity<MessageDto> {
-  plainCls = Message;
+  plainCls = messageSchema;
 
-  fullCls = MessageFull;
+  fullCls = messageFullSchema;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   mid?: string | null;

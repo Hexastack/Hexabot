@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { BoxProps } from "@mui/material";
 
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 import { AnonymousLayout } from "./AnonymousLayout";
 import { AuthenticatedLayout } from "./AuthenticatedLayout";
@@ -21,7 +21,7 @@ export type LayoutProps = IContentPaddingProps & {
   children: JSX.Element;
   sxContent?: BoxProps;
   isPublicRoute?: boolean;
-  requiredPermissions?: [EntityType, PermissionAction][];
+  requiredPermissions?: [EntityType, Action][];
 };
 export const Layout: React.FC<LayoutProps> = ({ children, ...rest }) => {
   const { isAuthenticated } = useAuth();

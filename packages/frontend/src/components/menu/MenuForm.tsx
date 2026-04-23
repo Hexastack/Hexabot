@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MenuType, type Menu as IMenuItem } from "@hexabot-ai/types";
 import { MenuItem, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -15,11 +16,13 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IMenuItem, IMenuItemAttributes, MenuType } from "@/types/menu.types";
 import { isAbsoluteUrl } from "@/utils/URL";
 
 const DEFAULT_VALUES = { title: "", type: MenuType.web_url, url: undefined };
+
+type MenuItemAttributes = EntityAttributes<EntityType.MENU>;
 
 export type MenuFormData = {
   row?: IMenuItem;
@@ -55,7 +58,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
     formState: { errors },
     resetField,
     handleSubmit,
-  } = useForm<IMenuItemAttributes>({
+  } = useForm<MenuItemAttributes>({
     defaultValues: DEFAULT_VALUES,
   });
   const validationRules = {
@@ -65,14 +68,14 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
     title: { required: t("message.title_is_required") },
     url: {
       required: t("message.url_is_invalid"),
-      validate: (value: string = "") =>
-        isAbsoluteUrl(value) || t("message.url_is_invalid"),
+      validate: (value?: string | null) =>
+        isAbsoluteUrl(value ?? "") || t("message.url_is_invalid"),
     },
     payload: {},
   };
   const typeValue = watch("type");
   const titleValue = watch("title");
-  const onSubmitForm = (params: IMenuItemAttributes) => {
+  const onSubmitForm = (params: MenuItemAttributes) => {
     const { url, ...rest } = params;
     const payload = typeValue === "web_url" ? { ...rest, url } : rest;
 

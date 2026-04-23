@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Language } from '@hexabot-ai/types';
 import { NotFoundException } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
@@ -15,7 +16,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Language, LanguageUpdateDto } from '../dto/language.dto';
+import { LanguageUpdateDto } from '../dto/language.dto';
 import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageService } from '../services/language.service';
 

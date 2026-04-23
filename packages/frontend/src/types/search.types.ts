@@ -7,7 +7,7 @@
 import { THook, TNestedPaths } from "./base.types";
 
 export type TFilterStringFields<T> = {
-  [K in keyof T]: T[K] extends string | undefined ? K : never;
+  [K in keyof T]: T[K] extends string | null | undefined ? K : never;
 }[keyof T];
 
 export type TParamItem<

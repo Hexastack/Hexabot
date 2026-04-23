@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { IconButtonOwnProps, Stack, Tooltip } from "@mui/material";
 import {
   GridActionsCellItem,
@@ -31,7 +32,6 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 export enum ColumnActionType {
   Edit = "Edit",
@@ -83,7 +83,7 @@ const COLUMN_ACTION_CONFIG_MAP: Record<
 export interface ActionColumn<T extends GridValidRowModel> {
   action: ColumnActionType;
   onClick?: (row: T) => void;
-  requires?: PermissionAction[];
+  requires?: Action[];
   helperText?: string;
   isDisabled?: (row: T) => boolean;
 }
@@ -119,8 +119,7 @@ function StackComponent<T extends GridValidRowModel>({
                 color={color}
                 disabled={
                   (isDisabled && isDisabled(params.row)) ||
-                  (params.row.builtin &&
-                    requires.includes(PermissionAction.DELETE))
+                  (params.row.builtin && requires.includes(Action.DELETE))
                 }
                 onClick={() => {
                   onClick?.(params.row);

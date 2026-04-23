@@ -27,7 +27,7 @@ import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChann
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, QueryType } from "@/services/types";
-import { IUser } from "@/types/user.types";
+import { User } from "@/types/user.types";
 import { useSocket } from "@/websocket/socket-hooks";
 
 export interface AuthProviderProps {
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const { socket } = useSocket();
   const { toast } = useToast();
   const queryClient = useTanstackQueryClient();
-  const postLogin = async (data: IUser) => {
+  const postLogin = async (data: User) => {
     if (data.state) {
       setIsAuthenticated(true);
       queryClient.setQueryData([QueryType.item, "getCurrentSession"], data);

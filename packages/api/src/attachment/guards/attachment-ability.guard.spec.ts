@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Attachment, Model, Permission } from '@hexabot-ai/types';
 import {
   BadRequestException,
   ExecutionContext,
@@ -11,15 +12,12 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 
-import { Model } from '@/user/dto/model.dto';
-import { Permission } from '@/user/dto/permission.dto';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Attachment } from '../dto/attachment.dto';
 import { attachment } from '../mocks/attachment.mock';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentResourceRef } from '../types';

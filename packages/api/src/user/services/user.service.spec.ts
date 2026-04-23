@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { User as UserDto } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -12,7 +13,6 @@ import { userFixtures } from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { User as UserDto } from '../dto/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 
 import { UserService } from './user.service';

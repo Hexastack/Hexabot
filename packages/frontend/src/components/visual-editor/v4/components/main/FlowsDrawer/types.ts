@@ -4,15 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowType } from "@hexabot-ai/types";
+import type { Workflow } from "@hexabot-ai/types";
 import type { LucideIcon } from "lucide-react";
 
 import type { TTranslationKeys } from "@/i18n/i18n.types";
-import type { IWorkflow } from "@/types/workfow.types";
-import { WorkflowType } from "@/types/workfow.types";
 
 export type FlowsDrawerProps = {
   onNew?: () => void;
-  onEdit?: (workflow: IWorkflow) => void;
+  onEdit?: (workflow: Workflow) => void;
 };
 
 export type FlowTypeKey = WorkflowType | string;
@@ -30,7 +30,7 @@ export type FlowTypeMeta = {
 };
 
 export type FlowMatch = {
-  workflow: IWorkflow;
+  workflow: Workflow;
   nameMatch: number[];
   descriptionMatch: number[];
   typeInfo: FlowTypeInfo;

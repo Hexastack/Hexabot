@@ -5,7 +5,9 @@
       "@/*": ["src/*", "src/extra/*"],
       "hexabot/src/*": ["src/*"],
       "@hexabot-ai/agentic": ["../agentic/src"],
-      "@hexabot-ai/agentic/*": ["../agentic/src/*"]
+      "@hexabot-ai/agentic/*": ["../agentic/src/*"],
+      "@hexabot-ai/types": ["../types/src"],
+      "@hexabot-ai/types/*": ["../types/src/*"]
     }
   }
 }

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Subscriber, SubscriberFull } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
@@ -14,8 +15,6 @@ import {
 } from '@/utils/test/fixtures/subscriber';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-
-import { Subscriber, SubscriberFull } from '../dto/subscriber.dto';
 
 import { SubscriberController } from './subscriber.controller';
 

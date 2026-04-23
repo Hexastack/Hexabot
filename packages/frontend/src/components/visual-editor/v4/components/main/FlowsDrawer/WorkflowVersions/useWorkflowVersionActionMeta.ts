@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowVersionAction } from "@hexabot-ai/types";
 import { useTheme } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { useCallback } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
-import { WorkflowVersionAction } from "@/types/workfow-version.types";
 
 export const useWorkflowVersionActionMeta = () => {
   const theme = useTheme();

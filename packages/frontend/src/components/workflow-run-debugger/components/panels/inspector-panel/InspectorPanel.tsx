@@ -5,15 +5,14 @@
  */
 
 import type { StepExecutionRecord } from "@hexabot-ai/agentic";
+import type { WorkflowRun } from "@hexabot-ai/types";
 import { Paper } from "@mui/material";
 import Grid from "@mui/material/Grid";
-
-import { IWorkflowRun } from "@/types/workflow-run.types";
 
 import { InspectorTabs } from "./InspectorTabs";
 
 type InspectorPanelProps = {
-  run: IWorkflowRun | null;
+  run: WorkflowRun | null;
   step?: StepExecutionRecord | null;
 };
 

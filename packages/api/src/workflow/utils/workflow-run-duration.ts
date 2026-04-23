@@ -4,7 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowRunStatus } from '@hexabot-ai/agentic';
+import {
+  EWorkflowRunStatus,
+  type WorkflowRunStatus,
+} from '@hexabot-ai/agentic';
 
 export const resolveTimestampMs = (
   value?: Date | string | null,
@@ -35,7 +38,7 @@ export const resolveRunDurationMs = (run: {
     resolveTimestampMs(run.finishedAt) ??
     resolveTimestampMs(run.failedAt) ??
     resolveTimestampMs(run.suspendedAt) ??
-    (run.status === 'running' ? Date.now() : null);
+    (run.status === EWorkflowRunStatus.RUNNING ? Date.now() : null);
 
   if (endAtMs == null) {
     return null;

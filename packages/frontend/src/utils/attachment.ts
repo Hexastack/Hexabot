@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { IAttachment } from "@/types/attachment.types";
+import type { Attachment } from "@hexabot-ai/types";
+
 import { FileType, TAttachmentForeignKey } from "@/types/message.types";
 
 import { buildURL } from "./URL";
@@ -61,7 +62,7 @@ export function getFileType(mimeType: string): FileType {
 
 export function getAttachmentDownloadUrl(
   baseUrl: string,
-  attachment: TAttachmentForeignKey | IAttachment,
+  attachment: TAttachmentForeignKey | Attachment,
 ) {
   return "id" in attachment && attachment.id
     ? buildURL(baseUrl, `/attachment/download/${attachment.id}`)

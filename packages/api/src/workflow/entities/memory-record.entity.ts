@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { memoryRecordSchema, memoryRecordFullSchema } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -21,11 +22,7 @@ import { UserProfileDto } from '@/user/dto/user-profile.dto';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import {
-  MemoryRecord,
-  MemoryRecordDto,
-  MemoryRecordFull,
-} from '../dto/memory-record.dto';
+import { MemoryRecordDto } from '../dto/memory-record.dto';
 import type { MemoryValue } from '../types';
 
 import { MemoryDefinitionOrmEntity } from './memory-definition.entity';
@@ -36,9 +33,9 @@ import { WorkflowOrmEntity } from './workflow.entity';
 @Index(['definition', 'owner', 'workflow', 'thread', 'run'])
 @Index(['expiresAt'])
 export class MemoryRecordOrmEntity extends BaseOrmEntity<MemoryRecordDto> {
-  plainCls = MemoryRecord;
+  plainCls = memoryRecordSchema;
 
-  fullCls = MemoryRecordFull;
+  fullCls = memoryRecordFullSchema;
 
   /** Memory definition that governs the structure and scope of this record. */
   @ManyToOne(() => MemoryDefinitionOrmEntity, {

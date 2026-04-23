@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Workflow } from '@hexabot-ai/types';
+
 import { I18nService } from '@/i18n/services/i18n.service';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { Workflow } from '@/workflow/dto/workflow.dto';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 import { WorkflowType } from '@/workflow/types';
 

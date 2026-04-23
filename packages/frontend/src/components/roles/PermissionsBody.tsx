@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Permission, Role } from "@hexabot-ai/types";
 import {
   Accordion,
   AccordionDetails,
@@ -26,11 +27,17 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IPermission, IPermissionAttributes } from "@/types/permission.types";
-import { IRole } from "@/types/role.types";
 
-const DEFAULT_PAYLOAD: IPermissionAttributes = {
+type PermissionAttributes = EntityAttributes<EntityType.PERMISSION>;
+
+type PermissionDraft = Omit<PermissionAttributes, "action" | "relation"> & {
+  action: PermissionAttributes["action"] | "";
+  relation: PermissionAttributes["relation"] | "";
+};
+
+const DEFAULT_PAYLOAD: PermissionDraft = {
   action: "",
   model: "",
   relation: "",
@@ -58,7 +65,7 @@ const AccordionModelHead = () => (
   </Grid>
 );
 
-export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
+export const PermissionsBody: FC<ComponentFormProps<Role>> = ({
   data: { defaultValues: role },
   Wrapper = Fragment,
   WrapperProps,
@@ -98,8 +105,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
     options,
   );
   const [expanded, setExpanded] = useState<string | undefined>();
-  const [payload, setPayload] =
-    useState<IPermissionAttributes>(DEFAULT_PAYLOAD);
+  const [payload, setPayload] = useState<PermissionDraft>(DEFAULT_PAYLOAD);
   const reset = () => setPayload(DEFAULT_PAYLOAD);
   const handleChange = (panel: string) => () => {
     setExpanded(panel === expanded ? "" : panel);
@@ -151,12 +157,12 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
               }}
             >
               <AccordionModelHead />
-              {model.permissions
-                ?.map((p) => getPermissionFromCache(p))
+              {((model as { permissions?: string[] }).permissions ?? [])
+                .map((p) => getPermissionFromCache(p))
                 ?.filter(
                   (permission) => permission && permission.role === role?.id,
                 )
-                .map((p) => p as IPermission)
+                .map((p) => p as Permission)
                 .map(({ id, action, relation }, index) => {
                   return (
                     <>
@@ -207,12 +213,12 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                     color="primary"
                     variant="contained"
                     onClick={() => {
-                      if (role?.id)
+                      if (role?.id && payload.action && payload.relation)
                         createPermission({
                           ...payload,
                           role: role.id,
                           model: model.id,
-                        });
+                        } as PermissionAttributes);
                       reset();
                     }}
                     disabled={!payload.action || !payload.relation}
@@ -230,7 +236,8 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                       if (e.target.value)
                         setPayload((currentPayload) => ({
                           ...currentPayload,
-                          action: e.target.value,
+                          action: e.target
+                            .value as PermissionAttributes["action"],
                         }));
                     }}
                   >
@@ -250,7 +257,8 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                       if (e.target.value)
                         setPayload((currentPayload) => ({
                           ...currentPayload,
-                          relation: e.target.value,
+                          relation: e.target
+                            .value as PermissionAttributes["relation"],
                         }));
                     }}
                   >

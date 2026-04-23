@@ -5,10 +5,10 @@
  */
 
 import type { WorkflowDefinition } from '@hexabot-ai/agentic';
+import { WorkflowRunFull } from '@hexabot-ai/types';
 import { Injectable, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 
-import { WorkflowRunFull } from '../dto/workflow-run.dto';
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
 import { MemoryService } from '../services/memory.service';
 import { WorkflowType } from '../types';
@@ -62,9 +62,13 @@ export class WorkflowContextFactory {
 
     const ctx = await this.moduleRef.resolve<WorkflowRuntimeContext<E>>(Ctx);
     const memoryDefinitionIds = this.extractMemoryDefinitionIds(definition);
+    const triggeredById = run.triggeredBy?.id;
+    if (!triggeredById) {
+      throw new Error(`Workflow run ${run.id} is missing triggeredBy`);
+    }
     const memory = await this.memoryService.buildStore(
       {
-        ownerId: run.triggeredBy.id,
+        ownerId: triggeredById,
         workflowId: run.workflow.id,
         threadId: run.thread?.id ?? null,
         runId: run.id,

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { User } from '@hexabot-ai/types';
 import { NotFoundException } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
@@ -18,7 +19,6 @@ import { MailerServiceProvider } from '@/utils/test/providers/mailer-service.pro
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { User } from '../dto/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 
 import { PasswordResetService } from './passwordReset.service';

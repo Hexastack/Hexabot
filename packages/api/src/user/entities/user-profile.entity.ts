@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { userProfileStubSchema } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -18,9 +19,9 @@ import {
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { EnumColumn } from '@/database';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { AsRelation, TDto } from '@/utils';
+import { AsRelation, TZodDto } from '@/utils';
 
-import { UserProfileDto, UserProfileStub } from '../dto/user-profile.dto';
+import { UserProfileDto } from '../dto/user-profile.dto';
 
 export enum EUserProfileType {
   SubscriberOrmEntity = 'SubscriberOrmEntity',
@@ -34,11 +35,13 @@ export enum EUserProfileType {
 @Index(['firstName'])
 @Index(['lastName'])
 export class UserProfileOrmEntity<
-  Dto extends TDto = UserProfileDto,
+  Dto extends TZodDto = UserProfileDto,
 > extends BaseOrmEntity<Dto> {
-  plainCls = UserProfileStub;
+  plainCls: Dto['transformers']['plain'] =
+    userProfileStubSchema as Dto['transformers']['plain'];
 
-  fullCls = UserProfileStub;
+  fullCls: Dto['transformers']['full'] =
+    userProfileStubSchema as Dto['transformers']['full'];
 
   @Column()
   firstName: string;

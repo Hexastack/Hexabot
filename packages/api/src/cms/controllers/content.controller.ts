@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Content } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -25,11 +26,7 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  Content,
-  ContentCreateDto,
-  ContentUpdateDto,
-} from '../dto/content.dto';
+import { ContentCreateDto, ContentUpdateDto } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 import { RagService } from '../services/rag.service';
 import { RagHit, RagMode, RagQueryOptions } from '../types/rag';

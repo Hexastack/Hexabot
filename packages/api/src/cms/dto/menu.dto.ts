@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { menuFullSchema, menuSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsEnum,
   IsNotEmpty,
@@ -16,41 +16,9 @@ import {
 } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import { MenuType } from '../enums/menu-type.enum';
-
-@Exclude()
-export class MenuStub extends BaseStub {
-  @Expose()
-  title!: string;
-
-  @Expose()
-  type!: MenuType;
-
-  @Expose()
-  payload?: string | null;
-
-  @Expose()
-  url?: string | null;
-}
-
-@Exclude()
-export class Menu extends MenuStub {
-  @Expose({ name: 'parentId' })
-  parent?: string | null;
-}
-
-@Exclude()
-export class MenuFull extends MenuStub {
-  @Expose()
-  @Type(() => Menu)
-  parent?: Menu | null;
-
-  @Expose()
-  @Type(() => Menu)
-  children?: Menu[];
-}
 
 export class MenuCreateDto {
   @ApiProperty({ description: 'Menu title', type: String })
@@ -95,8 +63,8 @@ export class MenuQueryDto extends PartialType(MenuCreateDto) {}
 
 export type MenuDto = TDto<
   {
-    plain: typeof Menu;
-    full: typeof MenuFull;
+    plain: typeof menuSchema;
+    full: typeof menuFullSchema;
   },
   {
     create: MenuCreateDto;

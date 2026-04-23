@@ -18,7 +18,7 @@ import { useConfig } from "@/hooks/useConfig";
 import { EntityType } from "@/services/types";
 
 interface AvatarProps extends MuiAvatarProps {
-  subscriberId?: string;
+  subscriberId?: string | null;
   size?: number;
 }
 
@@ -51,7 +51,7 @@ export const Avatar = ({
   subscriberId = "",
   ...rest
 }: AvatarProps) => {
-  const avatarSrc = useSubscriberSrc(subscriberId);
+  const avatarSrc = useSubscriberSrc(subscriberId || "");
   const sx = useMemo(
     () =>
       size ? { ...rest.sx, width: size, height: size } : (rest.sx as SxProps),

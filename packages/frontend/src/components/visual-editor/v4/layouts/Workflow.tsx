@@ -21,6 +21,7 @@ import {
   type WorkflowGraphHandle,
   type WorkflowSelectionSnapshot,
 } from "@hexabot-ai/graph";
+import type { Workflow as WorkflowEntity } from "@hexabot-ai/types";
 import { Box, Button, Stack, styled } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
 import type { Node, NodeMouseHandler } from "@xyflow/react";
@@ -44,7 +45,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
-import type { IWorkflow } from "@/types/workfow.types";
 
 import { WorkflowFormDialog } from "../components/forms/WorkflowFormDialog";
 import {
@@ -406,7 +406,7 @@ export const Workflow = () => {
       { maxWidth: "lg" },
     );
   };
-  const handleEditWorkflow = (workflowToEdit: IWorkflow) => {
+  const handleEditWorkflow = (workflowToEdit: WorkflowEntity) => {
     dialogs.open(
       WorkflowFormDialog,
       {

@@ -4,17 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowVersion, Workflow } from "@hexabot-ai/types";
 import { Stack, Typography } from "@mui/material";
 
 import { VersionChip } from "@/app-components/displays/VersionChip";
 import { WorkflowBadgeWithTitle } from "@/app-components/workflow/WorkflowBadgeWithTitle";
 import { useTranslate } from "@/hooks/useTranslate";
-import type { IWorkflowVersion } from "@/types/workfow-version.types";
-import type { IWorkflow } from "@/types/workfow.types";
 
 type RunMetaSummaryProps = {
-  workflow?: IWorkflow | null;
-  workflowVersion?: IWorkflowVersion | null;
+  workflow?: Workflow | null;
+  workflowVersion?: WorkflowVersion | null;
 };
 
 export const RunMetaSummary = ({

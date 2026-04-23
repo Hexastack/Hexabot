@@ -4,6 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  userFullSchema,
+  userSchema,
+  type UserProvider,
+} from '@hexabot-ai/types';
 import { PickType } from '@nestjs/mapped-types';
 import {
   ApiProperty,
@@ -11,7 +16,6 @@ import {
   OmitType,
   PartialType,
 } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
@@ -23,106 +27,11 @@ import {
   IsString,
 } from 'class-validator';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
-import {
-  Subscriber,
-  SubscriberCreateDto,
-  SubscriberFull,
-  SubscriberStub,
-} from '@/chat/dto/subscriber.dto';
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
-import { UserProvider } from '../types/user-provider.type';
-
-import { Role } from './role.dto';
 import { UserProfileCreateDto } from './user-profile.dto';
-
-@Exclude()
-export class UserStub extends SubscriberStub {
-  @Expose()
-  username!: string;
-
-  @Expose()
-  email!: string;
-
-  @Expose()
-  sendEmail!: boolean;
-
-  @Expose()
-  state!: boolean;
-
-  @Expose()
-  resetCount!: number;
-
-  @Expose()
-  resetToken!: string | null;
-
-  @Expose()
-  provider?: UserProvider;
-}
-
-@Exclude()
-export class User extends Subscriber {
-  @Expose()
-  username!: string;
-
-  @Expose()
-  email!: string;
-
-  @Expose()
-  sendEmail!: boolean;
-
-  @Expose()
-  state!: boolean;
-
-  @Expose()
-  resetCount!: number;
-
-  @Expose()
-  resetToken!: string | null;
-
-  @Expose()
-  provider?: UserProvider;
-
-  @Expose({ name: 'roleIds' })
-  roles: string[];
-
-  @Expose({ name: 'avatarId' })
-  avatar: string;
-}
-
-@Exclude()
-export class UserFull extends SubscriberFull {
-  @Expose()
-  username!: string;
-
-  @Expose()
-  email!: string;
-
-  @Expose()
-  sendEmail!: boolean;
-
-  @Expose()
-  state!: boolean;
-
-  @Expose()
-  resetCount!: number;
-
-  @Expose()
-  resetToken!: string | null;
-
-  @Expose()
-  provider?: UserProvider;
-
-  @Expose()
-  @Type(() => Role)
-  roles: Role[];
-
-  @Expose()
-  @Type(() => Attachment)
-  avatar: Attachment | null;
-}
 
 export class UserCreateDto extends UserProfileCreateDto {
   @ApiProperty({ description: 'User username', type: String })
@@ -243,8 +152,8 @@ export class UserRequestResetDto extends PickType(UserCreateDto, ['email']) {}
 
 export type UserDto = TDto<
   {
-    plain: typeof User;
-    full: typeof UserFull;
+    plain: typeof userSchema;
+    full: typeof userFullSchema;
   },
   {
     create: UserCreateDto;

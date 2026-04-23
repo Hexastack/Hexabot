@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { User, Subscriber } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import mime from 'mime';
@@ -16,7 +17,6 @@ import {
   AttachmentFile,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { User } from '@/user/dto/user.dto';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { UserService } from '@/user/services/user.service';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
@@ -26,7 +26,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { Subscriber } from '../dto/subscriber.dto';
 import { LabelGroupRepository } from '../repositories/label-group.repository';
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
@@ -579,6 +578,9 @@ describe('SubscriberService (TypeORM)', () => {
 
       expect(updatedSubscriber.assignedTo).not.toBeNull();
       expect(updatedSubscriber.assignedAt).not.toBeNull();
+      if (!profile.foreignId) {
+        throw new Error('Expected fixture subscriber to have a foreignId');
+      }
 
       const updated = await subscriberService.handBackByForeignId(
         profile.foreignId,

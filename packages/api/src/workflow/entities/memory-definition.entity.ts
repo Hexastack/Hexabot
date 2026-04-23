@@ -4,6 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  memoryDefinitionSchema,
+  memoryDefinitionFullSchema,
+} from '@hexabot-ai/types';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { Column, Entity, Index } from 'typeorm';
 
@@ -11,20 +15,16 @@ import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import {
-  MemoryDefinition,
-  MemoryDefinitionDto,
-  MemoryDefinitionFull,
-} from '../dto/memory-definition.dto';
+import { MemoryDefinitionDto } from '../dto/memory-definition.dto';
 import { MemoryScope } from '../types';
 
 @Entity({ name: 'memory_definitions' })
 @Index(['name'], { unique: true })
 @Index(['slug'], { unique: true })
 export class MemoryDefinitionOrmEntity extends BaseOrmEntity<MemoryDefinitionDto> {
-  plainCls = MemoryDefinition;
+  plainCls = memoryDefinitionSchema;
 
-  fullCls = MemoryDefinitionFull;
+  fullCls = memoryDefinitionFullSchema;
 
   /** Human-friendly label for the memory definition. */
   @Column({ type: 'varchar', length: 255 })

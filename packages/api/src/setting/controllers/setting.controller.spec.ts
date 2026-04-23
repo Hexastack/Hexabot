@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Setting } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 import { I18nContext } from 'nestjs-i18n';
 
@@ -20,7 +21,6 @@ import {
   CONTACT_SETTINGS_GROUP,
   contactSettingsSchema,
 } from '../default.settings';
-import { Setting } from '../dto/setting.dto';
 import { RuntimeSettingsService } from '../services/runtime-settings.service';
 import { SettingService } from '../services/setting.service';
 

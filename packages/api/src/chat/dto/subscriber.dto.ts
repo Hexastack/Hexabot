@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { subscriberFullSchema, subscriberSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
@@ -15,74 +15,13 @@ import {
   IsString,
 } from 'class-validator';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
 import { ChannelName } from '@/channel/types';
-import { UserProfileAssignedStub } from '@/user/dto/assigned-profile.dto';
-import {
-  UserProfileCreateDto,
-  UserProfileStub,
-} from '@/user/dto/user-profile.dto';
+import { UserProfileCreateDto } from '@/user/dto/user-profile.dto';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { TDto } from '@/utils/types/dto.types';
 
 import { channelDataSchema, SubscriberChannelData } from '../types/channel';
-
-import { Label } from './label.dto';
-
-@Exclude()
-export class SubscriberStub extends UserProfileStub {
-  @Expose()
-  locale: string | null;
-
-  @Expose()
-  gender: string | null;
-
-  @Expose()
-  country: string | null;
-
-  @Expose()
-  foreignId: string;
-
-  @Expose()
-  assignedAt: Date | null;
-
-  @Expose()
-  lastvisit: Date | null;
-
-  @Expose()
-  retainedFrom: Date | null;
-
-  @Expose()
-  channel!: SubscriberChannelData<ChannelName>;
-}
-
-@Exclude()
-export class Subscriber extends SubscriberStub {
-  @Expose({ name: 'labelIds' })
-  labels!: string[];
-
-  @Expose({ name: 'assignedToId' })
-  assignedTo: string | null;
-
-  @Expose({ name: 'avatarId' })
-  avatar: string | null;
-}
-
-@Exclude()
-export class SubscriberFull extends SubscriberStub {
-  @Expose()
-  @Type(() => Label)
-  labels!: Label[];
-
-  @Expose()
-  @Type(() => UserProfileAssignedStub)
-  assignedTo: UserProfileAssignedStub | null;
-
-  @Expose()
-  @Type(() => Attachment)
-  avatar: Attachment | null;
-}
 
 export class SubscriberCreateDto extends UserProfileCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber locale', type: String })
@@ -113,7 +52,7 @@ export class SubscriberCreateDto extends UserProfileCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber foreign id', type: String })
   @IsOptional()
   @IsString()
-  foreignId: string;
+  foreignId: string | null;
 
   @ApiProperty({ description: 'Subscriber labels', type: Array })
   @IsArray()
@@ -178,8 +117,8 @@ export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}
 
 export type SubscriberDto = TDto<
   {
-    plain: typeof Subscriber;
-    full: typeof SubscriberFull;
+    plain: typeof subscriberSchema;
+    full: typeof subscriberFullSchema;
   },
   {
     create: SubscriberCreateDto;

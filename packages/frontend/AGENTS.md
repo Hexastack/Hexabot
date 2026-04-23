@@ -41,6 +41,7 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot admi
 - CRUD hooks in `packages/frontend/src/hooks/crud/*` are the default data access pattern; they normalize responses with `normalizr` and cache via TanStack Query.
 - Normalization schemas live in `packages/frontend/src/services/entities.ts` and convert date fields to `Date`.
 - Query cache keys are standardized via `QueryType` and `EntityType` (`packages/frontend/src/services/types.ts`).
+- API entity output contracts are maintained in `@hexabot-ai/types` (`packages/types`); keep frontend normalization and DTO assumptions aligned with those schemas.
 
 ## State, permissions, and auth
 - `AuthProvider` loads the current user on boot and performs redirections for public routes.

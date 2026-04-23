@@ -4,53 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType, Format } from "@/services/types";
+import type {
+  Subscriber as SharedSubscriber,
+  SubscriberStub as SharedSubscriberStub,
+} from "@hexabot-ai/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { ILabel } from "./label.types";
-import { IUser } from "./user.types";
-
-interface Channel {
-  name: string;
-  isSocket?: boolean;
-}
-
-export interface ISubscriberAttributes {
-  firstName: string;
-  lastName: string;
-  locale: string;
-  gender: string;
-  labels: string[];
-  assignedTo?: string | null;
-  assignedAt?: Date | null;
-  lastvisit?: Date;
-  retainedFrom?: Date;
-  channel: Channel;
-  timezone?: number;
-  language: string;
-  country?: string;
-  foreignId?: string;
-}
-
-export interface ISubscriberFilters {
-  firstName: string;
-  lastName: string;
-  channel: Channel;
-}
-
-export interface ISubscriberStub
-  extends IBaseSchema,
-    OmitPopulate<ISubscriberAttributes, EntityType.SUBSCRIBER> {
+export type SubscriberStub = SharedSubscriberStub & {
   fullName?: string;
-}
+};
 
-export interface ISubscriber extends ISubscriberStub, IFormat<Format.BASIC> {
-  labels: string[];
-  assignedTo: string | null;
-  avatar: string | null;
-}
-
-export interface ISubscriberFull extends ISubscriberStub, IFormat<Format.FULL> {
-  labels: ILabel[];
-  assignedTo?: IUser;
-}
+export type Subscriber = SharedSubscriber & {
+  fullName?: string;
+};

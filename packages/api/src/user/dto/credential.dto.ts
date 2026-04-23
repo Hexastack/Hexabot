@@ -4,33 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { credentialFullSchema, credentialSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
-
-import { User } from './user.dto';
-
-@Exclude()
-export class CredentialStub extends BaseStub {
-  @Expose()
-  name!: string;
-}
-
-@Exclude()
-export class Credential extends CredentialStub {
-  @Expose({ name: 'ownerId' })
-  owner!: string;
-}
-
-@Exclude()
-export class CredentialFull extends CredentialStub {
-  @Expose()
-  @Type(() => User)
-  owner!: User | null;
-}
+import { TDto } from '@/utils/types/dto.types';
 
 export class CredentialCreateDto {
   @ApiProperty({
@@ -63,8 +42,8 @@ export class CredentialUpdateDto extends PartialType(CredentialCreateDto) {}
 
 export type CredentialDto = TDto<
   {
-    plain: typeof Credential;
-    full: typeof CredentialFull;
+    plain: typeof credentialSchema;
+    full: typeof credentialFullSchema;
   },
   {
     create: CredentialCreateDto;

@@ -6,10 +6,10 @@
 
 import { randomUUID } from 'crypto';
 
+import { Dummy } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 import { In } from 'typeorm';
 
-import { Dummy } from '@/utils/test/dummy/dto/dummy.dto';
 import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
 import { DummyService } from '@/utils/test/dummy/services/dummy.service';
 import {

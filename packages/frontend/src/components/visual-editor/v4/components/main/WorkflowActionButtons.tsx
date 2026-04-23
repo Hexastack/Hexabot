@@ -4,15 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Workflow } from "@hexabot-ai/types";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { MoreHorizontal, Pencil } from "lucide-react";
 import type { MouseEvent } from "react";
 
-import type { IWorkflow } from "@/types/workfow.types";
-
 type WorkflowActionButtonsProps = {
-  workflow: IWorkflow;
-  onEdit?: (workflow: IWorkflow) => void;
+  workflow: Workflow;
+  onEdit?: (workflow: Workflow) => void;
   onOpenMenu: (event: MouseEvent<HTMLElement>, flowId: string) => void;
   renameLabel: string;
   moreLabel: string;

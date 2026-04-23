@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Attachment } from "@hexabot-ai/types";
 import {
   Button,
   Card,
@@ -25,13 +26,12 @@ import { useGet } from "@/hooks/crud/useGet";
 import useFormattedFileSize from "@/hooks/useFormattedFileSize";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { IAttachment } from "@/types/attachment.types";
 
 const AttachmentPreview = ({
   attachment,
   size = 128,
 }: {
-  attachment: IAttachment;
+  attachment: Attachment;
   size: number;
 }) => {
   const isImage = attachment?.type.startsWith("image");
@@ -62,7 +62,7 @@ type AttachmentThumbnailProps = {
   id: string;
   size?: number;
   format: "small" | "basic" | "full";
-  onChange?: (attachment: IAttachment | null) => void;
+  onChange?: (attachment: Attachment | null) => void;
 };
 
 const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({

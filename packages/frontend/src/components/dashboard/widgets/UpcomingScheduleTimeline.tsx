@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowType } from "@hexabot-ai/types";
 import { Timeline } from "@mui/lab";
 import { Box, Grid, Paper, Typography } from "@mui/material";
 
@@ -12,7 +13,6 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { WorkflowType } from "@/types/workfow.types";
 import { getRemainingTime } from "@/utils/date";
 
 import { DashboardTimelineItem } from "../components/DashboardTimelineItem";

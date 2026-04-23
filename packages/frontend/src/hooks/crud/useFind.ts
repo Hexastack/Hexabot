@@ -41,7 +41,7 @@ export const useFind = <
   const api = useEntityApiClient(entity);
   const normalizeAndCache = useNormalizeAndCache<string[]>(entity);
   const getFromCache = useGetFromCache(entity);
-  const countQuery = useCount(entity, params?.where, {
+  const countQuery = useCount(entity, params?.where as THook<TP>["filters"], {
     enabled: hasCount,
     routeParams,
   });

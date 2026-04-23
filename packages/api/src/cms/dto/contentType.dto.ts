@@ -4,30 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
+import { contentTypeFullSchema, contentTypeSchema } from '@hexabot-ai/types';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { z } from 'zod';
 
 import { FieldType } from '@/setting/types';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
-
-@Exclude()
-export class ContentTypeStub extends BaseStub {
-  @Expose()
-  name!: string;
-
-  @Expose()
-  schema!: JsonSchema;
-}
-
-@Exclude()
-export class ContentType extends ContentTypeStub {}
-
-@Exclude()
-export class ContentTypeFull extends ContentType {}
+import { TDto } from '@/utils/types/dto.types';
 
 export class ContentField {
   @IsString()
@@ -65,8 +50,8 @@ export class ContentTypeUpdateDto extends PartialType(ContentTypeCreateDto) {}
 
 export type ContentTypeDto = TDto<
   {
-    plain: typeof ContentType;
-    full: typeof ContentTypeFull;
+    plain: typeof contentTypeSchema;
+    full: typeof contentTypeFullSchema;
   },
   {
     create: ContentTypeCreateDto;

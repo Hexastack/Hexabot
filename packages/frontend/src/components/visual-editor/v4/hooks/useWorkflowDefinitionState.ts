@@ -5,11 +5,13 @@
  */
 
 import {
+  Workflow as WorkflowHelper,
   type WorkflowCompileOptions,
   type WorkflowDefinition,
-  Workflow as WorkflowHelper,
   validateWorkflow,
 } from "@hexabot-ai/agentic";
+import { WorkflowVersionAction } from "@hexabot-ai/types";
+import type { Workflow } from "@hexabot-ai/types";
 import debounce from "@mui/utils/debounce";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -25,13 +27,11 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { EntityType, QueryType } from "@/services/types";
-import { WorkflowVersionAction } from "@/types/workfow-version.types";
-import type { IWorkflow } from "@/types/workfow.types";
 
 import { getDefinition } from "../utils/workflow-definition.utils";
 
 type UseWorkflowDefinitionStateArgs = {
-  workflow?: IWorkflow;
+  workflow?: Workflow;
 };
 
 export const useWorkflowDefinitionState = ({
@@ -47,10 +47,10 @@ export const useWorkflowDefinitionState = ({
       routeParams: workflow ? { id: workflow.id } : undefined,
     });
   const updateWorkflowCache = useCallback(
-    (updates: Partial<IWorkflow>) => {
+    (updates: Partial<Workflow>) => {
       queryClient.setQueryData(
         [QueryType.item, EntityType.WORKFLOW, workflow?.id],
-        (cached?: IWorkflow) => {
+        (cached?: Workflow) => {
           if (!cached) {
             return workflow ? { ...workflow, ...updates } : cached;
           }
@@ -76,7 +76,7 @@ export const useWorkflowDefinitionState = ({
     },
   );
   const { mutate: publish, isPending: isPublishing } = useTanstackMutation<
-    IWorkflow,
+    Workflow,
     Error,
     void
   >({
@@ -95,7 +95,7 @@ export const useWorkflowDefinitionState = ({
     },
   });
   const { mutate: publishByVersionId, isPending: isPublishingVersion } =
-    useTanstackMutation<IWorkflow, Error, string>({
+    useTanstackMutation<Workflow, Error, string>({
       mutationFn: async (versionId) => {
         if (!workflow?.id) {
           throw new Error("Workflow ID is required to publish");
@@ -111,7 +111,7 @@ export const useWorkflowDefinitionState = ({
       },
     });
   const { mutate: unpublish, isPending: isUnpublishing } = useTanstackMutation<
-    IWorkflow,
+    Workflow,
     Error,
     void
   >({

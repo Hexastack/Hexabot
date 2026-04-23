@@ -6,10 +6,10 @@
 
 // Import required modules and configurations
 
+import type { User } from '@hexabot-ai/types';
 import { Socket } from 'socket.io';
 
 import { config } from '@/config';
-import { User } from '@/user/dto/user.dto';
 
 import { IOIncomingMessage } from '../pipes/io-message.pipe';
 

@@ -5,6 +5,7 @@
  */
 
 import { WorkflowRunStatus } from "@hexabot-ai/agentic";
+import { WorkflowType } from "@hexabot-ai/types";
 import { useCallback, useMemo } from "react";
 import {
   NavigateOptions,
@@ -15,8 +16,6 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-
-import { WorkflowType } from "@/types/workfow.types";
 
 export type QueryValue = string | string[] | undefined;
 

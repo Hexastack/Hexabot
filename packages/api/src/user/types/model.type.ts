@@ -4,32 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-export type TModel =
-  | 'contenttype'
-  | 'content'
-  | 'nlpentity'
-  | 'nlpsampleentity'
-  | 'nlpsample'
-  | 'nlpvalue'
-  | 'setting'
-  | 'attachment'
-  | 'user'
-  | 'role'
-  | 'permission'
-  | 'label'
-  | 'labelgroup'
-  | 'message'
-  | 'thread'
-  | 'subscriber'
-  | 'language'
-  | 'translation'
-  | 'stats'
-  | 'menu'
-  | 'workflow'
-  | 'workflowversion'
-  | 'workflowrun'
-  | 'memorydefinition'
-  | 'memoryrecord'
-  | 'mcpserver'
-  | 'model'
-  | 'credential';
+export type { TModel } from '@hexabot-ai/types';

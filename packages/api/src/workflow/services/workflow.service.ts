@@ -5,6 +5,7 @@
  */
 
 import { WorkflowEventMap } from '@hexabot-ai/agentic';
+import { WorkflowFull, Workflow } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Injectable,
@@ -27,7 +28,7 @@ import {
   WebsocketGateway,
 } from '@/websocket';
 
-import { Workflow, WorkflowFull, WorkflowUpdateDto } from '../dto/workflow.dto';
+import { WorkflowUpdateDto } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType } from '../types';

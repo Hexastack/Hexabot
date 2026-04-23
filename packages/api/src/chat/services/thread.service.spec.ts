@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Thread } from '@/chat/dto/thread.dto';
+import { Thread } from '@hexabot-ai/types';
+
 import { ThreadRepository } from '@/chat/repositories/thread.repository';
 
 import { ThreadService } from './thread.service';

@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
+import type { MemoryDefinition } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
 import { MemoryStick, Plus } from "lucide-react";
 
@@ -18,8 +20,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { IMemoryDefinition } from "@/types/memory-definition.types";
-import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { MemoryDefinitionFormDialog } from "./MemoryDefinitionFormDialog";
@@ -39,7 +39,7 @@ export const MemoryDefinitions = () => {
       },
     },
   );
-  const actionColumns = useActionColumns<IMemoryDefinition>(
+  const actionColumns = useActionColumns<MemoryDefinition>(
     EntityType.MEMORY_DEFINITION,
     [
       {
@@ -51,7 +51,7 @@ export const MemoryDefinitions = () => {
             { maxWidth: "lg" },
           );
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
@@ -62,12 +62,12 @@ export const MemoryDefinitions = () => {
             deleteMemoryDefinition(id);
           }
         },
-        requires: [PermissionAction.DELETE],
+        requires: [Action.DELETE],
       },
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<IMemoryDefinition>[] = [
+  const columns: GridColDef<MemoryDefinition>[] = [
     { field: "id", headerName: "ID" },
     {
       flex: 1,
@@ -127,7 +127,7 @@ export const MemoryDefinitions = () => {
       entity={EntityType.MEMORY_DEFINITION}
       buttons={[
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           children: t("button.add"),
           startIcon: <Plus />,
           onClick: () =>

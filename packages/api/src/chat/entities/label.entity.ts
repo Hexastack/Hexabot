@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { labelSchema, labelFullSchema } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -18,7 +19,7 @@ import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import { Label, LabelDto, LabelFull } from '../dto/label.dto';
+import { LabelDto } from '../dto/label.dto';
 
 import { LabelGroupOrmEntity } from './label-group.entity';
 import { SubscriberOrmEntity } from './subscriber.entity';
@@ -27,9 +28,9 @@ import { SubscriberOrmEntity } from './subscriber.entity';
 @Index(['title'], { unique: true })
 @Index(['name'], { unique: true })
 export class LabelOrmEntity extends BaseOrmEntity<LabelDto> {
-  plainCls = Label;
+  plainCls = labelSchema;
 
-  fullCls = LabelFull;
+  fullCls = labelFullSchema;
 
   @Column()
   title!: string;

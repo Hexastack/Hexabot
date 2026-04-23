@@ -9,6 +9,7 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot API.
 - Feature modules: `packages/api/src/*` (each folder is a Nest module such as `workflow`, `chat`, `cms`, `user`).
 - Extensions: `packages/api/src/extensions/*` (built-in actions, channels, helpers; exported from `packages/api/src/extensions/index.ts`).
 - Shared infra: `packages/api/src/config`, `packages/api/src/database`, `packages/api/src/logger`, `packages/api/src/websocket`.
+- Shared contract package: `@hexabot-ai/types` (`packages/types/src/*`) for zod schemas and inferred entity output types.
 
 ## Runtime architecture
 - Global prefix `/api` and body parsing (raw body capture) are set in `packages/api/src/bootstrap.ts`.
@@ -61,4 +62,5 @@ Use this file as the entrypoint for AI coding agents working on the Hexabot API.
 - Path alias `@/` maps to `packages/api/src` (see `packages/api/tsconfig.json`); avoid relative path ladders.
 - ESLint enforces import ordering and disallows `console.*`; prefer `LoggerService`.
 - DTO validation relies on class-validator + `ValidationPipe` (whitelist + transform); keep DTOs in sync with entities.
+- Keep API output contract changes aligned with `@hexabot-ai/types` schemas and update `packages/types/README.md` when exported contracts change.
 - Swagger docs are available at `/docs` in non-production or via `pnpm --filter @hexabot-ai/api run doc`.

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Setting } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 import { z } from 'zod';
 
@@ -19,7 +20,6 @@ import {
   CONTACT_SETTINGS_GROUP,
   contactSettingsSchema,
 } from '../default.settings';
-import { Setting } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
 
 import { RuntimeSettingsService } from './runtime-settings.service';
@@ -32,8 +32,7 @@ describe('SettingService', () => {
   let module: TestingModule;
   const createdIds: string[] = [];
   const makeSetting = (overrides: Partial<Setting>): Setting => {
-    const setting = new Setting();
-    Object.assign(setting, {
+    return {
       id: '',
       group: 'group',
       label: 'label',
@@ -42,9 +41,7 @@ describe('SettingService', () => {
       updatedAt: new Date(),
       subgroup: null,
       ...overrides,
-    });
-
-    return setting;
+    };
   };
 
   beforeAll(async () => {

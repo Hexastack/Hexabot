@@ -4,19 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
+import { settingSchema, settingFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index } from 'typeorm';
 
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { Setting, SettingDto } from '../dto/setting.dto';
+import { SettingDto } from '../dto/setting.dto';
 
 @Entity({ name: 'settings' })
 @Index(['group', 'label'])
 export class SettingOrmEntity extends BaseOrmEntity<SettingDto> {
-  plainCls = Setting;
+  plainCls = settingSchema;
 
-  fullCls = Setting;
+  fullCls = settingFullSchema;
 
   @Column()
   @Index()

@@ -106,6 +106,7 @@ describe('WorkflowVersionController (TypeORM)', () => {
         createdBy: userFixtureIds.admin,
       });
       createdWorkflowIds.add(created.id);
+      const createdBy = created.createdBy ?? userFixtureIds.admin;
 
       await workflowVersionService.commit({
         action: WorkflowVersionAction.update,
@@ -121,7 +122,7 @@ describe('WorkflowVersionController (TypeORM)', () => {
           flow: [{ do: 'send_greeting' }],
           outputs: { result: '=2' },
         }),
-        createdBy: created.createdBy,
+        createdBy,
       });
 
       const versions = await controller.findWorkflowVersions(created.id, {

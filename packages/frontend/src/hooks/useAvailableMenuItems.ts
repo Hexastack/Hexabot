@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { useMemo } from "react";
 
 import { TMenu } from "@/app-components/menus/DashboardSidebar/types/sidebar.types";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 import { useHasPermission } from "./useHasPermission";
 
@@ -20,7 +20,7 @@ import { useHasPermission } from "./useHasPermission";
  */
 const isMenuItemAllowed = (
   menuItem: TMenu,
-  hasPermission: (entityType: EntityType, action: PermissionAction) => boolean,
+  hasPermission: (entityType: EntityType, action: Action) => boolean,
 ): boolean => {
   const requiredPermissions = Object.entries(menuItem.requires || {});
 
@@ -40,7 +40,7 @@ const isMenuItemAllowed = (
  */
 const filterMenuItems = (
   menuItems: TMenu[],
-  hasPermission: (entityType: EntityType, action: PermissionAction) => boolean,
+  hasPermission: (entityType: EntityType, action: Action) => boolean,
 ): TMenu[] => {
   return menuItems
     .map((menuItem) => {

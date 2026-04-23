@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Thread, ThreadFull } from '@hexabot-ai/types';
 import { ArgumentMetadata } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
-import { Thread, ThreadFull } from '@/chat/dto/thread.dto';
 import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 import { ThreadService } from '@/chat/services/thread.service';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';

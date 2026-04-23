@@ -9,13 +9,13 @@ import {
   type TaskDefinition,
   type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
+import type { MemoryDefinition } from "@hexabot-ai/types";
 
 import type {
   GlobalsSchema,
   JsonSchemaLike,
 } from "@/app-components/inputs/JsonataFormulaField";
 import type { IAction } from "@/types/action.types";
-import type { IMemoryDefinition } from "@/types/memory-definition.types";
 import { isRecord } from "@/utils/object";
 
 type WorkflowTaskDefinition = TaskDefinition;
@@ -26,7 +26,7 @@ type BuildJsonataGlobalsSchemaArgs = {
   definition?: WorkflowDefinition;
   taskDefinitions?: Record<string, WorkflowTaskDefinition>;
   actionsByName: ReadonlyMap<string, IAction>;
-  memoryDefinitions?: IMemoryDefinition[];
+  memoryDefinitions?: MemoryDefinition[];
   inputSchema?: unknown;
 };
 
@@ -91,7 +91,7 @@ const getTaskOutputSchema = ({
   return createOpenObjectSchema();
 };
 const getMemoryContextSchema = (
-  memoryDefinitions: IMemoryDefinition[] = [],
+  memoryDefinitions: MemoryDefinition[] = [],
 ): JsonSchemaLike => {
   const memoryProperties = memoryDefinitions.reduce<
     Record<string, JsonSchemaLike>
@@ -115,7 +115,7 @@ const getMemoryContextSchema = (
   };
 };
 const getContextSchema = (
-  memoryDefinitions: IMemoryDefinition[] = [],
+  memoryDefinitions: MemoryDefinition[] = [],
 ): JsonSchemaLike => ({
   type: "object",
   properties: {

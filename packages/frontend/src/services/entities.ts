@@ -7,8 +7,8 @@
 import { schema } from "normalizr";
 
 import { IBaseSchema } from "@/types/base.types";
-import { ISubscriberStub } from "@/types/subscriber.types";
-import { IUserStub } from "@/types/user.types";
+import { SubscriberStub } from "@/types/subscriber.types";
+import { UserStub } from "@/types/user.types";
 import { applyFullNameDerivedFields } from "@/utils/full-name.utils";
 
 import { EntityType } from "./types";
@@ -41,7 +41,7 @@ export const UserEntity = new schema.Entity(
   },
   {
     idAttribute: ({ id }) => id,
-    processStrategy: <T extends IUserStub>(entity: T) =>
+    processStrategy: <T extends UserStub>(entity: T) =>
       processCommonStrategy(applyFullNameDerivedFields(entity)),
   },
 );
@@ -53,7 +53,7 @@ export const SubscriberEntity = new schema.Entity(
   },
   {
     idAttribute: ({ id }) => id,
-    processStrategy: <T extends ISubscriberStub>(entity: T) => {
+    processStrategy: <T extends SubscriberStub>(entity: T) => {
       if (entity.assignedAt) {
         entity.assignedAt = new Date(entity.assignedAt);
       }

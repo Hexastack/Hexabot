@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Workflow } from "@hexabot-ai/types";
 import { Box, Tooltip, Typography } from "@mui/material";
 import type { MouseEvent } from "react";
 
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import type { IWorkflow } from "@/types/workfow.types";
 import { formatSmartDate, normalizeDate } from "@/utils/date";
 
 import { WorkflowTypeBadge } from "../../../../../../app-components/workflow/WorkflowTypeBadge";
@@ -22,8 +22,8 @@ import { WorkflowSaveButton } from "./WorkflowSaveButton";
 import { WorkflowSettingsButton } from "./WorkflowSettingsButton";
 
 type WorkflowTitleBarProps = {
-  workflow: IWorkflow;
-  onEdit?: (workflow: IWorkflow) => void;
+  workflow: Workflow;
+  onEdit?: (workflow: Workflow) => void;
   onOpenMenu: (event: MouseEvent<HTMLElement>, flowId: string) => void;
   onOpenSettings?: () => void;
   settingsLabel: string;

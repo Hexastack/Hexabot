@@ -6,9 +6,7 @@
 
 import { IBaseSchema } from "./base.types";
 
-export interface IChannelAttributes {
+// @TODO: not all entities extend from IBaseSchema
+export interface IChannel extends IBaseSchema {
   name: string;
 }
-
-// @TODO: not all entities extend from IBaseSchema
-export interface IChannel extends IChannelAttributes, IBaseSchema {}
