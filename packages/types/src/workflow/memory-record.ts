@@ -18,24 +18,22 @@ import { memoryDefinitionSchema } from "./memory-definition";
 import { workflowSchema } from "./workflow";
 import { workflowRunSchema } from "./workflow-run";
 
-const isUserLike = (value: unknown): boolean => {
+const parseUserOrSubscriber = (value: unknown): unknown => {
   const record = toRecord(value);
-  if (!record) {
-    return false;
+
+  if (record?.type === "UserOrmEntity") {
+    return userSchema.parse(value);
+  }
+  if (record?.type === "SubscriberOrmEntity") {
+    return subscriberSchema.parse(value);
   }
 
-  return (
-    "username" in record ||
-    "email" in record ||
-    "sendEmail" in record ||
-    "roles" in record ||
-    "roleIds" in record
-  );
-};
-const parseUserOrSubscriber = (value: unknown): unknown => {
-  return isUserLike(value)
-    ? userSchema.parse(value)
-    : subscriberSchema.parse(value);
+  const parsedUser = userSchema.safeParse(value);
+  if (parsedUser.success) {
+    return parsedUser.data;
+  }
+
+  return subscriberSchema.parse(value);
 };
 const memoryRecordAliasMap = {
   definitionId: "definition",

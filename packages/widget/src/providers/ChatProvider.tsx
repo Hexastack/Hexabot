@@ -416,6 +416,7 @@ const ChatProvider: React.FC<{
         const { quickReplies, arrangedMessages, participantsList } =
           preprocessMessages(body.messages, participants, body.profile);
 
+        setProfile(body.profile);
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
         setParticipants(participantsList);
@@ -447,6 +448,8 @@ const ChatProvider: React.FC<{
     const { body } = await socket.get<SubscribeResponse>(
       getWebhookUrl({ first_name, last_name }),
     );
+
+    setProfile(body.profile);
 
     return body;
   };
