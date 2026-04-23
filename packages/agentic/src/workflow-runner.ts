@@ -4,13 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import type {
-  ActionSnapshot,
-  ActionStatus,
-  BaseWorkflowContext,
-  StepExecutionRecord,
-  WorkflowRunStatus,
-  WorkflowSnapshot,
+import {
+  EWorkflowRunStatus,
+  type ActionSnapshot,
+  type ActionStatus,
+  type BaseWorkflowContext,
+  type StepExecutionRecord,
+  type WorkflowRunStatus,
+  type WorkflowSnapshot,
 } from './context';
 import { RunnerRuntimeControl } from './runner-runtime-control';
 import { executeConditional as runConditionalExecutor } from './step-executors/conditional-executor';
@@ -54,7 +55,7 @@ export class WorkflowRunner {
   private readonly runId?: string;
 
   // Current lifecycle status of the workflow execution.
-  private status: WorkflowRunStatus = 'idle';
+  private status: WorkflowRunStatus = EWorkflowRunStatus.IDLE;
 
   // Snapshots of action execution keyed by step id for inspection/resume.
   private snapshots: Record<string, ActionSnapshot> = {};
@@ -165,7 +166,7 @@ export class WorkflowRunner {
    * @returns Execution result including status and snapshot.
    */
   async start(args: RunnerStartArgs): Promise<StartResult> {
-    this.status = 'running';
+    this.status = EWorkflowRunStatus.RUNNING;
     this.snapshots = {};
     this.stepLog = {};
     this.suspension = undefined;
@@ -200,7 +201,7 @@ export class WorkflowRunner {
    * @returns Execution result including status and snapshot.
    */
   async resume(args: RunnerResumeArgs): Promise<ResumeResult> {
-    if (this.status !== 'suspended' || !this.suspension) {
+    if (this.status !== EWorkflowRunStatus.SUSPENDED || !this.suspension) {
       throw new Error('Cannot resume a workflow that is not suspended.');
     }
 
@@ -208,7 +209,7 @@ export class WorkflowRunner {
       throw new Error('Workflow state is not initialized.');
     }
 
-    this.status = 'running';
+    this.status = EWorkflowRunStatus.RUNNING;
     this.lastResumeData = args.resumeData;
 
     const suspension: Suspension = this.suspension;
@@ -230,7 +231,7 @@ export class WorkflowRunner {
 
       if (suspension) {
         this.suspension = suspension;
-        this.status = 'suspended';
+        this.status = EWorkflowRunStatus.SUSPENDED;
         this.emit('hook:workflow:suspended', {
           runId: this.runId,
           step: suspension.step,
@@ -239,7 +240,7 @@ export class WorkflowRunner {
         });
 
         return {
-          status: 'suspended',
+          status: EWorkflowRunStatus.SUSPENDED,
           step: suspension.step,
           reason: suspension.reason,
           data: suspension.data,
@@ -252,7 +253,7 @@ export class WorkflowRunner {
       }
 
       const output = await this.evaluateWorkflowOutputs();
-      this.status = 'finished';
+      this.status = EWorkflowRunStatus.FINISHED;
       this.suspension = undefined;
       this.currentStep = undefined;
       this.emit('hook:workflow:finish', { runId: this.runId, output });
@@ -261,14 +262,22 @@ export class WorkflowRunner {
       }
       this.context.attachWorkflowRuntime(undefined);
 
-      return { status: 'finished', output, snapshot: this.getSnapshot() };
+      return {
+        status: EWorkflowRunStatus.FINISHED,
+        output,
+        snapshot: this.getSnapshot(),
+      };
     } catch (error) {
-      this.status = 'failed';
+      this.status = EWorkflowRunStatus.FAILED;
       this.currentStep = undefined;
       this.emit('hook:workflow:failure', { runId: this.runId, error });
       this.context?.attachWorkflowRuntime(undefined);
 
-      return { status: 'failed', error, snapshot: this.getSnapshot() };
+      return {
+        status: EWorkflowRunStatus.FAILED,
+        error,
+        snapshot: this.getSnapshot(),
+      };
     }
   }
 
@@ -304,7 +313,7 @@ export class WorkflowRunner {
     runner.context = options.context;
     runner.snapshots = options.snapshot.actions ?? {};
     runner.stepLog = {};
-    runner.status = options.snapshot.status ?? 'idle';
+    runner.status = options.snapshot.status ?? EWorkflowRunStatus.IDLE;
     runner.lastResumeData = options.lastResumeData;
     runner.runtimeControl = new RunnerRuntimeControl(runner);
     options.context.attachWorkflowRuntime(runner.runtimeControl);
@@ -331,7 +340,7 @@ export class WorkflowRunner {
       }
 
       runner.suspension = suspension;
-      runner.status = 'suspended';
+      runner.status = EWorkflowRunStatus.SUSPENDED;
     }
 
     return runner;

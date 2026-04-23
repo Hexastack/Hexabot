@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { ChipTypeMap } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete";
 import type { ReactNode } from "react";
@@ -14,7 +15,6 @@ import { useSearch } from "@/hooks/useSearch";
 import type { RouteParams } from "@/services/api.class";
 import { Format, QueryType } from "@/services/types";
 import { IEntityMapTypes } from "@/types/base.types";
-import { PermissionAction } from "@/types/permission.types";
 import { TFilterStringFields } from "@/types/search.types";
 import { generateId } from "@/utils/generateId";
 
@@ -160,7 +160,7 @@ const AutoCompleteEntitySelect = <
   return (
     <WithEntityButton
       entity={entity as keyof typeof BASE_ADD_DIALOG_MAP}
-      permissionAction={PermissionAction.CREATE}
+      permissionAction={Action.CREATE}
       enableEntityAddButton={enableEntityAddButton}
     >
       <AutoCompleteSelect<Value, Label, Multiple>

@@ -57,6 +57,7 @@ All workspace packages live under the `packages/` directory.
 - **packages/frontend:** The admin panel built with React/Vite for managing chatbot configuration, workflows, and operations.
 - **packages/graph:** Internal React + xyflow package responsible for workflow graph building, layout, rendering, and graph interactions.
 - **packages/agentic:** Shared workflow/domain package used for workflow definitions, compilation, and runtime-related contracts.
+- **packages/types:** Shared zod-first schemas and inferred entity contracts used across workspace packages.
 - **packages/api:** The backend API built with NestJS and connected to MongoDB for data storage and management.
 - **packages/widget:** A React-based live chat widget that can be embedded into any website to provide real-time interaction.
 - **packages/cli:** Command-line tooling for creating and operating Hexabot projects.
@@ -147,6 +148,7 @@ You can also find specific documentation for different components of the project
 - [API Documentation](packages/api/README.md)
 - [UI Documentation](packages/frontend/README.md)
 - [Agentic Package Documentation](packages/agentic/README.md)
+- [Types Package Documentation](packages/types/README.md)
 - [Workflow Graph Documentation](packages/graph/README.md)
 - [Live Chat Widget Documentation](packages/widget/README.md)
 

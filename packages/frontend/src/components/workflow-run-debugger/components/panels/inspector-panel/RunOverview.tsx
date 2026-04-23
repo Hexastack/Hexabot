@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowRun } from "@hexabot-ai/types";
 import { Divider, Stack } from "@mui/material";
 
 import { WorkflowRunStatusBadge } from "@/app-components/workflow/WorkflowRunStatusBadge";
-import { IWorkflowRun } from "@/types/workflow-run.types";
 
 import { DataSummaryGrid } from "./DataSummaryGrid";
 import { ErrorSummary } from "./ErrorSummary";
@@ -16,7 +16,7 @@ import { SummaryGrid } from "./SummaryGrid";
 import { SummaryItem } from "./SummaryItem";
 
 type RunOverviewProps = {
-  run: IWorkflowRun;
+  run: WorkflowRun;
   labels: OverviewLabels;
   triggeredAtLabel: string;
   triggeredByLabel: string;

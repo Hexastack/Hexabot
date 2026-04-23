@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Subscriber } from '@hexabot-ai/types';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
@@ -12,7 +13,6 @@ import { ActionMetadata } from '@/actions/types';
 import { StatsType } from '@/analytics/entities/stats.entity';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
-import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
 import {
   StdIncomingMessage,

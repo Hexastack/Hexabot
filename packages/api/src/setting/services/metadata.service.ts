@@ -4,12 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Metadata } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { FindOneOptions, FindOptionsWhere } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { Metadata, MetadataUpdateDto } from '../dto/metadata.dto';
+import { MetadataUpdateDto } from '../dto/metadata.dto';
 import { MetadataOrmEntity } from '../entities/metadata.entity';
 import { MetadataRepository } from '../repositories/metadata.repository';
 

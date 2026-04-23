@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { ButtonProps } from "@mui/material";
 
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -12,7 +13,6 @@ import {
   ConfirmOptions,
   OpenDialogOptions,
 } from "@/types/common/dialogs.types";
-import { PermissionAction } from "@/types/permission.types";
 
 import { BASE_ADD_DIALOG_MAP } from "../../dialogs/dialog.constants";
 
@@ -32,7 +32,7 @@ export const EntityButtonWrapper = <
   slotProps?: ButtonProps;
   openOptions?: OpenDialogOptions<THook<{ entity: TE }>["basic"]>;
   confirmOptions?: ConfirmOptions & { selectedIds?: string[] };
-  permissionAction: PermissionAction;
+  permissionAction: Action;
 }) => {
   const hasPermission = useHasPermission();
 
@@ -44,7 +44,7 @@ export const EntityButtonWrapper = <
 
   if (!dialogComponent) return null;
 
-  if (permissionAction === PermissionAction.CREATE) {
+  if (permissionAction === Action.CREATE) {
     return (
       <CreateEntityButton
         entity={entity}

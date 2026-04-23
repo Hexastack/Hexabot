@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Role } from "@hexabot-ai/types";
 import { Button, Link, TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment, useEffect } from "react";
@@ -15,11 +16,13 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IRole } from "@/types/role.types";
-import { IUser, IUserAttributes } from "@/types/user.types";
+import { User } from "@/types/user.types";
 
-export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
+type UserAttributes = EntityAttributes<EntityType.USER>;
+
+export const EditUserForm: FC<ComponentFormProps<User, Role[]>> = ({
   data: { defaultValues: user, presetValues: roles },
   Wrapper = Fragment,
   WrapperProps,
@@ -42,7 +45,7 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
     control,
     formState: { errors },
     handleSubmit,
-  } = useForm<IUserAttributes>({
+  } = useForm<UserAttributes>({
     defaultValues: { roles: roles?.map((role) => role.id) },
   });
   const validationRules = {
@@ -50,7 +53,7 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
       required: t("message.roles_is_required"),
     },
   };
-  const onSubmitForm = (params: IUserAttributes) => {
+  const onSubmitForm = (params: UserAttributes) => {
     if (user?.id) {
       updateUser({
         id: user.id,
@@ -93,7 +96,7 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
                     const { onChange, ...rest } = field;
 
                     return (
-                      <AutoCompleteEntitySelect<IRole>
+                      <AutoCompleteEntitySelect<Role>
                         autoFocus
                         searchFields={["name"]}
                         entity={EntityType.ROLE}

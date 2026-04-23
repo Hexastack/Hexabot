@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Menu } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -21,7 +22,7 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { FindAllOptions } from '@/utils/generics/base-orm.repository';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import { Menu, MenuCreateDto, MenuUpdateDto } from '../dto/menu.dto';
+import { MenuCreateDto, MenuUpdateDto } from '../dto/menu.dto';
 import { MenuOrmEntity } from '../entities/menu.entity';
 import { MenuService } from '../services/menu.service';
 

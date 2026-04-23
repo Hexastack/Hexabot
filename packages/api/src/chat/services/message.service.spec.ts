@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Message, MessageFull, Thread } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
-import { Message, MessageFull } from '@/chat/dto/message.dto';
-import { Thread } from '@/chat/dto/thread.dto';
 import { MessageRepository } from '@/chat/repositories/message.repository';
 import { MessageService } from '@/chat/services/message.service';
 import {

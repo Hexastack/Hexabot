@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { Button, ButtonGroup, ButtonProps } from "@mui/material";
 import { Plus as AddIcon, Trash2 as DeleteIcon } from "lucide-react";
 import React from "react";
@@ -11,7 +12,6 @@ import React from "react";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 const COMMON_BUTTON_PROPS: Partial<ButtonProps> = {
   variant: "contained",
@@ -20,8 +20,8 @@ const COMMON_BUTTON_PROPS: Partial<ButtonProps> = {
 export type ButtonActionsGroupProps = {
   entity?: EntityType;
   buttons: (Partial<ButtonProps> & {
-    permissions?: Partial<Record<EntityType, PermissionAction>>;
-    permissionAction?: PermissionAction;
+    permissions?: Partial<Record<EntityType, Action>>;
+    permissionAction?: Action;
   })[];
 };
 
@@ -31,18 +31,17 @@ export const ButtonActionsGroup = ({
 }: ButtonActionsGroupProps) => {
   const { t } = useTranslate();
   const hasPermission = useHasPermission();
-  const defaultProps: Partial<Record<PermissionAction, Partial<ButtonProps>>> =
-    {
-      [PermissionAction.CREATE]: {
-        children: t("button.add"),
-        startIcon: <AddIcon />,
-      },
-      [PermissionAction.DELETE]: {
-        color: "error",
-        children: t("button.delete"),
-        startIcon: <DeleteIcon />,
-      },
-    };
+  const defaultProps: Partial<Record<Action, Partial<ButtonProps>>> = {
+    [Action.CREATE]: {
+      children: t("button.add"),
+      startIcon: <AddIcon />,
+    },
+    [Action.DELETE]: {
+      color: "error",
+      children: t("button.delete"),
+      startIcon: <DeleteIcon />,
+    },
+  };
 
   return (
     <ButtonGroup sx={{ ml: "auto" }}>

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { McpServer, McpServerFull } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -22,12 +23,7 @@ import { PopulatePipe, UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  McpServer,
-  McpServerCreateDto,
-  McpServerFull,
-  McpServerUpdateDto,
-} from '../dto/mcp-server.dto';
+import { McpServerCreateDto, McpServerUpdateDto } from '../dto/mcp-server.dto';
 import { McpServerOrmEntity } from '../entities/mcp-server.entity';
 import {
   McpServerDiagnostics,

@@ -5,6 +5,7 @@
  */
 
 import { type WorkflowEventMap } from '@hexabot-ai/agentic';
+import { Subscriber } from '@hexabot-ai/types';
 import { ForbiddenException } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
@@ -24,7 +25,6 @@ import { Session as ExpressSession, SessionData } from 'express-session';
 import { ExtendedError, Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
-import { Subscriber } from '@/chat/dto/subscriber.dto';
 import { StdEventType } from '@/chat/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
@@ -80,6 +80,10 @@ export class WebsocketGateway
     content: any,
     excludedRooms: string[] = [],
   ) {
+    if (!subscriber.foreignId) {
+      return;
+    }
+
     this.io.to(subscriber.foreignId).except(excludedRooms).emit(type, content);
   }
 

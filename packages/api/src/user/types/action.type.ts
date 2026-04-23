@@ -4,16 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-export enum Action {
-  CREATE = 'create',
-  READ = 'read',
-  UPDATE = 'update',
-  DELETE = 'delete',
-}
-
-export enum MethodToAction {
-  POST = 'create',
-  GET = 'read',
-  PATCH = 'update',
-  DELETE = 'delete',
-}
+export { Action, MethodToAction } from '@hexabot-ai/types';

@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { User } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { compareSync } from 'bcryptjs';
 
-import { User } from '../dto/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { hash } from '../utilities/bcryptjs';
 

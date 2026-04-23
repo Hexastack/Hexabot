@@ -10,37 +10,27 @@ import {
   WorkflowSnapshot,
   WorkflowStartResult,
 } from '@hexabot-ai/agentic';
+import {
+  DirectionType,
+  McpServerTransport,
+  MemoryScope,
+  WorkflowType,
+  WorkflowVersionAction,
+  MemoryDefinition,
+  WorkflowRunFull,
+  WorkflowFull,
+} from '@hexabot-ai/types';
 
-import { MemoryDefinition } from './dto/memory-definition.dto';
-import { WorkflowRunFull } from './dto/workflow-run.dto';
-import { WorkflowFull } from './dto/workflow.dto';
 import { TriggerEventWrapper } from './lib/trigger-event-wrapper';
 import { SchemaInstance } from './utils/schema-instance';
 
-export enum WorkflowType {
-  conversational = 'conversational',
-  manual = 'manual',
-  scheduled = 'scheduled',
-}
-
-export enum WorkflowVersionAction {
-  create = 'create',
-  update = 'update',
-  restore = 'restore',
-  import = 'import',
-}
-
-export enum MemoryScope {
-  global = 'global',
-  workflow = 'workflow',
-  thread = 'thread',
-  run = 'run',
-}
-
-export enum McpServerTransport {
-  http = 'http',
-  stdio = 'stdio',
-}
+export {
+  DirectionType,
+  McpServerTransport,
+  MemoryScope,
+  WorkflowType,
+  WorkflowVersionAction,
+};
 
 export type MemoryValue = Record<string, unknown>;
 
@@ -116,8 +106,3 @@ export type McpToolBindingDefinitions = Record<
     };
   }
 >;
-
-export enum DirectionType {
-  HORIZONTAL = 'horizontal',
-  VERTICAL = 'vertical',
-}

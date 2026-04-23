@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ContentFull } from '@hexabot-ai/types';
 import {
   Document,
   MetadataMode,
@@ -19,8 +20,6 @@ import pLimit from 'p-limit';
 
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
-
-import { ContentFull } from '../dto/content.dto';
 
 import { ContentService } from './content.service';
 import { RagBackendService } from './rag-backend.service';

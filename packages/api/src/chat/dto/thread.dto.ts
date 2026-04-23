@@ -4,54 +4,18 @@
  * Full terms: see LICENSE.md.
  */
 
+import { threadFullSchema, threadSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { IsDate, IsIn, IsOptional, IsString } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import {
   THREAD_CLOSE_REASONS,
   THREAD_STATUSES,
 } from '../entities/thread.entity';
-
-import { Subscriber } from './subscriber.dto';
-
-@Exclude()
-export class ThreadStub extends BaseStub {
-  @Expose()
-  status!: 'open' | 'closed';
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
-  lastMessageAt?: Date | null;
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
-  closedAt?: Date | null;
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
-  closeReason?: 'manual' | 'inactivity' | null;
-
-  @Expose()
-  @Transform(({ value }) => (value == null ? undefined : value))
-  title?: string | null;
-}
-
-@Exclude()
-export class Thread extends ThreadStub {
-  @Expose({ name: 'subscriberId' })
-  subscriber!: string;
-}
-
-@Exclude()
-export class ThreadFull extends ThreadStub {
-  @Expose()
-  @Type(() => Subscriber)
-  subscriber!: Subscriber;
-}
 
 export class ThreadCreateDto {
   @ApiProperty({ description: 'Owner subscriber id', type: String })
@@ -106,8 +70,8 @@ export class ThreadUpdateDto extends PartialType(ThreadCreateDto) {}
 
 export type ThreadDto = TDto<
   {
-    plain: typeof Thread;
-    full: typeof ThreadFull;
+    plain: typeof threadSchema;
+    full: typeof threadFullSchema;
   },
   {
     create: ThreadCreateDto;

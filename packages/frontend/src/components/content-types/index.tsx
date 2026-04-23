@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
+import type { ContentType } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
 import { AlignLeft } from "lucide-react";
 
@@ -19,8 +21,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { IContentType } from "@/types/content-type.types";
-import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { ContentTypeFormDialog } from "./ContentTypeFormDialog";
@@ -42,7 +42,7 @@ export const ContentTypes = () => {
     EntityType.CONTENT_TYPE,
     options,
   );
-  const actionColumns = useActionColumns<IContentType>(
+  const actionColumns = useActionColumns<ContentType>(
     EntityType.CONTENT_TYPE,
     [
       {
@@ -54,7 +54,7 @@ export const ContentTypes = () => {
         onClick: (row) => {
           dialogs.open(ContentTypeFormDialog, { defaultValues: row });
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
@@ -65,12 +65,12 @@ export const ContentTypes = () => {
             deleteContentType(id);
           }
         },
-        requires: [PermissionAction.DELETE],
+        requires: [Action.DELETE],
       },
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<IContentType>[] = [
+  const columns: GridColDef<ContentType>[] = [
     { flex: 1, field: "name", headerName: t("label.name") },
     {
       field: "createdAt",
@@ -98,7 +98,7 @@ export const ContentTypes = () => {
       entity={EntityType.CONTENT_TYPE}
       buttons={[
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           onClick: () =>
             dialogs.open(ContentTypeFormDialog, { defaultValues: null }),
         },

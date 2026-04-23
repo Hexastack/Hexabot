@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Workflow } from "@hexabot-ai/types";
 import { List, Typography } from "@mui/material";
 import type { MouseEvent } from "react";
-
-import type { IWorkflow } from "@/types/workfow.types";
 
 import { FlowTypeGroupSection } from "./FlowTypeGroupSection";
 import { FlowListContainer } from "./styles";
@@ -18,7 +17,7 @@ type FlowsDrawerListProps = {
   openTypeKeys: string[];
   onToggleType: (key: string) => void;
   onSelectFlow: (flowId: string) => void;
-  onEdit?: (workflow: IWorkflow) => void;
+  onEdit?: (workflow: Workflow) => void;
   onOpenMenu: (event: MouseEvent<HTMLElement>, flowId: string) => void;
   normalizedQuery: string;
   emptySectionLabel: string;

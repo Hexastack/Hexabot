@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Workflow } from "@hexabot-ai/types";
 import {
   Collapse,
   ListItemButton,
@@ -15,8 +16,6 @@ import {
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { MouseEvent } from "react";
 
-import type { IWorkflow } from "@/types/workfow.types";
-
 import { FlowListItem } from "./FlowListItem";
 import type { FlowTypeGroup } from "./types";
 
@@ -25,7 +24,7 @@ type FlowTypeGroupSectionProps = {
   isOpen: boolean;
   onToggle: (key: string) => void;
   onSelectFlow: (flowId: string) => void;
-  onEdit?: (workflow: IWorkflow) => void;
+  onEdit?: (workflow: Workflow) => void;
   onOpenMenu: (event: MouseEvent<HTMLElement>, flowId: string) => void;
   normalizedQuery: string;
   emptySectionLabel: string;

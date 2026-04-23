@@ -4,46 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { roleFullSchema, roleSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { BaseStub, TDto } from '@/utils/types/dto.types';
-
-import { Permission } from './permission.dto';
-import { User } from './user.dto';
-
-@Exclude()
-export class RoleStub extends BaseStub {
-  @Expose()
-  id!: string;
-
-  @Expose()
-  code!: string;
-
-  @Expose()
-  label!: string;
-
-  @Expose()
-  name!: string;
-
-  @Expose()
-  active!: boolean;
-}
-
-@Exclude()
-export class Role extends RoleStub {}
-
-@Exclude()
-export class RoleFull extends RoleStub {
-  @Expose()
-  @Type(() => Permission)
-  permissions?: Permission[];
-
-  @Expose()
-  @Type(() => User)
-  users: User[];
-}
+import { TDto } from '@/utils/types/dto.types';
 
 export class RoleCreateDto {
   @ApiProperty({ description: 'Name of the role', type: String })
@@ -65,8 +30,8 @@ export class RoleUpdateDto extends PartialType(RoleCreateDto) {}
 
 export type RoleDto = TDto<
   {
-    plain: typeof Role;
-    full: typeof RoleFull;
+    plain: typeof roleSchema;
+    full: typeof roleFullSchema;
   },
   {
     create: RoleCreateDto;

@@ -4,32 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { labelGroupFullSchema, labelGroupSchema } from '@hexabot-ai/types';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-import { BaseStub, TDto } from '@/utils/types/dto.types';
-
-import { Label } from './label.dto';
-
-@Exclude()
-export class LabelGroupStub extends BaseStub {
-  @Expose()
-  name!: string;
-}
-
-@Exclude()
-export class LabelGroup extends LabelGroupStub {
-  @Exclude()
-  labels?: never;
-}
-
-@Exclude()
-export class LabelGroupFull extends LabelGroupStub {
-  @Expose()
-  @Type(() => Label)
-  labels?: Label[];
-}
+import { TDto } from '@/utils/types/dto.types';
 
 export class LabelGroupCreateDto {
   @ApiProperty({ description: 'Label group name', type: String })
@@ -42,8 +21,8 @@ export class LabelGroupUpdateDto extends LabelGroupCreateDto {}
 
 export type LabelGroupDto = TDto<
   {
-    plain: typeof LabelGroup;
-    full: typeof LabelGroupFull;
+    plain: typeof labelGroupSchema;
+    full: typeof labelGroupFullSchema;
   },
   {
     create: LabelGroupCreateDto;

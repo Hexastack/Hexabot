@@ -6,7 +6,9 @@
 
 import { Stream } from 'node:stream';
 
-import { Attachment, AttachmentCreateDto } from '../dto/attachment.dto';
+import type { Attachment } from '@hexabot-ai/types';
+
+import { AttachmentCreateDto } from '../dto/attachment.dto';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -25,10 +27,13 @@ const baseAttachment = {
   createdByRef: AttachmentCreatedByRef.User,
 } satisfies Partial<AttachmentCreateDto>;
 
-export const attachment: Attachment = Object.assign(
-  new Attachment(),
-  baseAttachment,
-);
+export const attachment: Attachment = {
+  id: '99999999-9999-4999-9999-999999999999',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  url: '',
+  ...baseAttachment,
+};
 
 export const attachmentFile: Express.Multer.File = {
   filename: attachment.name,

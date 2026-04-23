@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { LabelGroup, LabelGroupFull } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -23,9 +24,7 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
-  LabelGroup,
   LabelGroupCreateDto,
-  LabelGroupFull,
   LabelGroupUpdateDto,
 } from '../dto/label-group.dto';
 import { LabelGroupOrmEntity } from '../entities/label-group.entity';

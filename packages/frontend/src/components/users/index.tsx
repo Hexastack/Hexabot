@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { Button, Paper, Stack, Switch, Typography } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { UserPlus, Users as UsersIcon } from "lucide-react";
@@ -37,8 +38,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
-import { IUser } from "@/types/user.types";
+import { User } from "@/types/user.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { CreateUserFormDialog } from "./CreateUserFormDialog";
@@ -145,7 +145,7 @@ const UsersDataGrid = () => {
     },
     { hasCount: false },
   );
-  const actionColumns = useActionColumns<IUser>(
+  const actionColumns = useActionColumns<User>(
     EntityType.USER,
     [
       {
@@ -156,12 +156,12 @@ const UsersDataGrid = () => {
             presetValues: roles,
           });
         },
-        requires: [PermissionAction.CREATE],
+        requires: [Action.CREATE],
       },
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<IUser>[] = [
+  const columns: GridColDef<User>[] = [
     { field: "id", headerName: "ID" },
     {
       maxWidth: 64,
@@ -218,7 +218,7 @@ const UsersDataGrid = () => {
           disabled={
             params.row.id === user?.id ||
             ssoEnabled ||
-            !hasPermission(EntityType.USER, PermissionAction.UPDATE)
+            !hasPermission(EntityType.USER, Action.UPDATE)
           }
           onChange={() =>
             updateUser({
@@ -259,7 +259,7 @@ const UsersDataGrid = () => {
       entity={EntityType.USER}
       buttons={[
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           ...(addUserButton
             ? {
                 children: addUserButton,

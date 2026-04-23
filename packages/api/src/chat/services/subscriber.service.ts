@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Subscriber } from '@hexabot-ai/types';
 import { Inject, Injectable, Optional, forwardRef } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import mime from 'mime';
@@ -22,7 +23,7 @@ import { UserService } from '@/user/services/user.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { Subscriber, SubscriberUpdateDto } from '../dto/subscriber.dto';
+import { SubscriberUpdateDto } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
 

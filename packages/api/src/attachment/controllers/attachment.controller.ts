@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Attachment, AttachmentFull } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Controller,
@@ -34,10 +35,8 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
-  Attachment,
   AttachmentContextParamDto,
   AttachmentDownloadDto,
-  AttachmentFull,
 } from '../dto/attachment.dto';
 import { AttachmentOrmEntity } from '../entities/attachment.entity';
 import { AttachmentGuard } from '../guards/attachment-ability.guard';

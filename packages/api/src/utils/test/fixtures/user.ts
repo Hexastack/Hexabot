@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { User } from '@hexabot-ai/types';
 import { DataSource } from 'typeorm';
 
-import { User, UserCreateDto } from '@/user/dto/user.dto';
+import { UserCreateDto } from '@/user/dto/user.dto';
 import { RoleOrmEntity } from '@/user/entities/role.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { hash } from '@/user/utilities/bcryptjs';

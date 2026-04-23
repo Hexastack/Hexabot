@@ -4,29 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { settingFullSchema, settingSchema } from '@hexabot-ai/types';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
 import { IsDefined, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { BaseStub, TDto } from '@/utils/types/dto.types';
-
-@Exclude()
-export class SettingStub extends BaseStub {
-  @Expose()
-  group!: string;
-
-  @Expose()
-  subgroup?: string;
-
-  @Expose()
-  label!: string;
-
-  @Expose()
-  value!: null | string | number | boolean | string[] | Record<string, any>;
-}
-
-@Exclude()
-export class Setting extends SettingStub {}
+import { TDto } from '@/utils/types/dto.types';
 
 export class SettingCreateDto {
   @ApiProperty({ description: 'Setting group', type: String })
@@ -57,8 +39,8 @@ export class SettingUpdateDto {
 
 export type SettingDto = TDto<
   {
-    plain: typeof Setting;
-    full: typeof Setting;
+    plain: typeof settingSchema;
+    full: typeof settingFullSchema;
   },
   {
     create: SettingCreateDto;

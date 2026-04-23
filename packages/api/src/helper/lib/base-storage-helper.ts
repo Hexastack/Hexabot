@@ -6,10 +6,10 @@
 
 import { Readable, Stream } from 'stream';
 
+import type { Attachment } from '@hexabot-ai/types';
 import { StreamableFile } from '@nestjs/common';
 
 import {
-  Attachment,
   AttachmentCreateDto,
   AttachmentMetadataDto,
 } from '@/attachment/dto/attachment.dto';

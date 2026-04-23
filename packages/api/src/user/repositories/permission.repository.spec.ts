@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Permission } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import {
@@ -13,7 +14,6 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Permission } from '../dto/permission.dto';
 import { Action } from '../types/action.type';
 
 import { ModelRepository } from './model.repository';

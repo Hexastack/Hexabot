@@ -121,7 +121,7 @@ This section is a contributor summary, not legal advice. Always consult license 
 
 ### License map in this monorepo (v3/dev)
 
-Root workspace and all current workspace packages (`api`, `frontend`, `widget`, `graph`, `agentic`, `cli`) declare `FCL-1.0-ALv2`.
+Root workspace and all current workspace packages (`api`, `frontend`, `widget`, `graph`, `agentic`, `types`, `cli`) declare `FCL-1.0-ALv2`.
 
 ### FCL-1.0-ALv2 (summary)
 

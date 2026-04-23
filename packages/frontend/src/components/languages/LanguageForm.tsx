@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Language } from "@hexabot-ai/types";
 import { FormControlLabel, Switch, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -14,10 +15,12 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ILanguage, ILanguageAttributes } from "@/types/language.types";
 
-export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
+type LanguageAttributes = EntityAttributes<EntityType.LANGUAGE>;
+
+export const LanguageForm: FC<ComponentFormProps<Language>> = ({
   data: { defaultValues: language },
   Wrapper = Fragment,
   WrapperProps,
@@ -43,7 +46,7 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
     formState: { errors },
     handleSubmit,
     control,
-  } = useForm<ILanguageAttributes>({
+  } = useForm<LanguageAttributes>({
     defaultValues: {
       title: language?.title || "",
       code: language?.code || "",
@@ -58,7 +61,7 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
       required: t("message.code_is_required"),
     },
   };
-  const onSubmitForm = (params: ILanguageAttributes) => {
+  const onSubmitForm = (params: LanguageAttributes) => {
     if (language) {
       updateLanguage({ id: language.id, params });
     } else {

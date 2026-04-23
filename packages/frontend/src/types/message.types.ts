@@ -4,14 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { EntityType } from "@/services/types";
-
-import { IAttachment } from "./attachment.types";
-import { IBaseSchema, OmitPopulate } from "./base.types";
-import { IContent } from "./content.types";
-import { ISubscriber } from "./subscriber.types";
-import { IThread } from "./thread.types";
-import { IUser } from "./user.types";
+import type { Attachment, Content as SharedContent } from "@hexabot-ai/types";
 
 export enum OutgoingMessageFormat {
   text = "text",
@@ -114,7 +107,7 @@ export type StdOutgoingButtonsMessage = {
 export interface OutgoingPopulatedListMessage {
   title: string;
   subtitle: string | null;
-  image_url?: { payload: IAttachment; type: string } | null;
+  image_url?: { payload: Attachment; type: string } | null;
   url?: string;
   action_title?: string;
   action_payload?: string;
@@ -122,7 +115,7 @@ export interface OutgoingPopulatedListMessage {
 
 export type StdOutgoingListMessage = {
   options: ContentOptions;
-  elements: IContent[];
+  elements: SharedContent[];
   pagination: {
     total: number;
     skip: number;
@@ -169,36 +162,3 @@ export type StdOutgoingMessage =
   | StdOutgoingButtonsMessage
   | StdOutgoingListMessage
   | StdOutgoingAttachmentMessage;
-
-export interface IMessageAttributes {
-  mid?: string;
-  inReplyTo?: string;
-  thread: string;
-  sender?: string;
-  recipient?: string;
-  sentBy?: string;
-  message: StdOutgoingMessage | StdIncomingMessage;
-  read?: boolean;
-  delivery?: boolean;
-  handover?: boolean;
-}
-
-export interface IMessageFilters {}
-
-export interface IMessageStub
-  extends IBaseSchema,
-    OmitPopulate<IMessageAttributes, EntityType.MESSAGE> {}
-
-export interface IMessage extends IMessageStub {
-  thread: string;
-  sender?: string;
-  recipient?: string;
-  sentBy?: string;
-}
-
-export interface IMessageFull extends IMessageStub {
-  thread: IThread;
-  sender?: ISubscriber;
-  recipient?: ISubscriber;
-  sentBy?: IUser;
-}

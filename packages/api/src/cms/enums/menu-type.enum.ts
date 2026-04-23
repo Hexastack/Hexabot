@@ -4,8 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-export enum MenuType {
-  web_url = 'web_url',
-  postback = 'postback',
-  nested = 'nested',
-}
+export { MenuType } from '@hexabot-ai/types';

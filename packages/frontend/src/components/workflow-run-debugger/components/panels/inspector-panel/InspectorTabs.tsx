@@ -5,6 +5,7 @@
  */
 
 import type { StepExecutionRecord } from "@hexabot-ai/agentic";
+import type { WorkflowRun } from "@hexabot-ai/types";
 import { Box, Tab, Tabs } from "@mui/material";
 import { useMemo, useState } from "react";
 
@@ -12,7 +13,6 @@ import { JsonViewer } from "@/app-components/inputs/JsonViewer";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { IWorkflowRun } from "@/types/workflow-run.types";
 import { formatDurationMs } from "@/utils/date";
 
 import { formatRunTimestamp, getInitiatorName } from "../../../utils";
@@ -26,7 +26,7 @@ const tabId = (index: number) => `inspector-tab-${index}`;
 const panelId = (index: number) => `inspector-tabpanel-${index}`;
 
 type InspectorTabsProps = {
-  run: IWorkflowRun | null;
+  run: WorkflowRun | null;
   step?: StepExecutionRecord | null;
 };
 

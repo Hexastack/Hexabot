@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Workflow } from "@hexabot-ai/types";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import { FC, useEffect, useMemo, useState } from "react";
@@ -11,7 +12,6 @@ import { FC, useEffect, useMemo, useState } from "react";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
-import type { IWorkflow } from "@/types/workfow.types";
 
 import { RunHeader } from "./header/RunHeader";
 import { InspectorPanel } from "./panels/inspector-panel/InspectorPanel";
@@ -19,7 +19,7 @@ import { StepTracePanel } from "./panels/step-trace-panel";
 
 type WorkflowRunDebuggerProps = {
   initiatorId?: string;
-  workflow?: IWorkflow;
+  workflow?: Workflow;
   workflowInput?: Record<string, unknown>;
 };
 

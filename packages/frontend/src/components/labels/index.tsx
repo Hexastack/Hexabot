@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action, Label } from "@hexabot-ai/types";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Tags } from "lucide-react";
 import { useState } from "react";
@@ -21,8 +22,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { ILabel } from "@/types/label.types";
-import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { LabelFormDialog } from "./LabelFormDialog";
@@ -41,7 +40,7 @@ export const Labels = () => {
   };
   const { mutate: deleteLabel } = useDelete(EntityType.LABEL, options);
   const { mutate: deleteLabels } = useDeleteMany(EntityType.LABEL, options);
-  const actionColumns = useActionColumns<ILabel>(
+  const actionColumns = useActionColumns<Label>(
     EntityType.LABEL,
     [
       {
@@ -51,7 +50,7 @@ export const Labels = () => {
             defaultValues: row,
           });
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
       {
         action: ColumnActionType.Delete,
@@ -62,14 +61,14 @@ export const Labels = () => {
             deleteLabel(id);
           }
         },
-        requires: [PermissionAction.DELETE],
+        requires: [Action.DELETE],
       },
     ],
     t("label.operations"),
   );
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const getEntityFromCache = useGetFromCache(EntityType.LABEL_GROUP);
-  const columns: GridColDef<ILabel>[] = [
+  const columns: GridColDef<Label>[] = [
     { field: "id", headerName: "ID" },
     {
       flex: 1,
@@ -143,11 +142,11 @@ export const Labels = () => {
       entity={EntityType.LABEL}
       buttons={[
         {
-          permissionAction: PermissionAction.CREATE,
+          permissionAction: Action.CREATE,
           onClick: () => dialogs.open(LabelFormDialog, { defaultValues: null }),
         },
         {
-          permissionAction: PermissionAction.DELETE,
+          permissionAction: Action.DELETE,
           onClick: async () => {
             const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
               mode: "selection",

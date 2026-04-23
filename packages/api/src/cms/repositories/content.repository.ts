@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ContentFull } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { ContentFull } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 
 @Injectable()

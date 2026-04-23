@@ -4,4 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-export type TRelation = 'role' | 'createdBy';
+export type { TRelation } from '@hexabot-ai/types';

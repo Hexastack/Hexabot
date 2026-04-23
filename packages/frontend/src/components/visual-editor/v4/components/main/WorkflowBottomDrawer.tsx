@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowType } from "@hexabot-ai/types";
 import { Divider, Drawer, Paper, Stack, useMediaQuery } from "@mui/material";
 import { alpha, styled, useTheme } from "@mui/material/styles";
 import { getDefaultFormState, type RJSFSchema } from "@rjsf/utils";
@@ -20,7 +21,6 @@ import { TriggerSimulatorPanel } from "@/components/workflow-run-debugger/compon
 import { WorkflowRunDebugger } from "@/components/workflow-run-debugger/components/WorkflowRunDebugger";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslate } from "@/hooks/useTranslate";
-import { WorkflowType } from "@/types/workfow.types";
 import validator from "@/utils/rjsf-zod-validator";
 
 import { useWorkflow } from "../../hooks/useWorkflow";

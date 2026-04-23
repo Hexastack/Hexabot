@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { languageSchema, languageFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index, InsertEvent, UpdateEvent } from 'typeorm';
 
 import {
@@ -13,13 +14,13 @@ import {
 } from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { Language, LanguageDto } from '../dto/language.dto';
+import { LanguageDto } from '../dto/language.dto';
 
 @Entity({ name: 'languages' })
 export class LanguageOrmEntity extends BaseOrmEntity<LanguageDto> {
-  plainCls = Language;
+  plainCls = languageSchema;
 
-  fullCls = Language;
+  fullCls = languageFullSchema;
 
   @Column({ unique: true })
   @Index()

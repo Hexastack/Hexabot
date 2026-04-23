@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Subscriber, Thread } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
 
-import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { Thread } from '@/chat/dto/thread.dto';
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ThreadService } from '@/chat/services/thread.service';
 import { LoggerService } from '@/logger/logger.service';

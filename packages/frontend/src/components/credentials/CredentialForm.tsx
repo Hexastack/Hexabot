@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Credential } from "@hexabot-ai/types";
 import { TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -14,10 +15,16 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ICredential, ICredentialAttributes } from "@/types/credential.types";
 
-export const CredentialForm: FC<ComponentFormProps<ICredential>> = ({
+type CredentialWithValue = Credential & {
+  value?: string;
+};
+
+type CredentialAttributes = EntityAttributes<EntityType.CREDENTIAL>;
+
+export const CredentialForm: FC<ComponentFormProps<Credential>> = ({
   data: { defaultValues: credential },
   Wrapper = Fragment,
   WrapperProps,
@@ -48,10 +55,10 @@ export const CredentialForm: FC<ComponentFormProps<ICredential>> = ({
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm<ICredentialAttributes>({
+  } = useForm<CredentialAttributes>({
     defaultValues: {
       name: credential?.name || "",
-      value: credential?.value || "",
+      value: (credential as CredentialWithValue | null)?.value || "",
     },
   });
   const validationRules = {
@@ -62,7 +69,7 @@ export const CredentialForm: FC<ComponentFormProps<ICredential>> = ({
       required: t("message.value_is_required"),
     },
   };
-  const onSubmitForm = (params: ICredentialAttributes) => {
+  const onSubmitForm = (params: CredentialAttributes) => {
     if (credential) {
       updateCredential({ id: credential.id, params });
     } else {
@@ -74,7 +81,7 @@ export const CredentialForm: FC<ComponentFormProps<ICredential>> = ({
     if (credential) {
       reset({
         name: credential.name,
-        value: credential.value,
+        value: (credential as CredentialWithValue | null)?.value || "",
       });
     } else {
       reset();

@@ -6,13 +6,13 @@
 
 import { createGatewayProvider } from '@ai-sdk/gateway';
 import { createOpenAI } from '@ai-sdk/openai';
+import { Message } from '@hexabot-ai/types';
 import { LanguageModelUsage } from 'ai';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
 import { ALL_WORKFLOW_TYPES } from '@/actions/types';
 import { RuntimeBindings } from '@/bindings/runtime-bindings';
-import { Message } from '@/chat/dto/message.dto';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 import {

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Role } from '@hexabot-ai/types';
 import { INestApplicationContext } from '@nestjs/common';
 
 import { LanguageSeeder } from './i18n/seeds/language.seed';
@@ -16,7 +17,6 @@ import { DEFAULT_METADATA } from './setting/seeds/metadata.seed-model';
 import { SettingSeeder } from './setting/seeds/setting.seed';
 import { DEFAULT_SETTINGS } from './setting/seeds/setting.seed-model';
 import { PermissionCreateDto } from './user/dto/permission.dto';
-import { Role } from './user/dto/role.dto';
 import { ModelSeeder } from './user/seeds/model.seed';
 import { modelModels } from './user/seeds/model.seed-model';
 import { PermissionSeeder } from './user/seeds/permission.seed';

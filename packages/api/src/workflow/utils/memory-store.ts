@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MemoryDefinition, MemoryRecordFull } from '@hexabot-ai/types';
 import { ZodSchema, z } from 'zod';
 
 import { cloneObject } from '@/utils/helpers/clone';
 import { deepFreeze } from '@/utils/helpers/freeze';
 
 import { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
-import type { MemoryDefinition } from '../dto/memory-definition.dto';
-import type { MemoryRecordFull } from '../dto/memory-record.dto';
 import {
   MemoryScope,
   MemoryStoreBatchUpdater,

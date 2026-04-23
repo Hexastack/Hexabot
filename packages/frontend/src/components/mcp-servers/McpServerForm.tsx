@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Credential } from "@hexabot-ai/types";
 import { FormControlLabel, MenuItem, Switch, TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -16,16 +17,14 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ICredential } from "@/types/credential.types";
-import {
-  IMcpServer,
-  IMcpServerAttributes,
-  McpServerTransport,
-} from "@/types/mcp-server.types";
+import { McpServer, McpServerTransport } from "@/types/mcp-server.types";
 import { isAbsoluteUrl } from "@/utils/URL";
 
-export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
+type McpServerAttributes = EntityAttributes<EntityType.MCP_SERVER>;
+
+export const McpServerForm: FC<ComponentFormProps<McpServer>> = ({
   data: { defaultValues: mcpServer },
   Wrapper = Fragment,
   WrapperProps,
@@ -53,7 +52,7 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
     control,
     formState: { errors },
     handleSubmit,
-  } = useForm<IMcpServerAttributes>({
+  } = useForm<McpServerAttributes>({
     defaultValues: {
       name: mcpServer?.name || "",
       enabled: mcpServer?.enabled ?? true,
@@ -106,7 +105,7 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
       required: t("message.type_is_required"),
     },
   };
-  const onSubmitForm = (params: IMcpServerAttributes) => {
+  const onSubmitForm = (params: McpServerAttributes) => {
     const normalizedUrl =
       typeof params.url === "string" ? params.url.trim() : "";
     const normalizedCommand =
@@ -116,7 +115,7 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
     const normalizedArgs = Array.isArray(params.args)
       ? params.args.map((arg) => arg.trim()).filter(Boolean)
       : [];
-    const payload: IMcpServerAttributes = {
+    const payload: McpServerAttributes = {
       ...params,
       name: params.name.trim(),
       url:
@@ -242,7 +241,7 @@ export const McpServerForm: FC<ComponentFormProps<IMcpServer>> = ({
                     const { onChange, ...restField } = field;
 
                     return (
-                      <AutoCompleteEntitySelect<ICredential, "name", false>
+                      <AutoCompleteEntitySelect<Credential, "name", false>
                         entity={EntityType.CREDENTIAL}
                         format={Format.BASIC}
                         searchFields={["name"]}

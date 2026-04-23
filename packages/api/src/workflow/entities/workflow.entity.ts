@@ -11,6 +11,7 @@ import {
   DEFAULT_RETRY_SETTINGS,
   DEFAULT_TIMEOUT_MS,
 } from '@hexabot-ai/agentic';
+import { workflowSchema } from '@hexabot-ai/types';
 import { CronJob } from 'cron';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import {
@@ -35,7 +36,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
-import { Workflow, WorkflowDto, WorkflowFull } from '../dto/workflow.dto';
+import { WorkflowDto, workflowFullSchema } from '../dto/workflow.dto';
 import {
   conversationalWorkflowInputJsonSchema,
   manualWorkflowDefaultInputJsonSchema,
@@ -48,9 +49,9 @@ import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 @Entity({ name: 'workflows' })
 @Index(['name'], { unique: true })
 export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowDto> {
-  plainCls = Workflow;
+  plainCls = workflowSchema;
 
-  fullCls = WorkflowFull;
+  fullCls = workflowFullSchema;
 
   static readonly BLANK_DEFINITION_YML = AgenticWorkflow.stringifyDefinition({
     defaults: {

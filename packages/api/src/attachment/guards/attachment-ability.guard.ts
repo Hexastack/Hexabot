@@ -6,6 +6,7 @@
 
 import { Url } from 'url';
 
+import type { User } from '@hexabot-ai/types';
 import {
   BadRequestException,
   CanActivate,
@@ -18,7 +19,6 @@ import { Request } from 'express';
 import qs from 'qs';
 import { FindOneOptions, In } from 'typeorm';
 
-import { User } from '@/user/dto/user.dto';
 import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';

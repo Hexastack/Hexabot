@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { statsFullSchema, statsSchema } from '@hexabot-ai/types';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,
@@ -16,29 +17,10 @@ import {
   IsString,
 } from 'class-validator';
 
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import { StatsType } from '../enums/stats-type.enum';
 import { IsLessThanDate } from '../validation-rules/is-less-than-date';
-
-@Exclude()
-export class StatsStub extends BaseStub {
-  @Expose()
-  type!: StatsType;
-
-  @Expose()
-  @Type(() => Date)
-  day!: Date;
-
-  @Expose()
-  value!: number;
-
-  @Expose()
-  name!: string;
-}
-
-@Exclude()
-export class Stats extends StatsStub {}
 
 export class StatsCreateDto {
   @ApiProperty({ description: 'Bot statistic type', enum: StatsType })
@@ -73,8 +55,8 @@ export class StatsUpdateDto extends PartialType(StatsCreateDto) {}
 
 export type StatsDto = TDto<
   {
-    plain: typeof Stats;
-    full: typeof Stats;
+    plain: typeof statsSchema;
+    full: typeof statsFullSchema;
   },
   {
     create: StatsCreateDto;

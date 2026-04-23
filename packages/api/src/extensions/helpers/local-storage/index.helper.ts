@@ -9,6 +9,7 @@ import os from 'os';
 import { isAbsolute, join, relative, resolve } from 'path';
 import { Readable, Stream } from 'stream';
 
+import type { Attachment } from '@hexabot-ai/types';
 import {
   Injectable,
   NotFoundException,
@@ -18,7 +19,6 @@ import {
 import sanitizeFilename from 'sanitize-filename';
 
 import {
-  Attachment,
   AttachmentCreateDto,
   AttachmentMetadataDto,
 } from '@/attachment/dto/attachment.dto';

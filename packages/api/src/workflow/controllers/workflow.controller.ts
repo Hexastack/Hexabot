@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Workflow, WorkflowFull } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Body,
@@ -33,12 +34,7 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import { RuntimeBindingsService } from '../../bindings/runtime-bindings.service';
-import {
-  Workflow,
-  WorkflowCreateDto,
-  WorkflowFull,
-  WorkflowUpdateDto,
-} from '../dto/workflow.dto';
+import { WorkflowCreateDto, WorkflowUpdateDto } from '../dto/workflow.dto';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import {
   ManualEventWrapper,
@@ -270,9 +266,15 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
       throw new NotFoundException(`Workflow with ID ${id} not found`);
     }
 
-    return await this.workflowService.updateOne(id, {
+    const updated = await this.workflowService.updateOne(id, {
       publishedVersion: null,
     });
+
+    return {
+      ...updated,
+      currentVersion: updated.currentVersion ?? workflow.currentVersion,
+      publishedVersion: null,
+    };
   }
 
   /**

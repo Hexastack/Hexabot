@@ -5,8 +5,7 @@
  */
 
 import type { StepExecutionRecord } from "@hexabot-ai/agentic";
-
-import { IWorkflowRun } from "@/types/workflow-run.types";
+import type { WorkflowRun } from "@hexabot-ai/types";
 
 import { NoDataMessage } from "./NoDataMessage";
 import type { OverviewLabels } from "./overview.types";
@@ -14,7 +13,7 @@ import { RunOverview } from "./RunOverview";
 import { StepOverview } from "./StepOverview";
 
 type OverviewContentProps = {
-  run: IWorkflowRun | null;
+  run: WorkflowRun | null;
   step: StepExecutionRecord | null;
   labels: OverviewLabels;
   triggeredAtLabel: string;

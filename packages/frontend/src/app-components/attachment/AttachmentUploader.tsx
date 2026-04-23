@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { AttachmentResourceRef, type Attachment } from "@hexabot-ai/types";
 import {
   Box,
   Button,
@@ -24,7 +25,6 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { AttachmentResourceRef, IAttachment } from "@/types/attachment.types";
 
 import { AttachmentFormDialog } from "./AttachmentFormDialog";
 import AttachmentThumbnail from "./AttachmentThumbnail";
@@ -72,7 +72,7 @@ export type FileUploadProps = {
   imageButton?: boolean;
   accept: string;
   enableMediaLibrary?: boolean;
-  onChange?: (data?: IAttachment | null) => void;
+  onChange?: (data?: Attachment | null) => void;
   onUploadComplete?: () => void;
   resourceRef: AttachmentResourceRef;
 };
@@ -84,7 +84,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   onUploadComplete,
   resourceRef,
 }) => {
-  const [attachment, setAttachment] = useState<IAttachment | undefined>(
+  const [attachment, setAttachment] = useState<Attachment | undefined>(
     undefined,
   );
   const uid = useId();

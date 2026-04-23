@@ -5,6 +5,7 @@
  */
 
 import { BaseWorkflowContext } from '@hexabot-ai/agentic';
+import { WorkflowRunFull } from '@hexabot-ai/types';
 import { forwardRef, Inject, Injectable, Scope } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -18,7 +19,6 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { CredentialService } from '@/user';
 import { cloneObject } from '@/utils/helpers/clone';
-import type { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
 import { WorkflowContextState, WorkflowType } from '@/workflow/types';
 
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
@@ -137,7 +137,11 @@ export abstract class WorkflowRuntimeContext<
     // Hydrate persisted state first, then merge transient event context.
     await this.hydrate(run.context);
     await this.hydrate(event.getContextData());
-    this.initiatorId = run.triggeredBy.id;
+    const triggeredById = run.triggeredBy?.id;
+    if (!triggeredById) {
+      throw new Error(`Workflow run ${run.id} is missing triggeredBy`);
+    }
+    this.initiatorId = triggeredById;
     this.workflowId = run.workflow.id;
     this.workflowRunId = run.id;
     this.threadId = run.thread?.id ?? event.getThreadId() ?? null;

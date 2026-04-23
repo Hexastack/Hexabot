@@ -4,22 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Exclude, Expose } from 'class-transformer';
+import { dummyFullSchema, dummySchema } from '@hexabot-ai/types';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
-import { BaseStub, DtoAction, DtoType, TDto } from '@/utils/types/dto.types';
-
-@Exclude()
-export class DummyStub extends BaseStub {
-  @Expose()
-  dummy!: string;
-
-  @Expose()
-  dynamicField?: Record<string, unknown>;
-}
-
-@Exclude()
-export class Dummy extends DummyStub {}
+import { DtoAction, TDto } from '@/utils/types/dto.types';
 
 export class DummyCreateDto {
   @IsString()
@@ -42,8 +30,8 @@ export class DummyUpdateDto {
 
 export type DummyDto = TDto<
   {
-    [DtoType.PLAIN]: typeof Dummy;
-    [DtoType.FULL]: typeof Dummy;
+    plain: typeof dummySchema;
+    full: typeof dummyFullSchema;
   },
   {
     [DtoAction.CREATE]: DummyCreateDto;

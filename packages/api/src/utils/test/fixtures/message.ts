@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Message } from '@hexabot-ai/types';
 import { DataSource } from 'typeorm';
 
-import { Message, MessageCreateDto } from '@/chat/dto/message.dto';
+import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { MessageOrmEntity } from '@/chat/entities/message.entity';
 import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 

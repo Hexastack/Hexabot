@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Subscriber } from '@/chat';
+import { Subscriber } from '@hexabot-ai/types';
+
 import { SubscriberChannelData } from '@/chat/types/channel';
 import { StdEventType } from '@/chat/types/message';
 import { WorkflowType } from '@/workflow/types';

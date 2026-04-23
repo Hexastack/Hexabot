@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Subscriber, SubscriberFull } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
@@ -14,11 +15,7 @@ import {
   FindAllOptions,
 } from '@/utils/generics/base-orm.repository';
 
-import {
-  Subscriber,
-  SubscriberFull,
-  SubscriberUpdateDto,
-} from '../dto/subscriber.dto';
+import { SubscriberUpdateDto } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 
 @Injectable()

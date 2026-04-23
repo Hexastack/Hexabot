@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { MemoryDefinition, MemoryRecordFull } from '@hexabot-ai/types';
+
 import type { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
-import type { MemoryDefinition } from '../dto/memory-definition.dto';
-import type { MemoryRecordFull } from '../dto/memory-record.dto';
 import { MemoryScope, MemoryValue } from '../types';
 
 import { MemoryStore } from './memory-store';

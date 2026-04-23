@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Content } from '@hexabot-ai/types';
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { Content, ContentCreateDto } from '@/cms/dto/content.dto';
+import { ContentCreateDto } from '@/cms/dto/content.dto';
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 

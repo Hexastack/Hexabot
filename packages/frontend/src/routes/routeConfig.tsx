@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import React, { ReactElement, ReactNode } from "react";
 import {
   IndexRouteObject,
@@ -36,7 +37,6 @@ import { WorkflowRunDebuggerPage } from "@/components/workflow-run-debugger";
 import { WorkflowRuns } from "@/components/workflow-runs";
 import { LayoutProps } from "@/layout";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 export type RouteComponent = React.ComponentType & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -78,30 +78,28 @@ export const routes: RouteObjectItem[] = [
     path: "/workflow/memory-definitions",
     Component: MemoryDefinitions,
     handle: {
-      requiredPermissions: [
-        [EntityType.MEMORY_DEFINITION, PermissionAction.READ],
-      ],
+      requiredPermissions: [[EntityType.MEMORY_DEFINITION, Action.READ]],
     },
   },
   {
     path: "/workflow/runs",
     Component: WorkflowRuns,
     handle: {
-      requiredPermissions: [[EntityType.WORKFLOW_RUN, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.WORKFLOW_RUN, Action.READ]],
     },
   },
   {
     path: "/workflow/mcp-servers",
     Component: McpServers,
     handle: {
-      requiredPermissions: [[EntityType.MCP_SERVER, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.MCP_SERVER, Action.READ]],
     },
   },
   {
     path: "/workflow/:workflowId/runs/:initiatorId",
     Component: WorkflowRunDebuggerPage,
     handle: {
-      requiredPermissions: [[EntityType.WORKFLOW_RUN, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.WORKFLOW_RUN, Action.READ]],
     },
   },
   {
@@ -113,21 +111,21 @@ export const routes: RouteObjectItem[] = [
     path: "/content/persistent-menu",
     Component: Menu,
     handle: {
-      requiredPermissions: [[EntityType.MENU, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.MENU, Action.READ]],
     },
   },
   {
     path: "/content-types",
     Component: ContentTypes,
     handle: {
-      requiredPermissions: [[EntityType.CONTENT_TYPE, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.CONTENT_TYPE, Action.READ]],
     },
   },
   {
     path: "/content-types/content/:id",
     Component: Contents,
     handle: {
-      requiredPermissions: [[EntityType.CONTENT, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.CONTENT, Action.READ]],
     },
   },
   {
@@ -138,49 +136,49 @@ export const routes: RouteObjectItem[] = [
     path: "/subscribers",
     Component: Subscribers,
     handle: {
-      requiredPermissions: [[EntityType.SUBSCRIBER, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.SUBSCRIBER, Action.READ]],
     },
   },
   {
     path: "/subscribers/labels",
     Component: Labels,
     handle: {
-      requiredPermissions: [[EntityType.LABEL, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.LABEL, Action.READ]],
     },
   },
   {
     path: "/users",
     Component: Users,
     handle: {
-      requiredPermissions: [[EntityType.USER, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.USER, Action.READ]],
     },
   },
   {
     path: "/roles",
     Component: Roles,
     handle: {
-      requiredPermissions: [[EntityType.ROLE, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.ROLE, Action.READ]],
     },
   },
   {
     path: "/credentials",
     Component: Credentials,
     handle: {
-      requiredPermissions: [[EntityType.CREDENTIAL, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.CREDENTIAL, Action.READ]],
     },
   },
   {
     path: "/localization/languages",
     Component: Languages,
     handle: {
-      requiredPermissions: [[EntityType.LANGUAGE, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.LANGUAGE, Action.READ]],
     },
   },
   {
     path: "/localization/translations",
     Component: Translations,
     handle: {
-      requiredPermissions: [[EntityType.TRANSLATION, PermissionAction.READ]],
+      requiredPermissions: [[EntityType.TRANSLATION, Action.READ]],
     },
   },
   {
@@ -188,8 +186,8 @@ export const routes: RouteObjectItem[] = [
     Component: Settings,
     handle: {
       requiredPermissions: [
-        [EntityType.SETTING, PermissionAction.READ],
-        [EntityType.SETTING, PermissionAction.UPDATE],
+        [EntityType.SETTING, Action.READ],
+        [EntityType.SETTING, Action.UPDATE],
       ],
     },
   },

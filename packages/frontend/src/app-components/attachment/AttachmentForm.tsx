@@ -4,17 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Attachment } from "@hexabot-ai/types";
 import { GridEventListener } from "@mui/x-data-grid";
 import { FC, Fragment, useState } from "react";
 
 import { MediaLibrary } from "@/components/media-library";
-import { IAttachment } from "@/types/attachment.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 
 export type AttachmentFormData = {
   row?: undefined;
   accept?: string;
-  onChange?: (data?: IAttachment | null) => void;
+  onChange?: (data?: Attachment | null) => void;
 };
 
 export const AttachmentForm: FC<ComponentFormProps<AttachmentFormData>> = ({
@@ -23,7 +23,7 @@ export const AttachmentForm: FC<ComponentFormProps<AttachmentFormData>> = ({
   WrapperProps,
   ...rest
 }) => {
-  const [selected, setSelected] = useState<IAttachment | null>(null);
+  const [selected, setSelected] = useState<Attachment | null>(null);
   const handleSelection: GridEventListener<"rowClick"> = (data) => {
     setSelected(data.row);
   };

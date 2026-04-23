@@ -16,7 +16,9 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@hexabot-ai/types": ["../types/src"],
+      "@hexabot-ai/types/*": ["../types/src/*"]
     },
     "target": "ES2017",
     "types": ["vite/client", "node"]

@@ -27,6 +27,8 @@ export type {
 
 export {
   BaseWorkflowContext,
+  EWorkflowRunStatus,
+  WORKFLOW_RUN_STATUSES,
   type ActionSnapshot,
   type ActionStatus,
   type StepExecutionRecord,

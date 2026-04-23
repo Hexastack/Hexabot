@@ -5,12 +5,14 @@
  */
 
 import {
-  StepExecutionRecord,
-  WorkflowRunStatus,
-  WorkflowSnapshot,
+  WORKFLOW_RUN_STATUSES,
+  type StepExecutionRecord,
+  type WorkflowRunStatus,
+  type WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
+import { workflowRunFullSchema, workflowRunSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsDate,
   IsIn,
@@ -21,121 +23,8 @@ import {
   IsString,
 } from 'class-validator';
 
-import { Subscriber } from '@/chat/dto/subscriber.dto';
-import { Thread } from '@/chat/dto/thread.dto';
-import { User, UserOrmEntity } from '@/user';
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
-
-import { WORKFLOW_RUN_STATUSES } from '../entities/workflow-run.entity';
-import { WorkflowContextState } from '../types';
-import { resolveRunDurationMs } from '../utils/workflow-run-duration';
-
-import { WorkflowVersion } from './workflow-version.dto';
-import { Workflow } from './workflow.dto';
-
-@Exclude()
-export class WorkflowRunStub extends BaseStub {
-  @Expose()
-  status!: WorkflowRunStatus;
-
-  @Expose()
-  input?: Record<string, unknown> | null;
-
-  @Expose()
-  output?: Record<string, unknown> | null;
-
-  @Expose()
-  context: WorkflowContextState;
-
-  @Expose()
-  snapshot?: WorkflowSnapshot | null;
-
-  @Expose()
-  stepLog?: Record<string, StepExecutionRecord> | null;
-
-  @Expose()
-  suspendedStep?: string | null;
-
-  @Expose()
-  suspensionReason?: string | null;
-
-  @Expose()
-  suspensionData?: unknown;
-
-  @Expose()
-  suspensionStepExecId?: string | null;
-
-  @Expose()
-  suspensionIndex?: number | null;
-
-  @Expose()
-  suspensionKey?: string | null;
-
-  @Expose()
-  suspensionAwaitResults?: Record<string, unknown> | null;
-
-  @Expose()
-  lastResumeData?: unknown;
-
-  @Expose()
-  error?: string | null;
-
-  @Expose()
-  suspendedAt?: Date | null;
-
-  @Expose()
-  finishedAt?: Date | null;
-
-  @Expose()
-  failedAt?: Date | null;
-
-  @Expose()
-  @Transform(({ obj }) => resolveRunDurationMs(obj))
-  duration?: number | null;
-
-  @Expose()
-  metadata?: Record<string, unknown> | null;
-}
-
-@Exclude()
-export class WorkflowRun extends WorkflowRunStub {
-  @Expose({ name: 'workflowId' })
-  workflow!: string;
-
-  @Expose({ name: 'workflowVersionId' })
-  @Transform(({ value }) => (value == null ? undefined : value))
-  workflowVersion?: string | null;
-
-  @Expose({ name: 'triggeredById' })
-  @Transform(({ value }) => (value == null ? undefined : value))
-  triggeredBy: string;
-
-  @Expose({ name: 'threadId' })
-  @Transform(({ value }) => (value == null ? undefined : value))
-  thread?: string | null;
-}
-
-@Exclude()
-export class WorkflowRunFull extends WorkflowRunStub {
-  @Expose()
-  @Type(() => Workflow)
-  workflow!: Workflow;
-
-  @Expose()
-  @Type(() => WorkflowVersion)
-  workflowVersion?: WorkflowVersion | null;
-
-  @Expose()
-  @Type((options) =>
-    options?.object.triggeredBy instanceof UserOrmEntity ? User : Subscriber,
-  )
-  triggeredBy: Subscriber | User;
-
-  @Expose()
-  @Type(() => Thread)
-  thread?: Thread | null;
-}
+import { TDto } from '@/utils/types/dto.types';
 
 export class WorkflowRunCreateDto {
   @ApiProperty({ description: 'Workflow to execute', type: String })
@@ -294,8 +183,8 @@ export class WorkflowRunUpdateDto extends PartialType(WorkflowRunCreateDto) {}
 
 export type WorkflowRunDto = TDto<
   {
-    plain: typeof WorkflowRun;
-    full: typeof WorkflowRunFull;
+    plain: typeof workflowRunSchema;
+    full: typeof workflowRunFullSchema;
   },
   {
     create: WorkflowRunCreateDto;

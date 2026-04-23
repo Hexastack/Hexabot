@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Role, User } from '@hexabot-ai/types';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
@@ -18,9 +19,7 @@ import { MailerServiceProvider } from '@/utils/test/providers/mailer-service.pro
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Role } from '../dto/role.dto';
 import {
-  User,
   UserCreateDto,
   UserEditProfileDto,
   UserUpdateStateAndRolesDto,

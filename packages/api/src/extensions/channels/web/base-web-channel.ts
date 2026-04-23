@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Attachment, Subscriber } from '@hexabot-ai/types';
 import {
   HttpException,
   HttpStatus,
@@ -16,7 +17,6 @@ import { Request, Response } from 'express';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
@@ -31,13 +31,14 @@ import { ExtensionInject } from '@/channel/lib/extension-inject.decorator';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { WebSocketChannelHandler } from '@/channel/lib/transports';
 import { ChannelName } from '@/channel/types';
+import { SubscriberChannelData } from '@/chat';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
-import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { MessageService } from '@/chat/services/message.service';
 import {
   StdEventType,
-  StdOutgoingMessageEnvelope,
   StdOutgoingMessage,
+  StdOutgoingMessageEnvelope,
 } from '@/chat/types/message';
 import { ActionOptions } from '@/chat/types/options';
 import { MenuService } from '@/cms/services/menu.service';
@@ -277,8 +278,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     this.logger.debug('subscribe (isSocket=true)');
     try {
       const profile = await this.getOrCreateSession(req);
+      const profileForeignId = profile.foreignId;
+      if (!profileForeignId) {
+        throw new Error('Session profile foreignId is missing');
+      }
       try {
-        await req.socket.join(profile.foreignId);
+        await req.socket.join(profileForeignId);
       } catch (err) {
         this.logger.error('Unable to subscribe via websocket', err);
       }
@@ -462,7 +467,9 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         }
 
         messageEvent.setMessageId(this.generateId());
-        messageEvent.setAuthorForeignId(profile.foreignId);
+        if (profile.foreignId) {
+          messageEvent.setAuthorForeignId(profile.foreignId);
+        }
         messageEvent.setCreatedAt(new Date());
 
         this.broadcast(profile, StdEventType.message, messageEvent.getRaw());
@@ -572,7 +579,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     const sender = event.getInitiator();
     const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = sender;
 
-    return { ...rest, channel: sender.channel };
+    return { ...rest, channel: sender.channel as SubscriberChannelData<N> };
   }
 
   // ── Download access ────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Role } from "@hexabot-ai/types";
 import { TextField } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -14,10 +15,12 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IRole, IRoleAttributes } from "@/types/role.types";
 
-export const RoleForm: FC<ComponentFormProps<IRole>> = ({
+type RoleAttributes = EntityAttributes<EntityType.ROLE>;
+
+export const RoleForm: FC<ComponentFormProps<Role>> = ({
   data: { defaultValues: role },
   Wrapper = Fragment,
   WrapperProps,
@@ -41,7 +44,7 @@ export const RoleForm: FC<ComponentFormProps<IRole>> = ({
     reset,
     register,
     formState: { errors },
-  } = useForm<IRoleAttributes>({
+  } = useForm<RoleAttributes>({
     defaultValues: { name: "" },
   });
   const validationRules = {
@@ -49,7 +52,7 @@ export const RoleForm: FC<ComponentFormProps<IRole>> = ({
       required: t("message.name_is_required"),
     },
   };
-  const onSubmitForm = (params: IRoleAttributes) => {
+  const onSubmitForm = (params: RoleAttributes) => {
     if (role) {
       updateRole({ id: role.id, params });
     } else {

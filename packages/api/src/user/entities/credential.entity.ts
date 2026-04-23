@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { credentialSchema, credentialFullSchema } from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -16,20 +17,16 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
-import {
-  Credential,
-  CredentialDto,
-  CredentialFull,
-} from '../dto/credential.dto';
+import { CredentialDto } from '../dto/credential.dto';
 
 import { UserOrmEntity } from './user.entity';
 
 @Entity({ name: 'credentials' })
 @Index(['name'], { unique: true })
 export class CredentialOrmEntity extends BaseOrmEntity<CredentialDto> {
-  plainCls = Credential;
+  plainCls = credentialSchema;
 
-  fullCls = CredentialFull;
+  fullCls = credentialFullSchema;
 
   @Column()
   name!: string;

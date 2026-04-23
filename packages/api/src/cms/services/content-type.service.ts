@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ContentType } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { JSONSchema7 } from 'json-schema';
 
 import { InferCreateDto } from '@/utils';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ContentType } from '../dto/contentType.dto';
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 

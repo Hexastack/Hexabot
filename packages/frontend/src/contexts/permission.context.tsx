@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { createContext } from "react";
 
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 export const PermissionContext = createContext<{
-  getAllowedActions: (_type: EntityType) => undefined | PermissionAction[];
+  getAllowedActions: (_type: EntityType) => undefined | Action[];
 }>({
   getAllowedActions: (_type: EntityType) => undefined,
 });

@@ -7,6 +7,10 @@
 import { createHash } from 'crypto';
 
 import {
+  workflowVersionSchema,
+  workflowVersionFullSchema,
+} from '@hexabot-ai/types';
+import {
   Column,
   Entity,
   Index,
@@ -25,11 +29,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils';
 
-import {
-  WorkflowVersion,
-  WorkflowVersionDto,
-  WorkflowVersionFull,
-} from '../dto/workflow-version.dto';
+import { WorkflowVersionDto } from '../dto/workflow-version.dto';
 import { WorkflowVersionAction } from '../types';
 
 import { WorkflowOrmEntity } from './workflow.entity';
@@ -37,9 +37,9 @@ import { WorkflowOrmEntity } from './workflow.entity';
 @Entity({ name: 'workflow_versions' })
 @Index(['workflow', 'version'], { unique: true })
 export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionDto> {
-  plainCls = WorkflowVersion;
+  plainCls = workflowVersionSchema;
 
-  fullCls = WorkflowVersionFull;
+  fullCls = workflowVersionFullSchema;
 
   /** Workflow that owns this version snapshot. */
   @ManyToOne(() => WorkflowOrmEntity, {

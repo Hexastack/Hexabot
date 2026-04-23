@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Subscriber, SubscriberFull } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -22,11 +23,7 @@ import { generateInitialsAvatar } from '@/utils/helpers/avatar';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
-import {
-  Subscriber,
-  SubscriberFull,
-  SubscriberUpdateDto,
-} from '../dto/subscriber.dto';
+import { SubscriberUpdateDto } from '../dto/subscriber.dto';
 import { SubscriberOrmEntity } from '../entities/subscriber.entity';
 import { SubscriberService } from '../services/subscriber.service';
 

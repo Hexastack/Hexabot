@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Thread } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 
 import { inferOutgoingMessageEnvelope } from '@/channel/lib/outbound';
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { ChannelName } from '@/channel/types';
-import { Thread } from '@/chat/dto/thread.dto';
 import { MessageService } from '@/chat/services/message.service';
 import { PayloadType } from '@/chat/types/button';
 import {

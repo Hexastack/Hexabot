@@ -4,7 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-export type UserProvider = {
-  strategy: 'local';
-  sub?: string;
-};
+export type { UserProvider } from '@hexabot-ai/types';

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { WorkflowType } from "@hexabot-ai/types";
 import {
   Avatar,
   FormControl,
@@ -21,7 +22,6 @@ import { alpha } from "@mui/material/styles";
 import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
 import { useTranslate } from "@/hooks/useTranslate";
 import type { TTranslationKeys } from "@/i18n/i18n.types";
-import { WorkflowType } from "@/types/workfow.types";
 
 type WorkflowTypeSelectorProps = {
   name: string;

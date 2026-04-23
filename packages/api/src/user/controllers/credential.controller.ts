@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Credential, CredentialFull } from '@hexabot-ai/types';
 import {
   Body,
   Controller,
@@ -26,9 +27,7 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 
 import {
-  Credential,
   CredentialCreateDto,
-  CredentialFull,
   CredentialUpdateDto,
 } from '../dto/credential.dto';
 import { CredentialOrmEntity } from '../entities/credential.entity';

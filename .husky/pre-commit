@@ -19,6 +19,9 @@ run_checks() {
         if [ "$path" = "packages/agentic" ]; then
             pnpm test # Run unit tests
         fi
+        if [ "$path" = "packages/types" ]; then
+            pnpm test # Run unit tests
+        fi
         cd - > /dev/null
     else
         echo "${YELLOW}No changes detected in ${path}, skipping checks and tests.${NC}"
@@ -32,5 +35,6 @@ run_checks "frontend"
 run_checks "graph"
 run_checks "cli"
 run_checks "agentic"
+run_checks "types"
 run_checks "api" 
 echo "\n${GREEN}Pre-commit checks completed successfully.${NC}\n"

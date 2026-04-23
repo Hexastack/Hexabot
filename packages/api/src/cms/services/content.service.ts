@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { ContentFull, ContentType } from '@hexabot-ai/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import Papa from 'papaparse';
 import { FindManyOptions, FindOptionsWhere } from 'typeorm';
@@ -12,8 +13,7 @@ import { StdOutgoingListMessage } from '@/chat/types/message';
 import { ContentOptions } from '@/chat/types/options';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ContentCreateDto, ContentFull } from '../dto/content.dto';
-import { ContentType } from '../dto/contentType.dto';
+import { ContentCreateDto } from '../dto/content.dto';
 import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentRepository } from '../repositories/content.repository';
 import { RagHit, RagQueryOptions } from '../types/rag';

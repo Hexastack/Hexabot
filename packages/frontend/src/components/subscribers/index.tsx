@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
 import { UserCircle } from "lucide-react";
 import { useMemo } from "react";
@@ -20,8 +21,7 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useQueryState } from "@/hooks/useQueryState";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
-import { ISubscriber } from "@/types/subscriber.types";
+import { Subscriber } from "@/types/subscriber.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { SubscriberFormDialog } from "./SubscriberFormDialog";
@@ -29,7 +29,7 @@ import { SubscriberFormDialog } from "./SubscriberFormDialog";
 export const Subscribers = () => {
   const { t } = useTranslate();
   const dialogs = useDialogs();
-  const actionColumns = useActionColumns<ISubscriber>(
+  const actionColumns = useActionColumns<Subscriber>(
     EntityType.SUBSCRIBER,
     [
       {
@@ -37,12 +37,12 @@ export const Subscribers = () => {
         onClick: (row) => {
           dialogs.open(SubscriberFormDialog, { defaultValues: row });
         },
-        requires: [PermissionAction.UPDATE],
+        requires: [Action.UPDATE],
       },
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<ISubscriber>[] = [
+  const columns: GridColDef<Subscriber>[] = [
     { field: "id", headerName: "ID" },
     {
       maxWidth: 64,

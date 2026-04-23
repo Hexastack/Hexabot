@@ -12,13 +12,13 @@ import {
   WorkflowRunner,
   WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
+import type { User, WorkflowRunFull, WorkflowFull } from '@hexabot-ai/types';
 import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
 
 import { ActionService } from '@/actions/actions.service';
 import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { User } from '@/user';
 import {
   installMessagingWorkflowFixturesTypeOrm,
   messagingWorkflowDefinition,
@@ -26,8 +26,6 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { WorkflowContextFactory } from '@/workflow/contexts/workflow-context-factory';
-import { WorkflowRunFull } from '@/workflow/dto/workflow-run.dto';
-import { WorkflowFull } from '@/workflow/dto/workflow.dto';
 import { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 import { ManualEventWrapper } from '@/workflow/lib/trigger-event-wrapper';

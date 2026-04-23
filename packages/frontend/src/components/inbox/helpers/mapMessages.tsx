@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Message as MessageEntity, MessageFull } from "@hexabot-ai/types";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
@@ -16,7 +17,6 @@ import React, { ReactNode } from "react";
 
 import { ROUTES } from "@/services/api.class";
 import { EntityType } from "@/services/types";
-import { IMessage, IMessageFull } from "@/types/message.types";
 import { buildURL } from "@/utils/URL";
 
 import { Message, MessageModel } from "../chat-ui-kit";
@@ -25,8 +25,8 @@ import { Carousel } from "../components/Carousel";
 import GeolocationMessage from "../components/GeolocationMessage";
 
 function hasSameSender(
-  m1: IMessage | IMessageFull,
-  m2: IMessage | IMessageFull,
+  m1: MessageEntity | MessageFull,
+  m2: MessageEntity | MessageFull,
 ): boolean {
   const sender1 = typeof m1.sender === "string" ? m1.sender : m1.sender?.id;
   const sender2 = typeof m2.sender === "string" ? m2.sender : m2.sender?.id;
@@ -35,8 +35,8 @@ function hasSameSender(
 }
 
 function hasSameRecipient(
-  m1: IMessage | IMessageFull,
-  m2: IMessage | IMessageFull,
+  m1: MessageEntity | MessageFull,
+  m2: MessageEntity | MessageFull,
 ): boolean {
   const recipient1 =
     typeof m1.recipient === "string" ? m1.recipient : m1.recipient?.id;
@@ -50,8 +50,8 @@ function hasSameRecipient(
  * @description Two messages are concidered from the same source if they have equal properties of sender, sentBy and recipient.
  */
 export function isSubsequent(
-  currMessage: IMessageFull | IMessage | undefined,
-  nextMessage: IMessageFull | IMessage | undefined,
+  currMessage: MessageFull | MessageEntity | undefined,
+  nextMessage: MessageFull | MessageEntity | undefined,
 ): boolean {
   if (!currMessage) return false;
   if (!nextMessage) return false;
@@ -145,7 +145,7 @@ function formatMessageText(text: string, theme: Theme): ReactNode {
  * @description this function constructs the message children basen on message type
  */
 export function getMessageContent(
-  messageEntity: IMessageFull | IMessage,
+  messageEntity: MessageFull | MessageEntity,
   theme: Theme,
   formattedTimestamp?: string,
   normalizedTimestamp?: string,
@@ -300,9 +300,9 @@ export function getAvatarSrc(
 }
 
 export function getMessagePosition(
-  currentMessage: IMessageFull | IMessage,
-  previousMessage?: IMessageFull | IMessage,
-  nextMessage?: IMessageFull | IMessage,
+  currentMessage: MessageFull | MessageEntity,
+  previousMessage?: MessageFull | MessageEntity,
+  nextMessage?: MessageFull | MessageEntity,
 ): MessageModel["position"] {
   // If there is no previous and no next message, it's a single message
   if (!previousMessage && !nextMessage) {

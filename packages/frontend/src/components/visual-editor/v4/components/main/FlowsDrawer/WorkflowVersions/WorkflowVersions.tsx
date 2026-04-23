@@ -50,7 +50,11 @@ export const WorkflowVersions = () => {
   const publishedVersionId = workflow?.publishedVersion;
   const isBusy = isLoading || isFetching;
   const getUserLabel = useCallback(
-    (createdBy: string) => {
+    (createdBy: string | null) => {
+      if (!createdBy) {
+        return t("visual_editor.workflow_versions.system");
+      }
+
       const user = getUserFromCache(createdBy);
 
       if (!user) {
@@ -58,11 +62,10 @@ export const WorkflowVersions = () => {
       }
 
       const email = typeof user.email === "string" ? user.email : "";
+      const fullName = `${user.firstName} ${user.lastName}`.trim();
 
       return (
-        user.fullName ||
-        email ||
-        t("visual_editor.workflow_versions.unknown_user")
+        fullName || email || t("visual_editor.workflow_versions.unknown_user")
       );
     },
     [getUserFromCache, t],

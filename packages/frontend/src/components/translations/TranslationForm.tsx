@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { Language, Translation } from "@hexabot-ai/types";
 import { FormLabel, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { FC, Fragment } from "react";
@@ -15,17 +16,14 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ILanguage } from "@/types/language.types";
-import {
-  ITranslation,
-  ITranslationAttributes,
-  ITranslations,
-} from "@/types/translation.types";
+
+type TranslationAttributes = EntityAttributes<EntityType.TRANSLATION>;
 
 interface TranslationInputProps {
-  field: ControllerRenderProps<ITranslationAttributes>;
-  language: ILanguage;
+  field: ControllerRenderProps<TranslationAttributes>;
+  language: Language;
 }
 
 const TranslationInput: React.FC<TranslationInputProps> = ({
@@ -46,7 +44,7 @@ const TranslationInput: React.FC<TranslationInputProps> = ({
   />
 );
 
-export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
+export const TranslationForm: FC<ComponentFormProps<Translation>> = ({
   data: { defaultValues: translation },
   Wrapper = Fragment,
   WrapperProps,
@@ -70,12 +68,12 @@ export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
       toast.success(t("message.success_save"));
     },
   });
-  const { control, handleSubmit } = useForm<ITranslationAttributes>({
+  const { control, handleSubmit } = useForm<TranslationAttributes>({
     defaultValues: {
       translations: translation?.translations,
     },
   });
-  const onSubmitForm = (params: ITranslationAttributes) => {
+  const onSubmitForm = (params: TranslationAttributes) => {
     if (translation?.id) updateTranslation({ id: translation.id, params });
   };
 
@@ -92,7 +90,7 @@ export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
             .map((language) => (
               <ContentItem key={language.code}>
                 <Controller
-                  name={`translations.${language.code as keyof ITranslations}`}
+                  name={`translations.${language.code as keyof Translation["translations"]}`}
                   control={control}
                   render={({ field }) => (
                     <TranslationInput field={field} language={language} />

@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Action } from "@hexabot-ai/types";
 import { type ReactNode, useCallback, useMemo } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
@@ -11,7 +12,6 @@ import { PermissionContext } from "@/contexts/permission.context";
 import { useApiClientQuery } from "@/hooks/useApiClient";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
 
 interface PermissionProviderProps {
   children: ReactNode;
@@ -41,7 +41,7 @@ export const PermissionProvider = ({
 
           return acc;
         },
-        {} as { [key in EntityType]?: PermissionAction[] },
+        {} as { [key in EntityType]?: Action[] },
       ),
     [data?.permissions],
   );

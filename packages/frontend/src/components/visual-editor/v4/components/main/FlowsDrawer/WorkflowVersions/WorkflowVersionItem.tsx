@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { WorkflowVersion } from "@hexabot-ai/types";
 import {
   TimelineConnector,
   TimelineContent,
@@ -14,14 +15,13 @@ import {
 import { Paper } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
-import type { IWorkflowVersion } from "@/types/workfow-version.types";
 import { formatSmartDate, normalizeDate } from "@/utils/date";
 
 import { useWorkflowVersionActionMeta } from "./useWorkflowVersionActionMeta";
 import { WorkflowVersionMetaRow } from "./WorkflowVersionMetaRow";
 
 type WorkflowVersionItemProps = {
-  version: IWorkflowVersion;
+  version: WorkflowVersion;
   index: number;
   total: number;
   currentVersionId?: string | null;
@@ -31,7 +31,7 @@ type WorkflowVersionItemProps = {
   onPublish: (id: string) => void;
   onUnpublish: () => void;
   onUpdateMessage: (id: string, message: string) => void;
-  getUserLabel: (createdBy: string) => string;
+  getUserLabel: (createdBy: string | null) => string;
   language: string;
 };
 

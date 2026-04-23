@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Subscriber } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 
-import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 
 import type ChannelInboundEvent from '../lib/inbound-events/channel-inbound-event';

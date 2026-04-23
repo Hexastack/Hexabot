@@ -18,6 +18,7 @@ This file defines repository-wide instructions for AI coding agents working in t
   - `packages/cli` (`@hexabot-ai/cli`)
   - `packages/graph` (`@hexabot-ai/graph`)
   - `packages/agentic` (`@hexabot-ai/agentic`)
+  - `packages/types` (`@hexabot-ai/types`)
 - Deployment/dev infra is under `docker/`.
 
 ## Environment prerequisites

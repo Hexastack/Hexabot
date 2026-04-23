@@ -4,8 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  memoryDefinitionFullSchema,
+  memoryDefinitionSchema,
+} from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
@@ -19,33 +22,9 @@ import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { z } from 'zod';
 
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { BaseStub, TDto } from '@/utils/types/dto.types';
+import { TDto } from '@/utils/types/dto.types';
 
 import { MemoryScope } from '../types';
-
-@Exclude()
-export class MemoryDefinitionStub extends BaseStub {
-  @Expose()
-  name!: string;
-
-  @Expose()
-  slug!: string;
-
-  @Expose()
-  scope!: MemoryScope;
-
-  @Expose()
-  schema!: JsonSchema;
-
-  @Expose()
-  ttlSeconds?: number | null;
-}
-
-@Exclude()
-export class MemoryDefinition extends MemoryDefinitionStub {}
-
-@Exclude()
-export class MemoryDefinitionFull extends MemoryDefinitionStub {}
 
 export class MemoryDefinitionCreateDto {
   @ApiProperty({ description: 'Memory definition name', type: String })
@@ -97,8 +76,8 @@ export class MemoryDefinitionUpdateDto extends PartialType(
 
 export type MemoryDefinitionDto = TDto<
   {
-    plain: typeof MemoryDefinition;
-    full: typeof MemoryDefinitionFull;
+    plain: typeof memoryDefinitionSchema;
+    full: typeof memoryDefinitionFullSchema;
   },
   {
     create: MemoryDefinitionCreateDto;

@@ -4,9 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Message } from '@hexabot-ai/types';
 import { z } from 'zod';
-
-import { Message } from '../dto/message.dto';
 
 import { attachmentPayloadSchema } from './attachment';
 import { buttonSchema, PayloadType } from './button';

@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/dto/attachment.dto';
+import type { Attachment } from '@hexabot-ai/types';
+
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { ChannelInboundEventContext } from '@/channel/lib/inbound-events';
 import { ChannelName } from '@/channel/types';

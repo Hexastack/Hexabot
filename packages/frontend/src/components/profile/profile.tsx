@@ -19,10 +19,10 @@ import { useApiClientMutation } from "@/hooks/useApiClient";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
-import { IProfileAttributes, IUser } from "@/types/user.types";
+import { User, IProfileAttributes } from "@/types/user.types";
 import { MIME_TYPES } from "@/utils/attachment";
 
-type ProfileFormProps = { user: IUser };
+type ProfileFormProps = { user: User };
 
 export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
   const { t } = useTranslate();

@@ -6,7 +6,6 @@
 
 import { z } from 'zod';
 
-import { Setting } from './dto/setting.dto';
 import { RuntimeSettingGroupSchema, RuntimeSettings } from './runtime-settings';
 
 declare global {
