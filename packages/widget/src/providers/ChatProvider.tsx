@@ -276,13 +276,15 @@ const defaultCtx: ChatContextType = {
   handleSubscription: () => {},
   profile: undefined,
   subscribe: async () => {
-    return new Promise(() => {});
+    throw new Error("ChatProvider.subscribe is not available outside provider");
   },
   sendGetStarted: async () => {
-    return new Promise(() => {});
+    throw new Error(
+      "ChatProvider.sendGetStarted is not available outside provider",
+    );
   },
 };
-const ChatContext = createContext<ChatContextType>(defaultCtx);
+const ChatContext = createContext<ChatContextType | undefined>(undefined);
 const ChatProvider: React.FC<{
   wantToConnect?: () => void;
   defaultConnectionState?: ConnectionState;

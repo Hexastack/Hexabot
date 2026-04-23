@@ -55,8 +55,6 @@ const MenuButton: React.FC = () => {
   };
   const handlePostback = (item: Web.InboundPayloadMessageData) => {
     send({
-      // @ts-expect-error todo
-      event: new Event("postback"),
       source: "persistent-menu",
       data: {
         type: Web.InboundMessageType.postback,

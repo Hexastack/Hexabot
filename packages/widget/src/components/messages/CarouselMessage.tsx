@@ -29,7 +29,6 @@ interface MessageCarousel {
 
 type CarouselItemProps = {
   message: Element;
-  idx: number;
 };
 
 const CarouselItem: React.FC<CarouselItemProps> = ({ message }) => (
@@ -88,7 +87,7 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
         style={{ transform: `translateX(-${activeIndex * 100}%)` }}
       >
         {items.map((message, idx) => (
-          <CarouselItem key={idx} message={message} idx={idx} />
+          <CarouselItem key={idx} message={message} />
         ))}
       </div>
       {shouldDisplayNavigationButtons && (
