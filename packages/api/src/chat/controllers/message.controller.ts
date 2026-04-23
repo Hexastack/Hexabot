@@ -6,7 +6,17 @@
 
 import { randomUUID } from 'crypto';
 
-import { Message, MessageFull, Thread } from '@hexabot-ai/types';
+import {
+  Message,
+  MessageFull,
+  Thread,
+  IncomingMessageType,
+  OutgoingMessage,
+  OutgoingMessageFormat,
+  StdOutgoingEnvelope,
+  StdOutgoingMessage,
+  StdOutgoingTextMessage,
+} from '@hexabot-ai/types';
 import {
   BadRequestException,
   Body,
@@ -37,14 +47,6 @@ import { MessageOrmEntity } from '../entities/message.entity';
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
 import { ThreadService } from '../services/thread.service';
-import {
-  IncomingMessageType,
-  OutgoingMessage,
-  OutgoingMessageFormat,
-  StdOutgoingEnvelope,
-  StdOutgoingMessage,
-  StdOutgoingTextMessage,
-} from '../types/message';
 
 @Controller('message')
 export class MessageController extends BaseOrmController<MessageOrmEntity> {

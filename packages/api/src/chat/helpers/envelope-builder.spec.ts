@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { z } from 'zod';
-
 import {
   OutgoingMessageFormat,
   StdOutgoingQuickRepliesEnvelope,
@@ -13,7 +11,8 @@ import {
   StdOutgoingTextEnvelope,
   stdOutgoingTextEnvelopeSchema,
   stdOutgoingTextMessageSchema,
-} from '../types/message';
+} from '@hexabot-ai/types';
+import { z } from 'zod';
 
 import { EnvelopeBuilder, getEnvelopeBuilder } from './envelope-builder';
 

@@ -4,7 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { messageFullSchema, messageSchema } from '@hexabot-ai/types';
+import {
+  messageFullSchema,
+  messageSchema,
+  StdIncomingMessage,
+  StdOutgoingMessage,
+  validMessageTextSchema,
+} from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -17,12 +23,6 @@ import {
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { TDto } from '@/utils/types/dto.types';
-
-import {
-  StdIncomingMessage,
-  StdOutgoingMessage,
-  validMessageTextSchema,
-} from '../types/message';
 
 export class MessageCreateDto {
   @ApiProperty({ description: 'Message id', type: String })

@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { OutgoingMessageFormat, ContentOptions } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
-import { OutgoingMessageFormat } from '@/chat/types/message';
-import { ContentOptions } from '@/chat/types/options';
 import { LoggerService } from '@/logger/logger.service';
 import {
   contentFixtures,

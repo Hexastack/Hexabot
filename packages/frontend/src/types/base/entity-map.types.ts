@@ -48,6 +48,8 @@ import type {
   WorkflowRunFull,
   WorkflowVersion,
   WorkflowVersionFull,
+  StdIncomingMessage,
+  StdOutgoingMessage,
 } from "@hexabot-ai/types";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { JSONSchema7 as JsonSchema } from "json-schema";
@@ -58,7 +60,6 @@ import { EntityType } from "@/services/types";
 import type { IChannel } from "../channel.types";
 import type { IHelper } from "../helper.types";
 import type { IMenuNode, IMenuNodeFull } from "../menu-tree.types";
-import type { StdIncomingMessage, StdOutgoingMessage } from "../message.types";
 import type { ILicense } from "../user.types";
 
 type EntityPayload<

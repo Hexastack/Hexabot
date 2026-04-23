@@ -11,6 +11,10 @@ import { baseStubSchema } from "../shared/base";
 import { preprocess } from "../shared/preprocess";
 import { userSchema } from "../user/user";
 
+import {
+  StdOutgoingMessageSchema,
+  stdIncomingMessageSchema,
+} from "./message-contract";
 import { subscriberSchema } from "./subscriber";
 import { threadSchema } from "./thread";
 
@@ -20,10 +24,10 @@ const messageAliasMap = {
   sentById: "sentBy",
   threadId: "thread",
 } as const;
-const messagePayloadSchema = preprocess(
-  (value) => (value == null ? {} : value),
-  z.any(),
-);
+const messagePayloadSchema = z.union([
+  stdIncomingMessageSchema,
+  StdOutgoingMessageSchema,
+]);
 const messageStubObjectSchema = baseStubSchema.extend({
   mid: z.string().optional(),
   message: messagePayloadSchema,

@@ -546,6 +546,9 @@ importers:
       '@hexabot-ai/graph':
         specifier: workspace:*
         version: link:../graph
+      '@hexabot-ai/types':
+        specifier: workspace:*
+        version: link:../types
       '@hexabot-ai/widget':
         specifier: workspace:*
         version: link:../widget

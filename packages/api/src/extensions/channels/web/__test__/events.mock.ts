@@ -4,8 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { FileType } from '@/chat/types/attachment';
-import { IncomingMessageType, StdEventType } from '@/chat/types/message';
+import { FileType, IncomingMessageType, StdEventType } from '@hexabot-ai/types';
 
 import { Web } from '../types';
 

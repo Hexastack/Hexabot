@@ -64,14 +64,4 @@ export * from './services/subscriber.service';
 
 export * from './services/thread.service';
 
-export * from './types/attachment';
-
-export * from './types/button';
-
 export * from './types/channel';
-
-export * from './types/message';
-
-export * from './types/options';
-
-export * from './types/quick-reply';

@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { z } from 'zod';
-
 import {
   incomingMessageType,
   stdIncomingMessageSchema,
-} from '@/chat/types/message';
-import { payloadSchema } from '@/chat/types/quick-reply';
+  payloadSchema,
+} from '@hexabot-ai/types';
+import { z } from 'zod';
+
 import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 
 export const conversationalWorkflowInputZodSchema = z

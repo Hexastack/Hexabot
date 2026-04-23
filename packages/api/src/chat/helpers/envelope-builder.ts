@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import { z } from 'zod';
-
 import {
   OutgoingMessageFormat,
   StdOutgoingAttachmentEnvelope,
@@ -22,7 +20,8 @@ import {
   stdOutgoingSystemEnvelopeSchema,
   StdOutgoingTextEnvelope,
   stdOutgoingTextEnvelopeSchema,
-} from '../types/message';
+} from '@hexabot-ai/types';
+import { z } from 'zod';
 
 type ArrayKeys<T> = {
   [K in keyof T]: NonNullable<T[K]> extends Array<any> ? K : never;

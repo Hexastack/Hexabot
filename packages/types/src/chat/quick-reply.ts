@@ -1,23 +1,23 @@
 /*
  * Hexabot — Fair Core License (FCL-1.0-ALv2)
- * Copyright (c) 2025 Hexastack.
+ * Copyright (c) 2026 Hexastack.
  * Full terms: see LICENSE.md.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
-import { attachmentPayloadSchema } from './attachment';
-import { PayloadType } from './button';
+import { attachmentPayloadSchema } from "./attachment";
+import { PayloadType } from "./button";
 
-export const cordinatesSchema = z.object({
+export const coordinatesSchema = z.object({
   lat: z.number(),
   lon: z.number(),
 });
 
-export const payloadSchema = z.discriminatedUnion('type', [
+export const payloadSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal(PayloadType.location),
-    coordinates: cordinatesSchema,
+    coordinates: coordinatesSchema,
   }),
   z.object({
     type: z.literal(PayloadType.attachments),
@@ -27,12 +27,12 @@ export const payloadSchema = z.discriminatedUnion('type', [
 
 export const stdQuickReplySchema = z.object({
   title: z.string().meta({
-    title: 'Title',
-    description: 'The label shown to the user.',
+    title: "Title",
+    description: "The label shown to the user.",
   }),
   payload: z.string().meta({
-    title: 'Payload',
-    description: 'The value sent back when the quick reply is selected.',
+    title: "Payload",
+    description: "The value sent back when the quick reply is selected.",
   }),
 });
 

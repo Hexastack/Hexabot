@@ -4,14 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  ButtonType,
+  OutgoingMessageFormat,
+  ContentOptions,
+  contentOptionsSchema,
+} from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
-import { ButtonType } from '@/chat';
-import { OutgoingMessageFormat } from '@/chat/types/message';
-import { ContentOptions, contentOptionsSchema } from '@/chat/types/options';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 

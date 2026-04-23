@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TAttachmentForeignKey } from "@hexabot-ai/types";
+
 import { EntityType } from "@/services/types";
-import { TAttachmentForeignKey } from "@/types/message.types";
 import {
   extractFilenameFromUrl,
   getAttachmentDownloadUrl,

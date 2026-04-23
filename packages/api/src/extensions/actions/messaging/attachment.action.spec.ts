@@ -4,12 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionService } from '@/actions/actions.service';
-import { FileType } from '@/chat/types/attachment';
 import {
+  FileType,
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
+} from '@hexabot-ai/types';
+
+import { ActionService } from '@/actions/actions.service';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { SendAttachmentAction } from './attachment.action';

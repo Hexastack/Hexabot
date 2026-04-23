@@ -4,13 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  attachmentPayloadSchema,
+  FileType,
+  stdQuickReplySchema,
+} from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
 
 import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
-import { attachmentPayloadSchema, FileType } from '@/chat/types/attachment';
-import { stdQuickReplySchema } from '@/chat/types/quick-reply';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import {

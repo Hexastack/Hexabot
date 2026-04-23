@@ -6,6 +6,17 @@
 
 import type { Attachment, Subscriber, Thread } from '@hexabot-ai/types';
 import {
+  ActionOptions,
+  AnyMessage,
+  IncomingMessage,
+  OutgoingMessage,
+  OutgoingMessageFormat,
+  PayloadType,
+  StdEventType,
+  StdOutgoingEnvelope,
+  StdOutgoingMessage,
+} from '@hexabot-ai/types';
+import {
   HttpException,
   HttpStatus,
   Inject,
@@ -36,17 +47,6 @@ import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ThreadService } from '@/chat/services/thread.service';
-import { PayloadType } from '@/chat/types/button';
-import {
-  AnyMessage,
-  IncomingMessage,
-  OutgoingMessage,
-  OutgoingMessageFormat,
-  StdEventType,
-  StdOutgoingEnvelope,
-  StdOutgoingMessage,
-} from '@/chat/types/message';
-import { ActionOptions } from '@/chat/types/options';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
 import { SocketRequest } from '@/websocket/utils/socket-request';

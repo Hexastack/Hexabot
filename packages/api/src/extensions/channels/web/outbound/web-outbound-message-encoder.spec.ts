@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { OutgoingMessageFormat } from '@hexabot-ai/types';
+
 import {
   attachmentMessage,
   buttonsMessage,
@@ -12,7 +14,6 @@ import {
   textMessage,
 } from '@/channel/lib/__test__/common.mock';
 import { UnsupportedOutgoingFormatError } from '@/channel/lib/outbound';
-import { OutgoingMessageFormat } from '@/chat/types/message';
 
 import {
   webAttachment,

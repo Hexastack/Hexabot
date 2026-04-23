@@ -5,16 +5,17 @@
  */
 
 import {
+  OutgoingMessageFormat,
+  StdOutgoingMessageEnvelope,
+} from '@hexabot-ai/types';
+
+import {
   attachmentMessage,
   buttonsMessage,
   contentMessage,
   quickRepliesMessage,
   textMessage,
 } from '@/channel/lib/__test__/common.mock';
-import {
-  OutgoingMessageFormat,
-  StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
 
 import {
   ChannelOutboundMessageEncoder,

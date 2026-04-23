@@ -13,7 +13,7 @@ import {
   StdOutgoingMessageEnvelope,
   StdOutgoingQuickRepliesEnvelope,
   StdOutgoingTextEnvelope,
-} from '@/chat/types/message';
+} from '@hexabot-ai/types';
 
 export class UnsupportedOutgoingFormatError extends Error {
   constructor(

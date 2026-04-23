@@ -4,15 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Injectable, Type } from '@nestjs/common';
-
-import { ChannelOutboundMessageEncoder } from '@/channel/lib/outbound';
-import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
-import { ChannelName } from '@/channel/types';
-import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
-import { AttachmentRef } from '@/chat/types/attachment';
-import { Button, ButtonType } from '@/chat/types/button';
 import {
+  ActionOptions,
+  AttachmentRef,
+  Button,
+  ButtonType,
   ContentElement,
   OutgoingMessageFormat,
   StdOutgoingAttachmentMessage,
@@ -21,8 +17,13 @@ import {
   StdOutgoingMessageEnvelope,
   StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
-} from '@/chat/types/message';
-import { ActionOptions } from '@/chat/types/options';
+} from '@hexabot-ai/types';
+import { Injectable, Type } from '@nestjs/common';
+
+import { ChannelOutboundMessageEncoder } from '@/channel/lib/outbound';
+import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
+import { ChannelName } from '@/channel/types';
+import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { I18nService } from '@/i18n';
 import { LoggerService } from '@/logger';

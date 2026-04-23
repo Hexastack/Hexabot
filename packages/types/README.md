@@ -32,6 +32,34 @@ import {
 const payload: SubscriberFull = subscriberFullSchema.parse(data);
 ```
 
+## Shared Chat Message Contracts
+
+Chat message payload contracts are now centralized in `@hexabot-ai/types` and exported from package root.
+
+```ts
+import {
+  ActionOptionsSchema,
+  ButtonType,
+  FileType,
+  OutgoingMessageFormat,
+  StdOutgoingMessageSchema,
+  attachmentPayloadSchema,
+  messageSchema,
+  stdIncomingMessageSchema,
+  stdOutgoingEnvelopeSchema,
+} from "@hexabot-ai/types";
+```
+
+Notable chat exports:
+
+- Attachment contracts: `FileType`, `attachmentRefSchema`, `attachmentPayloadSchema`, `AttachmentPayload`, `IAttachmentPayload`, `TAttachmentForeignKey`
+- Button contracts: `ButtonType`, `PayloadType`, `buttonSchema`, `Button`, `AnyButton`
+- Quick replies: `stdQuickReplySchema`, `payloadSchema`, `StdQuickReply`, `Payload`
+- Content/action options: `contentOptionsSchema`, `fallbackOptionsSchema`, `ActionOptionsSchema`
+- Message payload + envelope contracts: `StdOutgoingMessageSchema`, `stdIncomingMessageSchema`, `stdOutgoingEnvelopeSchema`, `OutgoingMessageFormat`, `IncomingMessageType`
+
+The shared `messageSchema` is strict and validates `message` as a `StdIncomingMessage | StdOutgoingMessage` union (plain string payloads are rejected).
+
 ## Workflow Parser Bridge
 
 Use a parser-aware full workflow schema to preserve `definitionYml` and `definition` derivation:

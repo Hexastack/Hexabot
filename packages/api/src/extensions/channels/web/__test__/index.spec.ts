@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { OutgoingMessageFormat, StdEventType } from '@hexabot-ai/types';
 import { JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
@@ -15,7 +16,6 @@ import { ChannelAttachmentService } from '@/channel/services/channel-attachment.
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ThreadService } from '@/chat/services/thread.service';
-import { OutgoingMessageFormat, StdEventType } from '@/chat/types/message';
 import { MenuService } from '@/cms/services/menu.service';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
 import { installMessageFixturesTypeOrm } from '@/utils/test/fixtures/message';

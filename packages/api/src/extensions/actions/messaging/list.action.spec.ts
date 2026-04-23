@@ -4,9 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
+import { OutgoingMessageFormat, ContentOptions } from '@hexabot-ai/types';
+
 import { ActionService } from '@/actions/actions.service';
-import { OutgoingMessageFormat } from '@/chat/types/message';
-import { ContentOptions } from '@/chat/types/options';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { SendListAction } from './list.action';

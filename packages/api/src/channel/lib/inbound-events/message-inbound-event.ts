@@ -8,8 +8,9 @@ import {
   IncomingMessageType,
   StdEventType,
   StdIncomingMessage,
-} from '@/chat/types/message';
-import { Payload } from '@/chat/types/quick-reply';
+  Payload,
+} from '@hexabot-ai/types';
+
 import { ConversationalWorkflowInput } from '@/workflow/schemas/workflow-input-schemas';
 
 import { ChannelName } from '../../types';

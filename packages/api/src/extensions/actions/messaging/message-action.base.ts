@@ -4,7 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Subscriber } from '@hexabot-ai/types';
+import {
+  Subscriber,
+  StdIncomingMessage,
+  stdIncomingMessageSchema,
+  StdOutgoingMessage,
+  StdOutgoingMessageEnvelope,
+  StdOutgoingMessageSchema,
+} from '@hexabot-ai/types';
 import { z } from 'zod';
 
 import { ActionService } from '@/actions/actions.service';
@@ -14,13 +21,6 @@ import { StatsType } from '@/analytics/entities/stats.entity';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { EnvelopeFactory } from '@/chat/helpers/envelope-factory';
-import {
-  StdIncomingMessage,
-  stdIncomingMessageSchema,
-  StdOutgoingMessage,
-  StdOutgoingMessageEnvelope,
-  StdOutgoingMessageSchema,
-} from '@/chat/types/message';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 import { WorkflowType } from '@/workflow/types';
 

@@ -4,9 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { PayloadType } from '@/chat/types/button';
-import { IncomingMessageType, StdIncomingMessage } from '@/chat/types/message';
-import { Payload } from '@/chat/types/quick-reply';
+import {
+  PayloadType,
+  IncomingMessageType,
+  StdIncomingMessage,
+  Payload,
+} from '@hexabot-ai/types';
 
 import { ChannelName } from '../../types';
 import type ChannelHandler from '../Handler';

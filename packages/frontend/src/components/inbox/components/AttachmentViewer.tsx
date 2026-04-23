@@ -4,6 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  FileType,
+  IAttachmentPayload,
+  StdIncomingAttachmentMessage,
+  StdOutgoingAttachmentMessage,
+} from "@hexabot-ai/types";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
@@ -14,12 +20,6 @@ import { FC, useState } from "react";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useGetAttachmentMetadata } from "@/hooks/useGetAttachmentMetadata";
 import { useTranslate } from "@/hooks/useTranslate";
-import {
-  FileType,
-  IAttachmentPayload,
-  StdIncomingAttachmentMessage,
-  StdOutgoingAttachmentMessage,
-} from "@/types/message.types";
 
 import { AttachmentViewerFormDialog } from "./AttachmentViewerFormDialog";
 

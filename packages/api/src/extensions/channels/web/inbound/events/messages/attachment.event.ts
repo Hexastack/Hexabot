@@ -5,14 +5,17 @@
  */
 
 import type { Attachment } from '@hexabot-ai/types';
+import {
+  FileType,
+  PayloadType,
+  IncomingMessageType,
+  StdIncomingMessage,
+  Payload,
+} from '@hexabot-ai/types';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { ChannelInboundEventContext } from '@/channel/lib/inbound-events';
 import { ChannelName } from '@/channel/types';
-import { FileType } from '@/chat/types/attachment';
-import { PayloadType } from '@/chat/types/button';
-import { IncomingMessageType, StdIncomingMessage } from '@/chat/types/message';
-import { Payload } from '@/chat/types/quick-reply';
 
 import { Web } from '../../../types';
 

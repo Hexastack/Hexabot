@@ -4,10 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import { FileType, ButtonType } from '@hexabot-ai/types';
+
 import { textMessage } from '@/channel/lib/__test__/common.mock';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
-import { FileType } from '@/chat/types/attachment';
-import { ButtonType } from '@/chat/types/button';
 
 import { Web } from '../types';
 

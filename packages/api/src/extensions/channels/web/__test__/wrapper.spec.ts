@@ -5,9 +5,7 @@
  */
 
 import type { Attachment } from '@hexabot-ai/types';
-
-import { FileType } from '@/chat/types/attachment';
-import { IncomingMessageType, StdEventType } from '@/chat/types/message';
+import { FileType, IncomingMessageType, StdEventType } from '@hexabot-ai/types';
 
 import {
   AttachmentMessageInboundEvent,

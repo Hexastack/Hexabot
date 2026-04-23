@@ -4,22 +4,23 @@
  * Full terms: see LICENSE.md.
  */
 
-import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
-  AttachmentAccess,
-  AttachmentCreatedByRef,
-  AttachmentResourceRef,
-} from '@/attachment/types';
-import { FileType } from '@/chat/types/attachment';
-import { ButtonType } from '@/chat/types/button';
-import {
+  FileType,
+  ButtonType,
   OutgoingMessageFormat,
   StdOutgoingAttachmentMessage,
   StdOutgoingButtonsMessage,
   StdOutgoingListMessage,
   StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
-} from '@/chat/types/message';
+} from '@hexabot-ai/types';
+
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 
 export const textMessage: StdOutgoingTextMessage = {
   text: 'Hello World',

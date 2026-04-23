@@ -4,7 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { contentSchema, contentFullSchema, Content } from '@hexabot-ai/types';
+import {
+  contentSchema,
+  contentFullSchema,
+  Content,
+  ContentElement,
+} from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -14,7 +19,6 @@ import {
   RelationId,
 } from 'typeorm';
 
-import { ContentElement } from '@/chat/types/message';
 import { config } from '@/config';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import {

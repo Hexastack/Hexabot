@@ -4,12 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionService } from '@/actions/actions.service';
-import { ButtonType } from '@/chat/types/button';
 import {
+  ButtonType,
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
-} from '@/chat/types/message';
+} from '@hexabot-ai/types';
+
+import { ActionService } from '@/actions/actions.service';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
 
 import { SendButtonsAction } from './buttons.action';

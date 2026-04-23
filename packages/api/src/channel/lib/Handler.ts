@@ -4,7 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Attachment } from '@hexabot-ai/types';
+import { StdOutgoingEnvelope } from '@hexabot-ai/types';
+import type { Attachment, ActionOptions } from '@hexabot-ai/types';
 import { Inject, Injectable, OnModuleInit, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -21,8 +22,6 @@ import {
 } from '@/attachment/types';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { StdOutgoingEnvelope } from '@/chat/types/message';
-import type { ActionOptions } from '@/chat/types/options';
 import { I18nService } from '@/i18n';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';

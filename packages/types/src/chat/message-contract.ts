@@ -1,35 +1,37 @@
 /*
  * Hexabot — Fair Core License (FCL-1.0-ALv2)
- * Copyright (c) 2025 Hexastack.
+ * Copyright (c) 2026 Hexastack.
  * Full terms: see LICENSE.md.
  */
 
-import { Message } from '@hexabot-ai/types';
-import { z } from 'zod';
+import { z } from "zod";
 
-import { attachmentPayloadSchema } from './attachment';
-import { buttonSchema, PayloadType } from './button';
-import { contentOptionsSchema } from './options';
-import { stdQuickReplySchema } from './quick-reply';
+import type { Attachment } from "../attachment/attachment";
+
+import { attachmentPayloadSchema } from "./attachment";
+import { PayloadType, buttonSchema } from "./button";
+import type { Message as EntityMessage } from "./message";
+import { contentOptionsSchema } from "./options";
+import { stdQuickReplySchema } from "./quick-reply";
 
 export enum StdEventType {
-  message = 'message',
-  delivery = 'delivery',
-  read = 'read',
-  typing = 'typing',
-  follow = 'follow',
-  echo = 'echo',
-  error = 'error',
-  unknown = '',
+  message = "message",
+  delivery = "delivery",
+  read = "read",
+  typing = "typing",
+  follow = "follow",
+  echo = "echo",
+  error = "error",
+  unknown = "",
 }
 
 export enum IncomingMessageType {
-  message = 'message',
-  postback = 'postback',
-  quick_reply = 'quick_reply',
-  location = 'location',
-  attachments = 'attachments',
-  unknown = '',
+  message = "message",
+  postback = "postback",
+  quick_reply = "quick_reply",
+  location = "location",
+  attachments = "attachments",
+  unknown = "",
 }
 
 export const incomingMessageType = z.enum(IncomingMessageType);
@@ -37,13 +39,13 @@ export const incomingMessageType = z.enum(IncomingMessageType);
 export type IncomingMessageTypeLiteral = z.infer<typeof incomingMessageType>;
 
 export enum OutgoingMessageFormat {
-  text = 'text',
-  quickReplies = 'quickReplies',
-  buttons = 'buttons',
-  attachment = 'attachment',
-  list = 'list',
-  carousel = 'carousel',
-  system = 'system',
+  text = "text",
+  quickReplies = "quickReplies",
+  buttons = "buttons",
+  attachment = "attachment",
+  list = "list",
+  carousel = "carousel",
+  system = "system",
 }
 
 export const outgoingMessageFormatSchema = z.enum(OutgoingMessageFormat);
@@ -109,6 +111,15 @@ export type StdOutgoingListMessage = z.infer<
   typeof stdOutgoingListMessageSchema
 >;
 
+export interface OutgoingPopulatedListMessage {
+  title: string;
+  subtitle: string | null;
+  image_url?: { payload: Attachment; type: string } | null;
+  url?: string;
+  action_title?: string;
+  action_payload?: string;
+}
+
 export const stdOutgoingAttachmentMessageSchema = z.object({
   attachment: attachmentPayloadSchema,
   quickReplies: z.array(stdQuickReplySchema).optional(),
@@ -119,7 +130,7 @@ export type StdOutgoingAttachmentMessage = z.infer<
 >;
 
 export const stdOutgoingSystemMessageSchema = z.object({
-  outcome: z.string().optional(), // "any" or any other string (in snake case)
+  outcome: z.string().optional(),
   data: z.any().optional(),
 });
 
@@ -128,11 +139,11 @@ export type StdOutgoingSystemMessage = z.infer<
 >;
 
 export const StdOutgoingMessageSchema = z.union([
-  stdOutgoingTextMessageSchema,
   stdOutgoingQuickRepliesMessageSchema,
   stdOutgoingButtonsMessageSchema,
   stdOutgoingListMessageSchema,
   stdOutgoingAttachmentMessageSchema,
+  stdOutgoingTextMessageSchema,
 ]);
 
 export type StdOutgoingMessage = z.infer<typeof StdOutgoingMessageSchema>;
@@ -180,20 +191,21 @@ export type StdIncomingAttachmentMessage = z.infer<
 >;
 
 export const stdIncomingMessageSchema = z.union([
-  stdIncomingTextMessageSchema,
   stdIncomingPostBackMessageSchema,
   stdIncomingLocationMessageSchema,
   stdIncomingAttachmentMessageSchema,
+  stdIncomingTextMessageSchema,
 ]);
 
 export type StdIncomingMessage = z.infer<typeof stdIncomingMessageSchema>;
 
-export interface IncomingMessage extends Omit<Message, 'recipient' | 'sentBy'> {
+export interface IncomingMessage
+  extends Omit<EntityMessage, "recipient" | "sentBy"> {
   message: StdIncomingMessage;
   sender: string;
 }
 
-export interface OutgoingMessage extends Omit<Message, 'sender'> {
+export interface OutgoingMessage extends Omit<EntityMessage, "sender"> {
   message: StdOutgoingMessage;
   recipient: string;
   sentBy?: string;
@@ -275,7 +287,6 @@ export const stdOutgoingEnvelopeSchema = z.union([
 
 export type StdOutgoingEnvelope = z.infer<typeof stdOutgoingEnvelopeSchema>;
 
-// is-valid-message-text validation
 export const validMessageTextSchema = z.object({
   text: z.string(),
 });

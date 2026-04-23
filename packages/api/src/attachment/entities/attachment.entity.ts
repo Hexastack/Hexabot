@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { attachmentSchema, attachmentFullSchema } from '@hexabot-ai/types';
+import {
+  attachmentSchema,
+  attachmentFullSchema,
+  FileType,
+} from '@hexabot-ai/types';
 import {
   Column,
   Entity,
@@ -15,7 +19,6 @@ import {
 } from 'typeorm';
 
 import { ChannelName } from '@/channel/types';
-import { FileType } from '@/chat/types/attachment';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';

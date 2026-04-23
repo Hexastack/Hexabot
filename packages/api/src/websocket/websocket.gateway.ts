@@ -5,7 +5,7 @@
  */
 
 import { type WorkflowEventMap } from '@hexabot-ai/agentic';
-import { Subscriber } from '@hexabot-ai/types';
+import { Subscriber, StdEventType } from '@hexabot-ai/types';
 import { ForbiddenException } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
@@ -25,7 +25,6 @@ import { Session as ExpressSession, SessionData } from 'express-session';
 import { ExtendedError, Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
-import { StdEventType } from '@/chat/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { PermissionService } from '@/user/services/permission.service';

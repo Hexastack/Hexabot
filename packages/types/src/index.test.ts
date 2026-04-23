@@ -23,6 +23,7 @@ import {
   credentialFullSchema,
   credentialSchema,
   dummySchema,
+  messageSchema,
   labelFullSchema,
   labelSchema,
   mcpServerFullSchema,
@@ -31,6 +32,10 @@ import {
   memoryRecordSchema,
   menuFullSchema,
   menuSchema,
+  OutgoingMessageFormat,
+  StdOutgoingMessageSchema,
+  stdIncomingMessageSchema,
+  stdOutgoingEnvelopeSchema,
   messageFullSchema,
   permissionFullSchema,
   permissionSchema,
@@ -730,5 +735,63 @@ describe("@hexabot-ai/types schemas", () => {
 
   it("supports memory scope enum values", () => {
     expect(MemoryScope.workflow).toBe("workflow");
+  });
+
+  it("parses shared incoming and outgoing message payload contracts", () => {
+    const expectedQuickReplies = [{ title: "Yes", payload: "yes" }];
+    const outgoing = StdOutgoingMessageSchema.parse({
+      text: "Hello from bot",
+      quickReplies: expectedQuickReplies,
+    });
+    const incoming = stdIncomingMessageSchema.parse({
+      type: "location",
+      coordinates: { lat: 36.8, lon: 10.2 },
+    });
+
+    expect(outgoing).toEqual({
+      text: "Hello from bot",
+      quickReplies: expectedQuickReplies,
+    });
+    expect(incoming).toEqual({
+      type: "location",
+      coordinates: { lat: 36.8, lon: 10.2 },
+    });
+  });
+
+  it("parses shared outgoing message envelopes including system format", () => {
+    const textEnvelope = stdOutgoingEnvelopeSchema.parse({
+      format: OutgoingMessageFormat.text,
+      message: { text: "Hi" },
+    });
+    const systemEnvelope = stdOutgoingEnvelopeSchema.parse({
+      format: OutgoingMessageFormat.system,
+      message: { outcome: "ok", data: { source: "test" } },
+    });
+
+    expect(textEnvelope.format).toBe(OutgoingMessageFormat.text);
+    expect(systemEnvelope.format).toBe(OutgoingMessageFormat.system);
+  });
+
+  it("rejects plain-string message payloads in strict message schema", () => {
+    const base = {
+      id: "msg_1",
+      createdAt: now,
+      updatedAt: now,
+      read: false,
+      delivery: false,
+      handover: false,
+      threadId: "th_1",
+    };
+    const valid = messageSchema.safeParse({
+      ...base,
+      message: { text: "Hello there" },
+    });
+    const invalid = messageSchema.safeParse({
+      ...base,
+      message: "legacy-string-payload",
+    });
+
+    expect(valid.success).toBe(true);
+    expect(invalid.success).toBe(false);
   });
 });

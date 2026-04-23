@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { StdIncomingLocationMessage } from "@hexabot-ai/types";
 import Box from "@mui/material/Box";
 import { useRef } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
-import { StdIncomingLocationMessage } from "@/types/message.types";
 
 export interface GeolocationMessageProps {
   message: StdIncomingLocationMessage;

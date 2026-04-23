@@ -4,6 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import {
+  AnyButton as ButtonType,
+  OutgoingPopulatedListMessage,
+  StdOutgoingListMessage,
+} from "@hexabot-ai/types";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -18,11 +23,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 
 import { useGetAttachmentMetadata } from "@/hooks/useGetAttachmentMetadata";
-import {
-  AnyButton as ButtonType,
-  OutgoingPopulatedListMessage,
-  StdOutgoingListMessage,
-} from "@/types/message.types";
 
 const CARD_WIDTH = 300;
 const CARD_GAP_PX = 10;

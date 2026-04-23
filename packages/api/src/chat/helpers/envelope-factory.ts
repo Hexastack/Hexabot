@@ -4,12 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getRandomElement } from '@/utils/helpers/safeRandom';
-
-import { AttachmentPayload } from '../types/attachment';
-import { Button, ButtonType } from '../types/button';
 import {
+  AttachmentPayload,
+  Button,
+  ButtonType,
   ContentElement,
+  ContentOptions,
   ContentPagination,
   OutgoingMessageFormat,
   StdOutgoingAttachmentEnvelope,
@@ -18,9 +18,10 @@ import {
   StdOutgoingQuickRepliesEnvelope,
   StdOutgoingSystemEnvelope,
   StdOutgoingTextEnvelope,
-} from '../types/message';
-import { ContentOptions } from '../types/options';
-import { StdQuickReply } from '../types/quick-reply';
+  StdQuickReply,
+} from '@hexabot-ai/types';
+
+import { getRandomElement } from '@/utils/helpers/safeRandom';
 
 import { getEnvelopeBuilder } from './envelope-builder';
 

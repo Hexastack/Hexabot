@@ -4,7 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { messageSchema, messageFullSchema } from '@hexabot-ai/types';
+import {
+  messageSchema,
+  messageFullSchema,
+  StdIncomingMessage,
+  StdOutgoingMessage,
+} from '@hexabot-ai/types';
 import {
   Check,
   Column,
@@ -20,7 +25,6 @@ import { UserOrmEntity } from '@/user/entities/user.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { MessageDto } from '../dto/message.dto';
-import { StdIncomingMessage, StdOutgoingMessage } from '../types/message';
 
 import { SubscriberOrmEntity } from './subscriber.entity';
 import { ThreadOrmEntity } from './thread.entity';
