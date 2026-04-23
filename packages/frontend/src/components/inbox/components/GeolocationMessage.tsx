@@ -19,12 +19,7 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
   const embedHeight = 150;
   const iframeRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslate();
-
-  if (!("coordinates" in message)) {
-    throw new Error(t("message.unable_to_process_request"));
-  }
-
-  const { lat, lon } = message.coordinates || { lat: 0.0, lng: 0.0 };
+  const { lat, lon } = message.data.coordinates ?? { lat: 0, lon: 0 };
   const openStreetMapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
     lon - 0.1
   },${lat - 0.1},${lon + 0.1},${lat + 0.1}&layer=mapnik&marker=${lat},${lon}`;

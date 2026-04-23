@@ -24,6 +24,7 @@ import {
   credentialSchema,
   dummySchema,
   messageSchema,
+  IncomingMessageType,
   labelFullSchema,
   labelSchema,
   mcpServerFullSchema,
@@ -740,36 +741,49 @@ describe("@hexabot-ai/types schemas", () => {
   it("parses shared incoming and outgoing message payload contracts", () => {
     const expectedQuickReplies = [{ title: "Yes", payload: "yes" }];
     const outgoing = StdOutgoingMessageSchema.parse({
-      text: "Hello from bot",
-      quickReplies: expectedQuickReplies,
+      format: OutgoingMessageFormat.quickReplies,
+      data: {
+        text: "Hello from bot",
+        quickReplies: expectedQuickReplies,
+      },
     });
     const incoming = stdIncomingMessageSchema.parse({
-      type: "location",
-      coordinates: { lat: 36.8, lon: 10.2 },
+      type: IncomingMessageType.location,
+      data: {
+        coordinates: { lat: 36.8, lon: 10.2 },
+      },
     });
 
     expect(outgoing).toEqual({
-      text: "Hello from bot",
-      quickReplies: expectedQuickReplies,
+      format: OutgoingMessageFormat.quickReplies,
+      data: {
+        text: "Hello from bot",
+        quickReplies: expectedQuickReplies,
+      },
     });
     expect(incoming).toEqual({
-      type: "location",
-      coordinates: { lat: 36.8, lon: 10.2 },
+      type: IncomingMessageType.location,
+      data: {
+        coordinates: { lat: 36.8, lon: 10.2 },
+      },
     });
   });
 
   it("parses shared outgoing message envelopes including system format", () => {
     const textEnvelope = stdOutgoingEnvelopeSchema.parse({
       format: OutgoingMessageFormat.text,
-      message: { text: "Hi" },
+      data: { text: "Hi" },
     });
     const systemEnvelope = stdOutgoingEnvelopeSchema.parse({
       format: OutgoingMessageFormat.system,
-      message: { outcome: "ok", data: { source: "test" } },
+      data: { outcome: "ok", data: { source: "test" } },
     });
 
     expect(textEnvelope.format).toBe(OutgoingMessageFormat.text);
     expect(systemEnvelope.format).toBe(OutgoingMessageFormat.system);
+    expect(StdOutgoingMessageSchema.safeParse(systemEnvelope).success).toBe(
+      false,
+    );
   });
 
   it("keeps outgoing quick replies and buttons in parsed message entities", () => {
@@ -785,6 +799,34 @@ describe("@hexabot-ai/types schemas", () => {
     const quickRepliesMessage = messageSchema.parse({
       ...base,
       message: {
+        format: OutgoingMessageFormat.quickReplies,
+        data: {
+          text: "Choose one",
+          quickReplies: [
+            { title: "Yes", payload: "yes" },
+            { title: "No", payload: "no" },
+          ],
+        },
+      },
+    });
+    const buttonsMessage = messageSchema.parse({
+      ...base,
+      id: "msg_2",
+      message: {
+        format: OutgoingMessageFormat.buttons,
+        data: {
+          text: "Click one",
+          buttons: [
+            { type: "postback", title: "About", payload: "about" },
+            { type: "web_url", title: "Website", url: "https://hexabot.ai" },
+          ],
+        },
+      },
+    });
+
+    expect(quickRepliesMessage.message).toEqual({
+      format: OutgoingMessageFormat.quickReplies,
+      data: {
         text: "Choose one",
         quickReplies: [
           { title: "Yes", payload: "yes" },
@@ -792,52 +834,15 @@ describe("@hexabot-ai/types schemas", () => {
         ],
       },
     });
-    const buttonsMessage = messageSchema.parse({
-      ...base,
-      id: "msg_2",
-      message: {
+    expect(buttonsMessage.message).toEqual({
+      format: OutgoingMessageFormat.buttons,
+      data: {
         text: "Click one",
         buttons: [
           { type: "postback", title: "About", payload: "about" },
           { type: "web_url", title: "Website", url: "https://hexabot.ai" },
         ],
       },
-    });
-
-    expect(quickRepliesMessage.message).toEqual({
-      text: "Choose one",
-      quickReplies: [
-        { title: "Yes", payload: "yes" },
-        { title: "No", payload: "no" },
-      ],
-    });
-    expect(buttonsMessage.message).toEqual({
-      text: "Click one",
-      buttons: [
-        { type: "postback", title: "About", payload: "about" },
-        { type: "web_url", title: "Website", url: "https://hexabot.ai" },
-      ],
-    });
-  });
-
-  it("maps legacy quick_replies keys when parsing message entities", () => {
-    const parsed = messageSchema.parse({
-      id: "msg_legacy",
-      createdAt: now,
-      updatedAt: now,
-      read: false,
-      delivery: false,
-      handover: false,
-      threadId: "th_1",
-      message: {
-        text: "Choose one",
-        quick_replies: [{ title: "Yes", payload: "yes" }],
-      },
-    });
-
-    expect(parsed.message).toEqual({
-      text: "Choose one",
-      quickReplies: [{ title: "Yes", payload: "yes" }],
     });
   });
 
@@ -850,10 +855,42 @@ describe("@hexabot-ai/types schemas", () => {
       delivery: false,
       handover: false,
       threadId: "th_1",
-      message: { text: "Clicked", postback: "about" },
+      message: {
+        type: IncomingMessageType.postback,
+        data: { text: "Clicked", payload: "about" },
+      },
     });
 
-    expect(parsed.message).toEqual({ text: "Clicked", postback: "about" });
+    expect(parsed.message).toEqual({
+      type: IncomingMessageType.postback,
+      data: { text: "Clicked", payload: "about" },
+    });
+  });
+
+  it("rejects legacy flat payloads and envelope aliases", () => {
+    const legacyOutgoing = StdOutgoingMessageSchema.safeParse({
+      text: "Hello from bot",
+    });
+    const legacyIncoming = stdIncomingMessageSchema.safeParse({
+      type: IncomingMessageType.location,
+      coordinates: { lat: 36.8, lon: 10.2 },
+    });
+    const legacyQuickRepliesAlias = StdOutgoingMessageSchema.safeParse({
+      format: OutgoingMessageFormat.quickReplies,
+      data: {
+        text: "Choose one",
+        quick_replies: [{ title: "Yes", payload: "yes" }],
+      },
+    });
+    const legacyEnvelopeShape = stdOutgoingEnvelopeSchema.safeParse({
+      format: OutgoingMessageFormat.text,
+      message: { text: "Hi" },
+    });
+
+    expect(legacyOutgoing.success).toBe(false);
+    expect(legacyIncoming.success).toBe(false);
+    expect(legacyQuickRepliesAlias.success).toBe(false);
+    expect(legacyEnvelopeShape.success).toBe(false);
   });
 
   it("rejects plain-string message payloads in strict message schema", () => {
@@ -868,7 +905,10 @@ describe("@hexabot-ai/types schemas", () => {
     };
     const valid = messageSchema.safeParse({
       ...base,
-      message: { text: "Hello there" },
+      message: {
+        format: OutgoingMessageFormat.text,
+        data: { text: "Hello there" },
+      },
     });
     const invalid = messageSchema.safeParse({
       ...base,

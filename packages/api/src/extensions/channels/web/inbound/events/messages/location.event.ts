@@ -52,10 +52,12 @@ export class LocationMessageInboundEvent<
 
   override toStdIncomingMessage(): StdIncomingMessage {
     return {
-      type: PayloadType.location,
-      coordinates: {
-        lat: this.latitude,
-        lon: this.longitude,
+      type: IncomingMessageType.location,
+      data: {
+        coordinates: {
+          lat: this.latitude,
+          lon: this.longitude,
+        },
       },
     };
   }

@@ -203,7 +203,7 @@ describe('WebChannelHandler', () => {
       event,
       {
         format: OutgoingMessageFormat.text,
-        message: { text: 'hello world' },
+        data: { text: 'hello world' },
       },
       {},
     );
@@ -243,7 +243,7 @@ describe('WebChannelHandler', () => {
         event,
         {
           format: OutgoingMessageFormat.system,
-          message: { outcome: 'noop' },
+          data: { outcome: 'noop' },
         },
         {},
       ),

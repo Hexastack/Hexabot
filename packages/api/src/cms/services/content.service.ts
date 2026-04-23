@@ -7,7 +7,7 @@
 import {
   ContentFull,
   ContentType,
-  StdOutgoingListMessage,
+  StdOutgoingListMessageData,
   ContentOptions,
 } from '@hexabot-ai/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -77,7 +77,7 @@ export class ContentService extends BaseOrmService<ContentOrmEntity> {
   async getContent(
     options: ContentOptions,
     skip: number,
-  ): Promise<Omit<StdOutgoingListMessage, 'options'>> {
+  ): Promise<Omit<StdOutgoingListMessageData, 'options'>> {
     const where: FindOptionsWhere<ContentOrmEntity> = {
       status: true,
       ...(options.query as FindOptionsWhere<ContentOrmEntity> | undefined),

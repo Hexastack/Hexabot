@@ -124,12 +124,14 @@ export class AttachmentMessageInboundEvent<
     const attachmentName = this.resolveAttachmentName(attachment, fileType);
 
     return {
-      type: PayloadType.attachments,
-      serialized_text: `attachment:${fileType}:${attachmentName}`,
-      attachment: {
-        type: fileType,
-        payload: {
-          id: attachment.id,
+      type: IncomingMessageType.attachments,
+      data: {
+        serialized_text: `attachment:${fileType}:${attachmentName}`,
+        attachment: {
+          type: fileType,
+          payload: {
+            id: attachment.id,
+          },
         },
       },
     };

@@ -36,7 +36,10 @@ export class TextMessageInboundEvent<
 
   override toStdIncomingMessage(): StdIncomingMessage {
     return {
-      text: this.text,
+      type: IncomingMessageType.message,
+      data: {
+        text: this.text,
+      },
     };
   }
 }

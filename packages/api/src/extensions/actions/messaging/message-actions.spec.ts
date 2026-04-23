@@ -5,6 +5,7 @@
  */
 
 import {
+  IncomingMessageType,
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
@@ -111,7 +112,10 @@ describe('MessageAction base', () => {
       getSenderForeignId: jest.fn(() => 'foreign-123'),
       getHandler: jest.fn(() => handler as any),
       getThreadId: jest.fn(() => 'thread-1'),
-      getMessage: jest.fn(() => ({ text: 'incoming-message' })),
+      getMessage: jest.fn(() => ({
+        type: IncomingMessageType.message,
+        data: { text: 'incoming-message' },
+      })),
     } as unknown as MockEvent;
     workflow = {
       suspend: jest.fn(),
@@ -158,7 +162,7 @@ describe('MessageAction base', () => {
     const prepared = await (action as any).prepare(context);
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.text,
-      message: { text: 'hi' },
+      data: { text: 'hi' },
     };
     const result = await (action as any).sendPreparedMessage(
       context,
@@ -188,7 +192,7 @@ describe('MessageAction base', () => {
       'hook:chatbot:sent',
       {
         mid: 'server-mid',
-        message: envelope.message,
+        message: envelope,
         recipient: recipient.id,
         thread: 'thread-1',
         handover: false,
@@ -202,7 +206,7 @@ describe('MessageAction base', () => {
         mid: 'server-mid',
         channel: 'web',
         format: OutgoingMessageFormat.text,
-        envelope: envelope.message,
+        envelope,
       },
     });
   });
@@ -212,7 +216,7 @@ describe('MessageAction base', () => {
     const prepared = await (action as any).prepare(context);
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.quickReplies,
-      message: { text: 'question', quickReplies: [] },
+      data: { text: 'question', quickReplies: [] },
     };
     handler.sendMessage.mockResolvedValueOnce({});
 
@@ -233,7 +237,7 @@ describe('MessageAction base', () => {
         mid: undefined,
         channel: 'web',
         format: OutgoingMessageFormat.quickReplies,
-        envelope: envelope.message,
+        envelope,
       },
     });
   });
@@ -242,7 +246,7 @@ describe('MessageAction base', () => {
     const context = buildWorkflowContext();
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.text,
-      message: { text: 'hi' },
+      data: { text: 'hi' },
     };
     const prepared = await (action as any).prepare(context);
     const sendSpy = jest

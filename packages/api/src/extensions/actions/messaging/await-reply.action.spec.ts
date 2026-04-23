@@ -42,7 +42,7 @@ describe('AwaitReplyAction', () => {
 
   it('suspends the workflow and returns parsed conversational input', async () => {
     const resume = {
-      message: { text: 'user reply' },
+      message: { type: 'message', data: { text: 'user reply' } },
       text: 'user reply',
       thread_id: 'thread-1',
     };
@@ -79,7 +79,7 @@ describe('AwaitReplyAction', () => {
 
   it('accepts optional conversational fields in resume data', async () => {
     const resumeWithOptionalFields = {
-      message: { text: 'user reply' },
+      message: { type: 'message', data: { text: 'user reply' } },
       text: 'user reply',
       message_type: 'message',
       payload: 'quick-reply',

@@ -28,14 +28,14 @@ type ArrayKeys<T> = {
 }[keyof T];
 
 export type IEnvelopeBuilder<T extends StdOutgoingEnvelope> = {
-  [K in keyof T['message'] as `set${Capitalize<string & K>}`]-?: (
-    arg: T['message'][K],
+  [K in keyof T['data'] as `set${Capitalize<string & K>}`]-?: (
+    arg: T['data'][K],
   ) => IEnvelopeBuilder<T>;
 } & {
-  [K in keyof T['message'] as `get${Capitalize<string & K>}`]-?: () => T['message'][K];
+  [K in keyof T['data'] as `get${Capitalize<string & K>}`]-?: () => T['data'][K];
 } & {
-  [K in ArrayKeys<T['message']> as `appendTo${Capitalize<string & K>}`]: (
-    item: NonNullable<T['message'][K]> extends (infer U)[] ? U : never,
+  [K in ArrayKeys<T['data']> as `appendTo${Capitalize<string & K>}`]: (
+    item: NonNullable<T['data'][K]> extends (infer U)[] ? U : never,
   ) => IEnvelopeBuilder<T>;
 } & {
   build(): T;
@@ -52,13 +52,13 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
   // e.g. "appendToButtons" => "Buttons"
   const rawKey = prop.toString().replace(prefix, '');
   // e.g. "Buttons" -> "buttons"
-  const messageKey = rawKey.charAt(0).toLowerCase() + rawKey.slice(1);
+  const dataKey = rawKey.charAt(0).toLowerCase() + rawKey.slice(1);
 
-  return messageKey;
+  return dataKey;
 }
 
 /**
- * Builds an envelope object (containing a `format` and a `message` property)
+ * Builds an envelope object (containing a `format` and a `data` property)
  * and returns a proxy-based builder interface with chainable setter methods.
  * It also validates the final envelope against the provided `z.ZodSchema`.
  *
@@ -108,12 +108,12 @@ function getAttributeNameFromProp(prop: string, prefix: RegExp) {
  */
 export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
   format: T['format'],
-  template: Partial<T['message']> = {},
+  template: Partial<T['data']> = {},
   schema: z.ZodType,
 ): IEnvelopeBuilder<T> {
-  let built: { format: T['format']; message: Partial<T['message']> } = {
+  let built: { format: T['format']; data: Partial<T['data']> } = {
     format,
-    message: template,
+    data: template,
   };
 
   const builder = new Proxy(
@@ -126,7 +126,7 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
             const result = schema.parse(built);
             built = {
               format,
-              message: template,
+              data: template,
             };
 
             return result;
@@ -134,14 +134,14 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
         }
 
         if (typeof prop === 'string' && prop.startsWith('appendTo')) {
-          const messageKey = getAttributeNameFromProp(prop, /^appendTo/);
+          const dataKey = getAttributeNameFromProp(prop, /^appendTo/);
 
           return (item: unknown) => {
             // Initialize the array if needed
-            if (!Array.isArray(built.message[messageKey])) {
-              built.message[messageKey] = [];
+            if (!Array.isArray(built.data[dataKey])) {
+              built.data[dataKey] = [];
             }
-            (built.message[messageKey] as unknown[]).push(item);
+            (built.data[dataKey] as unknown[]).push(item);
 
             return builder;
           };
@@ -150,17 +150,14 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
         return (...args: unknown[]): unknown => {
           // If no arguments passed return current value.
           if (0 === args.length) {
-            const messageKey = getAttributeNameFromProp(
-              prop.toString(),
-              /^get/,
-            );
+            const dataKey = getAttributeNameFromProp(prop.toString(), /^get/);
 
-            return built.message[messageKey];
+            return built.data[dataKey];
           }
 
           const value = args[0];
-          const messageKey = getAttributeNameFromProp(prop.toString(), /^set/);
-          built.message[messageKey] = value;
+          const dataKey = getAttributeNameFromProp(prop.toString(), /^set/);
+          built.data[dataKey] = value;
 
           return builder;
         };

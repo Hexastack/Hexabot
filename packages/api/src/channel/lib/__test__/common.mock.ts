@@ -8,11 +8,11 @@ import {
   FileType,
   ButtonType,
   OutgoingMessageFormat,
-  StdOutgoingAttachmentMessage,
-  StdOutgoingButtonsMessage,
-  StdOutgoingListMessage,
-  StdOutgoingQuickRepliesMessage,
-  StdOutgoingTextMessage,
+  StdOutgoingAttachmentMessageData,
+  StdOutgoingButtonsMessageData,
+  StdOutgoingListMessageData,
+  StdOutgoingQuickRepliesMessageData,
+  StdOutgoingTextMessageData,
 } from '@hexabot-ai/types';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
@@ -22,11 +22,11 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 
-export const textMessage: StdOutgoingTextMessage = {
+export const textMessage: StdOutgoingTextMessageData = {
   text: 'Hello World',
 };
 
-export const quickRepliesMessage: StdOutgoingQuickRepliesMessage = {
+export const quickRepliesMessage: StdOutgoingQuickRepliesMessageData = {
   text: 'Choose one option',
   quickReplies: [
     {
@@ -40,7 +40,7 @@ export const quickRepliesMessage: StdOutgoingQuickRepliesMessage = {
   ],
 };
 
-export const buttonsMessage: StdOutgoingButtonsMessage = {
+export const buttonsMessage: StdOutgoingButtonsMessageData = {
   text: 'Hit one of these buttons :',
   buttons: [
     {
@@ -58,7 +58,7 @@ export const buttonsMessage: StdOutgoingButtonsMessage = {
   ],
 };
 
-export const urlButtonsMessage: StdOutgoingButtonsMessage = {
+export const urlButtonsMessage: StdOutgoingButtonsMessageData = {
   text: 'Hit one of these buttons :',
   buttons: [
     {
@@ -101,7 +101,7 @@ const attachment: AttachmentOrmEntity = Object.assign(
   },
 );
 
-export const contentMessage: StdOutgoingListMessage = {
+export const contentMessage: StdOutgoingListMessageData = {
   options: {
     display: OutgoingMessageFormat.list,
     fields: {
@@ -159,7 +159,7 @@ export const contentMessage: StdOutgoingListMessage = {
   },
 };
 
-export const attachmentMessage: StdOutgoingAttachmentMessage = {
+export const attachmentMessage: StdOutgoingAttachmentMessageData = {
   attachment: {
     type: FileType.image,
     payload: { id: attachment.id },

@@ -179,8 +179,9 @@ export const MessageAttachmentsViewer = (props: {
   // if the attachment is an array show a 4x4 grid with a +{number of remaining attachment} and open a modal to show the list of attachments
   // Remark: Messenger doesn't send multiple attachments when user sends multiple at once, it only relays the first one to Hexabot
   // TODO: Implenent this
+  const attachmentsData = message.data.attachment;
 
-  if (!message.attachment) {
+  if (!attachmentsData) {
     return (
       <Typography variant="caption" color="text.secondary">
         {t("message.attachment_not_found")}
@@ -188,9 +189,9 @@ export const MessageAttachmentsViewer = (props: {
     );
   }
 
-  const attachments = Array.isArray(message.attachment)
-    ? message.attachment
-    : [message.attachment];
+  const attachments = Array.isArray(attachmentsData)
+    ? attachmentsData
+    : [attachmentsData];
 
   return attachments.map((attachment, idx) => {
     return (

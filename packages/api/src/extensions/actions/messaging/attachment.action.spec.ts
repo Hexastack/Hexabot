@@ -34,7 +34,7 @@ describe('SendAttachmentAction', () => {
     const action = new SendAttachmentAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.attachment,
-      message: {
+      data: {
         attachment: { type: FileType.image, payload: { id: '123' } },
         quickReplies: [],
       },

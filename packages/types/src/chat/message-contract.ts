@@ -58,30 +58,30 @@ export const payloadTypeSchema = z.enum(PayloadType);
 
 export type PayloadTypeLiteral = z.infer<typeof payloadTypeSchema>;
 
-export const stdOutgoingTextMessageSchema = z.object({
+export const stdOutgoingTextMessageDataSchema = z.object({
   text: z.string(),
 });
 
-export type StdOutgoingTextMessage = z.infer<
-  typeof stdOutgoingTextMessageSchema
+export type StdOutgoingTextMessageData = z.infer<
+  typeof stdOutgoingTextMessageDataSchema
 >;
 
-export const stdOutgoingQuickRepliesMessageSchema = z.object({
+export const stdOutgoingQuickRepliesMessageDataSchema = z.object({
   text: z.string(),
   quickReplies: z.array(stdQuickReplySchema),
 });
 
-export type StdOutgoingQuickRepliesMessage = z.infer<
-  typeof stdOutgoingQuickRepliesMessageSchema
+export type StdOutgoingQuickRepliesMessageData = z.infer<
+  typeof stdOutgoingQuickRepliesMessageDataSchema
 >;
 
-export const stdOutgoingButtonsMessageSchema = z.object({
+export const stdOutgoingButtonsMessageDataSchema = z.object({
   text: z.string(),
   buttons: z.array(buttonSchema),
 });
 
-export type StdOutgoingButtonsMessage = z.infer<
-  typeof stdOutgoingButtonsMessageSchema
+export type StdOutgoingButtonsMessageData = z.infer<
+  typeof stdOutgoingButtonsMessageDataSchema
 >;
 
 export const contentElementSchema = z
@@ -101,14 +101,14 @@ export const contentPaginationSchema = z.object({
 
 export type ContentPagination = z.infer<typeof contentPaginationSchema>;
 
-export const stdOutgoingListMessageSchema = z.object({
+export const stdOutgoingListMessageDataSchema = z.object({
   options: contentOptionsSchema,
   elements: z.array(contentElementSchema),
   pagination: contentPaginationSchema,
 });
 
-export type StdOutgoingListMessage = z.infer<
-  typeof stdOutgoingListMessageSchema
+export type StdOutgoingListMessageData = z.infer<
+  typeof stdOutgoingListMessageDataSchema
 >;
 
 export interface OutgoingPopulatedListMessage {
@@ -120,65 +120,118 @@ export interface OutgoingPopulatedListMessage {
   action_payload?: string;
 }
 
-export const stdOutgoingAttachmentMessageSchema = z.object({
+export const stdOutgoingAttachmentMessageDataSchema = z.object({
   attachment: attachmentPayloadSchema,
   quickReplies: z.array(stdQuickReplySchema).optional(),
+});
+
+export type StdOutgoingAttachmentMessageData = z.infer<
+  typeof stdOutgoingAttachmentMessageDataSchema
+>;
+
+export const stdOutgoingSystemMessageDataSchema = z.object({
+  outcome: z.string().optional(),
+  data: z.any().optional(),
+});
+
+export type StdOutgoingSystemMessageData = z.infer<
+  typeof stdOutgoingSystemMessageDataSchema
+>;
+
+export const stdOutgoingTextMessageSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.text),
+  data: stdOutgoingTextMessageDataSchema,
+});
+
+export type StdOutgoingTextMessage = z.infer<
+  typeof stdOutgoingTextMessageSchema
+>;
+
+export const stdOutgoingQuickRepliesMessageSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.quickReplies),
+  data: stdOutgoingQuickRepliesMessageDataSchema,
+});
+
+export type StdOutgoingQuickRepliesMessage = z.infer<
+  typeof stdOutgoingQuickRepliesMessageSchema
+>;
+
+export const stdOutgoingButtonsMessageSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.buttons),
+  data: stdOutgoingButtonsMessageDataSchema,
+});
+
+export type StdOutgoingButtonsMessage = z.infer<
+  typeof stdOutgoingButtonsMessageSchema
+>;
+
+export const stdOutgoingListMessageSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.list),
+  data: stdOutgoingListMessageDataSchema,
+});
+
+export type StdOutgoingListMessage = z.infer<
+  typeof stdOutgoingListMessageSchema
+>;
+
+export const stdOutgoingCarouselMessageSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.carousel),
+  data: stdOutgoingListMessageDataSchema,
+});
+
+export type StdOutgoingCarouselMessage = z.infer<
+  typeof stdOutgoingCarouselMessageSchema
+>;
+
+export const stdOutgoingAttachmentMessageSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.attachment),
+  data: stdOutgoingAttachmentMessageDataSchema,
 });
 
 export type StdOutgoingAttachmentMessage = z.infer<
   typeof stdOutgoingAttachmentMessageSchema
 >;
 
-export const stdOutgoingSystemMessageSchema = z.object({
-  outcome: z.string().optional(),
-  data: z.any().optional(),
-});
-
-export type StdOutgoingSystemMessage = z.infer<
-  typeof stdOutgoingSystemMessageSchema
->;
-
-export const StdOutgoingMessageSchema = z.union([
+export const StdOutgoingMessageSchema = z.discriminatedUnion("format", [
+  stdOutgoingTextMessageSchema,
   stdOutgoingQuickRepliesMessageSchema,
   stdOutgoingButtonsMessageSchema,
   stdOutgoingListMessageSchema,
+  stdOutgoingCarouselMessageSchema,
   stdOutgoingAttachmentMessageSchema,
-  stdOutgoingTextMessageSchema,
 ]);
 
 export type StdOutgoingMessage = z.infer<typeof StdOutgoingMessageSchema>;
 
-export const stdIncomingTextMessageSchema = z.object({
+export const stdIncomingTextMessageDataSchema = z.object({
   text: z.string(),
 });
 
-export type StdIncomingTextMessage = z.infer<
-  typeof stdIncomingTextMessageSchema
+export type StdIncomingTextMessageData = z.infer<
+  typeof stdIncomingTextMessageDataSchema
 >;
 
-export const stdIncomingPostBackMessageSchema =
-  stdIncomingTextMessageSchema.extend({
-    postback: z.string(),
-  });
+export const stdIncomingPayloadMessageDataSchema = z.object({
+  text: z.string(),
+  payload: z.string(),
+});
 
-export type StdIncomingPostBackMessage = z.infer<
-  typeof stdIncomingPostBackMessageSchema
+export type StdIncomingPayloadMessageData = z.infer<
+  typeof stdIncomingPayloadMessageDataSchema
 >;
 
-export const stdIncomingLocationMessageSchema = z.object({
-  type: z.literal(PayloadType.location),
+export const stdIncomingLocationMessageDataSchema = z.object({
   coordinates: z.object({
     lat: z.number(),
     lon: z.number(),
   }),
 });
 
-export type StdIncomingLocationMessage = z.infer<
-  typeof stdIncomingLocationMessageSchema
+export type StdIncomingLocationMessageData = z.infer<
+  typeof stdIncomingLocationMessageDataSchema
 >;
 
-export const stdIncomingAttachmentMessageSchema = z.object({
-  type: z.literal(PayloadType.attachments),
+export const stdIncomingAttachmentMessageDataSchema = z.object({
   serialized_text: z.string(),
   attachment: z.union([
     attachmentPayloadSchema,
@@ -186,15 +239,61 @@ export const stdIncomingAttachmentMessageSchema = z.object({
   ]),
 });
 
+export type StdIncomingAttachmentMessageData = z.infer<
+  typeof stdIncomingAttachmentMessageDataSchema
+>;
+
+export const stdIncomingTextMessageSchema = z.object({
+  type: z.literal(IncomingMessageType.message),
+  data: stdIncomingTextMessageDataSchema,
+});
+
+export type StdIncomingTextMessage = z.infer<
+  typeof stdIncomingTextMessageSchema
+>;
+
+export const stdIncomingPostBackMessageSchema = z.object({
+  type: z.literal(IncomingMessageType.postback),
+  data: stdIncomingPayloadMessageDataSchema,
+});
+
+export type StdIncomingPostBackMessage = z.infer<
+  typeof stdIncomingPostBackMessageSchema
+>;
+
+export const stdIncomingQuickReplyMessageSchema = z.object({
+  type: z.literal(IncomingMessageType.quick_reply),
+  data: stdIncomingPayloadMessageDataSchema,
+});
+
+export type StdIncomingQuickReplyMessage = z.infer<
+  typeof stdIncomingQuickReplyMessageSchema
+>;
+
+export const stdIncomingLocationMessageSchema = z.object({
+  type: z.literal(IncomingMessageType.location),
+  data: stdIncomingLocationMessageDataSchema,
+});
+
+export type StdIncomingLocationMessage = z.infer<
+  typeof stdIncomingLocationMessageSchema
+>;
+
+export const stdIncomingAttachmentMessageSchema = z.object({
+  type: z.literal(IncomingMessageType.attachments),
+  data: stdIncomingAttachmentMessageDataSchema,
+});
+
 export type StdIncomingAttachmentMessage = z.infer<
   typeof stdIncomingAttachmentMessageSchema
 >;
 
-export const stdIncomingMessageSchema = z.union([
+export const stdIncomingMessageSchema = z.discriminatedUnion("type", [
+  stdIncomingTextMessageSchema,
   stdIncomingPostBackMessageSchema,
+  stdIncomingQuickReplyMessageSchema,
   stdIncomingLocationMessageSchema,
   stdIncomingAttachmentMessageSchema,
-  stdIncomingTextMessageSchema,
 ]);
 
 export type StdIncomingMessage = z.infer<typeof stdIncomingMessageSchema>;
@@ -214,79 +313,58 @@ export interface OutgoingMessage extends Omit<EntityMessage, "sender"> {
 
 export type AnyMessage = IncomingMessage | OutgoingMessage;
 
-export const stdOutgoingTextEnvelopeSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.text),
-  message: stdOutgoingTextMessageSchema,
-});
+export const stdOutgoingTextEnvelopeSchema = stdOutgoingTextMessageSchema;
 
-export type StdOutgoingTextEnvelope = z.infer<
-  typeof stdOutgoingTextEnvelopeSchema
->;
+export type StdOutgoingTextEnvelope = StdOutgoingTextMessage;
 
-export const stdOutgoingQuickRepliesEnvelopeSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.quickReplies),
-  message: stdOutgoingQuickRepliesMessageSchema,
-});
+export const stdOutgoingQuickRepliesEnvelopeSchema =
+  stdOutgoingQuickRepliesMessageSchema;
 
-export type StdOutgoingQuickRepliesEnvelope = z.infer<
-  typeof stdOutgoingQuickRepliesEnvelopeSchema
->;
+export type StdOutgoingQuickRepliesEnvelope = StdOutgoingQuickRepliesMessage;
 
-export const stdOutgoingButtonsEnvelopeSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.buttons),
-  message: stdOutgoingButtonsMessageSchema,
-});
+export const stdOutgoingButtonsEnvelopeSchema = stdOutgoingButtonsMessageSchema;
 
-export type StdOutgoingButtonsEnvelope = z.infer<
-  typeof stdOutgoingButtonsEnvelopeSchema
->;
+export type StdOutgoingButtonsEnvelope = StdOutgoingButtonsMessage;
 
-export const stdOutgoingListEnvelopeSchema = z.object({
-  format: z.enum([OutgoingMessageFormat.list, OutgoingMessageFormat.carousel]),
-  message: stdOutgoingListMessageSchema,
-});
+export const stdOutgoingListEnvelopeSchema = z.discriminatedUnion("format", [
+  stdOutgoingListMessageSchema,
+  stdOutgoingCarouselMessageSchema,
+]);
 
 export type StdOutgoingListEnvelope = z.infer<
   typeof stdOutgoingListEnvelopeSchema
 >;
 
-export const stdOutgoingAttachmentEnvelopeSchema = z.object({
-  format: z.literal(OutgoingMessageFormat.attachment),
-  message: stdOutgoingAttachmentMessageSchema,
-});
+export const stdOutgoingAttachmentEnvelopeSchema =
+  stdOutgoingAttachmentMessageSchema;
 
-export type StdOutgoingAttachmentEnvelope = z.infer<
-  typeof stdOutgoingAttachmentEnvelopeSchema
->;
+export type StdOutgoingAttachmentEnvelope = StdOutgoingAttachmentMessage;
 
-export const stdOutgoingSystemEnvelopeSchema = z.object({
+export const stdOutgoingSystemMessageSchema = z.object({
   format: z.literal(OutgoingMessageFormat.system),
-  message: stdOutgoingSystemMessageSchema,
+  data: stdOutgoingSystemMessageDataSchema,
 });
 
-export type StdOutgoingSystemEnvelope = z.infer<
-  typeof stdOutgoingSystemEnvelopeSchema
+export type StdOutgoingSystemMessage = z.infer<
+  typeof stdOutgoingSystemMessageSchema
 >;
 
-export const stdOutgoingMessageEnvelopeSchema = z.union([
-  stdOutgoingTextEnvelopeSchema,
-  stdOutgoingQuickRepliesEnvelopeSchema,
-  stdOutgoingButtonsEnvelopeSchema,
-  stdOutgoingListEnvelopeSchema,
-  stdOutgoingAttachmentEnvelopeSchema,
-]);
+export const stdOutgoingSystemEnvelopeSchema = stdOutgoingSystemMessageSchema;
 
-export type StdOutgoingMessageEnvelope = z.infer<
-  typeof stdOutgoingMessageEnvelopeSchema
->;
+export type StdOutgoingSystemEnvelope = StdOutgoingSystemMessage;
 
-export const stdOutgoingEnvelopeSchema = z.union([
-  stdOutgoingMessageEnvelopeSchema,
-  stdOutgoingSystemEnvelopeSchema,
+export const stdOutgoingMessageEnvelopeSchema = StdOutgoingMessageSchema;
+
+export type StdOutgoingMessageEnvelope = StdOutgoingMessage;
+
+export const stdOutgoingEnvelopeSchema = z.discriminatedUnion("format", [
+  stdOutgoingTextMessageSchema,
+  stdOutgoingQuickRepliesMessageSchema,
+  stdOutgoingButtonsMessageSchema,
+  stdOutgoingListMessageSchema,
+  stdOutgoingCarouselMessageSchema,
+  stdOutgoingAttachmentMessageSchema,
+  stdOutgoingSystemMessageSchema,
 ]);
 
 export type StdOutgoingEnvelope = z.infer<typeof stdOutgoingEnvelopeSchema>;
-
-export const validMessageTextSchema = z.object({
-  text: z.string(),
-});

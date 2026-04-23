@@ -33,7 +33,7 @@ describe('SendQuickRepliesAction', () => {
     const action = new SendQuickRepliesAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.quickReplies,
-      message: { text: 'processed', quickReplies: [] },
+      data: { text: 'processed', quickReplies: [] },
     };
     const prepared = {
       envelopeFactory: {

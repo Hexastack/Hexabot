@@ -235,8 +235,11 @@ describe('Web inbound events decoder', () => {
     expect(event.getId()).toBe('msg-200');
     expect(event.getPayload()).toBe('GET_STARTED');
     expect(event.getMessage()).toEqual({
-      postback: 'GET_STARTED',
-      text: 'Get Started',
+      data: {
+        payload: 'GET_STARTED',
+        text: 'Get Started',
+      },
+      type: 'postback',
     });
     expect(event.buildInput()).toEqual(
       expect.objectContaining({

@@ -33,7 +33,7 @@ describe('SendTextMessageAction', () => {
     const action = new SendTextMessageAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.text,
-      message: { text: 'processed' },
+      data: { text: 'processed' },
     };
     const prepared = {
       envelopeFactory: { buildTextEnvelope: jest.fn(() => envelope) },

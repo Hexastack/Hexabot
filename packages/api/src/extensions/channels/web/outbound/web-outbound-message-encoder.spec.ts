@@ -59,7 +59,7 @@ describe('WebOutboundMessageEncoder', () => {
   it('renders text envelopes', async () => {
     const formatted = await render({
       format: OutgoingMessageFormat.text,
-      message: textMessage,
+      data: textMessage,
     });
 
     expect(formatted).toEqual(webText);
@@ -68,7 +68,7 @@ describe('WebOutboundMessageEncoder', () => {
   it('renders quick replies envelopes', async () => {
     const formatted = await render({
       format: OutgoingMessageFormat.quickReplies,
-      message: quickRepliesMessage,
+      data: quickRepliesMessage,
     });
 
     expect(formatted).toEqual(webQuickReplies);
@@ -77,7 +77,7 @@ describe('WebOutboundMessageEncoder', () => {
   it('renders buttons envelopes', async () => {
     const formatted = await render({
       format: OutgoingMessageFormat.buttons,
-      message: buttonsMessage,
+      data: buttonsMessage,
     });
 
     expect(formatted).toEqual(webButtons);
@@ -87,7 +87,7 @@ describe('WebOutboundMessageEncoder', () => {
     const formatted = await render(
       {
         format: OutgoingMessageFormat.list,
-        message: contentMessage,
+        data: contentMessage,
       },
       {
         content: contentMessage.options,
@@ -101,7 +101,7 @@ describe('WebOutboundMessageEncoder', () => {
     const formatted = await render(
       {
         format: OutgoingMessageFormat.carousel,
-        message: contentMessage,
+        data: contentMessage,
       },
       {
         content: {
@@ -117,7 +117,7 @@ describe('WebOutboundMessageEncoder', () => {
   it('renders attachment envelopes and resolves public urls', async () => {
     const formatted = await render({
       format: OutgoingMessageFormat.attachment,
-      message: attachmentMessage,
+      data: attachmentMessage,
     });
 
     expect(formatted).toEqual(webAttachment);
@@ -132,7 +132,7 @@ describe('WebOutboundMessageEncoder', () => {
       encoder.encode(
         {
           format: OutgoingMessageFormat.list,
-          message: contentMessage,
+          data: contentMessage,
         },
         {},
       ),
@@ -144,7 +144,7 @@ describe('WebOutboundMessageEncoder', () => {
       encoder.encode(
         {
           format: OutgoingMessageFormat.list,
-          message: {
+          data: {
             ...contentMessage,
             elements: [],
           },
@@ -164,7 +164,7 @@ describe('WebOutboundMessageEncoder', () => {
       encoder.encode(
         {
           format: OutgoingMessageFormat.carousel,
-          message: {
+          data: {
             ...contentMessage,
             elements: [],
           },
@@ -187,7 +187,7 @@ describe('WebOutboundMessageEncoder', () => {
       encoder.encode(
         {
           format: OutgoingMessageFormat.system,
-          message: { outcome: 'noop' },
+          data: { outcome: 'noop' },
         } as any,
         {},
       ),

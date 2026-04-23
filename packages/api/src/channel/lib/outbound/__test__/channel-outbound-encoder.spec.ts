@@ -20,7 +20,6 @@ import {
 import {
   ChannelOutboundMessageEncoder,
   EnvelopeHandlers,
-  inferOutgoingMessageEnvelope,
   UnsupportedOutgoingFormatError,
 } from '../channel-outbound-encoder';
 
@@ -43,33 +42,6 @@ class TestChannelOutboundEncoder extends ChannelOutboundMessageEncoder<
 describe('channel outbound encoder helpers', () => {
   const encoder = new TestChannelOutboundEncoder();
 
-  it('infers outgoing envelope format from message payload', () => {
-    expect(inferOutgoingMessageEnvelope(textMessage).format).toEqual(
-      OutgoingMessageFormat.text,
-    );
-    expect(inferOutgoingMessageEnvelope(quickRepliesMessage).format).toEqual(
-      OutgoingMessageFormat.quickReplies,
-    );
-    expect(inferOutgoingMessageEnvelope(buttonsMessage).format).toEqual(
-      OutgoingMessageFormat.buttons,
-    );
-    expect(inferOutgoingMessageEnvelope(attachmentMessage).format).toEqual(
-      OutgoingMessageFormat.attachment,
-    );
-    expect(inferOutgoingMessageEnvelope(contentMessage).format).toEqual(
-      OutgoingMessageFormat.list,
-    );
-    expect(
-      inferOutgoingMessageEnvelope({
-        ...contentMessage,
-        options: {
-          ...contentMessage.options,
-          display: OutgoingMessageFormat.carousel,
-        },
-      }).format,
-    ).toEqual(OutgoingMessageFormat.carousel);
-  });
-
   it('dispatches each outgoing message envelope format', () => {
     const handlers: EnvelopeHandlers<string, void> = {
       [OutgoingMessageFormat.text]: () => OutgoingMessageFormat.text,
@@ -86,7 +58,7 @@ describe('channel outbound encoder helpers', () => {
       encoder.dispatch(
         {
           format: OutgoingMessageFormat.text,
-          message: textMessage,
+          data: textMessage,
         },
         handlers,
       ),
@@ -95,7 +67,7 @@ describe('channel outbound encoder helpers', () => {
       encoder.dispatch(
         {
           format: OutgoingMessageFormat.quickReplies,
-          message: quickRepliesMessage,
+          data: quickRepliesMessage,
         },
         handlers,
       ),
@@ -104,7 +76,7 @@ describe('channel outbound encoder helpers', () => {
       encoder.dispatch(
         {
           format: OutgoingMessageFormat.buttons,
-          message: buttonsMessage,
+          data: buttonsMessage,
         },
         handlers,
       ),
@@ -113,7 +85,7 @@ describe('channel outbound encoder helpers', () => {
       encoder.dispatch(
         {
           format: OutgoingMessageFormat.attachment,
-          message: attachmentMessage,
+          data: attachmentMessage,
         },
         handlers,
       ),
@@ -122,7 +94,7 @@ describe('channel outbound encoder helpers', () => {
       encoder.dispatch(
         {
           format: OutgoingMessageFormat.list,
-          message: contentMessage,
+          data: contentMessage,
         },
         handlers,
       ),
@@ -131,7 +103,7 @@ describe('channel outbound encoder helpers', () => {
       encoder.dispatch(
         {
           format: OutgoingMessageFormat.carousel,
-          message: contentMessage,
+          data: contentMessage,
         },
         handlers,
       ),
@@ -154,7 +126,7 @@ describe('channel outbound encoder helpers', () => {
       encoder.dispatch(
         {
           format: 'unknown',
-          message: textMessage,
+          data: textMessage,
         } as any,
         handlers as any,
       ),

@@ -8,13 +8,12 @@ import type { Attachment, Subscriber, Thread } from '@hexabot-ai/types';
 import {
   ActionOptions,
   AnyMessage,
+  IncomingMessageType,
   IncomingMessage,
   OutgoingMessage,
   OutgoingMessageFormat,
-  PayloadType,
   StdEventType,
   StdOutgoingEnvelope,
-  StdOutgoingMessage,
 } from '@hexabot-ai/types';
 import {
   HttpException,
@@ -36,10 +35,7 @@ import {
 } from '@/attachment/types';
 import ChannelHandler from '@/channel/lib/Handler';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
-import {
-  inferOutgoingMessageEnvelope,
-  UnsupportedOutgoingFormatError,
-} from '@/channel/lib/outbound';
+import { UnsupportedOutgoingFormatError } from '@/channel/lib/outbound';
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
@@ -215,10 +211,24 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   private async formatIncomingHistoryMessage(
     incoming: IncomingMessage,
   ): Promise<Web.InboundMessageBase> {
-    // Format incoming message
-    if ('type' in incoming.message) {
-      if (incoming.message.type === PayloadType.location) {
-        const coordinates = incoming.message.coordinates;
+    switch (incoming.message.type) {
+      case IncomingMessageType.message:
+        return {
+          type: Web.InboundMessageType.text,
+          data: incoming.message.data,
+        };
+      case IncomingMessageType.postback:
+        return {
+          type: Web.InboundMessageType.postback,
+          data: incoming.message.data,
+        };
+      case IncomingMessageType.quick_reply:
+        return {
+          type: Web.InboundMessageType.quick_reply,
+          data: incoming.message.data,
+        };
+      case IncomingMessageType.location: {
+        const coordinates = incoming.message.data.coordinates;
 
         return {
           type: Web.InboundMessageType.location,
@@ -229,11 +239,14 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
             },
           },
         };
-      } else {
+      }
+      case IncomingMessageType.attachments: {
         // @TODO : handle multiple files
-        const attachmentPayload = Array.isArray(incoming.message.attachment)
-          ? incoming.message.attachment[0]
-          : incoming.message.attachment;
+        const attachmentPayload = Array.isArray(
+          incoming.message.data.attachment,
+        )
+          ? incoming.message.data.attachment[0]
+          : incoming.message.data.attachment;
 
         return {
           type: Web.InboundMessageType.file,
@@ -246,11 +259,11 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           },
         };
       }
-    } else {
-      return {
-        type: Web.InboundMessageType.text,
-        data: incoming.message,
-      };
+      default:
+        return {
+          type: Web.InboundMessageType.text,
+          data: { text: '' },
+        };
     }
   }
 
@@ -263,11 +276,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   private async formatOutgoingHistoryMessage(
     outgoing: OutgoingMessage,
   ): Promise<Web.OutboundMessageBase> {
-    const envelope = inferOutgoingMessageEnvelope(outgoing.message);
+    const envelope = outgoing.message;
     const options: ActionOptions =
-      'options' in outgoing.message
+      envelope.format === OutgoingMessageFormat.list ||
+      envelope.format === OutgoingMessageFormat.carousel
         ? {
-            content: outgoing.message.options,
+            content: envelope.data.options,
           }
         : {};
 
@@ -809,7 +823,10 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           }
           const sentMessage: MessageCreateDto = {
             mid: messageEvent.getId(),
-            message: messageEvent.getMessage() as StdOutgoingMessage,
+            message: {
+              format: OutgoingMessageFormat.text,
+              data: { text: messageEvent.getText() },
+            },
             recipient: profile.id,
             thread: thread.id,
             read: true,

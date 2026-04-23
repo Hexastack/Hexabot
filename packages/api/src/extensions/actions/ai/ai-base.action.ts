@@ -7,6 +7,7 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { ProviderV2, ProviderV3 } from '@ai-sdk/provider';
 import {
+  IncomingMessageType,
   Message,
   Thread,
   StdIncomingMessage,
@@ -364,15 +365,31 @@ export abstract class AiBaseAction<
       return undefined;
     }
 
-    if ('text' in payload && typeof payload.text === 'string') {
-      return payload.text;
+    if ('format' in payload) {
+      const data = payload.data;
+      if ('text' in data && typeof data.text === 'string') {
+        return data.text;
+      }
+
+      return JSON.stringify(data);
     }
 
-    const serialized =
-      (payload as { serialized_text?: unknown }).serialized_text ?? undefined;
+    if (
+      payload.type === IncomingMessageType.message ||
+      payload.type === IncomingMessageType.postback ||
+      payload.type === IncomingMessageType.quick_reply
+    ) {
+      return payload.data.text;
+    }
 
-    if (typeof serialized === 'string') {
-      return serialized;
+    if (payload.type === IncomingMessageType.attachments) {
+      return payload.data.serialized_text;
+    }
+
+    if (payload.type === IncomingMessageType.location) {
+      const { lat, lon } = payload.data.coordinates;
+
+      return `location:${lat},${lon}`;
     }
 
     try {

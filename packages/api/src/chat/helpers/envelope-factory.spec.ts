@@ -49,7 +49,7 @@ describe('EnvelopeFactory', () => {
       const input = 'Hello there';
       const envelope = factory.buildTextEnvelope(input);
       expect(envelope.format).toBe(OutgoingMessageFormat.text);
-      expect(envelope.message.text).toBe('Hello there');
+      expect(envelope.data.text).toBe('Hello there');
     });
   });
 
@@ -68,12 +68,12 @@ describe('EnvelopeFactory', () => {
       ] as StdQuickReply[];
       const envelope = factory.buildQuickRepliesEnvelope(input, quickReplies);
       expect(envelope.format).toBe(OutgoingMessageFormat.quickReplies);
-      expect(envelope.message.text).toBe('Choose an option');
-      expect(envelope.message.quickReplies).toHaveLength(2);
-      expect(envelope.message.quickReplies[0].title).toBe('Yes');
-      expect(envelope.message.quickReplies[0].payload).toBe('do_123');
-      expect(envelope.message.quickReplies[1].title).toBe('No');
-      expect(envelope.message.quickReplies[1].payload).toBe('dont_123');
+      expect(envelope.data.text).toBe('Choose an option');
+      expect(envelope.data.quickReplies).toHaveLength(2);
+      expect(envelope.data.quickReplies[0].title).toBe('Yes');
+      expect(envelope.data.quickReplies[0].payload).toBe('do_123');
+      expect(envelope.data.quickReplies[1].title).toBe('No');
+      expect(envelope.data.quickReplies[1].payload).toBe('dont_123');
     });
   });
 
@@ -94,16 +94,16 @@ describe('EnvelopeFactory', () => {
       ];
       const envelope = factory.buildButtonsEnvelope(input, buttons);
       expect(envelope.format).toBe(OutgoingMessageFormat.buttons);
-      expect(envelope.message.text).toBe('Press a button');
-      expect(envelope.message.buttons).toHaveLength(2);
+      expect(envelope.data.text).toBe('Press a button');
+      expect(envelope.data.buttons).toHaveLength(2);
       // For a postback button, both title and payload are processed.
-      expect(envelope.message.buttons[0].title).toBe('Click company');
+      expect(envelope.data.buttons[0].title).toBe('Click company');
       // @ts-expect-error part of the test
-      expect(envelope.message.buttons[0].payload).toBe('btn_123');
+      expect(envelope.data.buttons[0].payload).toBe('btn_123');
       // For a non-postback button, only the title is processed.
-      expect(envelope.message.buttons[1].title).toBe('Visit company');
+      expect(envelope.data.buttons[1].title).toBe('Visit company');
       // @ts-expect-error part of the test
-      expect(envelope.message.buttons[1].url).toBe('https://example.com');
+      expect(envelope.data.buttons[1].url).toBe('https://example.com');
     });
   });
 
@@ -126,10 +126,10 @@ describe('EnvelopeFactory', () => {
         quickReplies,
       );
       expect(envelope.format).toBe(OutgoingMessageFormat.attachment);
-      expect(envelope.message.attachment).toEqual(attachment);
-      expect(envelope.message.quickReplies).toHaveLength(1);
-      expect(envelope.message.quickReplies?.[0].title).toBe('Yes company');
-      expect(envelope.message.quickReplies?.[0].payload).toBe('do_123');
+      expect(envelope.data.attachment).toEqual(attachment);
+      expect(envelope.data.quickReplies).toHaveLength(1);
+      expect(envelope.data.quickReplies?.[0].title).toBe('Yes company');
+      expect(envelope.data.quickReplies?.[0].payload).toBe('do_123');
     });
   });
 
@@ -167,9 +167,9 @@ describe('EnvelopeFactory', () => {
             pagination,
           );
           expect(envelope.format).toBe(format);
-          expect(envelope.message.options).toEqual(options);
-          expect(envelope.message.elements).toEqual(elements);
-          expect(envelope.message.pagination).toEqual(pagination);
+          expect(envelope.data.options).toEqual(options);
+          expect(envelope.data.elements).toEqual(elements);
+          expect(envelope.data.pagination).toEqual(pagination);
         },
       );
     });
@@ -181,8 +181,8 @@ describe('EnvelopeFactory', () => {
       const data = { key: 'value' };
       const envelope = factory.buildSystemEnvelope(outcome, data);
       expect(envelope.format).toBe(OutgoingMessageFormat.system);
-      expect(envelope.message.outcome).toBe(outcome);
-      expect(envelope.message.data).toEqual(data);
+      expect(envelope.data.outcome).toBe(outcome);
+      expect(envelope.data.data).toEqual(data);
     });
   });
 });

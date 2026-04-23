@@ -9,7 +9,7 @@ import {
   messageSchema,
   StdIncomingMessage,
   StdOutgoingMessage,
-  validMessageTextSchema,
+  StdOutgoingMessageSchema,
 } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
@@ -61,7 +61,7 @@ export class MessageCreateDto {
   @ApiProperty({ description: 'Message', type: Object })
   @IsObject()
   @IsNotEmpty()
-  @Validate(validMessageTextSchema)
+  @Validate(StdOutgoingMessageSchema)
   message: StdOutgoingMessage | StdIncomingMessage;
 
   @ApiPropertyOptional({ description: 'Message is read', type: Boolean })
@@ -83,6 +83,14 @@ export class MessageCreateDto {
 }
 
 export class MessageUpdateDto extends PartialType(MessageCreateDto) {}
+
+export class MessageSendDto extends MessageCreateDto {
+  @ApiProperty({ description: 'Message', type: Object })
+  @IsObject()
+  @IsNotEmpty()
+  @Validate(StdOutgoingMessageSchema)
+  declare message: StdOutgoingMessage;
+}
 
 export type MessageDto = TDto<
   {

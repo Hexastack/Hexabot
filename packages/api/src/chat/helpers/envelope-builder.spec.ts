@@ -29,7 +29,7 @@ describe('EnvelopeBuilder', () => {
     const result = builder.build();
     expect(result).toEqual({
       format: OutgoingMessageFormat.text,
-      message: {
+      data: {
         text: 'Hello',
       },
     });
@@ -67,7 +67,7 @@ describe('EnvelopeBuilder', () => {
     const result = builder.build();
     expect(result).toEqual({
       format: OutgoingMessageFormat.quickReplies,
-      message: {
+      data: {
         text: 'Choose an option',
         quickReplies: [
           { title: 'Yes', payload: 'yes' },
@@ -95,7 +95,7 @@ describe('getEnvelopeBuilder', () => {
 
     const envelope = builder.build();
     expect(envelope.format).toBe(OutgoingMessageFormat.text);
-    expect(envelope.message.text).toBe('Hello from text envelope!');
+    expect(envelope.data.text).toBe('Hello from text envelope!');
   });
 
   it('should return a builder for quickReplies format that can append items', () => {
@@ -108,7 +108,7 @@ describe('getEnvelopeBuilder', () => {
 
     const envelope = builder.build();
     expect(envelope.format).toBe(OutgoingMessageFormat.quickReplies);
-    expect(envelope.message.text).toBe('Pick an option');
-    expect(envelope.message.quickReplies?.length).toBe(1);
+    expect(envelope.data.text).toBe('Pick an option');
+    expect(envelope.data.quickReplies.length).toBe(1);
   });
 });

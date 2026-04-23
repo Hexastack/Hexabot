@@ -11,12 +11,12 @@ import {
   ButtonType,
   ContentElement,
   OutgoingMessageFormat,
-  StdOutgoingAttachmentMessage,
-  StdOutgoingButtonsMessage,
-  StdOutgoingListMessage,
+  StdOutgoingAttachmentMessageData,
+  StdOutgoingButtonsMessageData,
+  StdOutgoingListMessageData,
   StdOutgoingMessageEnvelope,
-  StdOutgoingQuickRepliesMessage,
-  StdOutgoingTextMessage,
+  StdOutgoingQuickRepliesMessageData,
+  StdOutgoingTextMessageData,
 } from '@hexabot-ai/types';
 import { Injectable, Type } from '@nestjs/common';
 
@@ -50,23 +50,22 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
     options: WebOutboundEncodeOptions = {},
   ): Promise<Web.OutboundMessageBase> {
     return await this.dispatchEnvelope(envelope, options, {
-      [OutgoingMessageFormat.text]: ({ message }) =>
-        this.encodeTextMessage(message),
-      [OutgoingMessageFormat.quickReplies]: ({ message }) =>
-        this.encodeQuickRepliesMessage(message),
-      [OutgoingMessageFormat.buttons]: ({ message }) =>
-        this.encodeButtonsMessage(message),
-      [OutgoingMessageFormat.attachment]: ({ message }) =>
-        this.encodeAttachmentMessage(message),
-      [OutgoingMessageFormat.list]: ({ message }, actionOptions) =>
-        this.encodeListMessage(message, actionOptions),
-      [OutgoingMessageFormat.carousel]: ({ message }, actionOptions) =>
-        this.encodeCarouselMessage(message, actionOptions),
+      [OutgoingMessageFormat.text]: ({ data }) => this.encodeTextMessage(data),
+      [OutgoingMessageFormat.quickReplies]: ({ data }) =>
+        this.encodeQuickRepliesMessage(data),
+      [OutgoingMessageFormat.buttons]: ({ data }) =>
+        this.encodeButtonsMessage(data),
+      [OutgoingMessageFormat.attachment]: ({ data }) =>
+        this.encodeAttachmentMessage(data),
+      [OutgoingMessageFormat.list]: ({ data }, actionOptions) =>
+        this.encodeListMessage(data, actionOptions),
+      [OutgoingMessageFormat.carousel]: ({ data }, actionOptions) =>
+        this.encodeCarouselMessage(data, actionOptions),
     });
   }
 
   protected encodeTextMessage(
-    message: StdOutgoingTextMessage,
+    message: StdOutgoingTextMessageData,
   ): Web.OutboundMessageBase {
     return {
       type: Web.OutboundMessageType.text,
@@ -75,7 +74,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected encodeQuickRepliesMessage(
-    message: StdOutgoingQuickRepliesMessage,
+    message: StdOutgoingQuickRepliesMessageData,
   ): Web.OutboundMessageBase {
     return {
       type: Web.OutboundMessageType.quick_replies,
@@ -87,7 +86,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected encodeButtonsMessage(
-    message: StdOutgoingButtonsMessage,
+    message: StdOutgoingButtonsMessageData,
   ): Web.OutboundMessageBase {
     return {
       type: Web.OutboundMessageType.buttons,
@@ -99,7 +98,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected async encodeAttachmentMessage(
-    message: StdOutgoingAttachmentMessage,
+    message: StdOutgoingAttachmentMessageData,
   ): Promise<Web.OutboundMessageBase> {
     const payload: Web.OutboundMessageBase = {
       type: Web.OutboundMessageType.file,
@@ -201,7 +200,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected async encodeListMessage(
-    message: StdOutgoingListMessage,
+    message: StdOutgoingListMessageData,
     options: ActionOptions,
   ): Promise<Web.OutboundMessageBase> {
     const data = message.elements || [];
@@ -242,7 +241,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   }
 
   protected async encodeCarouselMessage(
-    message: StdOutgoingListMessage,
+    message: StdOutgoingListMessageData,
     options: ActionOptions,
   ): Promise<Web.OutboundMessageBase> {
     const data = message.elements || [];

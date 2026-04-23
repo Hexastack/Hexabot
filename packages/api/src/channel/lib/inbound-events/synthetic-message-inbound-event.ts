@@ -5,10 +5,10 @@
  */
 
 import {
-  PayloadType,
   IncomingMessageType,
-  StdIncomingMessage,
   Payload,
+  PayloadType,
+  StdIncomingMessage,
 } from '@hexabot-ai/types';
 
 import { ChannelName } from '../../types';
@@ -36,35 +36,36 @@ export class SyntheticMessageInboundEvent<
   }
 
   override getPayload(): Payload | string | undefined {
-    if ('postback' in this.message) {
-      return this.message.postback;
+    if (
+      this.message.type === IncomingMessageType.postback ||
+      this.message.type === IncomingMessageType.quick_reply
+    ) {
+      return this.message.data.payload;
     }
 
-    if ('type' in this.message) {
-      if (this.message.type === PayloadType.location) {
-        return {
-          type: PayloadType.location,
-          coordinates: {
-            lat: this.message.coordinates.lat,
-            lon: this.message.coordinates.lon,
-          },
-        };
+    if (this.message.type === IncomingMessageType.location) {
+      return {
+        type: PayloadType.location,
+        coordinates: {
+          lat: this.message.data.coordinates.lat,
+          lon: this.message.data.coordinates.lon,
+        },
+      };
+    }
+
+    if (this.message.type === IncomingMessageType.attachments) {
+      const attachment = Array.isArray(this.message.data.attachment)
+        ? this.message.data.attachment[0]
+        : this.message.data.attachment;
+
+      if (!attachment) {
+        return undefined;
       }
 
-      if (this.message.type === PayloadType.attachments) {
-        const attachment = Array.isArray(this.message.attachment)
-          ? this.message.attachment[0]
-          : this.message.attachment;
-
-        if (!attachment) {
-          return undefined;
-        }
-
-        return {
-          type: PayloadType.attachments,
-          attachment,
-        };
-      }
+      return {
+        type: PayloadType.attachments,
+        attachment,
+      };
     }
 
     return undefined;

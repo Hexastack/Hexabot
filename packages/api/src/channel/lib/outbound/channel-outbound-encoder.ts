@@ -6,13 +6,7 @@
 
 import {
   OutgoingMessageFormat,
-  StdOutgoingAttachmentEnvelope,
-  StdOutgoingButtonsEnvelope,
-  StdOutgoingListEnvelope,
-  StdOutgoingMessage,
   StdOutgoingMessageEnvelope,
-  StdOutgoingQuickRepliesEnvelope,
-  StdOutgoingTextEnvelope,
 } from '@hexabot-ai/types';
 
 export class UnsupportedOutgoingFormatError extends Error {
@@ -28,27 +22,45 @@ export class UnsupportedOutgoingFormatError extends Error {
 
 export type EnvelopeHandlers<Out, Opt = unknown> = {
   [OutgoingMessageFormat.text]: (
-    envelope: StdOutgoingTextEnvelope,
+    envelope: Extract<
+      StdOutgoingMessageEnvelope,
+      { format: OutgoingMessageFormat.text }
+    >,
     options: Opt,
   ) => Promise<Out> | Out;
   [OutgoingMessageFormat.quickReplies]: (
-    envelope: StdOutgoingQuickRepliesEnvelope,
+    envelope: Extract<
+      StdOutgoingMessageEnvelope,
+      { format: OutgoingMessageFormat.quickReplies }
+    >,
     options: Opt,
   ) => Promise<Out> | Out;
   [OutgoingMessageFormat.buttons]: (
-    envelope: StdOutgoingButtonsEnvelope,
+    envelope: Extract<
+      StdOutgoingMessageEnvelope,
+      { format: OutgoingMessageFormat.buttons }
+    >,
     options: Opt,
   ) => Promise<Out> | Out;
   [OutgoingMessageFormat.attachment]: (
-    envelope: StdOutgoingAttachmentEnvelope,
+    envelope: Extract<
+      StdOutgoingMessageEnvelope,
+      { format: OutgoingMessageFormat.attachment }
+    >,
     options: Opt,
   ) => Promise<Out> | Out;
   [OutgoingMessageFormat.list]: (
-    envelope: StdOutgoingListEnvelope,
+    envelope: Extract<
+      StdOutgoingMessageEnvelope,
+      { format: OutgoingMessageFormat.list }
+    >,
     options: Opt,
   ) => Promise<Out> | Out;
   [OutgoingMessageFormat.carousel]: (
-    envelope: StdOutgoingListEnvelope,
+    envelope: Extract<
+      StdOutgoingMessageEnvelope,
+      { format: OutgoingMessageFormat.carousel }
+    >,
     options: Opt,
   ) => Promise<Out> | Out;
 };
@@ -90,51 +102,4 @@ export abstract class ChannelOutboundMessageEncoder<Out, Opt = unknown> {
 
     throw new UnsupportedOutgoingFormatError(unknownFormat);
   }
-}
-
-export function inferOutgoingMessageEnvelope(
-  message: StdOutgoingMessage,
-): StdOutgoingMessageEnvelope {
-  if ('buttons' in message) {
-    return {
-      format: OutgoingMessageFormat.buttons,
-      message,
-    };
-  }
-
-  if ('attachment' in message) {
-    return {
-      format: OutgoingMessageFormat.attachment,
-      message,
-    };
-  }
-
-  if ('quickReplies' in message) {
-    return {
-      format: OutgoingMessageFormat.quickReplies,
-      message,
-    };
-  }
-
-  if ('options' in message) {
-    return {
-      format:
-        message.options.display === OutgoingMessageFormat.carousel
-          ? OutgoingMessageFormat.carousel
-          : OutgoingMessageFormat.list,
-      message,
-    };
-  }
-
-  if ('text' in message) {
-    return {
-      format: OutgoingMessageFormat.text,
-      message,
-    };
-  }
-
-  throw new UnsupportedOutgoingFormatError(
-    'unknown',
-    'Unable to infer outgoing message format from message payload.',
-  );
 }

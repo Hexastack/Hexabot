@@ -159,7 +159,7 @@ export abstract class MessageAction<
       mid,
       channel: event.getHandler().getName(),
       format: envelope.format,
-      envelope: envelope.message,
+      envelope,
     };
     const threadId = event.getThreadId();
     if (!threadId) {
@@ -167,7 +167,7 @@ export abstract class MessageAction<
     }
     const sentMessage: MessageCreateDto = {
       mid: mid ?? '',
-      message: envelope.message,
+      message: envelope,
       recipient: recipient.id,
       thread: threadId,
       handover: false,

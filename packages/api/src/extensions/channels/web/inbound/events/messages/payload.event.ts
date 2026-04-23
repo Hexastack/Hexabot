@@ -48,8 +48,11 @@ export abstract class PayloadMessageInboundEvent<
 
   override toStdIncomingMessage(): StdIncomingMessage {
     return {
-      postback: this.payloadValue,
-      text: this.text,
+      type: this.messageType,
+      data: {
+        payload: this.payloadValue,
+        text: this.text,
+      },
     };
   }
 }

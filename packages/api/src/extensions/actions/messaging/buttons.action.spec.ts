@@ -34,7 +34,7 @@ describe('SendButtonsAction', () => {
     const action = new SendButtonsAction(actionService);
     const envelope: StdOutgoingMessageEnvelope = {
       format: OutgoingMessageFormat.buttons,
-      message: { text: 'processed', buttons: [] },
+      data: { text: 'processed', buttons: [] },
     };
     const prepared = {
       envelopeFactory: {
