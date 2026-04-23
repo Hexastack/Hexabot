@@ -123,10 +123,13 @@ export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
   const [settings, setSettingsState] = useState(
     defaultOrSavedSettings || defaultSettings,
   );
-  const setSettings = useCallback((settings: ChatSettings) => {
-    SessionStorage.setItem(settingsStorageKey, settings);
-    setSettingsState(settings);
-  }, [settingsStorageKey]);
+  const setSettings = useCallback(
+    (settings: ChatSettings) => {
+      SessionStorage.setItem(settingsStorageKey, settings);
+      setSettingsState(settings);
+    },
+    [settingsStorageKey],
+  );
 
   useEffect(() => {
     if (!scopedSettings && legacySettings) {

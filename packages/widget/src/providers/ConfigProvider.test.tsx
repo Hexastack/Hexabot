@@ -46,11 +46,7 @@ describe("ConfigProvider", () => {
     await act(async () => {
       root = createRoot(container);
       root.render(
-        <ConfigProvider
-          mode="light"
-          primaryColor="#0074D9"
-          transport="polling"
-        >
+        <ConfigProvider mode="light" primaryColor="#0074D9" transport="polling">
           <ConfigProbe />
         </ConfigProvider>,
       );

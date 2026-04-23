@@ -82,12 +82,7 @@ const MenuButton: React.FC = () => {
         id="hb-menu-button"
         className="hb-user-input--menu-button"
       >
-        <Menu
-          width="32"
-          height="32"
-          x="0"
-          y="0"
-        />
+        <Menu width="32" height="32" x="0" y="0" />
       </button>
       {displayMenu && (
         <div
