@@ -19,6 +19,7 @@ import { ChannelService } from './channel.service';
 import { ChannelEventBus } from './lib/channel-event-bus';
 import { ChannelAttachmentService } from './services/channel-attachment.service';
 import { ChannelDownloadService } from './services/channel-download.service';
+import { SubscriberResolver } from './services/subscriber-resolver.service';
 import { WebhookController } from './webhook.controller';
 
 export interface ChannelModuleOptions {
@@ -49,6 +50,7 @@ export interface ChannelModuleOptions {
     ChannelService,
     ChannelAttachmentService,
     ChannelDownloadService,
+    SubscriberResolver,
   ],
   exports: [ChannelService],
 })

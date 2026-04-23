@@ -23,27 +23,19 @@ import {
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import {
-  inferOutgoingMessageEnvelope,
-  UnsupportedOutgoingFormatError,
-} from '@/channel/lib/outbound';
+  ChannelCapabilities,
+  DEFAULT_CHANNEL_CAPABILITIES,
+} from '@/channel/lib/channel-capabilities';
+import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { WebSocketChannelHandler } from '@/channel/lib/transports';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { Subscriber, SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { Thread } from '@/chat/dto/thread.dto';
 import { MessageService } from '@/chat/services/message.service';
-import { SubscriberService } from '@/chat/services/subscriber.service';
-import { ThreadService } from '@/chat/services/thread.service';
-import { PayloadType } from '@/chat/types/button';
 import {
-  AnyMessage,
-  IncomingMessage,
-  OutgoingMessage,
-  OutgoingMessageFormat,
   StdEventType,
-  StdOutgoingEnvelope,
+  StdOutgoingMessageEnvelope,
   StdOutgoingMessage,
 } from '@/chat/types/message';
 import { ActionOptions } from '@/chat/types/options';
@@ -63,6 +55,11 @@ import {
   createWebOutboundMessageEncoder,
   WebOutboundMessageEncoder,
 } from './outbound';
+import {
+  WebFormatContext,
+  WebHistoryService,
+} from './services/web-history.service';
+import { WebSessionService } from './services/web-session.service';
 import { Web } from './types';
 import { WEB_CHANNEL_NAME } from './web-channel.settings';
 
@@ -71,48 +68,78 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   extends WebSocketChannelHandler<N>
   implements OnModuleInit
 {
-  @Inject(SubscriberService)
-  protected readonly subscriberService: SubscriberService;
+  @Inject(MenuService)
+  private readonly menuService: MenuService;
 
   @Inject(MessageService)
-  protected readonly messageService: MessageService;
-
-  @Inject(MenuService)
-  protected readonly menuService: MenuService;
-
-  @Inject(ThreadService)
-  protected readonly threadService: ThreadService;
+  private readonly messageService: MessageService;
 
   private outboundMessageEncoder!: WebOutboundMessageEncoder;
 
   private inboundEventDecoder!: WebInboundEventDecoder<N>;
 
+  private sessionService!: WebSessionService;
+
+  private historyService!: WebHistoryService;
+
   constructor(name: N) {
     super(name);
   }
 
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
+
   async onModuleInit() {
     await super.onModuleInit();
-    const OutboundMessageEncoderProvider = createWebOutboundMessageEncoder(
-      this.getName(),
-    );
-    const InboundEventDecoderProvider = createWebInboundEventDecoder(
-      this.getName(),
-    );
-    const [encoder, decoder] = await Promise.all([
-      this.createModuleRef(OutboundMessageEncoderProvider),
-      this.createModuleRef(InboundEventDecoderProvider),
+
+    const [encoder, decoder, session, history] = await Promise.all([
+      this.createModuleRef(createWebOutboundMessageEncoder(this.getName())),
+      this.createModuleRef(createWebInboundEventDecoder(this.getName())),
+      this.createModuleRef(WebSessionService),
+      this.createModuleRef(WebHistoryService),
     ]);
+
     this.outboundMessageEncoder = encoder as WebOutboundMessageEncoder;
     this.inboundEventDecoder = decoder as WebInboundEventDecoder<N>;
+    this.sessionService = session;
+    this.historyService = history;
+
     this.logger.debug('initialization ...');
   }
 
-  /**
-   * Verify web websocket connection and return settings
-   *
-   * @param client - The socket client
-   */
+  // ── Capabilities ───────────────────────────────────────────────────────────
+
+  getCapabilities(): ChannelCapabilities {
+    return { ...DEFAULT_CHANNEL_CAPABILITIES, typingIndicator: true };
+  }
+
+  // ── Identity helpers ───────────────────────────────────────────────────────
+
+  generateId(): string {
+    return `${this.name}-${uuidv4()}`;
+  }
+
+  getChannelAttributes(
+    req: SocketRequest,
+  ): SubscriberChannelDict[typeof WEB_CHANNEL_NAME] {
+    return {
+      isSocket: true,
+      ipAddress: this.getIpAddress(req),
+      agent: req.headers['user-agent'] || 'browser',
+    };
+  }
+
+  // ── Private format context factory ────────────────────────────────────────
+
+  private formatCtx(): WebFormatContext {
+    return {
+      encoder: this.outboundMessageEncoder,
+      channelName: this.getName(),
+      generateId: () => this.generateId(),
+    };
+  }
+
+  // ── Socket.IO events ───────────────────────────────────────────────────────
+
   @OnEvent('hook:websocket:connection', { async: true })
   async onWebSocketConnection(client: Socket) {
     try {
@@ -120,34 +147,25 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       const { channel } = handshake.query;
       const profile = client.request.session.web?.profile;
 
-      if (channel !== this.getName()) {
-        return;
-      }
+      if (channel !== this.getName()) return;
 
       let messages: Web.Message[] | undefined;
       let threadId: string | undefined;
 
       if (profile?.foreignId) {
         await client.join(profile.foreignId);
-        const thread = await this.threadService.resolveThread({
-          subscriberId: profile.id,
-          explicitThreadId: client.request.session.web?.threadId,
-        });
+        const thread = await this.sessionService.resolveThread(
+          profile.id,
+          client.request.session.web?.threadId,
+        );
         threadId = thread?.id;
-        const currentWebSession = client.request.session.web;
         client.request.session.web = {
-          profile: currentWebSession?.profile,
+          profile: client.request.session.web?.profile,
           threadId,
         };
-        if (thread) {
-          const messagesHistory =
-            await this.messageService.findHistoryUntilDate(thread);
-          messages = await this.formatMessages(
-            messagesHistory.reverse() as AnyMessage[],
-          );
-        } else {
-          messages = [];
-        }
+        messages = thread
+          ? await this.historyService.fetchHistory(thread, this.formatCtx())
+          : [];
       }
 
       this.logger.debug('WS connected .. sending settings');
@@ -155,7 +173,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
       try {
         const menu = await this.menuService.getTree();
-
         client.emit('settings', {
           menu,
           profile,
@@ -197,382 +214,74 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     this.broadcast(subscriber, StdEventType.error, response, [socket.id]);
   }
 
-  /**
-   * Adapt incoming message structure for web channel
-   *
-   * @param incoming - Incoming message
-   * @returns Formatted web message
-   */
-  private async formatIncomingHistoryMessage(
-    incoming: IncomingMessage,
-  ): Promise<Web.InboundMessageBase> {
-    // Format incoming message
-    if ('type' in incoming.message) {
-      if (incoming.message.type === PayloadType.location) {
-        const coordinates = incoming.message.coordinates;
+  // ── CORS (wrapper keeps the method accessible to tests + sub-classes) ──────
 
-        return {
-          type: Web.InboundMessageType.location,
-          data: {
-            coordinates: {
-              lat: coordinates.lat,
-              lng: coordinates.lon,
-            },
-          },
-        };
-      } else {
-        // @TODO : handle multiple files
-        const attachmentPayload = Array.isArray(incoming.message.attachment)
-          ? incoming.message.attachment[0]
-          : incoming.message.attachment;
-
-        return {
-          type: Web.InboundMessageType.file,
-          data: {
-            type: attachmentPayload.type,
-            url: await this.channelAttachmentService.getPublicUrl(
-              this.getName(),
-              attachmentPayload.payload,
-            ),
-          },
-        };
-      }
-    } else {
-      return {
-        type: Web.InboundMessageType.text,
-        data: incoming.message,
-      };
-    }
-  }
-
-  /**
-   * Adapt the outgoing message structure for web channel
-   *
-   * @param outgoing - The outgoing message
-   * @returns Formatted web message
-   */
-  private async formatOutgoingHistoryMessage(
-    outgoing: OutgoingMessage,
-  ): Promise<Web.OutboundMessageBase> {
-    const envelope = inferOutgoingMessageEnvelope(outgoing.message);
-    const options: ActionOptions =
-      'options' in outgoing.message
-        ? {
-            content: outgoing.message.options,
-          }
-        : {};
-
-    return await this.outboundMessageEncoder.encode(envelope, options);
-  }
-
-  /**
-   * Checks if a given message is an IncomingMessage
-   *
-   * @param message Any type of message
-   * @returns True, if it's a incoming message
-   */
-  private isIncomingMessage(message: AnyMessage): message is IncomingMessage {
-    return 'sender' in message && !!message.sender;
-  }
-
-  /**
-   * Adapt the message structure for web channel
-   *
-   * @param messages - The messages to be formatted
-   *
-   * @returns Formatted message
-   */
-  protected async formatMessages(
-    messages: AnyMessage[],
-  ): Promise<Web.Message[]> {
-    const formattedMessages: Web.Message[] = [];
-
-    for (const anyMessage of messages) {
-      const messageMid = anyMessage.mid ?? this.generateId();
-      if (this.isIncomingMessage(anyMessage)) {
-        const message = await this.formatIncomingHistoryMessage(anyMessage);
-        formattedMessages.push({
-          ...message,
-          author: anyMessage.sender,
-          read: true, // Temporary fix as read is false in the bd
-          mid: messageMid,
-          createdAt: anyMessage.createdAt,
-        });
-      } else {
-        const message = await this.formatOutgoingHistoryMessage(anyMessage);
-        formattedMessages.push({
-          ...message,
-          author: 'chatbot',
-          read: true, // Temporary fix as read is false in the bd
-          mid: messageMid,
-          handover: !!anyMessage.handover,
-          createdAt: anyMessage.createdAt,
-        });
-      }
-    }
-
-    return formattedMessages;
-  }
-
-  private normalizeThreadId(raw: unknown): string | undefined {
-    if (typeof raw !== 'string') {
-      return undefined;
-    }
-    const value = raw.trim();
-
-    return value.length > 0 ? value : undefined;
-  }
-
-  private getThreadIdFromQuery(req: SocketRequest): string | undefined {
-    const raw = req.query.thread_id;
-    const candidate = Array.isArray(raw) ? raw[0] : raw;
-
-    return this.normalizeThreadId(candidate);
-  }
-
-  private getThreadIdFromBody(req: SocketRequest): string | undefined {
-    const body = req.body as { thread_id?: unknown } | undefined;
-
-    return this.normalizeThreadId(body?.thread_id);
-  }
-
-  private async resolveThreadForHistory(
-    req: SocketRequest,
-  ): Promise<Thread | null> {
-    const profile = req.session.web?.profile;
-    if (!profile?.id) {
-      return null;
-    }
-
-    const explicitThreadId =
-      this.getThreadIdFromQuery(req) ?? this.getThreadIdFromBody(req);
-    const thread = await this.threadService.resolveThread({
-      subscriberId: profile.id,
-      explicitThreadId,
-    });
-
-    if (req.session.web) {
-      req.session.web.threadId = thread?.id;
-    }
-
-    return thread;
-  }
-
-  /**
-   * Fetches the messaging history from the DB.
-   * @param req - Either an HTTP Express request or a WS SocketRequest (synthetic)
-   * @param [until=new Date()] - Date before which to fetch
-   * @param [n=30] - Number of messages to fetch
-   * @returns Promise resolving to an array of messages.
-   * Fetches the last 'n' messages for the session profile up to the given date.
-   */
-  protected async fetchHistory(
-    req: SocketRequest,
-    until: Date = new Date(),
-    n: number = 30,
-  ): Promise<Web.Message[]> {
-    const thread = await this.resolveThreadForHistory(req);
-    if (thread) {
-      const messages = await this.messageService.findHistoryUntilDate(
-        thread,
-        until,
-        n,
-      );
-
-      return await this.formatMessages(messages.reverse() as AnyMessage[]);
-    }
-
-    return [];
-  }
-
-  /**
-   * Verify the origin against whitelisted domains.
-   *
-   * @param req
-   * @param res
-   */
   private async ensureValidCors(
     req: SocketRequest,
     res: Response | SocketResponse,
-  ) {
-    // Check if we have an origin header...
-    if (!req.headers?.origin) {
-      this.logger.debug('No origin ', req.headers);
-      throw new Error('CORS - No origin provided!');
-    }
-
-    const originUrl = new URL(req.headers.origin);
-    const allowedProtocols = new Set(['http:', 'https:']);
-    if (!allowedProtocols.has(originUrl.protocol)) {
-      throw new Error('CORS - Invalid origin!');
-    }
-
+  ): Promise<void> {
     const settings = await this.getSettings<typeof WEB_CHANNEL_NAME>();
-    // Get the allowed origins
-    const origins: string[] = settings.allowed_domains.split(',');
-    const foundOrigin = origins
-      .filter((origin) => origin.trim() !== '*') // Skip "*"
-      .map((origin) => {
-        try {
-          return new URL(origin.trim()).origin;
-        } catch (error) {
-          this.logger.error(`Invalid URL in allowed domains: ${origin}`, error);
-
-          return null;
-        }
-      })
-      .filter(
-        (normalizedOrigin): normalizedOrigin is string =>
-          normalizedOrigin !== null,
-      )
-      .some((origin: string) => {
-        // If we find a whitelisted origin, send the Access-Control-Allow-Origin header
-        // to greenlight the request.
-        return origin === originUrl.origin;
-      });
-
-    if (!foundOrigin && !origins.includes('*')) {
-      // For HTTP requests, set the Access-Control-Allow-Origin header to '', which the browser will
-      // interpret as, 'no way Jose.'
-      res.set('Access-Control-Allow-Origin', '');
-      this.logger.debug('No origin found ', req.headers.origin);
-      throw new Error('CORS - Domain not allowed!');
-    } else {
-      res.set('Access-Control-Allow-Origin', originUrl.origin);
-    }
-    // Determine whether or not to allow cookies to be passed cross-origin
-    res.set('Access-Control-Allow-Credentials', 'true');
-    // This header lets a server whitelist headers that browsers are allowed to access
-    res.set('Access-Control-Expose-Headers', '');
-    // Handle preflight requests
-    if (req.method == 'OPTIONS') {
-      res.set('Access-Control-Allow-Methods', 'GET, POST');
-      res.set('Access-Control-Allow-Headers', 'content-type');
-    }
+    await this.sessionService.validateCors(req, res, settings.allowed_domains);
   }
 
-  /**
-   * Makes sure that message request is legitimate.
-   *
-   * @param req
-   * @param res
-   */
+  // ── Session (wrappers delegate to WebSessionService) ──────────────────────
+
   private async validateSession(
     req: SocketRequest,
     res: Response | SocketResponse,
   ): Promise<Subscriber | null> {
-    if (req.session.web?.profile?.id) {
-      return req.session.web.profile;
-    }
-
-    const body = req.body as { author?: unknown; data?: unknown } | undefined;
-    const authorForeignId =
-      typeof body?.author === 'string' && body.author.trim().length > 0
-        ? body.author.trim()
-        : undefined;
-
-    if (authorForeignId) {
-      try {
-        const subscriber =
-          await this.subscriberService.findOneByForeignId(authorForeignId);
-        if (subscriber) {
-          const thread = await this.threadService.resolveThread({
-            subscriberId: subscriber.id,
-            explicitThreadId:
-              this.getThreadIdFromBody(req) ?? this.getThreadIdFromQuery(req),
-          });
-          req.session.web = {
-            profile: subscriber,
-            threadId: thread?.id,
-          };
-
-          this.logger.debug(
-            `Recovered missing web session from author ${authorForeignId}`,
-          );
-
-          return subscriber;
-        }
-      } catch (error) {
-        this.logger.warn(
-          `Unable to recover missing session from author ${authorForeignId}`,
-          error,
-        );
-      }
-    }
-
-    this.logger.warn('No session ID to be found!', req.session);
-    res.status(403).json({ err: 'Web Channel Handler : Unauthorized!' });
-
-    return null;
+    return this.sessionService.validateSession(req, res);
   }
 
-  /**
-   * Get or create a session profile for the subscriber
-   *
-   * @param req
-   *
-   * @returns Subscriber's profile
-   */
   protected async getOrCreateSession(req: SocketRequest): Promise<Subscriber> {
-    const data = req.query;
-    // Subscriber has already a session
-    const sessionProfile = req.session.web?.profile;
-    if (sessionProfile) {
-      const subscriber = await this.subscriberService.findOne(
-        sessionProfile.id,
-      );
-      if (!subscriber || !req.session.web) {
-        throw new Error('Subscriber session was not persisted in DB');
-      }
-      const thread = await this.threadService.resolveThread({
-        subscriberId: subscriber.id,
-        explicitThreadId: req.session.web.threadId,
-      });
-      req.session.web.profile = subscriber;
-      req.session.web.threadId = thread?.id;
+    return this.sessionService.getOrCreateSession(req, () => {
+      const data = req.query;
 
-      return subscriber;
-    }
-
-    const newProfile: SubscriberCreateDto = {
-      foreignId: this.generateId(),
-      firstName: data.first_name ? data.first_name.toString() : 'Anon.',
-      lastName: data.last_name ? data.last_name.toString() : 'Web User',
-      assignedTo: null,
-      assignedAt: null,
-      lastvisit: new Date(),
-      retainedFrom: new Date(),
-      avatar: null,
-      channel: {
-        name: this.getName(),
-        data: this.getChannelAttributes(req),
-      },
-      language: '',
-      locale: '',
-      timezone: 0,
-      gender: 'male',
-      country: '',
-      labels: [],
-    };
-    const profile = await this.subscriberService.create(newProfile);
-
-    req.session.web = {
-      profile,
-    };
-
-    return profile;
+      return {
+        foreignId: this.generateId(),
+        firstName: data.first_name ? String(data.first_name) : 'Anon.',
+        lastName: data.last_name ? String(data.last_name) : 'Web User',
+        assignedTo: null,
+        assignedAt: null,
+        lastvisit: new Date(),
+        retainedFrom: new Date(),
+        avatar: null,
+        channel: {
+          name: this.getName(),
+          data: this.getChannelAttributes(req),
+        },
+        language: '',
+        locale: '',
+        timezone: 0,
+        gender: 'male',
+        country: '',
+        labels: [],
+      };
+    });
   }
 
-  /**
-   * Allow the subscription to a web's webhook after verification
-   *
-   * @param req
-   * @param res
-   */
+  // ── History (wrapper delegates to WebHistoryService) ──────────────────────
+
+  protected async fetchHistory(
+    req: SocketRequest,
+    until?: Date,
+    n?: number,
+  ): Promise<Web.Message[]> {
+    return this.historyService.fetchHistoryForRequest(
+      req,
+      this.sessionService,
+      this.formatCtx(),
+      until,
+      n,
+    );
+  }
+
+  // ── Subscription flow ──────────────────────────────────────────────────────
+
   protected async subscribe(
     req: SocketRequest,
     res: Response | SocketResponse,
-  ) {
+  ): Promise<void> {
     this.logger.debug('subscribe (isSocket=true)');
     try {
       const profile = await this.getOrCreateSession(req);
@@ -581,32 +290,23 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       } catch (err) {
         this.logger.error('Unable to subscribe via websocket', err);
       }
-      // Fetch message history
       const criteria =
-        'since' in req.query ? req.query.since : req.body?.since || undefined;
+        'since' in req.query ? req.query.since : (req.body?.since ?? undefined);
       const messages = await this.fetchHistory(req, criteria);
 
-      return res.status(200).json({
+      res.status(200).json({
         profile,
         messages,
         thread_id: req.session.web?.threadId ?? null,
       });
     } catch (err) {
       this.logger.warn('Unable to subscribe ', err);
-
-      return res.status(500).json({ err: 'Unable to subscribe' });
+      res.status(500).json({ err: 'Unable to subscribe' });
     }
   }
 
-  /**
-   * Handles upload via WebSocket.
-   *
-   * @param req - The WebSocket request containing the session and the file data.
-   * @returns A Promise that resolves to the stored `Attachment`, or `null` if
-   *          the session is invalid or no file is provided.
-   * @throws Error if the max upload size is exceeded.
-   * @throws Error when storing the uploaded file fails.
-   */
+  // ── File upload ────────────────────────────────────────────────────────────
+
   async handleWsUpload(req: SocketRequest): Promise<Attachment | null> {
     try {
       const { type, data } = req.body as Web.InboundMessage;
@@ -616,8 +316,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
         return null;
       }
-
-      // Check if any file is provided
       if (type !== Web.InboundMessageType.file) {
         this.logger.debug('No files provided');
 
@@ -627,8 +325,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         throw new Error('File payload is missing');
       }
 
-      // Narrow sibling fields after the `'file' in data` guard.
-      // Zod's union inference doesn't propagate narrowing to other properties.
       const { name: fileName, type: mimeType } = data as {
         name: string;
         type: string;
@@ -654,29 +350,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     }
   }
 
-  /**
-   * Return subscriber channel specific attributes
-   *
-   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
-   *
-   * @returns The subscriber channel's attributes
-   */
-  getChannelAttributes(
-    req: SocketRequest,
-  ): SubscriberChannelDict[typeof WEB_CHANNEL_NAME] {
-    return {
-      isSocket: true,
-      ipAddress: this.getIpAddress(req),
-      agent: req.headers['user-agent'] || 'browser',
-    };
-  }
+  // ── Inbound event dispatch ─────────────────────────────────────────────────
 
-  /**
-   * Handle channel event (probably a message)
-   *
-   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
-   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
-   */
   async handleEvent(
     req: SocketRequest,
     res: Response | SocketResponse,
@@ -687,12 +362,13 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       res.status(400).json({ err: 'Web Channel Handler : Bad Request!' });
 
       return;
-    } else if (
+    }
+
+    if (
       typeof req.body === 'object' &&
       req.body !== null &&
       'data' in req.body
     ) {
-      // Parse json form data (in case of content-type multipart/form-data)
       const payload = req.body as { data?: unknown };
       payload.data =
         typeof payload.data === 'string'
@@ -701,9 +377,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     }
 
     const profile = await this.validateSession(req, res);
-    if (!profile) {
-      return;
-    }
+    if (!profile) return;
+
     const channelAttrs = this.getChannelAttributes(req);
     let events: Array<
       BaseWebInboundEvent<N> | WebMessageInboundEvent<N, Web.InboundMessage>
@@ -730,16 +405,14 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     }
 
     const explicitThreadId =
-      this.getThreadIdFromBody(req) ??
-      this.getThreadIdFromQuery(req) ??
+      this.sessionService.getThreadIdFromBody(req) ??
+      this.sessionService.getThreadIdFromQuery(req) ??
       req.session.web?.threadId;
     const responseBody = events[0].getRaw();
 
     for (const event of events) {
       event.setHandler(this);
-      if (explicitThreadId) {
-        event.setThreadId(explicitThreadId);
-      }
+      if (explicitThreadId) event.setThreadId(explicitThreadId);
       event.setInitiator(profile);
       event.setWorkflowId(workflowId);
 
@@ -749,11 +422,9 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           Web.InboundMessage
         >;
 
-        // Handle upload when files are provided
         if (messageEvent instanceof AttachmentMessageInboundEvent) {
           try {
             const attachment = await this.handleWsUpload(req);
-
             if (attachment) {
               messageEvent.setUploadedAttachment(attachment);
               messageEvent.setUploadedRawData(
@@ -773,22 +444,19 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           }
         }
 
-        // Handle sync message sent by chatbot
         if (messageEvent.isSyncFromChatbot()) {
-          const thread = await this.threadService.resolveThread({
-            subscriberId: profile.id,
-            explicitThreadId,
-          });
+          const thread = await this.sessionService.resolveThreadForHistory(
+            req,
+            profile.id,
+          );
           if (!thread) {
             return void res.status(409).json({
               err: 'Web Channel Handler : No thread available before first user message',
             });
           }
-
           messageEvent.setThreadId(thread.id);
-          if (req.session.web) {
-            req.session.web.threadId = thread.id;
-          }
+          if (req.session.web) req.session.web.threadId = thread.id;
+
           const sentMessage: MessageCreateDto = {
             mid: messageEvent.getId(),
             message: messageEvent.getMessage() as StdOutgoingMessage,
@@ -798,26 +466,20 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
             delivery: true,
           };
           this.channelEventBus.emitSent(sentMessage, messageEvent);
-
           continue;
         }
 
-        // Generate unique ID and handle message
         messageEvent.setMessageId(this.generateId());
-        // Force author id from session
         messageEvent.setAuthorForeignId(profile.foreignId);
-        // Use a server-side timestamp so realtime clients can sort deterministically.
         messageEvent.setCreatedAt(new Date());
 
         this.broadcast(profile, StdEventType.message, messageEvent.getRaw());
         await this.channelEventBus.emitMessage(messageEvent);
-        const resolvedThreadId = messageEvent.getThreadId();
 
+        const resolvedThreadId = messageEvent.getThreadId();
         if (resolvedThreadId) {
           messageEvent.setThreadIdOnRaw(resolvedThreadId);
-          if (req.session.web) {
-            req.session.web.threadId = resolvedThreadId;
-          }
+          if (req.session.web) req.session.web.threadId = resolvedThreadId;
         }
 
         continue;
@@ -825,10 +487,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
       const type = event.getEventType();
       const threadId = event.getThreadId();
-
-      if (threadId) {
-        event.setThreadIdOnRaw(threadId);
-      }
+      if (threadId) event.setThreadIdOnRaw(threadId);
       this.broadcast(profile, type, event.getRaw());
       this.channelEventBus.emitStatusEvent(event);
     }
@@ -836,10 +495,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     res.status(200).json(responseBody);
   }
 
-  /**
-   * Handle an incoming GET socket request:
-   * CORS validation, then disconnect or subscribe flow.
-   */
+  // ── Socket transport hooks ─────────────────────────────────────────────────
+
   protected async processSocketGet(
     req: SocketRequest,
     res: Response | SocketResponse,
@@ -851,19 +508,13 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
         return void res.status(200).json({ _disconnect: true });
       }
-
       await this.subscribe(req, res);
     } catch (err) {
       this.logger.warn('Request check failed', err);
-
-      void res.status(403).json({ err: 'Web Channel Handler : Unauthorized!' });
+      res.status(403).json({ err: 'Web Channel Handler : Unauthorized!' });
     }
   }
 
-  /**
-   * Handle an incoming POST socket request:
-   * CORS validation, then inbound event processing.
-   */
   protected async processSocketPost(
     req: SocketRequest,
     res: Response | SocketResponse,
@@ -871,44 +522,20 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   ): Promise<void> {
     try {
       await this.ensureValidCors(req, res);
-
       await this.handleEvent(req, res, workflowId);
     } catch (err) {
       this.logger.warn('Request check failed', err);
-
-      return void res
-        .status(403)
-        .json({ err: 'Web Channel Handler : Unauthorized!' });
+      res.status(403).json({ err: 'Web Channel Handler : Unauthorized!' });
     }
   }
 
-  /**
-   * Returns a unique identifier for the subscriber
-   *
-   * @returns UUID
-   */
-  generateId(): string {
-    return `${this.name}-${uuidv4()}`;
-  }
+  // ── Outbound ───────────────────────────────────────────────────────────────
 
-  /**
-   * Send a Web Channel Message to the end-user
-   *
-   * @param event - Incoming event/message being responded to
-   * @param envelope - The message to be sent {format, message}
-   * @param options - Might contain additional settings
-   *
-   * @returns The web's response, otherwise an error
-   */
-  async sendMessage(
+  protected async doSendMessage(
     event: MessageInboundEvent<N>,
-    envelope: StdOutgoingEnvelope,
+    envelope: StdOutgoingMessageEnvelope,
     options: ActionOptions,
   ): Promise<{ mid: string }> {
-    if (envelope.format === OutgoingMessageFormat.system) {
-      throw new UnsupportedOutgoingFormatError(envelope.format);
-    }
-
     const messageBase = await this.outboundMessageEncoder.encode(
       envelope,
       options ?? {},
@@ -922,15 +549,15 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       createdAt: new Date(),
       handover: !!(options && options.assignTo),
     };
-    const next = async (): Promise<any> => {
+    const send = async (): Promise<{ mid: string }> => {
       this.broadcast(subscriber, StdEventType.message, message);
 
       return { mid: message.mid };
     };
 
-    if (options && options.typing) {
+    if (options?.typing) {
       const autoTimeout =
-        message && message.data && 'text' in message.data
+        message?.data && 'text' in message.data
           ? message.data.text.length * 10
           : 1000;
       const timeout =
@@ -938,69 +565,49 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       try {
         await this.sendTypingIndicator(subscriber, timeout);
 
-        return next();
+        return send();
       } catch (err) {
         this.logger.error('Failed in sending typing indicator ', err);
       }
     }
 
-    return next();
+    return send();
   }
 
-  /**
-   * Fetch the end-user profile data
-   *
-   * @param event - The message event received
-   *
-   * @returns The web's response, otherwise an error
-   */
   async getSubscriberData(
     event: MessageInboundEvent<N>,
   ): Promise<SubscriberCreateDto> {
     const sender = event.getInitiator();
-    const {
-      id: _id,
-      createdAt: _createdAt,
-      updatedAt: _updatedAt,
-      ...rest
-    } = sender;
-    const subscriber: SubscriberCreateDto = {
-      ...rest,
-      channel: sender.channel,
-    };
+    const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = sender;
 
-    return subscriber;
+    return { ...rest, channel: sender.channel };
   }
 
-  /**
-   * Checks if the request is authorized to download a given attachment file.
-   *
-   * @param attachment The attachment object
-   * @param req - The HTTP express request object.
-   * @return True, if requester is authorized to download the attachment
-   */
+  // ── Download access ────────────────────────────────────────────────────────
+
   public async hasDownloadAccess(attachment: Attachment, req: Request) {
     const subscriberId = req.session.web?.profile?.id;
-    if (attachment.access === AttachmentAccess.Public) {
-      return true;
-    } else if (!subscriberId) {
+
+    if (attachment.access === AttachmentAccess.Public) return true;
+
+    if (!subscriberId) {
       this.logger.warn(
         `Unauthorized access attempt to attachment ${attachment.id}`,
       );
 
       return false;
-    } else if (
+    }
+
+    if (
       attachment.createdByRef === AttachmentCreatedByRef.Subscriber &&
       subscriberId === attachment.createdBy
     ) {
-      // Either subscriber wants to access the attachment he sent
       return true;
-    } else {
-      // Or, he would like to access an attachment sent to him privately
-      return await this.messageService.isAttachmentAccessibleBySubscriber(
-        subscriberId,
-        attachment.id,
-      );
     }
+
+    return this.messageService.isAttachmentAccessibleBySubscriber(
+      subscriberId,
+      attachment.id,
+    );
   }
 }

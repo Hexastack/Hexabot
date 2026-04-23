@@ -8,11 +8,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { Subscriber } from '@/chat/dto/subscriber.dto';
-import { SubscriberService } from '@/chat/services/subscriber.service';
 import { StdEventType } from '@/chat/types/message';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
+import {
+  SubscriberResolution,
+  SubscriberResolver,
+} from '../../services/subscriber-resolver.service';
 import { ChannelName } from '../../types';
 import ChannelHandler from '../Handler';
 import type ChannelInboundEvent from '../inbound-events/channel-inbound-event';
@@ -36,16 +39,17 @@ import type MessageInboundEvent from '../inbound-events/message-inbound-event';
  *  - `verifySignature(req, res)` — authenticate the incoming payload (e.g.
  *    HMAC-SHA256 as used by Meta, Slack, Discord)
  *  - `resolveSubscriber(event)` — find or create a Hexabot subscriber from
- *    the event's sender identity (default: foreignId lookup + create)
+ *    the event's sender identity (default: SubscriberResolver.resolve())
  *  - `normalizeSenderId(rawId)` — transform the platform's sender identifier
  *    before it is used as a Hexabot foreignId
  */
 @Injectable()
-export abstract class HttpChannelHandler<
-  N extends ChannelName,
-> extends ChannelHandler<N> {
-  @Inject(SubscriberService)
-  protected readonly subscriberService: SubscriberService;
+export abstract class HttpChannelHandler<N extends ChannelName>
+  extends ChannelHandler<N>
+  implements SubscriberResolution<N>
+{
+  @Inject(SubscriberResolver)
+  private readonly subscriberResolver: SubscriberResolver;
 
   /**
    * Entry point called by ChannelService / WebhookController.
@@ -63,7 +67,7 @@ export abstract class HttpChannelHandler<
     res: Response | SocketResponse,
     workflowId?: string,
   ): Promise<void> {
-    if (req.method === 'GET') {
+    if ((req as Request).method === 'GET') {
       return this.verifyWebhook(req as Request, res as Response);
     }
 
@@ -71,7 +75,7 @@ export abstract class HttpChannelHandler<
       await this.verifySignature(req as Request, res as Response);
     } catch (err) {
       this.logger.warn('Webhook signature verification failed', err);
-      res.status(401).json({ error: 'Unauthorized' });
+      (res as Response).status(401).json({ error: 'Unauthorized' });
 
       return;
     }
@@ -81,13 +85,13 @@ export abstract class HttpChannelHandler<
       events = await this.decode(req as Request);
     } catch (err) {
       this.logger.warn('Failed to decode webhook payload', err);
-      res.status(400).json({ error: 'Bad Request' });
+      (res as Response).status(400).json({ error: 'Bad Request' });
 
       return;
     }
 
     // Acknowledge the platform before processing — prevents retries.
-    res.status(200).json({ success: true });
+    (res as Response).status(200).json({ success: true });
 
     for (const event of events) {
       event.setHandler(
@@ -117,22 +121,20 @@ export abstract class HttpChannelHandler<
   /**
    * Respond to the platform's webhook subscription handshake (GET request).
    *
-   * Default implementation returns HTTP 200 OK, which satisfies platforms
-   * that only check reachability.  Override to handle challenge-response
-   * flows (e.g. Facebook's `hub.challenge` parameter).
+   * Default implementation returns HTTP 200 OK. Override to handle
+   * challenge-response flows (e.g. Facebook's `hub.challenge` parameter).
    */
-  protected async verifyWebhook(req: Request, res: Response): Promise<void> {
+  protected async verifyWebhook(_req: Request, res: Response): Promise<void> {
     res.sendStatus(200);
   }
 
   /**
    * Verify the authenticity of an incoming POST webhook payload.
    *
-   * Default implementation is a no-op (accepts all requests).  Override to
-   * validate HMAC-SHA256 signatures or other platform-specific auth schemes.
+   * Default is a no-op (accepts all requests). Override to validate
+   * HMAC-SHA256 signatures or other platform-specific auth schemes.
    * Throw any error to reject the request with HTTP 401.
    */
-
   protected async verifySignature(
     _req: Request,
     _res: Response,
@@ -150,42 +152,16 @@ export abstract class HttpChannelHandler<
    * Find the Hexabot subscriber that corresponds to the event's sender, or
    * create one if they are new.
    *
-   * Default implementation:
-   *  1. Reads `getSenderForeignId()` from the event
-   *  2. Applies `normalizeSenderId()` to canonicalise the identifier
-   *  3. Looks up the subscriber by foreignId; creates via `getSubscriberData()`
-   *     if absent
+   * Delegates to SubscriberResolver using this handler as the SubscriberResolution
+   * delegate (provides `getSubscriberData` and optionally `normalizeSenderId`).
    *
-   * Override when the platform requires a different identity resolution
-   * strategy (e.g. recipient-based lookup for delivery receipts, token
-   * exchange for user profile enrichment, etc.).
+   * Override when the platform requires a different identity resolution strategy
+   * (e.g. recipient-based lookup for delivery receipts, token exchange, etc.).
    */
   protected async resolveSubscriber(
     event: ChannelInboundEvent<N>,
   ): Promise<Subscriber> {
-    const rawForeignId = event.getSenderForeignId();
-
-    if (!rawForeignId) {
-      throw new Error(
-        `Cannot resolve subscriber: event ${event.constructor.name} has no sender foreign ID`,
-      );
-    }
-
-    const foreignId = this.normalizeSenderId(rawForeignId);
-    const existing = await this.subscriberService.findOneByForeignId(foreignId);
-
-    if (existing) {
-      return existing;
-    }
-
-    const subscriberData = await this.getSubscriberData(
-      event as unknown as MessageInboundEvent<N>,
-    );
-
-    return this.subscriberService.create({
-      ...subscriberData,
-      foreignId,
-    });
+    return this.subscriberResolver.resolve(event, this);
   }
 
   /**
@@ -196,7 +172,7 @@ export abstract class HttpChannelHandler<
    * Override to apply prefixes, case normalisation, or other channel-specific
    * transformations.
    */
-  protected normalizeSenderId(rawSenderId: string): string {
+  normalizeSenderId(rawSenderId: string): string {
     return rawSenderId;
   }
 }

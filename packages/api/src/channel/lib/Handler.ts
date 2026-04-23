@@ -6,7 +6,6 @@
 
 import { Inject, Injectable, OnModuleInit, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
@@ -22,9 +21,11 @@ import {
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { AttachmentRef } from '@/chat/types/attachment';
-import { StdOutgoingEnvelope } from '@/chat/types/message';
+import {
+  StdOutgoingEnvelope,
+  StdOutgoingMessageEnvelope,
+} from '@/chat/types/message';
 import type { ActionOptions } from '@/chat/types/options';
-import { I18nService } from '@/i18n';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
@@ -34,7 +35,12 @@ import { ChannelService } from '../channel.service';
 import { ChannelAttachmentService } from '../services/channel-attachment.service';
 import { ChannelName } from '../types';
 
+import {
+  ChannelCapabilities,
+  DEFAULT_CHANNEL_CAPABILITIES,
+} from './channel-capabilities';
 import { ChannelEventBus } from './channel-event-bus';
+import { UnsupportedOutgoingFormatError } from './outbound';
 
 @Injectable()
 export default abstract class ChannelHandler<
@@ -43,12 +49,6 @@ export default abstract class ChannelHandler<
   extends Extension
   implements OnModuleInit
 {
-  @Inject(I18nService)
-  protected readonly i18n: I18nService;
-
-  @Inject(EventEmitter2)
-  protected readonly eventEmitter: EventEmitter2;
-
   @Inject(AttachmentService)
   public readonly attachmentService: AttachmentService;
 
@@ -61,11 +61,11 @@ export default abstract class ChannelHandler<
   @Inject(ChannelService)
   protected readonly channelService: ChannelService;
 
-  @Inject(ModuleRef)
-  private readonly moduleRef: ModuleRef;
-
   @Inject(ChannelEventBus)
   protected readonly channelEventBus: ChannelEventBus;
+
+  @Inject(ModuleRef)
+  private readonly moduleRef: ModuleRef;
 
   constructor(name: N) {
     super(name);
@@ -85,6 +85,30 @@ export default abstract class ChannelHandler<
 
   protected async createModuleRef<T>(provider: Type<T>): Promise<T> {
     return await this.moduleRef.create(provider);
+  }
+
+  /**
+   * Returns the capabilities this channel supports.
+   *
+   * Defaults to all formats enabled with no text length limit. Override in
+   * concrete channel handlers to declare which envelope formats and transport
+   * features the platform actually supports.
+   */
+  getCapabilities(): ChannelCapabilities {
+    return DEFAULT_CHANNEL_CAPABILITIES;
+  }
+
+  /**
+   * Throws when the envelope's format is not supported by this channel.
+   * The `system` format always throws — it is internal and must never reach
+   * the transport layer.
+   */
+  private assertCapability(envelope: StdOutgoingEnvelope): void {
+    const caps = this.getCapabilities();
+    // caps[system] is undefined (not in ChannelCapabilities) → always throws
+    if (!caps[envelope.format as keyof ChannelCapabilities]) {
+      throw new UnsupportedOutgoingFormatError(envelope.format);
+    }
   }
 
   /**
@@ -111,16 +135,33 @@ export default abstract class ChannelHandler<
   ): any;
 
   /**
-   * Send a channel Message to the end user
-   * @param event - Incoming event/message being responded to
-   * @param envelope - The message to be sent {format, message}
-   * @param options - Might contain additional settings
-   * @returns {Promise} - The channel's response, otherwise an error
-   
+   * Send a channel message to the end user.
+   *
+   * Guards the capability contract before delegating to `doSendMessage`.
+   * Throws `UnsupportedOutgoingFormatError` when the envelope format is not
+   * supported by this channel (including the internal `system` format).
    */
-  abstract sendMessage(
+  async sendMessage(
     event: MessageInboundEvent<N>,
     envelope: StdOutgoingEnvelope,
+    options: ActionOptions,
+  ): Promise<{ mid: string }> {
+    this.assertCapability(envelope);
+
+    return this.doSendMessage(
+      event,
+      envelope as StdOutgoingMessageEnvelope,
+      options,
+    );
+  }
+
+  /**
+   * Channel-specific send implementation. Called by `sendMessage` after the
+   * capability guard passes. The `system` format is never passed here.
+   */
+  protected abstract doSendMessage(
+    event: MessageInboundEvent<N>,
+    envelope: StdOutgoingMessageEnvelope,
     options: ActionOptions,
   ): Promise<{ mid: string }>;
 
