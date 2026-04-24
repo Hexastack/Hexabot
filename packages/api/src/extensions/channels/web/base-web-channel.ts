@@ -11,10 +11,6 @@ import type {
 } from '@hexabot-ai/types';
 import {
   ActionOptions,
-  AnyMessage,
-  IncomingMessage,
-  IncomingMessageType,
-  OutgoingMessage,
   OutgoingMessageType,
   StdEventType,
 } from '@hexabot-ai/types';
@@ -219,141 +215,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   }
 
   /**
-   * Adapt incoming message structure for web channel
-   *
-   * @param incoming - Incoming message
-   * @returns Formatted web message
-   */
-  private async formatIncomingHistoryMessage(
-    incoming: IncomingMessage,
-  ): Promise<Web.InboundMessageBase> {
-    switch (incoming.message.type) {
-      case IncomingMessageType.text:
-        return {
-          type: Web.InboundMessageType.text,
-          data: incoming.message.data,
-        };
-      case IncomingMessageType.postback:
-        return {
-          type: Web.InboundMessageType.postback,
-          data: incoming.message.data,
-        };
-      case IncomingMessageType.quickReply:
-        return {
-          type: Web.InboundMessageType.quick_reply,
-          data: incoming.message.data,
-        };
-      case IncomingMessageType.location: {
-        const coordinates = incoming.message.data.coordinates;
-
-        return {
-          type: Web.InboundMessageType.location,
-          data: {
-            coordinates: {
-              lat: coordinates.lat,
-              lng: coordinates.lon,
-            },
-          },
-        };
-      }
-      case IncomingMessageType.attachment: {
-        // @TODO : handle multiple files
-        const attachmentPayload = Array.isArray(
-          incoming.message.data.attachment,
-        )
-          ? incoming.message.data.attachment[0]
-          : incoming.message.data.attachment;
-
-        return {
-          type: Web.InboundMessageType.file,
-          data: {
-            type: attachmentPayload.type,
-            url: await this.channelAttachmentService.getPublicUrl(
-              this.getName(),
-              attachmentPayload.payload,
-            ),
-          },
-        };
-      }
-      default:
-        return {
-          type: Web.InboundMessageType.text,
-          data: { text: '' },
-        };
-    }
-  }
-
-  /**
-   * Adapt the outgoing message structure for web channel
-   *
-   * @param outgoing - The outgoing message
-   * @returns Formatted web message
-   */
-  private async formatOutgoingHistoryMessage(
-    outgoing: OutgoingMessage,
-  ): Promise<Web.OutboundMessageBase> {
-    const envelope = outgoing.message;
-    const options: ActionOptions =
-      envelope.type === OutgoingMessageType.list ||
-      envelope.type === OutgoingMessageType.carousel
-        ? {
-            content: envelope.data.options,
-          }
-        : {};
-
-    return await this.outboundMessageEncoder.encode(envelope, options);
-  }
-
-  /**
-   * Checks if a given message is an IncomingMessage
-   *
-   * @param message Any type of message
-   * @returns True, if it's a incoming message
-   */
-  private isIncomingMessage(message: AnyMessage): message is IncomingMessage {
-    return 'sender' in message && !!message.sender;
-  }
-
-  /**
-   * Adapt the message structure for web channel
-   *
-   * @param messages - The messages to be formatted
-   *
-   * @returns Formatted message
-   */
-  protected async formatMessages(
-    messages: AnyMessage[],
-  ): Promise<Web.Message[]> {
-    const formattedMessages: Web.Message[] = [];
-
-    for (const anyMessage of messages) {
-      const messageMid = anyMessage.mid ?? this.generateId();
-      if (this.isIncomingMessage(anyMessage)) {
-        const message = await this.formatIncomingHistoryMessage(anyMessage);
-        formattedMessages.push({
-          ...message,
-          author: anyMessage.sender,
-          read: true, // Temporary fix as read is false in the bd
-          mid: messageMid,
-          createdAt: anyMessage.createdAt,
-        });
-      } else {
-        const message = await this.formatOutgoingHistoryMessage(anyMessage);
-        formattedMessages.push({
-          ...message,
-          author: 'chatbot',
-          read: true, // Temporary fix as read is false in the bd
-          mid: messageMid,
-          handover: !!anyMessage.handover,
-          createdAt: anyMessage.createdAt,
-        });
-      }
-    }
-
-    return formattedMessages;
-  }
-
-  /**
    * Verify the origin against whitelisted domains.
    *
    * @param req
@@ -365,19 +226,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   ): Promise<void> {
     const settings = await this.getSettings<typeof WEB_CHANNEL_NAME>();
     await this.sessionService.validateCors(req, res, settings.allowed_domains);
-  }
-
-  /**
-   * Makes sure that message request is legitimate.
-   *
-   * @param req
-   * @param res
-   */
-  private async validateSession(
-    req: SocketRequest,
-    res: Response | SocketResponse,
-  ): Promise<Subscriber | null> {
-    return this.sessionService.validateSession(req, res);
   }
 
   protected async getOrCreateSession(req: SocketRequest): Promise<Subscriber> {
@@ -408,29 +256,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   }
 
   /**
-   * Fetches the messaging history from the DB.
-   *
-   * @param req - Either an HTTP Express request or a WS SocketRequest (synthetic)
-   * @param [until=new Date()] - Date before which to fetch
-   * @param [n=30] - Number of messages to fetch
-   * @returns Promise resolving to an array of messages.
-   * Fetches the last 'n' messages for the session profile up to the given date.
-   */
-  protected async fetchHistory(
-    req: SocketRequest,
-    until?: Date,
-    n?: number,
-  ): Promise<Web.Message[]> {
-    return this.historyService.fetchHistoryForRequest(
-      req,
-      this.sessionService,
-      this.formatCtx(),
-      until,
-      n,
-    );
-  }
-
-  /**
    * Allow the subscription to a web's webhook after verification
    *
    * @param req
@@ -454,7 +279,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       }
       const criteria =
         'since' in req.query ? req.query.since : (req.body?.since ?? undefined);
-      const messages = await this.fetchHistory(req, criteria);
+      const messages = await this.historyService.fetchHistoryForRequest(
+        req,
+        this.sessionService,
+        this.formatCtx(),
+        criteria,
+      );
 
       res.status(200).json({
         profile,
@@ -550,7 +380,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           : payload.data;
     }
 
-    const profile = await this.validateSession(req, res);
+    const profile = await this.sessionService.validateSession(req, res);
     if (!profile) return;
 
     const channelAttrs = this.getChannelAttributes(req);
