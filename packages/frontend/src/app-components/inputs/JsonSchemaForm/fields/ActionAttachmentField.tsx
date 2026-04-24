@@ -27,12 +27,8 @@ type AttachmentValue = {
   };
 };
 type ActionAttachmentFieldOptions = {
-  wrapInAttachmentKey?: boolean;
   resourceRef?: AttachmentResourceRef;
 };
-type AttachmentValueChangePayload =
-  | AttachmentValue
-  | { attachment: AttachmentValue };
 
 const ATTACHMENT_ACCEPT = Array.from(
   new Set(Object.values(MIME_TYPES).flat()),
@@ -65,16 +61,6 @@ const getAttachmentValue = (value: unknown) => {
     url: payload.url,
   };
 };
-const buildAttachmentFieldValue = (
-  value: AttachmentValue,
-  wrapInAttachmentKey: boolean,
-) => {
-  if (!wrapInAttachmentKey) {
-    return value;
-  }
-
-  return { attachment: value };
-};
 
 export const ActionAttachmentField = ({
   schema,
@@ -91,7 +77,6 @@ export const ActionAttachmentField = ({
     (getUiOptions(uiSchema as UiSchema) as
       | ActionAttachmentFieldOptions
       | undefined) ?? {};
-  const wrapInAttachmentKey = options.wrapInAttachmentKey ?? true;
   const resourceRef =
     options.resourceRef ?? AttachmentResourceRef.MessageAttachment;
   const label = schema.title || t("label.attachment");
@@ -102,13 +87,7 @@ export const ActionAttachmentField = ({
     const path = fieldPathId.path as FieldPathList;
 
     if (!id || !mimeType) {
-      onChange(
-        buildAttachmentFieldValue(
-          { type: "image", payload: { id: null } },
-          wrapInAttachmentKey,
-        ) as AttachmentValueChangePayload,
-        path,
-      );
+      onChange({ type: "image", payload: { id: null } }, path);
 
       return;
     }
@@ -118,12 +97,7 @@ export const ActionAttachmentField = ({
       payload: { id },
     };
 
-    onChange(
-      buildAttachmentFieldValue(value, wrapInAttachmentKey) as
-        | AttachmentValueChangePayload
-        | undefined,
-      path,
-    );
+    onChange(value, path);
   };
 
   return (
