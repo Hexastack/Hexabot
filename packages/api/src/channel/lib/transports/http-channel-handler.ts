@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StdEventType, Subscriber } from '@hexabot-ai/types';
+import { Source, StdEventType, Subscriber } from '@hexabot-ai/types';
 import { Inject, Injectable } from '@nestjs/common';
 import { Request, Response } from 'express';
 
@@ -64,6 +64,7 @@ export abstract class HttpChannelHandler<N extends ChannelName>
   async handle(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
     workflowId?: string,
   ): Promise<void> {
     if ((req as Request).method === 'GET') {
@@ -96,6 +97,7 @@ export abstract class HttpChannelHandler<N extends ChannelName>
       event.setHandler(
         this as unknown as Parameters<typeof event.setHandler>[0],
       );
+      event.setSourceContext(source.id, source.settings);
       if (workflowId) {
         event.setWorkflowId(workflowId);
       }

@@ -4,16 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Source } from '@hexabot-ai/types';
 import {
   Injectable,
   NotFoundException,
+  OnApplicationBootstrap,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/console-channel.settings';
-import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/web-channel.settings';
 import { LoggerService } from '@/logger/logger.service';
 import {
   SocketGet,
@@ -26,25 +27,26 @@ import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import ChannelHandler from './lib/Handler';
+import { SourceService } from './services/source.service';
 import { ChannelName } from './types';
 
 @Injectable()
-export class ChannelService {
+export class ChannelService implements OnApplicationBootstrap {
   private registry: Map<string, ChannelHandler<ChannelName>> = new Map();
 
   constructor(
     private readonly logger: LoggerService,
     private readonly subscriberService: SubscriberService,
+    private readonly sourceService: SourceService,
     private readonly workflowService: WorkflowService,
   ) {}
 
-  /**
-   * Registers a channel with a specific handler.
-   *
-   * @param name - The name of the channel to be registered.
-   * @param channel - The channel handler associated with the channel name.
-   * @typeParam C The channel handler's type that extends `ChannelHandler`.
-   */
+  async onApplicationBootstrap(): Promise<void> {
+    await this.sourceService.ensureDefaultSources(
+      this.getAll().map((handler) => handler.getName()),
+    );
+  }
+
   public setChannel<T extends ChannelName, C extends ChannelHandler<T>>(
     name: T,
     channel: C,
@@ -52,33 +54,16 @@ export class ChannelService {
     this.registry.set(name, channel);
   }
 
-  /**
-   * Retrieves all registered channel handlers.
-   *
-   * @returns An array of all channel handlers currently registered.
-   */
   public getAll() {
     return Array.from(this.registry.values());
   }
 
-  /**
-   * Finds and returns the channel handler associated with the specified channel name.
-   *
-   * @param name - The name of the channel to find.
-   * @returns The channel handler associated with the specified name, or undefined if the channel is not found.
-   */
   public findChannel(name: ChannelName) {
     return this.getAll().find((c) => {
       return c.getName() === name;
     });
   }
 
-  /**
-   * Retrieves the appropriate channel handler based on the channel name.
-   *
-   * @param channelName - The name of the channel (messenger, web, ...).
-   * @returns The handler for the specified channel.
-   */
   public getChannelHandler<T extends ChannelName, C extends ChannelHandler<T>>(
     name: T,
   ): C {
@@ -90,95 +75,34 @@ export class ChannelService {
     return handler as C;
   }
 
-  /**
-   * Handles a request for a specific channel.
-   *
-   * @param channel - The channel for which the request is being handled.
-   * @param req - The HTTP request object.
-   * @param res - The HTTP response object.
-   * @param workflowId - Optional workflow identifier to target execution.
-   * @returns A promise that resolves when the handler has processed the request.
-   */
-  async handle(
-    channel: string,
-    req: Request,
-    res: Response,
+  private async resolveExplicitWorkflowId(
     workflowId?: string,
-  ): Promise<void> {
-    const handler = this.getChannelHandler(channel);
-    handler.handle(req, res, workflowId);
-  }
-
-  /**
-   * Handles a websocket request for the web channel.
-   *
-   * @param req - The websocket request object.
-   * @param res - The websocket response object.
-   */
-  @SocketGet(`/webhook/${WEB_CHANNEL_NAME}/`)
-  @SocketPost(`/webhook/${WEB_CHANNEL_NAME}/`)
-  async handleWebsocketForWebChannel(
-    @SocketReq() req: SocketRequest,
-    @SocketRes() res: SocketResponse,
-  ) {
-    this.logger.log('Channel notification (Web Socket) : ', req.method);
-    const handler = this.getChannelHandler(WEB_CHANNEL_NAME);
-    const workflowId = await this.getValidatedWorkflowId(req);
-
-    return await handler.handle(req, res, workflowId);
-  }
-
-  /**
-   * Handles a websocket request for the admin chat console channel.
-   * It considers the user as a subscriber.
-   *
-   * @param req - The websocket request object.
-   * @param res - The websocket response object.
-   */
-  @SocketGet(`/webhook/${CONSOLE_CHANNEL_NAME}/`)
-  @SocketPost(`/webhook/${CONSOLE_CHANNEL_NAME}/`)
-  async handleWebsocketForAdminChatConsole(
-    @SocketReq() req: SocketRequest,
-    @SocketRes() res: SocketResponse,
-  ) {
-    this.logger.log(
-      'Channel notification (Admin Chat Console Socket) : ',
-      req.method,
-    );
-
-    if (!req.session.passport?.user?.id) {
-      setTimeout(() => {
-        req.socket.client.conn.close();
-      }, 300);
-      throw new UnauthorizedException(
-        'Only authenticated users are allowed to use this channel',
-      );
+  ): Promise<string | undefined> {
+    if (!workflowId) {
+      return undefined;
     }
 
-    if (!req.session.web?.profile?.id) {
-      const profile = await this.subscriberService.updateOne(
-        req.session.passport.user.id,
-        {
-          channel: {
-            name: CONSOLE_CHANNEL_NAME,
-            data: { isSocket: true },
-          },
-          lastvisit: new Date(),
-          retainedFrom: new Date(),
-          foreignId: req.session.passport.user.id,
-        },
-      );
+    const workflow = await this.workflowService.findOne(workflowId);
 
-      // Update session (end user is both a user + subscriber)
-      req.session.web = {
-        profile,
-      };
+    if (!workflow) {
+      throw new NotFoundException(`Workflow with ID ${workflowId} not found`);
     }
 
-    const handler = this.getChannelHandler(CONSOLE_CHANNEL_NAME);
-    const workflowId = await this.getValidatedWorkflowId(req);
+    return workflowId;
+  }
 
-    return await handler.handle(req, res, workflowId);
+  private async resolveWorkflowIdForSource(
+    source: Source,
+    explicitWorkflowId?: string,
+  ): Promise<string | undefined> {
+    const validatedExplicitWorkflowId =
+      await this.resolveExplicitWorkflowId(explicitWorkflowId);
+
+    if (validatedExplicitWorkflowId) {
+      return validatedExplicitWorkflowId;
+    }
+
+    return source.defaultWorkflow ?? undefined;
   }
 
   private getWorkflowIdFromSocketQuery(req: SocketRequest): string | undefined {
@@ -196,21 +120,93 @@ export class ChannelService {
     return normalizedWorkflowId.length > 0 ? normalizedWorkflowId : undefined;
   }
 
-  private async getValidatedWorkflowId(
-    req: SocketRequest,
-  ): Promise<string | undefined> {
-    const workflowId = this.getWorkflowIdFromSocketQuery(req);
+  private getSourceIdFromSocketPath(req: SocketRequest): string {
+    const sourceId = req.params?.sourceId;
 
-    if (!workflowId) {
-      return undefined;
+    if (typeof sourceId !== 'string' || sourceId.trim().length === 0) {
+      throw new NotFoundException('Source ID is required');
     }
 
-    const workflow = await this.workflowService.findOne(workflowId);
+    return sourceId.trim();
+  }
 
-    if (!workflow) {
-      throw new NotFoundException(`Workflow with ID ${workflowId} not found`);
+  private async ensureConsoleSession(req: SocketRequest, source: Source) {
+    if (!req.session.passport?.user?.id) {
+      setTimeout(() => {
+        req.socket.client.conn.close();
+      }, 300);
+      throw new UnauthorizedException(
+        'Only authenticated users are allowed to use this channel',
+      );
     }
 
-    return workflowId;
+    if (!req.session.web?.profile?.id) {
+      const profile = await this.subscriberService.updateOne(
+        req.session.passport.user.id,
+        {
+          channel: {
+            name: source.channel,
+            data: { isSocket: true },
+          },
+          source: source.id,
+          lastvisit: new Date(),
+          retainedFrom: new Date(),
+          foreignId: req.session.passport.user.id,
+        },
+      );
+
+      req.session.web = {
+        profile,
+        sourceId: source.id,
+      };
+
+      return;
+    }
+
+    req.session.web = {
+      ...req.session.web,
+      sourceId: source.id,
+    };
+  }
+
+  async handle(
+    sourceId: string,
+    req: Request,
+    res: Response,
+    workflowId?: string,
+  ): Promise<void> {
+    const source = await this.sourceService.findActiveById(sourceId);
+    const handler = this.getChannelHandler(source.channel);
+    const resolvedWorkflowId = await this.resolveWorkflowIdForSource(
+      source,
+      workflowId,
+    );
+
+    await handler.handle(req, res, source, resolvedWorkflowId);
+  }
+
+  @SocketGet('/webhook/:sourceId')
+  @SocketPost('/webhook/:sourceId')
+  async handleWebsocketForSource(
+    @SocketReq() req: SocketRequest,
+    @SocketRes() res: SocketResponse,
+  ) {
+    this.logger.log('Channel notification (Web Socket) : ', req.method);
+
+    const sourceId = this.getSourceIdFromSocketPath(req);
+    const source = await this.sourceService.findActiveById(sourceId);
+
+    if (source.channel === CONSOLE_CHANNEL_NAME) {
+      await this.ensureConsoleSession(req, source);
+    }
+
+    const handler = this.getChannelHandler(source.channel);
+    const explicitWorkflowId = this.getWorkflowIdFromSocketQuery(req);
+    const resolvedWorkflowId = await this.resolveWorkflowIdForSource(
+      source,
+      explicitWorkflowId,
+    );
+
+    return await handler.handle(req, res, source, resolvedWorkflowId);
   }
 }

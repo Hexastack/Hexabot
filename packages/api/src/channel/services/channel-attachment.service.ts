@@ -44,15 +44,15 @@ export class ChannelAttachmentService {
   /**
    * Generates a signed URL for downloading an attachment.
    *
-   * @param channelName - The channel name.
+   * @param sourceId - The source ID.
    * @param attachment - The attachment ID or object to generate a signed URL for.
    * @return A signed URL string for downloading the specified attachment.
    */
   public async getPublicUrl(
-    channelName: string,
+    sourceId: string,
     attachment?: AttachmentRef | AttachmentOrmEntity | null,
   ) {
-    const fallbackUrl = this.buildNotFoundUrl(channelName);
+    const fallbackUrl = this.buildNotFoundUrl(sourceId);
     if (!attachment || typeof attachment !== 'object') {
       this.logger.warn(
         'Unable to resolve the attachment public URL.',
@@ -77,7 +77,7 @@ export class ChannelAttachmentService {
 
       return buildURL(
         config.apiBaseUrl,
-        `/webhook/${channelName}/download/${resource.name}?t=${encodeURIComponent(token)}`,
+        `/webhook/${sourceId}/download/${resource.name}?t=${encodeURIComponent(token)}`,
       );
     }
 
@@ -138,7 +138,7 @@ export class ChannelAttachmentService {
     }
   }
 
-  private buildNotFoundUrl(channelName: string): string {
-    return buildURL(config.apiBaseUrl, `/webhook/${channelName}/not-found`);
+  private buildNotFoundUrl(sourceId: string): string {
+    return buildURL(config.apiBaseUrl, `/webhook/${sourceId}/not-found`);
   }
 }

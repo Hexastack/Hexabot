@@ -5,6 +5,7 @@ Shared zod-first runtime contracts for Hexabot API entity outputs.
 ## Migrated Modules
 
 - `analytics`: `Stats*`
+- `channel`: `Source*`, `ChannelMetadata*`
 - `chat`: `LabelGroup*`, `Label*`, `Subscriber*`, `Thread*`, `Message*`
 - `cms`: `ContentType*`, `Content*`, `Menu*`
 - `i18n`: `Language*`, `Translation*`
@@ -144,6 +145,7 @@ const workflow = schema.parse(data);
 Common ORM alias mappings from legacy class-transformer DTOs are preserved, including:
 
 - `groupId`, `contentTypeId`, `parentId`
+- `sourceId`, `defaultWorkflowId`
 - `subscriberId`, `senderId`, `recipientId`, `sentById`, `threadId`
 - `ownerId`, `modelId`, `roleId`, `credentialId`
 - `currentVersionId`, `publishedVersionId`, `createdById`

@@ -24,7 +24,7 @@ At startup:
 At request time:
 
 1. `WebhookController` receives `/webhook` requests.
-2. `ChannelService` resolves the handler by channel name.
+2. `ChannelService` resolves an active `Source` by `sourceId`, then resolves the handler by `source.channel`.
 3. The handler transport (`HttpChannelHandler` or `WebSocketChannelHandler`) processes the request.
 4. Inbound payloads are decoded into `ChannelInboundEvent` instances.
 5. Events are emitted through `ChannelEventBus` to the chatbot/workflow pipeline.
@@ -33,16 +33,17 @@ At request time:
 
 `WebhookController` is mounted at `/webhook` (effective path is `/api/webhook/*` because of the global `/api` prefix):
 
-- `GET /api/webhook/:channel`
-- `POST /api/webhook/:channel`
-- `GET /api/webhook/:channel/:workflowId`
-- `POST /api/webhook/:channel/:workflowId`
-- `GET /api/webhook/:channel/download/:name?t=<jwt>`
-- `GET /api/webhook/:channel/not-found`
+- `GET /api/webhook/:sourceId`
+- `POST /api/webhook/:sourceId`
+- `GET /api/webhook/:sourceId/:workflowId`
+- `POST /api/webhook/:sourceId/:workflowId`
+- `GET /api/webhook/:sourceId/download/:name?t=<jwt>`
+- `GET /api/webhook/:sourceId/not-found`
 
 Also available:
 
-- `GET /api/channel` returns registered channel names.
+- `GET /api/channel` returns channel metadata (`name`, settings JSON schema).
+- `GET /api/source`, `GET /api/source/:id`, `POST /api/source`, `PATCH /api/source/:id`, `DELETE /api/source/:id`.
 
 ## Core Contracts
 
@@ -50,10 +51,9 @@ Also available:
 
 Base abstraction for all channels:
 
-- `handle(req, res, workflowId?)`: transport entrypoint.
+- `handle(req, res, source, workflowId?)`: transport entrypoint.
 - `doSendMessage(event, envelope, options)`: channel-specific outbound send.
 - `getSubscriberData(event)`: map platform user data to `SubscriberCreateDto`.
-- `getSettings()`: runtime settings lookup from zod-backed registry.
 - `getCapabilities()`: declares supported outgoing formats and features.
 
 Optional extension points:
@@ -61,7 +61,7 @@ Optional extension points:
 - `getMessageAttachments(event)`
 - `getSubscriberAvatar(event)`
 - `hasDownloadAccess(attachment, req)`
-- `getAttachmentPublicUrl(attachment)`
+- `getAttachmentPublicUrl(sourceId, attachment)`
 
 ### Transport Base Classes
 
@@ -327,4 +327,4 @@ export const acmeEventSchema = z.strictObject({
 - Always parse unknown inbound payloads with zod before converting to internal events.
 - Use `ChannelCapabilities` to prevent unsupported outgoing message types from being sent.
 - Prefer `@ExtensionInject()` when helper services need per-channel binding.
-- If you override attachment URL/download behavior, keep `/webhook/:channel/download/:name?t=<jwt>` compatibility in mind.
+- If you override attachment URL/download behavior, keep `/webhook/:sourceId/download/:name?t=<jwt>` compatibility in mind.

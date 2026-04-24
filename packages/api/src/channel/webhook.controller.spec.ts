@@ -1,16 +1,15 @@
 /*
  * Hexabot — Fair Core License (FCL-1.0-ALv2)
- * Copyright (c) 2025 Hexastack.
+ * Copyright (c) 2026 Hexastack.
  * Full terms: see LICENSE.md.
  */
 
-import { INestApplication, NotFoundException } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { Request, Response } from 'express';
 import request from 'supertest';
 
 import { LoggerService } from '@/logger/logger.service';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
 import { ChannelDownloadService } from './services/channel-download.service';
@@ -22,7 +21,6 @@ describe('WebhookController', () => {
   let channelDownloadService: jest.Mocked<
     Pick<ChannelDownloadService, 'download'>
   >;
-  let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
   let logger: jest.Mocked<Pick<LoggerService, 'log'>>;
 
   beforeEach(() => {
@@ -32,9 +30,6 @@ describe('WebhookController', () => {
     channelDownloadService = {
       download: jest.fn(),
     };
-    workflowService = {
-      findOne: jest.fn(),
-    };
     logger = {
       log: jest.fn(),
     };
@@ -42,7 +37,6 @@ describe('WebhookController', () => {
     controller = new WebhookController(
       channelService as unknown as ChannelService,
       channelDownloadService as unknown as ChannelDownloadService,
-      workflowService as unknown as WorkflowService,
       logger as unknown as LoggerService,
     );
   });
@@ -51,65 +45,51 @@ describe('WebhookController', () => {
     jest.clearAllMocks();
   });
 
-  it('delegates untargeted channel requests without workflow id', async () => {
+  it('delegates source requests without workflow id', async () => {
+    const sourceId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
     const req = { method: 'POST' } as unknown as Request;
     const res = {} as Response;
 
-    await controller.handlePost('web', req, res);
+    await controller.handlePost(sourceId, req, res);
 
-    expect(workflowService.findOne).not.toHaveBeenCalled();
     expect(channelService.handle).toHaveBeenCalledWith(
-      'web',
+      sourceId,
       req,
       res,
       undefined,
     );
   });
 
-  it('delegates targeted channel requests with workflow id when workflow exists', async () => {
-    const workflowId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  it('delegates source requests with explicit workflow id', async () => {
+    const sourceId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    const workflowId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
     const req = { method: 'POST' } as unknown as Request;
     const res = {} as Response;
-    workflowService.findOne.mockResolvedValue({ id: workflowId } as any);
 
-    await controller.handlePostWithWorkflow('web', workflowId, req, res);
+    await controller.handlePostWithWorkflow(sourceId, workflowId, req, res);
 
-    expect(workflowService.findOne).toHaveBeenCalledWith(workflowId);
     expect(channelService.handle).toHaveBeenCalledWith(
-      'web',
+      sourceId,
       req,
       res,
       workflowId,
     );
   });
 
-  it('throws 404 when targeted workflow does not exist', async () => {
-    const workflowId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
-    const req = { method: 'POST' } as unknown as Request;
-    const res = {} as Response;
-    workflowService.findOne.mockResolvedValue(null);
-
-    await expect(
-      controller.handlePostWithWorkflow('web', workflowId, req, res),
-    ).rejects.toThrow(
-      new NotFoundException(`Workflow with ID ${workflowId} not found`),
-    );
-    expect(channelService.handle).not.toHaveBeenCalled();
-  });
-
   it('delegates download requests to channel download service', async () => {
+    const sourceId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
     const req = {} as Request;
     channelDownloadService.download.mockResolvedValue('stream' as any);
 
     const result = await controller.handleDownload(
-      'web',
+      sourceId,
       'file.txt',
       'token',
       req,
     );
 
     expect(channelDownloadService.download).toHaveBeenCalledWith(
-      'web',
+      sourceId,
       'token',
       req,
     );
@@ -123,22 +103,16 @@ describe('WebhookController (HTTP pipes)', () => {
   let channelDownloadService: jest.Mocked<
     Pick<ChannelDownloadService, 'download'>
   >;
-  let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
   let logger: jest.Mocked<Pick<LoggerService, 'log'>>;
 
   beforeAll(async () => {
     channelService = {
-      handle: jest.fn(async (_channel, _req, res: Response) => {
+      handle: jest.fn(async (_sourceId, _req, res: Response) => {
         res.status(204).send();
       }),
     };
     channelDownloadService = {
       download: jest.fn(),
-    };
-    workflowService = {
-      findOne: jest.fn().mockResolvedValue({
-        id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-      } as any),
     };
     logger = {
       log: jest.fn(),
@@ -149,7 +123,6 @@ describe('WebhookController (HTTP pipes)', () => {
       providers: [
         { provide: ChannelService, useValue: channelService },
         { provide: ChannelDownloadService, useValue: channelDownloadService },
-        { provide: WorkflowService, useValue: workflowService },
         { provide: LoggerService, useValue: logger },
       ],
     });
@@ -166,22 +139,35 @@ describe('WebhookController (HTTP pipes)', () => {
     jest.clearAllMocks();
   });
 
-  it('rejects malformed workflow id on GET before controller logic', async () => {
+  it('rejects malformed source id on GET before controller logic', async () => {
+    await request(app.getHttpServer()).get('/webhook/not-a-uuid').expect(404);
+
+    expect(channelService.handle).not.toHaveBeenCalled();
+  });
+
+  it('rejects malformed source id on POST before controller logic', async () => {
     await request(app.getHttpServer())
-      .get('/webhook/web/not-a-uuid')
+      .post('/webhook/not-a-uuid')
+      .send({ text: 'hello' })
       .expect(404);
 
-    expect(workflowService.findOne).not.toHaveBeenCalled();
+    expect(channelService.handle).not.toHaveBeenCalled();
+  });
+
+  it('rejects malformed workflow id on GET before controller logic', async () => {
+    await request(app.getHttpServer())
+      .get('/webhook/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/not-a-uuid')
+      .expect(404);
+
     expect(channelService.handle).not.toHaveBeenCalled();
   });
 
   it('rejects malformed workflow id on POST before controller logic', async () => {
     await request(app.getHttpServer())
-      .post('/webhook/web/not-a-uuid')
+      .post('/webhook/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/not-a-uuid')
       .send({ text: 'hello' })
       .expect(404);
 
-    expect(workflowService.findOne).not.toHaveBeenCalled();
     expect(channelService.handle).not.toHaveBeenCalled();
   });
 });

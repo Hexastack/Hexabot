@@ -22,6 +22,7 @@ declare module 'express-session' {
     web?: {
       profile?: Subscriber;
       threadId?: string;
+      sourceId?: string;
     };
     anonymous?: boolean;
   }

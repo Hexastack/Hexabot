@@ -113,8 +113,9 @@ export class WebSessionService {
   async validateSession(
     req: SocketRequest,
     res: Response | SocketResponse,
+    sourceId: string,
   ): Promise<Subscriber | null> {
-    if (req.session.web?.profile?.id) {
+    if (req.session.web?.profile?.id && req.session.web.sourceId === sourceId) {
       return req.session.web.profile;
     }
 
@@ -126,15 +127,21 @@ export class WebSessionService {
 
     if (authorForeignId) {
       try {
-        const subscriber =
-          await this.subscriberService.findOneByForeignId(authorForeignId);
+        const subscriber = await this.subscriberService.findOneByForeignId(
+          authorForeignId,
+          sourceId,
+        );
         if (subscriber) {
           const thread = await this.threadService.resolveThread({
             subscriberId: subscriber.id,
             explicitThreadId:
               this.getThreadIdFromBody(req) ?? this.getThreadIdFromQuery(req),
           });
-          req.session.web = { profile: subscriber, threadId: thread?.id };
+          req.session.web = {
+            profile: subscriber,
+            threadId: thread?.id,
+            sourceId,
+          };
           this.logger.debug(
             `Recovered missing web session from author ${authorForeignId}`,
           );
@@ -166,11 +173,12 @@ export class WebSessionService {
    */
   async getOrCreateSession(
     req: SocketRequest,
+    sourceId: string,
     buildProfile: () => SubscriberCreateDto,
   ): Promise<Subscriber> {
     const sessionProfile = req.session.web?.profile;
 
-    if (sessionProfile) {
+    if (sessionProfile && req.session.web?.sourceId === sourceId) {
       const subscriber = await this.subscriberService.findOne(
         sessionProfile.id,
       );
@@ -183,12 +191,15 @@ export class WebSessionService {
       });
       req.session.web.profile = subscriber;
       req.session.web.threadId = thread?.id;
+      req.session.web.sourceId = sourceId;
 
       return subscriber;
     }
 
+    req.session.web = undefined;
+
     const profile = await this.subscriberService.create(buildProfile());
-    req.session.web = { profile };
+    req.session.web = { profile, sourceId };
 
     return profile;
   }

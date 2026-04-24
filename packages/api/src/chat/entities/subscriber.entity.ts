@@ -8,6 +8,7 @@ import { subscriberSchema, subscriberFullSchema } from '@hexabot-ai/types';
 import {
   ChildEntity,
   Column,
+  Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
@@ -16,6 +17,7 @@ import {
   UpdateEvent,
 } from 'typeorm';
 
+import type { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { UserProfileOrmEntity } from '@/user/entities/user-profile.entity';
@@ -36,6 +38,7 @@ export class SubscriberChannel {
 }
 
 @ChildEntity()
+@Index(['source', 'foreignId'])
 export class SubscriberOrmEntity<
   Dto extends TZodDto = SubscriberDto,
 > extends UserProfileOrmEntity<Dto> {
@@ -56,6 +59,17 @@ export class SubscriberOrmEntity<
 
   @Column({ type: 'varchar', length: 64 })
   foreignId: string;
+
+  @ManyToOne('SourceOrmEntity', {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'source_id' })
+  @AsRelation()
+  source: SourceOrmEntity | null;
+
+  @RelationId((subscriber: SubscriberOrmEntity) => subscriber.source)
+  private readonly sourceId?: string | null;
 
   @ManyToMany(() => LabelOrmEntity, (label) => label.users, {
     cascade: false,

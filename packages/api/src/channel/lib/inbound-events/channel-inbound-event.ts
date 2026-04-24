@@ -76,6 +76,24 @@ export abstract class ChannelInboundEvent<
     } as SubscriberChannelData<N>;
   }
 
+  setSourceContext(
+    sourceId: string,
+    sourceSettings: Record<string, unknown>,
+  ): void {
+    this.context.setSourceId(sourceId);
+    this.context.setSourceSettings(sourceSettings);
+  }
+
+  getSourceId(): string | null {
+    return this.context.getSourceId();
+  }
+
+  getSourceSettings<
+    T extends Record<string, unknown> = Record<string, unknown>,
+  >(): T {
+    return this.context.getSourceSettings<T>();
+  }
+
   protected requireEventId(): string {
     const eventId = this.context.getEventId();
 
@@ -129,6 +147,7 @@ export abstract class ChannelInboundEvent<
   getMetadata(): Record<string, unknown> {
     return {
       channel: this.getChannelData(),
+      source_id: this.getSourceId(),
       thread_id: this.getThreadId() ?? null,
     };
   }
@@ -136,6 +155,8 @@ export abstract class ChannelInboundEvent<
   getContextData(): Record<string, unknown> {
     return {
       channel: this.getChannelData(),
+      sourceId: this.getSourceId(),
+      sourceSettings: this.getSourceSettings(),
       initiator: this.getInitiator(),
       threadId: this.getThreadId() ?? null,
     };

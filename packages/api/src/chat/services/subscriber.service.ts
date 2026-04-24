@@ -66,11 +66,12 @@ export class SubscriberService extends BaseOrmService<SubscriberOrmEntity> {
    * Finds and returns a single subscriber based on a foreign ID.
    *
    * @param id - The foreign ID used to find the subscriber.
+   * @param sourceId - Optional source ID to scope the lookup.
    *
    * @returns The subscriber matching the foreign ID.
    */
-  async findOneByForeignId(id: string) {
-    return await this.repository.findOneByForeignId(id);
+  async findOneByForeignId(id: string, sourceId?: string) {
+    return await this.repository.findOneByForeignId(id, sourceId);
   }
 
   /**
@@ -78,11 +79,12 @@ export class SubscriberService extends BaseOrmService<SubscriberOrmEntity> {
    * and populates the result with related data.
    *
    * @param id - The foreign ID used to find the subscriber.
+   * @param sourceId - Optional source ID to scope the lookup.
    *
    * @returns The subscriber with populated related data.
    */
-  async findOneByForeignIdAndPopulate(id: string) {
-    return await this.repository.findOneByForeignIdAndPopulate(id);
+  async findOneByForeignIdAndPopulate(id: string, sourceId?: string) {
+    return await this.repository.findOneByForeignIdAndPopulate(id, sourceId);
   }
 
   /**
@@ -93,8 +95,16 @@ export class SubscriberService extends BaseOrmService<SubscriberOrmEntity> {
    *
    * @returns The updated subscriber data.
    */
-  async updateOneByForeignId(id: string, updates: SubscriberUpdateDto) {
-    return await this.repository.updateOneByForeignIdQuery(id, updates);
+  async updateOneByForeignId(
+    id: string,
+    updates: SubscriberUpdateDto,
+    sourceId?: string,
+  ) {
+    return await this.repository.updateOneByForeignIdQuery(
+      id,
+      updates,
+      sourceId,
+    );
   }
 
   /**
@@ -104,8 +114,8 @@ export class SubscriberService extends BaseOrmService<SubscriberOrmEntity> {
    *
    * @returns The result of the hand-back operation.
    */
-  async handBackByForeignId(foreignId: string) {
-    return await this.repository.handBackByForeignIdQuery(foreignId);
+  async handBackByForeignId(foreignId: string, sourceId?: string) {
+    return await this.repository.handBackByForeignIdQuery(foreignId, sourceId);
   }
 
   /**
@@ -117,8 +127,16 @@ export class SubscriberService extends BaseOrmService<SubscriberOrmEntity> {
    *
    * @returns The result of the hand-over operation.
    */
-  async handOverByForeignId(foreignId: string, userId: string) {
-    return await this.repository.handOverByForeignIdQuery(foreignId, userId);
+  async handOverByForeignId(
+    foreignId: string,
+    userId: string,
+    sourceId?: string,
+  ) {
+    return await this.repository.handOverByForeignIdQuery(
+      foreignId,
+      userId,
+      sourceId,
+    );
   }
 
   /**

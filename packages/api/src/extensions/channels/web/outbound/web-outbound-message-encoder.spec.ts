@@ -23,12 +23,11 @@ import {
   webQuickReplies,
   webText,
 } from '../__test__/data.mock';
-import { WEB_CHANNEL_NAME } from '../web-channel.settings';
 
 import { WebOutboundMessageEncoder } from './web-outbound-message-encoder';
 
 describe('WebOutboundMessageEncoder', () => {
-  const channelName = WEB_CHANNEL_NAME;
+  const sourceId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const channelAttachmentService = {
     getPublicUrl: jest
       .fn()
@@ -42,14 +41,16 @@ describe('WebOutboundMessageEncoder', () => {
   };
   let encoder: WebOutboundMessageEncoder;
   const render = (envelope: any, options: any = {}) =>
-    encoder.encode(envelope, options);
+    encoder.encode(envelope, {
+      sourceId,
+      ...options,
+    });
 
   beforeEach(() => {
     channelAttachmentService.getPublicUrl.mockClear();
     i18n.t.mockClear();
     logger.error.mockClear();
     encoder = new WebOutboundMessageEncoder(
-      channelName,
       i18n as any,
       logger as any,
       channelAttachmentService as any,
@@ -122,7 +123,7 @@ describe('WebOutboundMessageEncoder', () => {
 
     expect(formatted).toEqual(webAttachment);
     expect(channelAttachmentService.getPublicUrl).toHaveBeenCalledWith(
-      channelName,
+      sourceId,
       attachmentMessage.attachment.payload,
     );
   });
@@ -134,7 +135,7 @@ describe('WebOutboundMessageEncoder', () => {
           type: OutgoingMessageType.list,
           data: contentMessage,
         },
-        {},
+        { sourceId },
       ),
     ).rejects.toThrow('Content options are missing the fields');
   });
@@ -150,6 +151,7 @@ describe('WebOutboundMessageEncoder', () => {
           },
         },
         {
+          sourceId,
           content: contentMessage.options,
         },
       ),
@@ -170,6 +172,7 @@ describe('WebOutboundMessageEncoder', () => {
           },
         },
         {
+          sourceId,
           content: {
             ...contentMessage.options,
             display: OutgoingMessageType.carousel,
@@ -189,7 +192,7 @@ describe('WebOutboundMessageEncoder', () => {
           type: OutgoingMessageType.system,
           data: { outcome: 'noop' },
         } as any,
-        {},
+        { sourceId },
       ),
     ).rejects.toBeInstanceOf(UnsupportedOutgoingFormatError);
   });

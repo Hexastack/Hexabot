@@ -10,6 +10,14 @@ export * from './channel.module';
 
 export * from './channel.service';
 
+export * from './source.controller';
+
+export * from './dto/source.dto';
+
+export * from './entities/source.entity';
+
+export * from './repositories/source.repository';
+
 export * from './lib/channel-capabilities';
 
 export * from './lib/channel-codec';
@@ -29,6 +37,8 @@ export * from './lib/transports';
 export * from './services/channel-attachment.service';
 
 export * from './services/channel-download.service';
+
+export * from './services/source.service';
 
 export * from './services/subscriber-resolver.service';
 

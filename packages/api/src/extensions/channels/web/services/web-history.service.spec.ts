@@ -72,14 +72,12 @@ describe('WebHistoryService', () => {
       messageService as unknown as MessageService,
     );
     ctx = {
-      inboundEncoder: new WebInboundMessageEncoder(
-        'web' as const,
-        channelAttachmentService,
-      ),
+      inboundEncoder: new WebInboundMessageEncoder(channelAttachmentService),
       outboundEncoder: {
         encode: jest.fn(),
       } as unknown as WebFormatContext['outboundEncoder'],
       generateId: jest.fn().mockReturnValue('generated-mid'),
+      sourceId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
     };
   });
 
@@ -175,7 +173,7 @@ describe('WebHistoryService', () => {
       },
     });
     expect(channelAttachmentService.getPublicUrl).toHaveBeenCalledWith(
-      'web',
+      ctx.sourceId,
       undefined,
     );
   });
@@ -206,6 +204,7 @@ describe('WebHistoryService', () => {
 
     expect(ctx.outboundEncoder.encode).toHaveBeenCalledWith(outgoing.message, {
       content: contentOptions,
+      sourceId: ctx.sourceId,
     });
   });
 });

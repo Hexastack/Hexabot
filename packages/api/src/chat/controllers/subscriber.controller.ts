@@ -33,6 +33,7 @@ export const SUBSCRIBER_ALLOWED_FILTER_FIELDS: TFilterNestedKeysOfType<Subscribe
     'lastName',
     'assignedTo.id',
     'channel.name',
+    'source.id',
     // TODO : type need to be enhanced to include 'labels'
     'labels' as any,
   ];

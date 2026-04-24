@@ -8,6 +8,7 @@ import type {
   ActionOptions,
   Attachment,
   AttachmentRef,
+  Source,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
 import { StdOutgoingEnvelope } from '@hexabot-ai/types';
@@ -26,7 +27,6 @@ import {
 } from '@/attachment/types';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
@@ -55,9 +55,6 @@ export default abstract class ChannelHandler<
 
   @Inject(ChannelAttachmentService)
   protected readonly channelAttachmentService: ChannelAttachmentService;
-
-  @Inject(SettingService)
-  protected readonly settingService: SettingService;
 
   @Inject(ChannelService)
   protected readonly channelService: ChannelService;
@@ -122,17 +119,6 @@ export default abstract class ChannelHandler<
   }
 
   /**
-   * Returns the channel's settings
-   * @returns Channel's settings
-   */
-  async getSettings<S extends string = N>() {
-    const settings = await this.settingService.getSettings();
-
-    // @ts-expect-error workaround typing
-    return settings[this.getName() as keyof Settings] as Settings[S];
-  }
-
-  /**
    * Process incoming channel data via POST/GET methods
    *
    * @param {module:Controller.req} req
@@ -141,6 +127,7 @@ export default abstract class ChannelHandler<
   abstract handle(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
     workflowId?: string,
   ): any;
 
@@ -268,7 +255,7 @@ export default abstract class ChannelHandler<
    * Returns a publicly accessible URL for an attachment.
    *
    * Default: generates a signed Hexabot download URL
-   * (`/webhook/:channel/download/:name?t=<jwt>`).
+   * (`/webhook/:sourceId/download/:name?t=<jwt>`).
    *
    * Override in HTTP-based channels (Facebook, WhatsApp, …) when the
    * messaging platform fetches the URL itself and the JWT-signed scheme
@@ -276,11 +263,9 @@ export default abstract class ChannelHandler<
    * API once and return the resulting permanent media URL instead).
    */
   public async getAttachmentPublicUrl(
+    sourceId: string,
     attachment: AttachmentRef,
   ): Promise<string> {
-    return this.channelAttachmentService.getPublicUrl(
-      this.getName(),
-      attachment,
-    );
+    return this.channelAttachmentService.getPublicUrl(sourceId, attachment);
   }
 }

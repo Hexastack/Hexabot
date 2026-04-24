@@ -6,6 +6,7 @@
 
 import type {
   Attachment,
+  Source,
   StdOutgoingMessageEnvelope,
   Subscriber,
 } from '@hexabot-ai/types';
@@ -39,6 +40,7 @@ import {
   WebSocketChannelHandler,
 } from '@/channel';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
+import { SourceService } from '@/channel/services/source.service';
 import { ChannelName } from '@/channel/types';
 import { SubscriberChannelData } from '@/chat';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
@@ -90,6 +92,9 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   @Inject(MessageService)
   private readonly messageService: MessageService;
 
+  @Inject(SourceService)
+  private readonly sourceService: SourceService;
+
   @ExtensionInject((name) => createWebOutboundMessageEncoder(name))
   private outboundMessageEncoder!: WebOutboundMessageEncoder;
 
@@ -132,22 +137,51 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     };
   }
 
-  private formatCtx(): WebFormatContext {
+  private formatCtx(sourceId: string): WebFormatContext {
     return {
       inboundEncoder: this.inboundMessageEncoder,
       outboundEncoder: this.outboundMessageEncoder,
       generateId: () => this.generateId(),
+      sourceId,
     };
+  }
+
+  private getSourceIdFromHandshake(client: Socket): string | null {
+    const rawSourceId = client.handshake.query.source_id;
+    const sourceId = Array.isArray(rawSourceId) ? rawSourceId[0] : rawSourceId;
+
+    if (typeof sourceId !== 'string') {
+      return null;
+    }
+
+    const normalizedSourceId = sourceId.trim();
+
+    return normalizedSourceId.length > 0 ? normalizedSourceId : null;
   }
 
   @OnEvent('hook:websocket:connection', { async: true })
   async onWebSocketConnection(client: Socket) {
     try {
-      const handshake = client.handshake;
-      const { channel } = handshake.query;
+      const sourceId = this.getSourceIdFromHandshake(client);
+
+      if (!sourceId) {
+        this.logger.warn('Missing source_id in websocket handshake');
+        client.disconnect();
+
+        return;
+      }
+
+      const source = await this.sourceService.findActiveById(sourceId);
       const profile = client.request.session.web?.profile;
 
-      if (channel !== this.getName()) return;
+      if (source.channel !== this.getName()) {
+        return;
+      }
+
+      client.request.session.web = {
+        ...client.request.session.web,
+        sourceId,
+      };
 
       let messages: Web.Message[] | undefined;
       let threadId: string | undefined;
@@ -162,14 +196,18 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         client.request.session.web = {
           profile: client.request.session.web?.profile,
           threadId,
+          sourceId,
         };
         messages = thread
-          ? await this.historyService.fetchHistory(thread, this.formatCtx())
+          ? await this.historyService.fetchHistory(
+              thread,
+              this.formatCtx(source.id),
+            )
           : [];
       }
 
       this.logger.debug('WS connected .. sending settings');
-      const settings = await this.getSettings();
+      const settings = source.settings;
 
       try {
         const menu = await this.menuService.getTree();
@@ -206,8 +244,13 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           }
     ) as SocketResponse;
     const subscriber = socket.request.session.web?.profile;
+    const sourceId = this.getSourceIdFromHandshake(socket);
 
-    if (socket.handshake.query.channel !== this.getName() || !subscriber) {
+    if (
+      !sourceId ||
+      socket.request.session.web?.sourceId !== sourceId ||
+      !subscriber
+    ) {
       return;
     }
 
@@ -223,13 +266,21 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   private async ensureValidCors(
     req: SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
   ): Promise<void> {
-    const settings = await this.getSettings<typeof WEB_CHANNEL_NAME>();
-    await this.sessionService.validateCors(req, res, settings.allowed_domains);
+    const allowedDomains =
+      typeof source.settings.allowed_domains === 'string'
+        ? source.settings.allowed_domains
+        : '*';
+
+    await this.sessionService.validateCors(req, res, allowedDomains);
   }
 
-  protected async getOrCreateSession(req: SocketRequest): Promise<Subscriber> {
-    return this.sessionService.getOrCreateSession(req, () => {
+  protected async getOrCreateSession(
+    req: SocketRequest,
+    source: Source,
+  ): Promise<Subscriber> {
+    return this.sessionService.getOrCreateSession(req, source.id, () => {
       const data = req.query;
 
       return {
@@ -251,6 +302,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
         gender: 'male',
         country: '',
         labels: [],
+        source: source.id,
       };
     });
   }
@@ -264,10 +316,11 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   protected async subscribe(
     req: SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
   ): Promise<void> {
     this.logger.debug('subscribe (isSocket=true)');
     try {
-      const profile = await this.getOrCreateSession(req);
+      const profile = await this.getOrCreateSession(req, source);
       const profileForeignId = profile.foreignId;
       if (!profileForeignId) {
         throw new Error('Session profile foreignId is missing');
@@ -282,7 +335,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       const messages = await this.historyService.fetchHistoryForRequest(
         req,
         this.sessionService,
-        this.formatCtx(),
+        this.formatCtx(source.id),
         criteria,
       );
 
@@ -359,6 +412,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   async handleEvent(
     req: SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
     workflowId?: string,
   ): Promise<void> {
     if (!req.body) {
@@ -380,7 +434,11 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           : payload.data;
     }
 
-    const profile = await this.sessionService.validateSession(req, res);
+    const profile = await this.sessionService.validateSession(
+      req,
+      res,
+      source.id,
+    );
     if (!profile) return;
 
     const channelAttrs = this.getChannelAttributes(req);
@@ -416,6 +474,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
     for (const event of events) {
       event.setHandler(this);
+      event.setSourceContext(source.id, source.settings);
       if (explicitThreadId) event.setThreadId(explicitThreadId);
       event.setInitiator(profile);
       event.setWorkflowId(workflowId);
@@ -434,7 +493,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
               messageEvent.setUploadedRawData(
                 AttachmentOrmEntity.getTypeByMime(attachment.type),
                 await this.channelAttachmentService.getPublicUrl(
-                  this.getName(),
+                  source.id,
                   attachment,
                 ),
               );
@@ -507,15 +566,16 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   protected async processSocketGet(
     req: SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
   ): Promise<void> {
     try {
-      await this.ensureValidCors(req, res);
+      await this.ensureValidCors(req, res, source);
       if (req.query._disconnect) {
         req.session.web = undefined;
 
         return void res.status(200).json({ _disconnect: true });
       }
-      await this.subscribe(req, res);
+      await this.subscribe(req, res, source);
     } catch (err) {
       this.logger.warn('Request check failed', err);
       res.status(403).json({ err: 'Web Channel Handler : Unauthorized!' });
@@ -525,11 +585,12 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   protected async processSocketPost(
     req: SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
     workflowId?: string,
   ): Promise<void> {
     try {
-      await this.ensureValidCors(req, res);
-      await this.handleEvent(req, res, workflowId);
+      await this.ensureValidCors(req, res, source);
+      await this.handleEvent(req, res, source, workflowId);
     } catch (err) {
       this.logger.warn('Request check failed', err);
       res.status(403).json({ err: 'Web Channel Handler : Unauthorized!' });
@@ -541,10 +602,18 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     envelope: StdOutgoingMessageEnvelope,
     options: ActionOptions,
   ): Promise<{ mid: string }> {
-    const messageBase = await this.outboundMessageEncoder.encode(
-      envelope,
-      options ?? {},
-    );
+    const sourceId = event.getSourceId();
+
+    if (!sourceId) {
+      throw new Error(
+        `Missing sourceId while sending ${this.getName()} outbound message`,
+      );
+    }
+
+    const messageBase = await this.outboundMessageEncoder.encode(envelope, {
+      ...(options ?? {}),
+      sourceId,
+    });
     const subscriber = event.getInitiator();
     const message: Web.OutboundMessage = {
       ...messageBase,

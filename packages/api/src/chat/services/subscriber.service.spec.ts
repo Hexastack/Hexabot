@@ -183,7 +183,7 @@ describe('SubscriberService (TypeORM)', () => {
       const result =
         await subscriberService.findOneByForeignId('foreign-id-dimelo');
 
-      expect(spy).toHaveBeenCalledWith('foreign-id-dimelo');
+      expect(spy).toHaveBeenCalledWith('foreign-id-dimelo', undefined);
       expect(result).toEqualPayload({
         ...subscriber,
         labels: subscriber!.labels,

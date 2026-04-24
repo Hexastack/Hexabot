@@ -17,6 +17,7 @@ import {
   WorkflowVersionAction,
   attachmentFullSchema,
   attachmentSchema,
+  channelMetadataSchema,
   contentFullSchema,
   contentSchema,
   createWorkflowFullSchema,
@@ -33,7 +34,10 @@ import {
   memoryRecordSchema,
   menuFullSchema,
   menuSchema,
+  modelSchema,
   OutgoingMessageType,
+  sourceFullSchema,
+  sourceSchema,
   stdOutgoingMessageSchema,
   stdIncomingMessageSchema,
   stdOutgoingEnvelopeSchema,
@@ -459,6 +463,7 @@ describe("@hexabot-ai/types schemas", () => {
       labelIds: ["l_1"],
       assignedToId: "u_1",
       avatarId: "a_1",
+      sourceId: "source_1",
     });
     const content = contentSchema.parse({
       id: "c_1",
@@ -485,9 +490,73 @@ describe("@hexabot-ai/types schemas", () => {
     expect(subscriber.labels).toEqual(["l_1"]);
     expect(subscriber.assignedTo).toBe("u_1");
     expect(subscriber.avatar).toBe("a_1");
+    expect(subscriber.source).toBe("source_1");
     expect(content.contentType).toBe("ct_1");
     expect(permission.model).toBe("m_1");
     expect(permission.role).toBe("r_1");
+  });
+
+  it("parses source contracts and supports defaultWorkflowId alias", () => {
+    const source = sourceSchema.parse({
+      id: "source_1",
+      createdAt: now,
+      updatedAt: now,
+      name: "main-web",
+      channel: "web",
+      settings: { allowed_domains: "https://example.com" },
+      state: true,
+      defaultWorkflowId: "wf_1",
+    });
+    const sourceFull = sourceFullSchema.parse({
+      id: "source_1",
+      createdAt: now,
+      updatedAt: now,
+      name: "main-web",
+      channel: "web",
+      settings: { allowed_domains: "https://example.com" },
+      state: true,
+      defaultWorkflow: {
+        id: "wf_1",
+        createdAt: now,
+        updatedAt: now,
+        name: "default",
+        description: null,
+        type: WorkflowType.conversational,
+        schedule: null,
+        inputSchema: {},
+        builtin: false,
+        x: 0,
+        y: 0,
+        zoom: 1,
+        direction: "horizontal",
+        createdBy: null,
+        currentVersion: null,
+        publishedVersion: null,
+      },
+    });
+    const metadata = channelMetadataSchema.parse({
+      name: "web",
+      settingsSchema: {
+        type: "object",
+      },
+    });
+
+    expect(source.defaultWorkflow).toBe("wf_1");
+    expect(sourceFull.defaultWorkflow?.id).toBe("wf_1");
+    expect(metadata.name).toBe("web");
+  });
+
+  it("accepts source as a valid model identity", () => {
+    const model = modelSchema.parse({
+      id: "m_source",
+      createdAt: now,
+      updatedAt: now,
+      name: "Source",
+      identity: "source",
+      attributes: {},
+    });
+
+    expect(model.identity).toBe("source");
   });
 
   it("normalizes nullable and optional values for setting/menu/mcp", () => {

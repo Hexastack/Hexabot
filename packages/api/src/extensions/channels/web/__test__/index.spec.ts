@@ -4,16 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import { OutgoingMessageType, StdEventType } from '@hexabot-ai/types';
+import { OutgoingMessageType, Source, StdEventType } from '@hexabot-ai/types';
 import { JwtService } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
+import { DataSource } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
+import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { ChannelEventBus } from '@/channel/lib/channel-event-bus';
 import { UnsupportedOutgoingFormatError } from '@/channel/lib/outbound';
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
+import { SourceService } from '@/channel/services/source.service';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ThreadService } from '@/chat/services/thread.service';
@@ -33,6 +36,7 @@ describe('WebChannelHandler', () => {
   let module: TestingModule;
   let subscriberService: SubscriberService;
   let handler: WebChannelHandler;
+  let webSource: Source;
 
   const menuServiceMock = {
     getTree: jest.fn().mockResolvedValue([]),
@@ -50,8 +54,29 @@ describe('WebChannelHandler', () => {
       .fn()
       .mockResolvedValue('http://public.url/download/filename.extension?t=any'),
   } as jest.Mocked<Pick<ChannelAttachmentService, 'getPublicUrl'>>;
+  const sourceServiceMock = {
+    findActiveById: jest.fn(),
+    ensureDefaultSources: jest.fn(),
+  } as jest.Mocked<
+    Pick<SourceService, 'findActiveById' | 'ensureDefaultSources'>
+  >;
 
   beforeAll(async () => {
+    webSource = {
+      id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      name: 'web-source',
+      channel: 'web',
+      settings: {
+        allowed_domains:
+          'https://example.com/,https://test.com,http://invalid-url',
+      },
+      state: true,
+      defaultWorkflow: null,
+    };
+    sourceServiceMock.findActiveById.mockResolvedValue(webSource);
+
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
       providers: [
@@ -78,6 +103,10 @@ describe('WebChannelHandler', () => {
           provide: WebsocketGateway,
           useValue: websocketGatewayMock,
         },
+        {
+          provide: SourceService,
+          useValue: sourceServiceMock,
+        },
       ],
       typeorm: {
         fixtures: [
@@ -93,6 +122,28 @@ describe('WebChannelHandler', () => {
       SubscriberService,
       WebChannelHandler,
     ]);
+
+    const dataSource = module.get(DataSource);
+    const sourceRepository = dataSource.getRepository(SourceOrmEntity);
+    await sourceRepository.save(
+      sourceRepository.create({
+        id: webSource.id,
+        name: webSource.name,
+        channel: webSource.channel,
+        settings: webSource.settings,
+        state: webSource.state,
+        defaultWorkflow: null,
+      }),
+    );
+
+    const fixtureSubscriber =
+      await subscriberService.findOneByForeignId('foreign-id-web-1');
+    if (fixtureSubscriber) {
+      await subscriberService.updateOne(fixtureSubscriber.id, {
+        source: webSource.id,
+      });
+    }
+
     await handler.onModuleInit();
   });
 
@@ -120,12 +171,9 @@ describe('WebChannelHandler', () => {
       set: jest.fn(),
     } as any;
 
-    jest.spyOn(handler, 'getSettings').mockResolvedValue({
-      allowed_domains:
-        'https://example.com/,https://test.com,http://invalid-url',
-    });
-
-    await expect(handler['ensureValidCors'](req, res)).resolves.not.toThrow();
+    await expect(
+      handler['ensureValidCors'](req, res, webSource),
+    ).resolves.not.toThrow();
 
     expect(res.set).toHaveBeenCalledWith(
       'Access-Control-Allow-Origin',
@@ -144,19 +192,13 @@ describe('WebChannelHandler', () => {
       },
       method: 'GET',
     } as unknown as SocketRequest;
-
-    jest.spyOn(handler, 'getSettings').mockResolvedValue({
-      allowed_domains:
-        'https://example.com/,https://test.com,http://invalid-url',
-    });
-
     const res = {
       set: jest.fn(),
     } as any;
 
-    await expect(handler['ensureValidCors'](req, res)).rejects.toThrow(
-      'CORS - Domain not allowed!',
-    );
+    await expect(
+      handler['ensureValidCors'](req, res, webSource),
+    ).rejects.toThrow('CORS - Domain not allowed!');
 
     expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', '');
   });
@@ -176,11 +218,12 @@ describe('WebChannelHandler', () => {
       json: jest.fn(),
     } as any;
 
-    jest.spyOn(handler, 'getSettings').mockResolvedValue({
-      allowed_domains: 'https://example.com',
+    await handler.handle(req, res, {
+      ...webSource,
+      settings: {
+        allowed_domains: 'https://example.com',
+      },
     });
-
-    await handler.handle(req, res);
 
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.json).toHaveBeenCalledWith({
@@ -200,6 +243,7 @@ describe('WebChannelHandler', () => {
     const event = {
       getInitiator: () => subscriber,
       getThreadId: () => 'thread-id',
+      getSourceId: () => webSource.id,
     } as any;
     const response = await handler.sendMessage(
       event,
@@ -238,6 +282,7 @@ describe('WebChannelHandler', () => {
     const event = {
       getInitiator: () => subscriber,
       getThreadId: () => 'thread-id',
+      getSourceId: () => webSource.id,
     } as any;
 
     await expect(
@@ -267,7 +312,7 @@ describe('WebChannelHandler', () => {
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
-    const subscriber = await handler['getOrCreateSession'](req);
+    const subscriber = await handler['getOrCreateSession'](req, webSource);
     const expectedAttrs = {
       assignedAt: null,
       assignedTo: null,
@@ -297,16 +342,18 @@ describe('WebChannelHandler', () => {
     expect(req.session).toEqual({
       web: {
         profile: subscriber,
+        sourceId: webSource.id,
       },
     });
     clearMock.mockRestore();
 
     // Subsequent request
-    const subscriber2nd = await handler['getOrCreateSession'](req);
+    const subscriber2nd = await handler['getOrCreateSession'](req, webSource);
     expect(subscriber2nd.id).toBe(subscriber.id);
     expect(req.session).toEqual({
       web: {
         profile: subscriber2nd,
+        sourceId: webSource.id,
       },
     });
   });
@@ -326,6 +373,7 @@ describe('WebChannelHandler', () => {
         cookie: { originalMaxAge: 0 },
         web: {
           profile: subscriber,
+          sourceId: webSource.id,
         },
       },
       headers: { 'user-agent': 'browser' },
@@ -352,7 +400,7 @@ describe('WebChannelHandler', () => {
         expect(foreignId).toBe(subscriber.foreignId);
         joinedSocket = true;
       });
-    await handler['subscribe'](req, res);
+    await handler['subscribe'](req, res, webSource);
     expect(joinedSocket).toBe(true);
     clearMock.mockRestore();
   });
@@ -385,7 +433,7 @@ describe('WebChannelHandler', () => {
       },
     } as any as SocketResponse;
 
-    await handler['subscribe'](req, res);
+    await handler['subscribe'](req, res, webSource);
 
     expect(req.session.web?.threadId).toBeUndefined();
     clearMock.mockRestore();
@@ -406,7 +454,7 @@ describe('WebChannelHandler', () => {
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
-    const profile = await handler['getOrCreateSession'](req as any);
+    const profile = await handler['getOrCreateSession'](req as any, webSource);
     expect(req.session.web?.threadId).toBeUndefined();
 
     req.body = {
@@ -444,7 +492,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res, webSource);
     });
 
     expect(emitMessageSpy).toHaveBeenCalledWith(expect.anything());
@@ -502,7 +550,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res, webSource);
     });
 
     expect(req.session.web?.profile?.id).toBe(subscriber.id);
@@ -526,7 +574,7 @@ describe('WebChannelHandler', () => {
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
-    const profile = await handler['getOrCreateSession'](req as any);
+    const profile = await handler['getOrCreateSession'](req as any, webSource);
 
     req.body = {
       type: 'text',
@@ -560,7 +608,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res, webSource);
     });
 
     expect(websocketGatewayMock.broadcast).toHaveBeenCalled();
@@ -589,7 +637,7 @@ describe('WebChannelHandler', () => {
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
-    const profile = await handler['getOrCreateSession'](req as any);
+    const profile = await handler['getOrCreateSession'](req as any, webSource);
 
     req.body = {
       type: 'text',
@@ -625,7 +673,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res, webSource);
     });
 
     expect(req.session.web?.threadId).toBeUndefined();
@@ -647,7 +695,7 @@ describe('WebChannelHandler', () => {
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
-    const profile = await handler['getOrCreateSession'](req as any);
+    const profile = await handler['getOrCreateSession'](req as any, webSource);
 
     req.body = {
       type: 'text',
@@ -678,7 +726,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res, webSource);
     });
 
     clearMock.mockRestore();
@@ -699,7 +747,7 @@ describe('WebChannelHandler', () => {
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
-    const profile = await handler['getOrCreateSession'](req as any);
+    const profile = await handler['getOrCreateSession'](req as any, webSource);
     req.body = {
       type: 'text',
       data: {
@@ -754,7 +802,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res, webSource);
     });
 
     expect(createEventsSpy).toHaveBeenCalledTimes(1);
@@ -781,7 +829,7 @@ describe('WebChannelHandler', () => {
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
-    const profile = await handler['getOrCreateSession'](req as any);
+    const profile = await handler['getOrCreateSession'](req as any, webSource);
     const fileBuffer = Buffer.from('ws-file');
     attachmentServiceMock.store.mockResolvedValueOnce({
       id: 'ws-attachment-id',
@@ -829,7 +877,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res, webSource);
     });
 
     expect(attachmentServiceMock.store).toHaveBeenCalledWith(
@@ -859,7 +907,7 @@ describe('WebChannelHandler', () => {
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
-    const profile = await handler['getOrCreateSession'](req as any);
+    const profile = await handler['getOrCreateSession'](req as any, webSource);
 
     req.body = {
       type: 'file',
@@ -896,7 +944,7 @@ describe('WebChannelHandler', () => {
         },
       } as any as SocketResponse;
 
-      handler['handleEvent'](req as any, res);
+      handler['handleEvent'](req as any, res, webSource);
     });
 
     expect(attachmentServiceMock.store).not.toHaveBeenCalled();

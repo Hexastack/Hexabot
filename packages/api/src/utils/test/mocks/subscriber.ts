@@ -28,6 +28,7 @@ export const subscriberInstance: Subscriber = {
   },
   labels: [],
   avatar: null,
+  source: null,
   ...modelInstance,
 };
 
@@ -41,4 +42,5 @@ export const subscriberWithLabels: SubscriberFull = {
   labels: customerLabelsMock,
   assignedTo: null,
   avatar: null,
+  source: null,
 };

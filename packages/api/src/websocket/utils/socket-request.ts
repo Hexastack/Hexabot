@@ -38,6 +38,8 @@ export class SocketRequest {
 
   query: Record<string, any>;
 
+  params: Record<string, string>;
+
   // Request specifics
   method: string;
 
@@ -97,6 +99,7 @@ export class SocketRequest {
       ...socket.handshake.query,
       ...urlQuery,
     };
+    this.params = {};
 
     // Set the HTTP method and the body of the request
     this.method = method.toUpperCase();
