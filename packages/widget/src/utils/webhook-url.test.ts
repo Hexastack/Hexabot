@@ -17,6 +17,15 @@ describe("buildWebhookUrl", () => {
     ).toBe("/webhook/console/");
   });
 
+  it("uses source id over channel when provided", () => {
+    expect(
+      buildWebhookUrl({
+        channel: "console",
+        sourceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      }),
+    ).toBe("/webhook/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/");
+  });
+
   it("adds workflow_id query param when workflow id is provided", () => {
     expect(
       buildWebhookUrl({
