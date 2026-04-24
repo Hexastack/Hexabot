@@ -10,7 +10,8 @@ import {
   type ContentType,
 } from "@hexabot-ai/types";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
-import { FC, Fragment, useEffect, useMemo, useState } from "react";
+import { isMatch } from "lodash";
+import { FC, Fragment, useMemo, useState } from "react";
 
 import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
 import { JsonSchemaType } from "@/app-components/inputs/JsonSchemaObjectBuilder";
@@ -217,10 +218,13 @@ export const ContentForm: FC<ComponentFormProps<Content, ContentType>> = ({
       throw new Error("Content Type must be passed to the dialog form.");
     }
   };
-
-  useEffect(() => {
-    setFormData(defaultFormData);
-  }, [defaultFormData]);
+  const canSubmit = useMemo(() => {
+    return (
+      hasVisibleErrors ||
+      isMatch(formData, defaultFormData) ||
+      Boolean(WrapperProps?.confirmButtonProps?.disabled)
+    );
+  }, [formData, hasVisibleErrors, WrapperProps?.confirmButtonProps?.disabled]);
 
   return (
     <Wrapper
@@ -228,19 +232,14 @@ export const ContentForm: FC<ComponentFormProps<Content, ContentType>> = ({
       {...WrapperProps}
       confirmButtonProps={{
         ...WrapperProps?.confirmButtonProps,
-        disabled:
-          hasVisibleErrors ||
-          Boolean(WrapperProps?.confirmButtonProps?.disabled),
+        disabled: canSubmit,
       }}
     >
-      <JsonSchemaForm
+      <JsonSchemaForm<ContentFormData>
         schema={schema}
         formData={formData}
-        onFormDataChange={(nextFormData) =>
-          setFormData(nextFormData as ContentFormData)
-        }
+        onFormDataChange={setFormData}
         onVisibleErrorsChange={setHasVisibleErrors}
-        validateOnMount
         uiSchema={uiSchema}
         enableJsonataTextWidget={false}
         idPrefix={content ? `content-${content.id}` : "content-new"}

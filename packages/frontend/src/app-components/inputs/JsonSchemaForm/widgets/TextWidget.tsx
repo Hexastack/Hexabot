@@ -17,7 +17,6 @@ export const TextWidget = (props: WidgetProps) => {
       onChange={(e) => props.onChange(e.target.value)}
       variant="outlined"
       fullWidth
-      helperText={props.rawErrors?.join(", ")}
       slotProps={{
         htmlInput: createReadOnlyInputProps(),
       }}
