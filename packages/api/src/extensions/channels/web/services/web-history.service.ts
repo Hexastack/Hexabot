@@ -14,7 +14,6 @@ import {
 } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 
-import { ChannelName } from '@/channel/types';
 import { MessageService } from '@/chat/services/message.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 
@@ -31,7 +30,6 @@ import { WebSessionService } from './web-session.service';
 export interface WebFormatContext {
   inboundEncoder: WebInboundMessageEncoder;
   outboundEncoder: WebOutboundMessageEncoder;
-  channelName: ChannelName;
   generateId: () => string;
 }
 
@@ -109,10 +107,7 @@ export class WebHistoryService {
       const mid = msg.mid ?? ctx.generateId();
 
       if (this.isIncomingMessage(msg)) {
-        const formatted = await ctx.inboundEncoder.encode(
-          msg.message,
-          ctx.channelName,
-        );
+        const formatted = await ctx.inboundEncoder.encode(msg.message);
         result.push({
           ...formatted,
           author: msg.sender,

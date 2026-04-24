@@ -9,6 +9,7 @@ import {
   IncomingMessageType,
   type StdIncomingMessage,
 } from '@hexabot-ai/types';
+import { Injectable, Type } from '@nestjs/common';
 
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { ChannelName } from '@/channel/types';
@@ -17,16 +18,14 @@ import { Web } from '../types';
 
 export class WebInboundMessageEncoder {
   constructor(
+    private readonly channelName: ChannelName,
     private readonly channelAttachmentService: Pick<
       ChannelAttachmentService,
       'getPublicUrl'
     >,
   ) {}
 
-  async encode(
-    message: StdIncomingMessage,
-    channelName: ChannelName,
-  ): Promise<Web.InboundMessageBase> {
+  async encode(message: StdIncomingMessage): Promise<Web.InboundMessageBase> {
     switch (message.type) {
       case IncomingMessageType.text:
         return {
@@ -61,7 +60,7 @@ export class WebInboundMessageEncoder {
           data: {
             type: attachmentPayload?.type ?? FileType.unknown,
             url: await this.channelAttachmentService.getPublicUrl(
-              channelName,
+              this.channelName,
               attachmentPayload?.payload,
             ),
           },
@@ -75,3 +74,18 @@ export class WebInboundMessageEncoder {
     }
   }
 }
+
+export function createWebInboundMessageEncoder(
+  channelName: ChannelName,
+): Type<WebInboundMessageEncoder> {
+  @Injectable()
+  class BoundWebInboundMessageEncoder extends WebInboundMessageEncoder {
+    constructor(channelAttachmentService: ChannelAttachmentService) {
+      super(channelName, channelAttachmentService);
+    }
+  }
+
+  return BoundWebInboundMessageEncoder;
+}
+
+export default WebInboundMessageEncoder;

@@ -11,3 +11,5 @@ export * from './events/base-web-inbound.event';
 export * from './events/unsupported.event';
 
 export * from './web-inbound-event-decoder';
+
+export * from './web-inbound-message-encoder';

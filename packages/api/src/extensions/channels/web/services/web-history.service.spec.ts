@@ -72,11 +72,13 @@ describe('WebHistoryService', () => {
       messageService as unknown as MessageService,
     );
     ctx = {
-      inboundEncoder: new WebInboundMessageEncoder(channelAttachmentService),
+      inboundEncoder: new WebInboundMessageEncoder(
+        'web' as const,
+        channelAttachmentService,
+      ),
       outboundEncoder: {
         encode: jest.fn(),
       } as unknown as WebFormatContext['outboundEncoder'],
-      channelName: 'web' as WebFormatContext['channelName'],
       generateId: jest.fn().mockReturnValue('generated-mid'),
     };
   });
