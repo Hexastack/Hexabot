@@ -9,4 +9,5 @@ import { IBaseSchema } from "./base.types";
 // @TODO: not all entities extend from IBaseSchema
 export interface IChannel extends IBaseSchema {
   name: string;
+  settingsSchema?: Record<string, unknown>;
 }

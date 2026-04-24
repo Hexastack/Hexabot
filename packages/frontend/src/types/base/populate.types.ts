@@ -36,6 +36,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.TRANSLATION]: [],
   [EntityType.ATTACHMENT]: ["createdBy"],
   [EntityType.CHANNEL]: [],
+  [EntityType.SOURCE]: ["defaultWorkflow"],
   [EntityType.HELPER]: [],
   [EntityType.NLU_HELPER]: [],
   [EntityType.LLM_HELPER]: [],

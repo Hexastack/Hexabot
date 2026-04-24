@@ -29,6 +29,7 @@ import { Menu } from "@/components/menu";
 import { Profile } from "@/components/profile";
 import { Roles } from "@/components/roles";
 import { Settings } from "@/components/settings";
+import { Sources } from "@/components/sources";
 import { Subscribers } from "@/components/subscribers";
 import { Translations } from "@/components/translations";
 import { Users } from "@/components/users";
@@ -189,6 +190,13 @@ export const routes: RouteObjectItem[] = [
         [EntityType.SETTING, Action.READ],
         [EntityType.SETTING, Action.UPDATE],
       ],
+    },
+  },
+  {
+    path: "/settings/sources",
+    Component: Sources,
+    handle: {
+      requiredPermissions: [[EntityType.SOURCE, Action.READ]],
     },
   },
   {

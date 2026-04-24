@@ -35,6 +35,8 @@ import type {
   Role,
   RoleFull,
   Setting,
+  Source,
+  SourceFull,
   Subscriber,
   SubscriberFull,
   Thread,
@@ -319,6 +321,18 @@ export interface IEntityMapTypes {
       assignedTo?: { id: string } | null;
     },
     SubscriberFull
+  >;
+  [EntityType.SOURCE]: IEntityTypes<
+    Source,
+    EntityPayload<
+      Source,
+      "name" | "channel",
+      "settings" | "state" | "defaultWorkflow"
+    >,
+    {
+      defaultWorkflow: { id: string } | null;
+    },
+    SourceFull
   >;
   [EntityType.LANGUAGE]: IEntityTypes<
     Language,
