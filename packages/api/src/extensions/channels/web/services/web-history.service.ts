@@ -5,19 +5,19 @@
  */
 
 import {
+  ActionOptions,
   AnyMessage,
   IncomingMessage,
-  IncomingMessageType,
   OutgoingMessage,
+  OutgoingMessageType,
   Thread,
 } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 
-import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
-import { ChannelName } from '@/channel/types';
 import { MessageService } from '@/chat/services/message.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 
+import { WebInboundMessageEncoder } from '../inbound/web-inbound-message-encoder';
 import { WebOutboundMessageEncoder } from '../outbound/web-outbound-message-encoder';
 import { Web } from '../types';
 
@@ -25,11 +25,11 @@ import { WebSessionService } from './web-session.service';
 
 /**
  * Context bundle passed to formatting methods so they don't need the handler.
- * Groups the three channel-specific pieces that vary between web and console.
+ * Groups channel-specific pieces that vary between web and console.
  */
 export interface WebFormatContext {
-  encoder: WebOutboundMessageEncoder;
-  channelName: ChannelName;
+  inboundEncoder: WebInboundMessageEncoder;
+  outboundEncoder: WebOutboundMessageEncoder;
   generateId: () => string;
 }
 
@@ -43,10 +43,7 @@ export interface WebFormatContext {
  */
 @Injectable()
 export class WebHistoryService {
-  constructor(
-    private readonly messageService: MessageService,
-    private readonly channelAttachmentService: ChannelAttachmentService,
-  ) {}
+  constructor(private readonly messageService: MessageService) {}
 
   /**
    * Fetches the message history for the subscriber's thread and converts it
@@ -110,7 +107,7 @@ export class WebHistoryService {
       const mid = msg.mid ?? ctx.generateId();
 
       if (this.isIncomingMessage(msg)) {
-        const formatted = await this.formatIncomingMessage(msg, ctx);
+        const formatted = await ctx.inboundEncoder.encode(msg.message);
         result.push({
           ...formatted,
           author: msg.sender,
@@ -119,7 +116,10 @@ export class WebHistoryService {
           createdAt: msg.createdAt,
         });
       } else {
-        const formatted = await this.formatOutgoingMessage(msg, ctx);
+        const formatted = await ctx.outboundEncoder.encode(
+          msg.message,
+          this.resolveOutgoingEncodeOptions(msg),
+        );
         result.push({
           ...formatted,
           author: 'chatbot',
@@ -138,40 +138,17 @@ export class WebHistoryService {
     return 'sender' in msg && !!msg.sender;
   }
 
-  private async formatIncomingMessage(
-    incoming: IncomingMessage,
-    ctx: WebFormatContext,
-  ): Promise<Web.InboundMessageBase> {
-    if (incoming.message.type === IncomingMessageType.location) {
-      const { lat, lon } = incoming.message.data.coordinates;
-
-      return {
-        type: Web.InboundMessageType.location,
-        data: { coordinates: { lat, lng: lon } },
-      };
+  private resolveOutgoingEncodeOptions(
+    outgoing: OutgoingMessage,
+  ): ActionOptions {
+    const envelope = outgoing.message;
+    if (
+      envelope.type === OutgoingMessageType.list ||
+      envelope.type === OutgoingMessageType.carousel
+    ) {
+      return { content: envelope.data.options };
     }
 
-    // Attachment — use first item when stored as array
-    const attachmentPayload = Array.isArray(incoming.message.data)
-      ? incoming.message.data[0]
-      : incoming.message.data;
-
-    return {
-      type: Web.InboundMessageType.file,
-      data: {
-        type: attachmentPayload.type,
-        url: await this.channelAttachmentService.getPublicUrl(
-          ctx.channelName,
-          attachmentPayload.payload,
-        ),
-      },
-    };
-  }
-
-  private async formatOutgoingMessage(
-    outgoing: OutgoingMessage,
-    ctx: WebFormatContext,
-  ): Promise<Web.OutboundMessageBase> {
-    return ctx.encoder.encode(outgoing.message);
+    return {};
   }
 }
