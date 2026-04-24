@@ -6,7 +6,13 @@
 
 import { AttachmentResourceRef } from "@hexabot-ai/types";
 import { Box, Typography } from "@mui/material";
-import type { FieldProps, RJSFSchema } from "@rjsf/utils";
+import {
+  getUiOptions,
+  type FieldPathList,
+  type FieldProps,
+  type RJSFSchema,
+  type UiSchema,
+} from "@rjsf/utils";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -20,6 +26,13 @@ type AttachmentValue = {
     id: string | null;
   };
 };
+type ActionAttachmentFieldOptions = {
+  wrapInAttachmentKey?: boolean;
+  resourceRef?: AttachmentResourceRef;
+};
+type AttachmentValueChangePayload =
+  | AttachmentValue
+  | { attachment: AttachmentValue };
 
 const ATTACHMENT_ACCEPT = Array.from(
   new Set(Object.values(MIME_TYPES).flat()),
@@ -29,13 +42,19 @@ const getAttachmentValue = (value: unknown) => {
     return undefined;
   }
 
-  const attachment = value as {
+  const currentValue = value as {
+    attachment?: {
+      payload?: {
+        id?: string | null;
+        url?: string;
+      };
+    };
     payload?: {
       id?: string | null;
       url?: string;
     };
   };
-  const payload = attachment.payload;
+  const payload = currentValue.attachment?.payload ?? currentValue.payload;
 
   if (!payload || typeof payload !== "object") {
     return undefined;
@@ -46,23 +65,50 @@ const getAttachmentValue = (value: unknown) => {
     url: payload.url,
   };
 };
+const buildAttachmentFieldValue = (
+  value: AttachmentValue,
+  wrapInAttachmentKey: boolean,
+) => {
+  if (!wrapInAttachmentKey) {
+    return value;
+  }
+
+  return { attachment: value };
+};
 
 export const ActionAttachmentField = ({
   schema,
+  uiSchema,
   formData,
   onChange,
+  fieldPathId,
   required,
   disabled,
   readonly,
 }: FieldProps) => {
   const { t } = useTranslate();
+  const options =
+    (getUiOptions(uiSchema as UiSchema) as
+      | ActionAttachmentFieldOptions
+      | undefined) ?? {};
+  const wrapInAttachmentKey = options.wrapInAttachmentKey ?? true;
+  const resourceRef =
+    options.resourceRef ?? AttachmentResourceRef.MessageAttachment;
   const label = schema.title || t("label.attachment");
   const description = getDescription(schema as RJSFSchema);
   const currentAttachment = getAttachmentValue(formData);
   const isReadOnly = disabled || readonly;
   const handleChange = (id: string | null, mimeType: string | null) => {
+    const path = fieldPathId.path as FieldPathList;
+
     if (!id || !mimeType) {
-      onChange({ attachment: { type: "image", payload: { id: null } } }, []);
+      onChange(
+        buildAttachmentFieldValue(
+          { type: "image", payload: { id: null } },
+          wrapInAttachmentKey,
+        ) as AttachmentValueChangePayload,
+        path,
+      );
 
       return;
     }
@@ -72,7 +118,12 @@ export const ActionAttachmentField = ({
       payload: { id },
     };
 
-    onChange({ attachment: value }, []);
+    onChange(
+      buildAttachmentFieldValue(value, wrapInAttachmentKey) as
+        | AttachmentValueChangePayload
+        | undefined,
+      path,
+    );
   };
 
   return (
@@ -86,7 +137,7 @@ export const ActionAttachmentField = ({
         enableMediaLibrary={!isReadOnly}
         size={128}
         onChange={handleChange}
-        resourceRef={AttachmentResourceRef.MessageAttachment}
+        resourceRef={resourceRef}
       />
       {!currentAttachment?.id && currentAttachment?.url ? (
         <Typography variant="caption" sx={{ wordBreak: "break-word" }}>
