@@ -36,15 +36,25 @@
         .hb-message--carousel-title {
           font-size: 1rem;
           font-weight: 600;
-          padding: 0.5rem 0;
-          margin-top: 0.5rem;
+          margin: 0.5rem 0 0.25rem;
+          padding: 0;
         }
         .hb-message--carousel-element-description {
           width: 100%;
-          padding: 0 2rem;
+          padding: 0 1rem;
           box-sizing: border-box;
+
+          p {
+            margin: 0;
+          }
         }
       }
+    }
+  }
+
+  &.with-controls {
+    .hb-message--carousel-element-description {
+      padding: 0 1.5rem;
     }
   }
 
@@ -74,6 +84,12 @@
 
     &.next {
       right: 0;
+    }
+  }
+
+  &.with-controls.with-images {
+    .hb-message--carousel-control {
+      top: 75px;
     }
   }
 }

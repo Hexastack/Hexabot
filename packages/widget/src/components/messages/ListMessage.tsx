@@ -67,7 +67,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
                 </div>
               )}
             </div>
-            {message.buttons && (
+            {Array.isArray(message.buttons) && message.buttons.length > 0 && (
               <ButtonsMessage
                 message={{ data: { buttons: message.buttons } }}
               />

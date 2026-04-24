@@ -80,7 +80,8 @@ const toUiMessage = (
 ): UiMessage => {
   const normalized = normalizeMessageIdentity(message);
   const isSentByProfile =
-    normalized.author === profile?.foreignId || normalized.author === profile?.id;
+    normalized.author === profile?.foreignId ||
+    normalized.author === profile?.id;
   const direction = isSentByProfile ? Direction.sent : Direction.received;
   const status = message as {
     read?: unknown;
@@ -109,8 +110,12 @@ export const preprocessMessages = (
   participants: Participant[],
   profile?: SubscriberFull,
 ) => {
-  const arrangedMessages = messages.map((message) => toUiMessage(message, profile));
-  const quickReplies = getQuickReplies(arrangedMessages[arrangedMessages.length - 1]);
+  const arrangedMessages = messages.map((message) =>
+    toUiMessage(message, profile),
+  );
+  const quickReplies = getQuickReplies(
+    arrangedMessages[arrangedMessages.length - 1],
+  );
   const participantsList: Participant[] = profile
     ? [
         participants[0],
@@ -559,7 +564,9 @@ const ChatProvider: React.FC<{
     setOutgoingMessageState,
     connectionState,
     setConnectionState: updateConnectionState,
-    messages: messages.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
+    messages: messages.sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+    ),
     setMessages,
     newMessagesCount,
     setNewMessagesCount: updateNewMessagesCount,
@@ -582,7 +589,9 @@ const ChatProvider: React.FC<{
     sendGetStarted,
   };
 
-  return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
+  return (
+    <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>
+  );
 };
 
 export const useChat = () => {

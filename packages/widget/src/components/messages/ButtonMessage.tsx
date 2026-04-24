@@ -7,11 +7,7 @@
 import React from "react";
 
 import { useChat } from "../../providers/ChatProvider";
-import {
-  Button,
-  UiMessage,
-  Web,
-} from "../../types/message.types";
+import { Button, UiMessage, Web } from "../../types/message.types";
 
 import "./ButtonMessage.scss";
 
@@ -48,6 +44,12 @@ const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
 
   if (!("buttons" in message.data)) {
     throw new Error("Unable to find buttons");
+  }
+  if (
+    !Array.isArray(message.data.buttons) ||
+    message.data.buttons.length === 0
+  ) {
+    return null;
   }
 
   return (

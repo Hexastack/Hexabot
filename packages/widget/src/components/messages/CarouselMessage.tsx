@@ -43,10 +43,8 @@ const CarouselItem: React.FC<CarouselItemProps> = ({ message }) => (
           />
         )}
       </div>
-      {message.buttons && (
-        <ButtonsMessage
-          message={{ data: { buttons: message.buttons } }}
-        />
+      {Array.isArray(message.buttons) && message.buttons.length > 0 && (
+        <ButtonsMessage message={{ data: { buttons: message.buttons } }} />
       )}
     </div>
   </div>
@@ -74,11 +72,18 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
     setActiveIndex((prevIndex) => (prevIndex + 1) % items.length);
   };
   const shouldDisplayNavigationButtons = items.length > 1;
+  const hasImages = items.some((item) => Boolean(item.image_url));
+  const carouselClassName = [
+    "hb-message--carousel",
+    messageCarousel.direction || "received",
+    shouldDisplayNavigationButtons ? "with-controls" : "",
+    hasImages ? "with-images" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div
-      className={`hb-message--carousel ${messageCarousel.direction || "received"}`}
-    >
+    <div className={carouselClassName}>
       <div
         className="hb-message--carousel-inner"
         style={{ transform: `translateX(-${activeIndex * 100}%)` }}
