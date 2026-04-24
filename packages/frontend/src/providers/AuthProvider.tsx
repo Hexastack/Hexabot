@@ -51,6 +51,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
       queryClient.setQueryData([QueryType.item, "getCurrentSession"], data);
       await loginRedirection();
       postMessage({ event: "login" });
+      toast.success(t("message.login_success"));
     } else {
       toast.error(t("message.account_disabled"));
     }
@@ -58,6 +59,9 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const loginMutation = useApiClientMutation("login", {
     async onSuccess(data) {
       await postLogin(data);
+    },
+    onError() {
+      toast.error(t("message.login_failure"));
     },
   });
   const preLogout = useCallback(async () => {
