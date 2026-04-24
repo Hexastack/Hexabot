@@ -5,6 +5,21 @@
   overflow-x: hidden;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 0.75rem 0 0.5rem;
+  padding: 0.5rem 0 0.75rem;
   background-color: var(--hb-color-surface-root);
+  scrollbar-width: thin;
+  scrollbar-color: var(--hb-color-border-strong) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--hb-color-border-strong);
+    border-radius: 2px;
+  }
 }

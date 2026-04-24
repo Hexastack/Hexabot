@@ -28,28 +28,48 @@
 
     pre {
       margin: 0.5rem 0;
-      padding: 0.5rem 0.625rem;
-      border-radius: 0.375rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
       overflow-x: auto;
-      background-color: rgba(0, 0, 0, 0.08);
+      background-color: rgba(0, 0, 0, 0.07);
+      font-size: 0.8em;
     }
 
     code {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
         "Liberation Mono", "Courier New", monospace;
       font-size: 0.85em;
+      background-color: rgba(0, 0, 0, 0.06);
+      padding: 0.1em 0.3em;
+      border-radius: 0.25rem;
+    }
+
+    pre code {
+      background-color: transparent;
+      padding: 0;
     }
 
     blockquote {
       margin: 0.5rem 0;
       padding-left: 0.75rem;
-      border-left: 0.125rem solid var(--hb-color-border-subtle);
+      border-left: 0.175rem solid var(--hb-color-border-subtle);
+      color: var(--hb-color-text-muted);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin: 0.5rem 0;
+      font-weight: var(--hb-font-weight-medium);
     }
   }
 
   a {
     text-decoration: underline;
-    transition: color 0.2s ease;
+    transition: color 0.15s ease;
 
     &:hover {
       color: var(--hb-message-link-hover-color, var(--hb-color-text-link));

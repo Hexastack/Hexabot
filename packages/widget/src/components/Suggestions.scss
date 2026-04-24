@@ -1,23 +1,36 @@
 .hb-suggestions-row {
-  text-align: center;
-  padding: 0.5rem 0;
-  background: var(--hb-color-interactive-button-secondary-bg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--hb-color-surface-input);
+  border-top: 0.0625rem solid var(--hb-color-border-subtle);
 }
 
 .hb-suggestions-element {
-  margin: 0 0 0.25rem 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border: 0.0625rem solid;
-  border-radius: 2rem;
-  font-size: 1rem;
-  background: inherit;
+  padding: 0.375rem 0.875rem;
+  border: 0.0625rem solid var(--hb-color-border-interactive);
+  border-radius: 1.5rem;
+  font-size: 0.875rem;
+  background: transparent;
   cursor: pointer;
   outline: 0;
-  border-color: var(--hb-color-interactive-button-secondary-text);
   color: var(--hb-color-interactive-button-secondary-text);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+  white-space: nowrap;
+  font-family: var(--hb-font-family);
 
   &:hover {
-    background: var(--hb-color-interactive-button-secondary-hover);
+    background: var(--hb-color-interactive-button-primary-bg);
+    border-color: var(--hb-color-interactive-button-primary-bg);
     color: var(--hb-color-text-on-primary);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }

@@ -1,8 +1,6 @@
 .hb-message {
-  margin: auto;
-  padding: 0 0.5rem 0 0;
+  margin: 0 0.625rem 0.375rem;
   display: flex;
-  margin-bottom: 0.25rem;
 
   &:first-child {
     margin-top: 50%;
@@ -24,6 +22,7 @@
         .hb-message--text {
           color: var(--hb-color-text-on-primary);
           background-color: var(--hb-color-surface-message-sent);
+          border-radius: 1rem 0.25rem 1rem 1rem;
           overflow-wrap: break-word;
           --hb-message-link-hover-color: var(
             --hb-color-interactive-button-primary-hover
@@ -41,17 +40,18 @@
     display: flex;
     flex-direction: row;
     position: relative;
-    max-width: calc(100% - 40px); // same as avatar spacing
+    max-width: calc(100% - 2.5rem);
     width: 100%;
 
     .hb-message--avatar {
-      width: 32px;
-      height: 32px;
-      margin: 0.125rem 0.25rem;
-      background-position: 0 0;
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
       flex-shrink: 0;
+      background-position: 0 0;
       background-size: cover;
-      border-radius: 100%;
+      border-radius: 50%;
+      margin: 0.125rem 0.625rem 0 0;
     }
 
     .hb-message--wrapper {
@@ -60,45 +60,44 @@
       overflow: hidden;
       word-break: break-word;
       width: 100%;
-      max-width: 256px;
+      max-width: 270px;
 
-
-        .hb-message--text {
-          padding: 0.625rem 1.25rem;
-          border-radius: 0.5rem;
+      .hb-message--text {
+        padding: 0.625rem 0.875rem;
+        border-radius: 0.25rem 1rem 1rem 1rem;
         font-weight: 400;
-        font-size: 0.9rem;
+        font-size: 0.9375rem;
         line-height: 1.5;
         position: relative;
-          -webkit-font-smoothing: subpixel-antialiased;
-          color: var(--hb-color-text-primary);
-          background-color: var(--hb-color-surface-message-received);
-          --hb-message-link-hover-color: var(
-            --hb-color-interactive-button-secondary-hover
-          );
-        }
+        -webkit-font-smoothing: antialiased;
+        color: var(--hb-color-text-primary);
+        background-color: var(--hb-color-surface-message-received);
+        --hb-message-link-hover-color: var(
+          --hb-color-interactive-button-secondary-hover
+        );
+      }
 
-        .hb-message--meta {
-          display: flex;
+      .hb-message--meta {
+        display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        font-size: 0.65rem;
+        font-size: 0.6875rem;
         margin-top: 0.25rem;
         padding: 0 0.25rem;
-          width: 100%;
-          height: 18px;
-          box-sizing: border-box;
+        width: 100%;
+        height: 18px;
+        box-sizing: border-box;
 
-          .hb-message--time {
-            color: var(--hb-color-text-muted);
-          }
+        .hb-message--time {
+          color: var(--hb-color-text-muted);
         }
       }
     }
+  }
 }
 
 @media (max-width: 450px) {
   .hb-message {
-    width: 80%;
+    max-width: 85%;
   }
 }
