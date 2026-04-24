@@ -1,6 +1,5 @@
 .hb-message--list {
   border-radius: 0.5rem;
-  width: 256px;
   color: var(--hb-color-text-primary);
   background-color: var(--hb-color-surface-message-received);
 
@@ -13,10 +12,12 @@
     }
   }
 
+  .hb-message--list-element:not(:last-child){
+    border-bottom: var(--hb-color-border-subtle) 0.0625rem solid;
+  }
+
   .hb-message--list-element {
     position: relative;
-    border-bottom: 0.0625rem solid;
-    border-bottom-color: var(--hb-color-border-subtle);
     padding: 1rem;
 
     .hb-message--list-element-content {
