@@ -212,8 +212,9 @@ export namespace Web {
     | InboundLocationMessage
     | InboundAttachmentMessage;
 
-  export type InboundMessage<T extends InboundMessageBase = InboundMessageBase> =
-    T;
+  export type InboundMessage<
+    T extends InboundMessageBase = InboundMessageBase,
+  > = T;
 
   export type Event = StatusEvent | InboundMessageBase;
 
@@ -315,11 +316,12 @@ export type UiMessage = Omit<
   direction: Direction;
 };
 
-export type PostMessageEvent<T extends Web.InboundMessageBase = Web.InboundMessageBase> =
-  T & {
-    author?: string;
-    thread_id?: string;
-  };
+export type PostMessageEvent<
+  T extends Web.InboundMessageBase = Web.InboundMessageBase,
+> = T & {
+  author?: string;
+  thread_id?: string;
+};
 
 export interface SubscribeResponse {
   messages: Web.Message[];
