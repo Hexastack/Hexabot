@@ -11,6 +11,7 @@ import { Request } from 'express';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
+import { ChannelEventBus } from '@/channel/lib/channel-event-bus';
 import { UnsupportedOutgoingFormatError } from '@/channel/lib/outbound';
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { MessageService } from '@/chat/services/message.service';
@@ -55,6 +56,7 @@ describe('WebChannelHandler', () => {
       autoInjectFrom: ['providers'],
       providers: [
         ChannelService,
+        ChannelEventBus,
         MessageService,
         ThreadService,
         JwtService,
@@ -419,14 +421,10 @@ describe('WebChannelHandler', () => {
       profile,
     };
 
-    const emitAsyncSpy = jest
-      .spyOn(handler['eventEmitter'], 'emitAsync')
-      .mockImplementation(async (eventName: string, event: any) => {
-        if (eventName === 'hook:chatbot:message') {
-          event.setThreadId('thread-created-1');
-        }
-
-        return [];
+    const emitMessageSpy = jest
+      .spyOn(handler['channelEventBus'], 'emitMessage')
+      .mockImplementation(async (event: any) => {
+        event.setThreadId('thread-created-1');
       });
 
     await new Promise<void>((resolve, reject) => {
@@ -449,13 +447,10 @@ describe('WebChannelHandler', () => {
       handler['handleEvent'](req as any, res);
     });
 
-    expect(emitAsyncSpy).toHaveBeenCalledWith(
-      'hook:chatbot:message',
-      expect.anything(),
-    );
+    expect(emitMessageSpy).toHaveBeenCalledWith(expect.anything());
     expect(req.session.web?.threadId).toBe('thread-created-1');
     clearMock.mockRestore();
-    emitAsyncSpy.mockRestore();
+    emitMessageSpy.mockRestore();
   });
 
   it('rehydrates a missing web session from message author foreign id', async () => {
@@ -482,9 +477,9 @@ describe('WebChannelHandler', () => {
       },
       user: {},
     } as any as SocketRequest;
-    const emitAsyncSpy = jest
-      .spyOn(handler['eventEmitter'], 'emitAsync')
-      .mockResolvedValue([]);
+    const emitMessageSpy = jest
+      .spyOn(handler['channelEventBus'], 'emitMessage')
+      .mockResolvedValue(undefined);
 
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -511,11 +506,8 @@ describe('WebChannelHandler', () => {
     });
 
     expect(req.session.web?.profile?.id).toBe(subscriber.id);
-    expect(emitAsyncSpy).toHaveBeenCalledWith(
-      'hook:chatbot:message',
-      expect.anything(),
-    );
-    emitAsyncSpy.mockRestore();
+    expect(emitMessageSpy).toHaveBeenCalledWith(expect.anything());
+    emitMessageSpy.mockRestore();
   });
 
   it('broadcasts incoming user messages before async handlers finish', async () => {
@@ -548,9 +540,9 @@ describe('WebChannelHandler', () => {
       profile,
     };
 
-    const emitAsyncSpy = jest
-      .spyOn(handler['eventEmitter'], 'emitAsync')
-      .mockResolvedValue([]);
+    const emitMessageSpy = jest
+      .spyOn(handler['channelEventBus'], 'emitMessage')
+      .mockResolvedValue(undefined);
 
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -572,17 +564,14 @@ describe('WebChannelHandler', () => {
     });
 
     expect(websocketGatewayMock.broadcast).toHaveBeenCalled();
-    expect(emitAsyncSpy).toHaveBeenCalledWith(
-      'hook:chatbot:message',
-      expect.anything(),
-    );
+    expect(emitMessageSpy).toHaveBeenCalledWith(expect.anything());
     const [broadcastCallOrder] = websocketGatewayMock.broadcast.mock
       .invocationCallOrder as number[];
-    const [emitAsyncCallOrder] = emitAsyncSpy.mock.invocationCallOrder;
+    const [emitMessageCallOrder] = emitMessageSpy.mock.invocationCallOrder;
 
-    expect(broadcastCallOrder).toBeLessThan(emitAsyncCallOrder);
+    expect(broadcastCallOrder).toBeLessThan(emitMessageCallOrder);
     clearMock.mockRestore();
-    emitAsyncSpy.mockRestore();
+    emitMessageSpy.mockRestore();
   });
 
   it('rejects chatbot sync before first user message when no thread exists', async () => {
@@ -735,10 +724,13 @@ describe('WebChannelHandler', () => {
     const createEventsSpy = jest
       .spyOn(handler['inboundEventDecoder'], 'createEvents')
       .mockReturnValueOnce([messageEvent, typingEvent]);
-    const emitAsyncSpy = jest
-      .spyOn(handler['eventEmitter'], 'emitAsync')
-      .mockResolvedValue([]);
-    const emitSpy = jest.spyOn(handler['eventEmitter'], 'emit');
+    const emitMessageSpy = jest
+      .spyOn(handler['channelEventBus'], 'emitMessage')
+      .mockResolvedValue(undefined);
+    const emitStatusSpy = jest.spyOn(
+      handler['channelEventBus'],
+      'emitStatusEvent',
+    );
 
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -766,18 +758,12 @@ describe('WebChannelHandler', () => {
     });
 
     expect(createEventsSpy).toHaveBeenCalledTimes(1);
-    expect(emitAsyncSpy).toHaveBeenCalledWith(
-      'hook:chatbot:message',
-      expect.anything(),
-    );
-    expect(emitSpy).toHaveBeenCalledWith(
-      'hook:chatbot:typing',
-      expect.anything(),
-    );
+    expect(emitMessageSpy).toHaveBeenCalledWith(expect.anything());
+    expect(emitStatusSpy).toHaveBeenCalledWith(expect.anything());
     clearMock.mockRestore();
     createEventsSpy.mockRestore();
-    emitAsyncSpy.mockRestore();
-    emitSpy.mockRestore();
+    emitMessageSpy.mockRestore();
+    emitStatusSpy.mockRestore();
   });
 
   it('accepts websocket file events with binary data', async () => {
