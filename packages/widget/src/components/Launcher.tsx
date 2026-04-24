@@ -63,11 +63,7 @@ const Launcher: React.FC<LauncherProps> = ({
               </div>
             )}
             {widget.isOpen ? (
-              <X
-                className="hb-closed-icon"
-                width="16px"
-                height="16px"
-              />
+              <X className="hb-closed-icon" width="16px" height="16px" />
             ) : (
               <MessageCircle
                 className="hb-open-icon"

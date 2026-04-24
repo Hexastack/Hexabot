@@ -36,13 +36,8 @@ const Template: React.FC<{ name: string; Icon: LucideIcon }> = ({
       ) : (
         <div className={`hb-chat--${name}-icon`}>
           <Icon width="100" height="100" x="0" y="0" />
-          <h3 className={`hb-chat--${name}-text`}>
-            {t(`settings.${name}`)}
-          </h3>
-          <button
-            className={`hb-chat--${name}-button`}
-            onClick={handleClick}
-          >
+          <h3 className={`hb-chat--${name}-text`}>{t(`settings.${name}`)}</h3>
+          <button className={`hb-chat--${name}-button`} onClick={handleClick}>
             {t("user_subscription.refresh")}
           </button>
         </div>

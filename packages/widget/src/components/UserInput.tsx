@@ -139,11 +139,7 @@ const UserInput: React.FC = () => {
 
       {(file || uploading) && (
         <div className="hb-file-container">
-          <Paperclip
-            width="16px"
-            height="16px"
-            className="icon-file-message"
-          />
+          <Paperclip width="16px" height="16px" className="icon-file-message" />
           {fileError && <span>{fileError}</span>}
           {uploading && <span>Loading...</span>}
           {file && file.name && !fileError && (
@@ -159,9 +155,7 @@ const UserInput: React.FC = () => {
         </div>
       )}
 
-      <form
-        className={`hb-user-input ${inputActive ? "active" : ""}`}
-      >
+      <form className={`hb-user-input ${inputActive ? "active" : ""}`}>
         {menu.length > 0 && <MenuButton />}
         <div
           role="textbox"

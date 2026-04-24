@@ -20,11 +20,7 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
     <div className="hb--status">
       {message.read && (
         <div className="hb--status-wrapper hb--status-read" title="Read">
-          <Check
-            width="16px"
-            height="16px"
-            className="read check"
-          />
+          <Check width="16px" height="16px" className="read check" />
         </div>
       )}
       {message.delivery && (
@@ -32,11 +28,7 @@ const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
           className="hb--status-wrapper hb--status-delivery"
           title="Delivered"
         >
-          <Check
-            width="16px"
-            height="16px"
-            className="delivery check"
-          />
+          <Check width="16px" height="16px" className="delivery check" />
         </div>
       )}
     </div>

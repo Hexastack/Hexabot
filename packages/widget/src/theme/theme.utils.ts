@@ -27,7 +27,7 @@ const HEX_COLOR_PATTERN = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 const COLOR_FUNCTION_PATTERN = /^(rgba?|hsla?)\(/i;
 const DEFAULT_TYPOGRAPHY: ThemeTypography = {
   fontFamily:
-    "\"IBM Plex Sans\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+    '"IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   fontSizeBase: "1rem",
   fontSizeSm: "0.875rem",
   fontSizeLg: "1.125rem",
@@ -103,7 +103,7 @@ const buildThemePalette = (
   const accent =
     resolvedMode === "dark"
       ? mixHexColors(primary, WHITE_TEXT_COLOR, 0.22)
-      : mixHexColors(primary, WHITE_TEXT_COLOR, 0.30);
+      : mixHexColors(primary, WHITE_TEXT_COLOR, 0.3);
 
   return {
     primary,
@@ -238,7 +238,8 @@ const DARK_THEME_BASE_TOKENS = (
   },
 });
 
-type CssVariables = React.CSSProperties & Record<`--${string}`, string | number>;
+type CssVariables = React.CSSProperties &
+  Record<`--${string}`, string | number>;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === "object" && value !== null;
@@ -283,7 +284,11 @@ export const resolveThemeMode = (
 ): { mode: ThemeMode; resolvedMode: ThemeResolvedMode } => {
   const normalizedMode = isThemeMode(mode) ? mode : DEFAULT_THEME_MODE;
   const resolvedMode =
-    normalizedMode === "system" ? (prefersDarkMode ? "dark" : "light") : normalizedMode;
+    normalizedMode === "system"
+      ? prefersDarkMode
+        ? "dark"
+        : "light"
+      : normalizedMode;
 
   return { mode: normalizedMode, resolvedMode };
 };
@@ -293,10 +298,13 @@ export const resolveThemePalette = (
   resolvedMode: ThemeResolvedMode,
 ): ThemePalette => {
   const fallbackPrimaryColor =
-    resolvedMode === "dark" ? DEFAULT_DARK_PRIMARY_COLOR : DEFAULT_LIGHT_PRIMARY_COLOR;
-  const selectedPrimaryColor = normalizePrimaryColor(primaryColor) ?? fallbackPrimaryColor;
-  
-return buildThemePalette(selectedPrimaryColor, resolvedMode);
+    resolvedMode === "dark"
+      ? DEFAULT_DARK_PRIMARY_COLOR
+      : DEFAULT_LIGHT_PRIMARY_COLOR;
+  const selectedPrimaryColor =
+    normalizePrimaryColor(primaryColor) ?? fallbackPrimaryColor;
+
+  return buildThemePalette(selectedPrimaryColor, resolvedMode);
 };
 
 const buildBaseTokens = (
@@ -319,7 +327,10 @@ export const resolveWidgetTheme = ({
     configMode ?? configTheme?.mode ?? settingsTheme?.mode,
     prefersDarkMode,
   );
-  const selectedPalette = resolveThemePalette(primaryColor, modeResult.resolvedMode);
+  const selectedPalette = resolveThemePalette(
+    primaryColor,
+    modeResult.resolvedMode,
+  );
   const baseTokens = buildBaseTokens(modeResult.resolvedMode, selectedPalette);
   const tokens = deepMerge(
     deepMerge(baseTokens, settingsTheme?.tokens),
@@ -374,12 +385,18 @@ export const themeToCssVariables = (theme: WidgetTheme): CssVariables => {
     "--hb-color-interactive-launcher-icon": tokens.interactive.launcherIcon,
     "--hb-color-interactive-badge-bg": tokens.interactive.badgeBackground,
     "--hb-color-interactive-badge-text": tokens.interactive.badgeText,
-    "--hb-color-interactive-button-primary-bg": tokens.interactive.buttonPrimaryBg,
-    "--hb-color-interactive-button-primary-text": tokens.interactive.buttonPrimaryText,
-    "--hb-color-interactive-button-primary-hover": tokens.interactive.buttonPrimaryHover,
-    "--hb-color-interactive-button-secondary-bg": tokens.interactive.buttonSecondaryBg,
-    "--hb-color-interactive-button-secondary-text": tokens.interactive.buttonSecondaryText,
-    "--hb-color-interactive-button-secondary-hover": tokens.interactive.buttonSecondaryHover,
+    "--hb-color-interactive-button-primary-bg":
+      tokens.interactive.buttonPrimaryBg,
+    "--hb-color-interactive-button-primary-text":
+      tokens.interactive.buttonPrimaryText,
+    "--hb-color-interactive-button-primary-hover":
+      tokens.interactive.buttonPrimaryHover,
+    "--hb-color-interactive-button-secondary-bg":
+      tokens.interactive.buttonSecondaryBg,
+    "--hb-color-interactive-button-secondary-text":
+      tokens.interactive.buttonSecondaryText,
+    "--hb-color-interactive-button-secondary-hover":
+      tokens.interactive.buttonSecondaryHover,
     "--hb-color-interactive-icon": tokens.interactive.icon,
     "--hb-color-interactive-icon-muted": tokens.interactive.iconMuted,
     "--hb-color-interactive-icon-strong": tokens.interactive.iconStrong,
