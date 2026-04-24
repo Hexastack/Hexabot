@@ -659,9 +659,16 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     event: MessageInboundEvent<N>,
   ): Promise<SubscriberCreateDto> {
     const sender = event.getInitiator();
+    if (!sender.source) {
+      throw new Error('Unable to resolve subscriber source for web channel');
+    }
     const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = sender;
 
-    return { ...rest, channel: sender.channel as SubscriberChannelData<N> };
+    return {
+      ...rest,
+      source: sender.source,
+      channel: sender.channel as SubscriberChannelData<N>,
+    };
   }
 
   /**

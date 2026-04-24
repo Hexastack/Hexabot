@@ -92,6 +92,9 @@ describe('ChatService', () => {
     const event = {
       getRaw: jest.fn().mockReturnValue({ type: 'text' }),
       getSenderForeignId: jest.fn().mockReturnValue('foreign-1'),
+      getSourceId: jest
+        .fn()
+        .mockReturnValue('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
       getHandler: jest.fn().mockReturnValue(handler),
       getWorkflowId: jest.fn().mockReturnValue(workflowId),
       getThreadId: jest.fn().mockReturnValue(undefined),
@@ -158,6 +161,9 @@ describe('ChatService', () => {
     const event = {
       getRaw: jest.fn().mockReturnValue({ type: 'text' }),
       getSenderForeignId: jest.fn().mockReturnValue('foreign-1'),
+      getSourceId: jest
+        .fn()
+        .mockReturnValue('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
       getHandler: jest.fn().mockReturnValue(handler),
       getThreadId: jest.fn().mockReturnValue(undefined),
       getText: jest.fn().mockReturnValue('first inbound message'),

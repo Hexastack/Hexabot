@@ -8,6 +8,7 @@ import type { User, Subscriber } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import mime from 'mime';
+import { Repository } from 'typeorm';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
@@ -17,6 +18,7 @@ import {
   AttachmentFile,
   AttachmentResourceRef,
 } from '@/attachment/types';
+import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { UserService } from '@/user/services/user.service';
 import { installLabelGroupFixturesTypeOrm } from '@/utils/test/fixtures/label-group';
@@ -35,6 +37,34 @@ import { SubscriberService } from './subscriber.service';
 
 jest.mock('uuid', () => ({ v4: jest.fn(() => 'test-uuid') }));
 
+const normalizeSourcePayload = (source: unknown) => {
+  if (!source || typeof source !== 'object') {
+    return source ?? null;
+  }
+
+  const record = source as {
+    id?: string;
+    name?: string;
+    channel?: string;
+    settings?: Record<string, unknown>;
+    state?: boolean;
+    defaultWorkflow?: { id?: string } | string | null;
+  };
+  const defaultWorkflow =
+    typeof record.defaultWorkflow === 'object'
+      ? (record.defaultWorkflow?.id ?? null)
+      : (record.defaultWorkflow ?? null);
+
+  return {
+    id: record.id,
+    name: record.name,
+    channel: record.channel,
+    settings: record.settings ?? {},
+    state: record.state,
+    defaultWorkflow,
+  };
+};
+
 describe('SubscriberService (TypeORM)', () => {
   let module: TestingModule;
   let subscriberService: SubscriberService;
@@ -43,6 +73,7 @@ describe('SubscriberService (TypeORM)', () => {
   let labelGroupRepository: LabelGroupRepository;
   let userService: UserService;
   let userRepository: UserRepository;
+  let sourceRepository: Repository<SourceOrmEntity>;
   const STORED_ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
   const EXISTING_ATTACHMENT_ID = '88888888-8888-4888-8888-888888888888';
   const attachmentServiceMock = {
@@ -89,6 +120,9 @@ describe('SubscriberService (TypeORM)', () => {
       UserService,
       UserRepository,
     ]);
+    sourceRepository = module.get<Repository<SourceOrmEntity>>(
+      getRepositoryToken(SourceOrmEntity),
+    );
   });
 
   afterEach(() => {
@@ -116,10 +150,12 @@ describe('SubscriberService (TypeORM)', () => {
       expect(spy).toHaveBeenCalledWith(subscriber!.id);
       expect(result).not.toBeNull();
 
-      const [labels, users] = await Promise.all([
+      const [labels, users, sources] = await Promise.all([
         labelRepository.findAll(),
         userRepository.findAll(),
+        sourceRepository.find(),
       ]);
+      const sourceById = new Map(sources.map((source) => [source.id, source]));
       const sortLabelsByName = <T extends { name: string }>(list: T[]) =>
         [...list].sort((a, b) => a.name.localeCompare(b.name));
       const expectedLabels = sortLabelsByName(
@@ -128,12 +164,18 @@ describe('SubscriberService (TypeORM)', () => {
       const normalizedResult = {
         ...result!,
         labels: sortLabelsByName(result!.labels ?? []),
+        source: normalizeSourcePayload(result!.source),
       };
 
       expect(normalizedResult).toEqualPayload({
         ...subscriber,
         labels: expectedLabels,
         assignedTo: users.find(({ id }) => subscriber!.assignedTo === id),
+        source: normalizeSourcePayload(
+          typeof subscriber!.source === 'string'
+            ? (sourceById.get(subscriber!.source) ?? null)
+            : null,
+        ),
       });
     });
   });
@@ -146,11 +188,13 @@ describe('SubscriberService (TypeORM)', () => {
       expect(spy).toHaveBeenCalled();
       expect(result).not.toHaveLength(0);
 
-      const [subscribers, labels, users] = await Promise.all([
+      const [subscribers, labels, users, sources] = await Promise.all([
         subscriberRepository.findAll(),
         labelRepository.findAll(),
         userRepository.findAll(),
+        sourceRepository.find(),
       ]);
+      const sourceById = new Map(sources.map((source) => [source.id, source]));
       const sortLabelsByName = <T extends { name: string }>(list: T[]) =>
         [...list].sort((a, b) => a.name.localeCompare(b.name));
       const subscribersWithRelations = subscribers.map((subscriber) => ({
@@ -160,10 +204,16 @@ describe('SubscriberService (TypeORM)', () => {
         ),
         assignedTo:
           users.find(({ id }) => subscriber.assignedTo === id) || null,
+        source: normalizeSourcePayload(
+          typeof subscriber.source === 'string'
+            ? (sourceById.get(subscriber.source) ?? null)
+            : null,
+        ),
       }));
       const normalizedResult = result.map((item) => ({
         ...item,
         labels: sortLabelsByName(item.labels ?? []),
+        source: normalizeSourcePayload(item.source),
       }));
       const expected = [...subscribersWithRelations].sort(sortRowsBy);
       const actual = [...normalizedResult].sort(sortRowsBy);

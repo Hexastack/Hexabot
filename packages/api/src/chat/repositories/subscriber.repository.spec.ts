@@ -10,6 +10,7 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 
+import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { UserOrmEntity } from '@/user/entities/user.entity';
@@ -30,6 +31,7 @@ describe('SubscriberRepository (TypeORM)', () => {
   let labelRepository: Repository<LabelOrmEntity>;
   let existingLabels: LabelOrmEntity[] = [];
   let existingUsers: UserOrmEntity[] = [];
+  let defaultSourceId = '';
 
   const createdSubscriberIds: string[] = [];
   const createdLabelIds: string[] = [];
@@ -56,12 +58,21 @@ describe('SubscriberRepository (TypeORM)', () => {
     const fixtures = await installSubscriberFixturesTypeOrm(dataSource);
     existingLabels = fixtures.labels;
     existingUsers = fixtures.users;
+    defaultSourceId =
+      (
+        await dataSource.getRepository(SourceOrmEntity).findOne({
+          where: { name: 'fixture-source-web' },
+        })
+      )?.id ?? '';
 
     if (!existingLabels.length) {
       throw new Error('Expected label fixtures to be available');
     }
     if (!existingUsers.length) {
       throw new Error('Expected user fixtures to be available');
+    }
+    if (!defaultSourceId) {
+      throw new Error('Expected subscriber fixtures to include a source');
     }
   });
 
@@ -109,6 +120,7 @@ describe('SubscriberRepository (TypeORM)', () => {
             id: existingUsers[0].id,
           } as Pick<UserOrmEntity, 'id'> & UserOrmEntity)
         : null,
+      source: { id: defaultSourceId },
       ...overrides,
     });
     const saved = await repository.save(subscriber);

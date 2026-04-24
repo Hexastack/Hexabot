@@ -27,7 +27,7 @@ export const subscriberInstance: Subscriber = {
   },
   labels: [],
   avatar: null,
-  source: null,
+  source: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   ...modelInstance,
 };
 

@@ -254,6 +254,9 @@ export class ChatService {
       typeof event.getSourceId === 'function'
         ? (event.getSourceId() ?? undefined)
         : undefined;
+    if (!sourceId) {
+      throw new Error('Cannot handle incoming message without source id');
+    }
     const handler = event.getHandler();
 
     try {
@@ -265,7 +268,7 @@ export class ChatService {
       if (!subscriber) {
         const subscriberData = await handler.getSubscriberData(event);
         subscriberData.channel = event.getChannelData();
-        subscriberData.source = sourceId ?? null;
+        subscriberData.source = sourceId;
         subscriber = await this.subscriberService.create(subscriberData);
 
         if (!subscriber) {

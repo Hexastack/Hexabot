@@ -28,7 +28,7 @@ export const subscriberInstance: Subscriber = {
   },
   labels: [],
   avatar: null,
-  source: null,
+  source: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   ...modelInstance,
 };
 
@@ -42,5 +42,14 @@ export const subscriberWithLabels: SubscriberFull = {
   labels: customerLabelsMock,
   assignedTo: null,
   avatar: null,
-  source: null,
+  source: {
+    id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    name: 'fixture-source-web',
+    channel: 'web',
+    settings: {},
+    state: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    defaultWorkflow: null,
+  },
 };

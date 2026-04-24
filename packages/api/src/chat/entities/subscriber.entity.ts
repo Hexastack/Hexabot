@@ -6,6 +6,7 @@
 
 import { subscriberSchema, subscriberFullSchema } from '@hexabot-ai/types';
 import {
+  Check,
   ChildEntity,
   Column,
   Index,
@@ -39,6 +40,10 @@ export class SubscriberChannel {
 
 @ChildEntity()
 @Index(['source', 'foreignId'])
+@Check(
+  'CHK_SUBSCRIBER_SOURCE_REQUIRED',
+  `"type" != 'SubscriberOrmEntity' OR "source_id" IS NOT NULL`,
+)
 export class SubscriberOrmEntity<
   Dto extends TZodDto = SubscriberDto,
 > extends UserProfileOrmEntity<Dto> {
@@ -61,15 +66,18 @@ export class SubscriberOrmEntity<
   foreignId: string;
 
   @ManyToOne('SourceOrmEntity', {
+    // STI (`users` table) stores both subscribers and operators.
+    // Keep the column nullable at the DB level, and enforce non-null for
+    // Subscriber rows via `CHK_SUBSCRIBER_SOURCE_REQUIRED`.
     nullable: true,
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'source_id' })
   @AsRelation()
-  source: SourceOrmEntity | null;
+  source: SourceOrmEntity;
 
   @RelationId((subscriber: SubscriberOrmEntity) => subscriber.source)
-  private readonly sourceId?: string | null;
+  private readonly sourceId!: string;
 
   @ManyToMany(() => LabelOrmEntity, (label) => label.users, {
     cascade: false,
