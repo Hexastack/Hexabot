@@ -36,7 +36,7 @@ export const StepTracePanel = ({
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: 1,
+          gap: 0,
           flex: 1,
           minHeight: 0,
           overflow: "hidden",
