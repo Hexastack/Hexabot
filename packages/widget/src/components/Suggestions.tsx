@@ -13,6 +13,10 @@ import "./Suggestions.scss";
 
 const Suggestions: React.FC = () => {
   const { send, suggestions } = useChat();
+  const visibleSuggestions = suggestions.filter(
+    (suggestion) =>
+      typeof suggestion.text === "string" && suggestion.text.trim().length > 0,
+  );
   const sendSuggestion = (
     event: React.MouseEvent<HTMLButtonElement>,
     suggestion: Suggestion,
@@ -27,9 +31,13 @@ const Suggestions: React.FC = () => {
     });
   };
 
+  if (visibleSuggestions.length === 0) {
+    return null;
+  }
+
   return (
     <div className="hb-suggestions-row">
-      {suggestions.map((suggestion, idx) => (
+      {visibleSuggestions.map((suggestion, idx) => (
         <button
           key={idx}
           className="hb-suggestions-element"
