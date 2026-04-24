@@ -1,44 +1,46 @@
 .hb-typing-indicator {
-  text-align: center;
-  padding: 0.5rem;
-  border-radius: 2rem;
-  width: 50px;
-  margin-left: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.25rem 1rem 1rem 1rem;
+  margin-left: 2.5rem;
+  width: fit-content;
   color: var(--hb-color-text-primary);
   background-color: var(--hb-color-surface-message-received);
 
   span {
     display: inline-block;
     background-color: var(--hb-color-state-typing);
-    width: 5px;
-    height: 5px;
-    border-radius: 100%;
-    margin-right: 0.1875rem;
-    animation: bob 2s infinite;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: hb-typing-bob 1.4s ease-in-out infinite;
 
-    /* SAFARI GLITCH */
     &:nth-child(1) {
-      animation-delay: -1s;
+      animation-delay: 0s;
     }
 
     &:nth-child(2) {
-      animation-delay: -0.85s;
+      animation-delay: 0.18s;
     }
 
     &:nth-child(3) {
-      animation-delay: -0.7s;
+      animation-delay: 0.36s;
     }
   }
 }
 
-@keyframes bob {
-  10% {
-    transform: translateY(-0.625rem);
-    background-color: var(--hb-color-state-typing-active);
-  }
-
-  50% {
+@keyframes hb-typing-bob {
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
     background-color: var(--hb-color-state-typing);
+  }
+
+  30% {
+    transform: translateY(-5px);
+    background-color: var(--hb-color-state-typing-active);
   }
 }

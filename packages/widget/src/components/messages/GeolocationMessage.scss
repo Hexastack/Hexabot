@@ -1,5 +1,6 @@
 .hb-message--location {
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
   color: var(--hb-color-text-primary);
   background-color: var(--hb-color-surface-message-received);
 
@@ -8,8 +9,11 @@
     background-color: var(--hb-color-surface-message-sent);
   }
 }
+
 .hb-message-map {
-  width: 200px;
+  width: 100%;
+  max-width: 220px;
   height: 150px;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  display: block;
 }

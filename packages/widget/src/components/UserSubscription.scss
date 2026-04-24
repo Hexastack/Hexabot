@@ -1,36 +1,86 @@
 .user-subscription-wrapper {
   height: 100%;
   width: 100%;
-  position: relative;
-  text-align: center;
-  align-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   overflow: auto;
+  padding: 2rem 1.5rem;
+  box-sizing: border-box;
+  background-color: var(--hb-color-surface-root);
 
   .user-subscription {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
     &-title {
-      margin: 2rem;
+      margin-bottom: 1.75rem;
+      font-size: var(--hb-font-size-lg);
+      font-weight: var(--hb-font-weight-medium);
+      color: var(--hb-color-text-primary);
+      text-align: center;
+      line-height: 1.4;
     }
 
     &-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+
       &-input {
+        width: 100%;
         border: 0.0625rem solid var(--hb-color-border-subtle);
+        background-color: var(--hb-color-surface-input);
+        color: var(--hb-color-text-primary);
         outline: 0;
-        padding: 1rem;
-        border-radius: 2rem;
-        margin: 1rem;
-        width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        box-sizing: border-box;
+        font-family: var(--hb-font-family);
+        font-size: var(--hb-font-size-base);
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+
+        &::placeholder {
+          color: var(--hb-color-text-muted);
+        }
+
+        &:focus {
+          border-color: var(--hb-color-border-interactive);
+          box-shadow: 0 0 0 3px var(--hb-color-focus-ring);
+        }
+
+        &:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
       }
 
       &-button-submit {
         display: block;
-        border-radius: 2rem;
+        border-radius: 0.75rem;
         border: 0;
-        width: 50%;
-        margin: 2rem auto;
-        padding: 1rem;
+        width: 100%;
+        margin-top: 0.5rem;
+        padding: 0.75rem 1.5rem;
         cursor: pointer;
-        background: var(--hb-color-surface-header);
-        color: var(--hb-color-text-on-primary);
+        font-family: var(--hb-font-family);
+        font-size: var(--hb-font-size-base);
+        font-weight: var(--hb-font-weight-medium);
+        background: var(--hb-color-interactive-button-primary-bg);
+        color: var(--hb-color-interactive-button-primary-text);
+        transition: background-color 0.15s ease;
+
+        &:hover:not(:disabled) {
+          background: var(--hb-color-interactive-button-primary-hover);
+        }
 
         &:disabled {
           opacity: 0.65;

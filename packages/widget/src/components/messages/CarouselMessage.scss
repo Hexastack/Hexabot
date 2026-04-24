@@ -1,5 +1,5 @@
 .hb-message--carousel {
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   position: relative;
   width: 100%;
   overflow: hidden;
@@ -13,7 +13,7 @@
 
   .hb-message--carousel-inner {
     display: flex;
-    transition: transform 0.5s ease;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
 
     .hb-message--carousel-element-wrapper {
@@ -25,20 +25,22 @@
 
       .hb-message--carousel-element {
         width: 100%;
+
         .hb-message--carousel-element-image {
           background-repeat: no-repeat;
           background-size: cover;
           position: relative;
           width: 100%;
-          height: 150px;
+          height: 160px;
         }
 
         .hb-message--carousel-title {
           font-size: 1rem;
           font-weight: 600;
-          margin: 0.5rem 0 0.25rem;
+          margin: 0.625rem 0 0.25rem;
           padding: 0;
         }
+
         .hb-message--carousel-element-description {
           width: 100%;
           padding: 0 1rem;
@@ -54,7 +56,7 @@
 
   &.with-controls {
     .hb-message--carousel-element-description {
-      padding: 0 1.5rem;
+      padding: 0 2rem;
     }
   }
 
@@ -62,34 +64,41 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 24px;
-    height: 32px;
+    width: 28px;
+    height: 40px;
     display: grid;
     place-items: center;
-    background-color: var(--hb-color-surface-overlay);
-    color: var(--hb-color-text-primary);
+    background-color: rgba(0, 0, 0, 0.25);
+    color: #ffffff;
     border: none;
     padding: 0;
     cursor: pointer;
     z-index: 2;
+    transition: background-color 0.15s ease;
 
     svg {
       width: 0.875rem;
       height: 0.875rem;
     }
 
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.42);
+    }
+
     &.prev {
       left: 0;
+      border-radius: 0 0.375rem 0.375rem 0;
     }
 
     &.next {
       right: 0;
+      border-radius: 0.375rem 0 0 0.375rem;
     }
   }
 
   &.with-controls.with-images {
     .hb-message--carousel-control {
-      top: 75px;
+      top: 80px;
     }
   }
 }
