@@ -255,7 +255,7 @@ export default abstract class ChannelHandler<
    * Returns a publicly accessible URL for an attachment.
    *
    * Default: generates a signed Hexabot download URL
-   * (`/webhook/:sourceId/download/:name?t=<jwt>`).
+   * (`/webhook/:sourceRef/download/:name?t=<jwt>`).
    *
    * Override in HTTP-based channels (Facebook, WhatsApp, …) when the
    * messaging platform fetches the URL itself and the JWT-signed scheme

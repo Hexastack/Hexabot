@@ -331,12 +331,11 @@ const ChatProvider: React.FC<{
   const getWebhookUrl = useCallback(
     (query?: URLSearchParams | Record<string, string>) =>
       buildWebhookUrl({
-        channel: config.channel,
         sourceId: config.sourceId,
         workflowId: config.workflowId,
         query,
       }),
-    [config.channel, config.sourceId, config.workflowId],
+    [config.sourceId, config.workflowId],
   );
   const updateConnectionState = (state: ConnectionState) => {
     setConnectionState(state);

@@ -46,14 +46,14 @@ describe('WebhookController', () => {
   });
 
   it('delegates source requests without workflow id', async () => {
-    const sourceId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const sourceRef = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
     const req = { method: 'POST' } as unknown as Request;
     const res = {} as Response;
 
-    await controller.handlePost(sourceId, req, res);
+    await controller.handlePost(sourceRef, req, res);
 
     expect(channelService.handle).toHaveBeenCalledWith(
-      sourceId,
+      sourceRef,
       req,
       res,
       undefined,
@@ -61,15 +61,15 @@ describe('WebhookController', () => {
   });
 
   it('delegates source requests with explicit workflow id', async () => {
-    const sourceId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    const sourceRef = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
     const workflowId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
     const req = { method: 'POST' } as unknown as Request;
     const res = {} as Response;
 
-    await controller.handlePostWithWorkflow(sourceId, workflowId, req, res);
+    await controller.handlePostWithWorkflow(sourceRef, workflowId, req, res);
 
     expect(channelService.handle).toHaveBeenCalledWith(
-      sourceId,
+      sourceRef,
       req,
       res,
       workflowId,
@@ -77,19 +77,19 @@ describe('WebhookController', () => {
   });
 
   it('delegates download requests to channel download service', async () => {
-    const sourceId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+    const sourceRef = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
     const req = {} as Request;
     channelDownloadService.download.mockResolvedValue('stream' as any);
 
     const result = await controller.handleDownload(
-      sourceId,
+      sourceRef,
       'file.txt',
       'token',
       req,
     );
 
     expect(channelDownloadService.download).toHaveBeenCalledWith(
-      sourceId,
+      sourceRef,
       'token',
       req,
     );
@@ -139,19 +139,19 @@ describe('WebhookController (HTTP pipes)', () => {
     jest.clearAllMocks();
   });
 
-  it('rejects malformed source id on GET before controller logic', async () => {
-    await request(app.getHttpServer()).get('/webhook/not-a-uuid').expect(404);
+  it('delegates source references to ChannelService for GET resolution', async () => {
+    await request(app.getHttpServer()).get('/webhook/not-a-uuid').expect(204);
 
-    expect(channelService.handle).not.toHaveBeenCalled();
+    expect(channelService.handle).toHaveBeenCalled();
   });
 
-  it('rejects malformed source id on POST before controller logic', async () => {
+  it('delegates source references to ChannelService for POST resolution', async () => {
     await request(app.getHttpServer())
       .post('/webhook/not-a-uuid')
       .send({ text: 'hello' })
-      .expect(404);
+      .expect(204);
 
-    expect(channelService.handle).not.toHaveBeenCalled();
+    expect(channelService.handle).toHaveBeenCalled();
   });
 
   it('rejects malformed workflow id on GET before controller logic', async () => {

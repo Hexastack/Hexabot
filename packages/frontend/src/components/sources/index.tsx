@@ -10,13 +10,11 @@ import { GridColDef } from "@mui/x-data-grid";
 import { ChevronDown, Plus, Webhook } from "lucide-react";
 import { MouseEvent, useMemo, useState } from "react";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
   ColumnActionType,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -61,14 +59,6 @@ export const Sources = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutate: deleteSource } = useDelete(EntityType.SOURCE, {
-    onError: (error: Error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      toast.success(t("message.item_delete_success"));
-    },
-  });
   const openCreateDialog = (channel: IChannel) => {
     dialogs.open(SourceFormDialog, {
       defaultValues: null,
@@ -100,17 +90,6 @@ export const Sources = () => {
           });
         },
         requires: [Action.UPDATE],
-      },
-      {
-        action: ColumnActionType.Delete,
-        onClick: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
-
-          if (isConfirmed) {
-            deleteSource(id);
-          }
-        },
-        requires: [Action.DELETE],
       },
     ],
     t("label.operations"),

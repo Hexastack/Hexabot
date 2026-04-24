@@ -42,7 +42,7 @@ describe('ChannelService', () => {
   };
   let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
   let sourceService: jest.Mocked<
-    Pick<SourceService, 'findActiveById' | 'ensureDefaultSources'>
+    Pick<SourceService, 'findActiveByRef' | 'ensureDefaultSources'>
   >;
   let subscriberService: jest.Mocked<Pick<SubscriberService, 'updateOne'>>;
 
@@ -54,7 +54,7 @@ describe('ChannelService', () => {
       updateOne: jest.fn(),
     };
     sourceService = {
-      findActiveById: jest.fn(),
+      findActiveByRef: jest.fn(),
       ensureDefaultSources: jest.fn(),
     };
     workflowService = {
@@ -85,12 +85,12 @@ describe('ChannelService', () => {
 
   it('forwards websocket web requests without workflow id', async () => {
     const source = makeSource();
-    sourceService.findActiveById.mockResolvedValue(source);
+    sourceService.findActiveByRef.mockResolvedValue(source);
 
     const req = {
       method: 'GET',
       query: {},
-      params: { sourceId: source.id },
+      params: { sourceRef: source.id },
     } as unknown as SocketRequest;
     const res = {} as SocketResponse;
 
@@ -108,13 +108,13 @@ describe('ChannelService', () => {
   it('validates and forwards explicit workflow id for websocket requests', async () => {
     const workflowId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
     const source = makeSource();
-    sourceService.findActiveById.mockResolvedValue(source);
+    sourceService.findActiveByRef.mockResolvedValue(source);
     workflowService.findOne.mockResolvedValue({ id: workflowId } as any);
 
     const req = {
       method: 'POST',
       query: { workflow_id: workflowId },
-      params: { sourceId: source.id },
+      params: { sourceRef: source.id },
     } as unknown as SocketRequest;
     const res = {} as SocketResponse;
 
@@ -134,12 +134,12 @@ describe('ChannelService', () => {
     const source = makeSource({
       defaultWorkflow: defaultWorkflowId,
     });
-    sourceService.findActiveById.mockResolvedValue(source);
+    sourceService.findActiveByRef.mockResolvedValue(source);
 
     const req = {
       method: 'POST',
       query: {},
-      params: { sourceId: source.id },
+      params: { sourceRef: source.id },
     } as unknown as SocketRequest;
     const res = {} as SocketResponse;
 
@@ -157,13 +157,13 @@ describe('ChannelService', () => {
   it('throws 404 for websocket requests with unknown explicit workflow id', async () => {
     const workflowId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
     const source = makeSource();
-    sourceService.findActiveById.mockResolvedValue(source);
+    sourceService.findActiveByRef.mockResolvedValue(source);
     workflowService.findOne.mockResolvedValue(null);
 
     const req = {
       method: 'POST',
       query: { workflow_id: workflowId },
-      params: { sourceId: source.id },
+      params: { sourceRef: source.id },
     } as unknown as SocketRequest;
     const res = {} as SocketResponse;
 
@@ -177,12 +177,12 @@ describe('ChannelService', () => {
     const source = makeSource({
       channel: CONSOLE_CHANNEL_NAME,
     });
-    sourceService.findActiveById.mockResolvedValue(source);
+    sourceService.findActiveByRef.mockResolvedValue(source);
 
     const req = {
       method: 'POST',
       query: {},
-      params: { sourceId: source.id },
+      params: { sourceRef: source.id },
       session: {},
       socket: { client: { conn: { close: jest.fn() } } },
     } as unknown as SocketRequest;

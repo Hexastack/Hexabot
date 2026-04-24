@@ -8,9 +8,11 @@ import { Source } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Injectable,
+  MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
-import { FindOneOptions } from 'typeorm';
+import { FindManyOptions, FindOneOptions } from 'typeorm';
+import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 import z from 'zod';
 
 import { RuntimeSettingsService } from '@/setting/services/runtime-settings.service';
@@ -173,14 +175,35 @@ export class SourceService extends BaseOrmService<SourceOrmEntity> {
     );
   }
 
-  async findActiveById(sourceId: string): Promise<Source> {
-    const source = await this.findOne(sourceId);
+  async findActiveByRef(sourceRef: string): Promise<Source> {
+    const normalizedSourceRef = sourceRef.trim();
+    const source = await this.findOne(normalizedSourceRef);
 
     if (!source || !source.state) {
-      throw new NotFoundException(`Source with ID ${sourceId} not found`);
+      throw new NotFoundException(`Source with ID ${sourceRef} not found`);
     }
 
     return source;
+  }
+
+  async findActiveById(sourceId: string): Promise<Source> {
+    return await this.findActiveByRef(sourceId);
+  }
+
+  override async deleteOne(
+    _idOrOptions: string | FindOneOptions<SourceOrmEntity>,
+  ): Promise<DeleteResult> {
+    throw new MethodNotAllowedException(
+      'Sources cannot be deleted. Disable the source instead.',
+    );
+  }
+
+  override async deleteMany(
+    _options?: FindManyOptions<SourceOrmEntity>,
+  ): Promise<DeleteResult> {
+    throw new MethodNotAllowedException(
+      'Sources cannot be deleted. Disable the source instead.',
+    );
   }
 
   async ensureDefaultSources(channelNames: string[]): Promise<void> {

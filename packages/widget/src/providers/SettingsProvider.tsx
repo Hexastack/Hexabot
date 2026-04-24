@@ -26,14 +26,14 @@ import { useSubscribe } from "./SocketProvider";
 const LEGACY_SETTINGS_STORAGE_KEY = "settings";
 const getScopedSettingsStorageKey = ({
   apiUrl,
-  channel,
+  sourceId,
   instanceId,
 }: {
   apiUrl: string;
-  channel: string;
+  sourceId: string;
   instanceId?: string;
 }) => {
-  const scope = instanceId?.trim() || `${apiUrl}::${channel}`;
+  const scope = instanceId?.trim() || `${apiUrl}::${sourceId}`;
 
   return `hexabot:widget:settings:${encodeURIComponent(scope)}`;
 };
@@ -103,16 +103,16 @@ interface ChatSettingsProviderProps {
 export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
   children,
 }) => {
-  const { apiUrl, channel, instanceId } = useConfig();
+  const { apiUrl, sourceId, instanceId } = useConfig();
   const { t } = useTranslation();
   const settingsStorageKey = useMemo(
     () =>
       getScopedSettingsStorageKey({
         apiUrl,
-        channel,
+        sourceId,
         instanceId,
       }),
-    [apiUrl, channel, instanceId],
+    [apiUrl, sourceId, instanceId],
   );
   const scopedSettings = useMemo(() => {
     return SessionStorage.getItem<ChatSettings>(settingsStorageKey);

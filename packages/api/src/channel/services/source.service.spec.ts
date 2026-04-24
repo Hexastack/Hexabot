@@ -179,4 +179,13 @@ describe('SourceService', () => {
       defaultWorkflow: null,
     });
   });
+
+  it('rejects physical deletion of sources', async () => {
+    await expect(service.deleteOne('source-id')).rejects.toThrow(
+      'Sources cannot be deleted. Disable the source instead.',
+    );
+    await expect(service.deleteMany()).rejects.toThrow(
+      'Sources cannot be deleted. Disable the source instead.',
+    );
+  });
 });

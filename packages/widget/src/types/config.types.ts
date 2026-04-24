@@ -11,7 +11,7 @@ export type ConfigTransport = "ws" | "polling";
 export type Config = {
   apiUrl: string;
   channel: string;
-  sourceId?: string;
+  sourceId: string;
   language: string;
   maxUploadSize: number;
   transport?: ConfigTransport;

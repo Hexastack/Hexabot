@@ -60,7 +60,7 @@ describe('SocketEventDispatcherService', () => {
 
   it('matches dynamic socket routes and injects params into SocketRequest', async () => {
     const handler = jest.fn().mockResolvedValue(undefined);
-    (service as any).routeHandlers.get.set('/webhook/:sourceId', handler);
+    (service as any).routeHandlers.get.set('/webhook/:sourceRef', handler);
 
     const req = createSocketRequest(
       '/api/webhook/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
@@ -71,7 +71,7 @@ describe('SocketEventDispatcherService', () => {
 
     expect(handler).toHaveBeenCalledWith(req, res);
     expect(req.params).toEqual({
-      sourceId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      sourceRef: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
     });
     expect((res.status as jest.Mock).mock.calls).toEqual([]);
   });

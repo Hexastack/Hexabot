@@ -17,7 +17,7 @@ import { SourceService } from './source.service';
 describe('ChannelDownloadService', () => {
   let service: ChannelDownloadService;
   let channelService: jest.Mocked<Pick<ChannelService, 'getChannelHandler'>>;
-  let sourceService: jest.Mocked<Pick<SourceService, 'findActiveById'>>;
+  let sourceService: jest.Mocked<Pick<SourceService, 'findActiveByRef'>>;
   let channelAttachmentService: jest.Mocked<
     Pick<ChannelAttachmentService, 'download'>
   >;
@@ -27,7 +27,7 @@ describe('ChannelDownloadService', () => {
       getChannelHandler: jest.fn(),
     };
     sourceService = {
-      findActiveById: jest.fn(),
+      findActiveByRef: jest.fn(),
     };
     channelAttachmentService = {
       download: jest.fn(),
@@ -50,7 +50,7 @@ describe('ChannelDownloadService', () => {
     const handler = {
       hasDownloadAccess: jest.fn().mockResolvedValue(true),
     } as any;
-    sourceService.findActiveById.mockResolvedValue({
+    sourceService.findActiveByRef.mockResolvedValue({
       id: 'source-1',
       channel: 'web',
     } as any);
@@ -65,7 +65,7 @@ describe('ChannelDownloadService', () => {
 
     const result = await service.download('source-1', token, req);
 
-    expect(sourceService.findActiveById).toHaveBeenCalledWith('source-1');
+    expect(sourceService.findActiveByRef).toHaveBeenCalledWith('source-1');
     expect(channelService.getChannelHandler).toHaveBeenCalledWith('web');
     expect(channelAttachmentService.download).toHaveBeenCalledWith(
       token,

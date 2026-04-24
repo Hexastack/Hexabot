@@ -23,71 +23,71 @@ export class WebhookController {
   ) {}
 
   @Roles('public')
-  @Get(':sourceId/download/:name')
+  @Get(':sourceRef/download/:name')
   async handleDownload(
-    @UuidParam('sourceId') sourceId: string,
+    @Param('sourceRef') sourceRef: string,
     @Param('name') name: string,
     @Query('t') token: string,
     @Req() req: Request,
   ) {
-    this.logger.log('Channel download request: ', sourceId, name);
+    this.logger.log('Channel download request: ', sourceRef, name);
 
-    return await this.channelDownloadService.download(sourceId, token, req);
+    return await this.channelDownloadService.download(sourceRef, token, req);
   }
 
   @Roles('public')
-  @Get(':sourceId')
+  @Get(':sourceRef')
   async handleGet(
-    @UuidParam('sourceId') sourceId: string,
+    @Param('sourceRef') sourceRef: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    return await this.handleSourceRequest(sourceId, req, res);
+    return await this.handleSourceRequest(sourceRef, req, res);
   }
 
   @Roles('public')
-  @Get(':sourceId/not-found')
+  @Get(':sourceRef/not-found')
   async handleNotFound(
-    @UuidParam('sourceId') _sourceId: string,
+    @Param('sourceRef') _sourceRef: string,
     @Res() res: Response,
   ) {
     return res.status(404).send({ error: 'Resource not found!' });
   }
 
   @Roles('public')
-  @Get(':sourceId/:workflowId')
+  @Get(':sourceRef/:workflowId')
   async handleGetWithWorkflow(
-    @UuidParam('sourceId') sourceId: string,
+    @Param('sourceRef') sourceRef: string,
     @UuidParam('workflowId') workflowId: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    return await this.handleSourceRequest(sourceId, req, res, workflowId);
+    return await this.handleSourceRequest(sourceRef, req, res, workflowId);
   }
 
   @Roles('public')
-  @Post(':sourceId')
+  @Post(':sourceRef')
   async handlePost(
-    @UuidParam('sourceId') sourceId: string,
+    @Param('sourceRef') sourceRef: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    return await this.handleSourceRequest(sourceId, req, res);
+    return await this.handleSourceRequest(sourceRef, req, res);
   }
 
   @Roles('public')
-  @Post(':sourceId/:workflowId')
+  @Post(':sourceRef/:workflowId')
   async handlePostWithWorkflow(
-    @UuidParam('sourceId') sourceId: string,
+    @Param('sourceRef') sourceRef: string,
     @UuidParam('workflowId') workflowId: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    return await this.handleSourceRequest(sourceId, req, res, workflowId);
+    return await this.handleSourceRequest(sourceRef, req, res, workflowId);
   }
 
   private async handleSourceRequest(
-    sourceId: string,
+    sourceRef: string,
     req: Request,
     res: Response,
     workflowId?: string,
@@ -95,10 +95,10 @@ export class WebhookController {
     this.logger.log(
       'Channel notification : ',
       req.method,
-      sourceId,
+      sourceRef,
       workflowId,
     );
 
-    return await this.channelService.handle(sourceId, req, res, workflowId);
+    return await this.channelService.handle(sourceRef, req, res, workflowId);
   }
 }

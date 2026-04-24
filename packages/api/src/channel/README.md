@@ -24,7 +24,7 @@ At startup:
 At request time:
 
 1. `WebhookController` receives `/webhook` requests.
-2. `ChannelService` resolves an active `Source` by `sourceId`, then resolves the handler by `source.channel`.
+2. `ChannelService` resolves an active `Source` by `sourceRef`, then resolves the handler by `source.channel`.
 3. The handler transport (`HttpChannelHandler` or `WebSocketChannelHandler`) processes the request.
 4. Inbound payloads are decoded into `ChannelInboundEvent` instances.
 5. Events are emitted through `ChannelEventBus` to the chatbot/workflow pipeline.
@@ -33,17 +33,18 @@ At request time:
 
 `WebhookController` is mounted at `/webhook` (effective path is `/api/webhook/*` because of the global `/api` prefix):
 
-- `GET /api/webhook/:sourceId`
-- `POST /api/webhook/:sourceId`
-- `GET /api/webhook/:sourceId/:workflowId`
-- `POST /api/webhook/:sourceId/:workflowId`
-- `GET /api/webhook/:sourceId/download/:name?t=<jwt>`
-- `GET /api/webhook/:sourceId/not-found`
+- `GET /api/webhook/:sourceRef`
+- `POST /api/webhook/:sourceRef`
+- `GET /api/webhook/:sourceRef/:workflowId`
+- `POST /api/webhook/:sourceRef/:workflowId`
+- `GET /api/webhook/:sourceRef/download/:name?t=<jwt>`
+- `GET /api/webhook/:sourceRef/not-found`
 
 Also available:
 
 - `GET /api/channel` returns channel metadata (`name`, settings JSON schema).
-- `GET /api/source`, `GET /api/source/:id`, `POST /api/source`, `PATCH /api/source/:id`, `DELETE /api/source/:id`.
+- `GET /api/source`, `GET /api/source/:id`, `POST /api/source`, `PATCH /api/source/:id`.
+- Sources are not physically deleted. Disable them with `PATCH /api/source/:id` and `state: false`.
 
 ## Core Contracts
 
@@ -251,6 +252,7 @@ export default class AcmeChannelHandler extends HttpChannelHandler<
 
   protected async decode(
     req: Request,
+    _source: Source,
   ): Promise<ChannelInboundEvent<typeof ACME_CHANNEL_NAME>[]> {
     const payload = acmeEventSchema.parse(req.body);
 
@@ -327,4 +329,4 @@ export const acmeEventSchema = z.strictObject({
 - Always parse unknown inbound payloads with zod before converting to internal events.
 - Use `ChannelCapabilities` to prevent unsupported outgoing message types from being sent.
 - Prefer `@ExtensionInject()` when helper services need per-channel binding.
-- If you override attachment URL/download behavior, keep `/webhook/:sourceId/download/:name?t=<jwt>` compatibility in mind.
+- If you override attachment URL/download behavior, keep `/webhook/:sourceRef/download/:name?t=<jwt>` compatibility in mind.

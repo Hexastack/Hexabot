@@ -15,7 +15,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
-import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { UuidParam } from '@/utils';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
@@ -82,7 +81,7 @@ export class SourceController extends BaseOrmController<SourceOrmEntity> {
   }
 
   @Delete(':id')
-  async deleteSource(@UuidParam('id') id: string): Promise<DeleteResult> {
-    return await this.deleteOne(id);
+  async deleteSource(@UuidParam('id') id: string) {
+    return await this.sourceService.deleteOne(id);
   }
 }

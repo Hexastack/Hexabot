@@ -20,8 +20,8 @@ export class ChannelDownloadService {
     private readonly channelAttachmentService: ChannelAttachmentService,
   ) {}
 
-  async download(sourceId: string, token: string, req: Request) {
-    const source = await this.sourceService.findActiveById(sourceId);
+  async download(sourceRef: string, token: string, req: Request) {
+    const source = await this.sourceService.findActiveByRef(sourceRef);
     const handler = this.channelService.getChannelHandler(source.channel);
 
     return await this.channelAttachmentService.download(

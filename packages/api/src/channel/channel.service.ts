@@ -120,14 +120,14 @@ export class ChannelService implements OnApplicationBootstrap {
     return normalizedWorkflowId.length > 0 ? normalizedWorkflowId : undefined;
   }
 
-  private getSourceIdFromSocketPath(req: SocketRequest): string {
-    const sourceId = req.params?.sourceId;
+  private getSourceRefFromSocketPath(req: SocketRequest): string {
+    const sourceRef = req.params?.sourceRef;
 
-    if (typeof sourceId !== 'string' || sourceId.trim().length === 0) {
-      throw new NotFoundException('Source ID is required');
+    if (typeof sourceRef !== 'string' || sourceRef.trim().length === 0) {
+      throw new NotFoundException('Source reference is required');
     }
 
-    return sourceId.trim();
+    return sourceRef.trim();
   }
 
   private async ensureConsoleSession(req: SocketRequest, source: Source) {
@@ -170,12 +170,12 @@ export class ChannelService implements OnApplicationBootstrap {
   }
 
   async handle(
-    sourceId: string,
+    sourceRef: string,
     req: Request,
     res: Response,
     workflowId?: string,
   ): Promise<void> {
-    const source = await this.sourceService.findActiveById(sourceId);
+    const source = await this.sourceService.findActiveByRef(sourceRef);
     const handler = this.getChannelHandler(source.channel);
     const resolvedWorkflowId = await this.resolveWorkflowIdForSource(
       source,
@@ -185,16 +185,16 @@ export class ChannelService implements OnApplicationBootstrap {
     await handler.handle(req, res, source, resolvedWorkflowId);
   }
 
-  @SocketGet('/webhook/:sourceId')
-  @SocketPost('/webhook/:sourceId')
+  @SocketGet('/webhook/:sourceRef')
+  @SocketPost('/webhook/:sourceRef')
   async handleWebsocketForSource(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
   ) {
     this.logger.log('Channel notification (Web Socket) : ', req.method);
 
-    const sourceId = this.getSourceIdFromSocketPath(req);
-    const source = await this.sourceService.findActiveById(sourceId);
+    const sourceRef = this.getSourceRefFromSocketPath(req);
+    const source = await this.sourceService.findActiveByRef(sourceRef);
 
     if (source.channel === CONSOLE_CHANNEL_NAME) {
       await this.ensureConsoleSession(req, source);

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, MethodNotAllowedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { DataSource, Repository } from 'typeorm';
@@ -144,7 +144,7 @@ describe('SourceController (TypeORM cascade)', () => {
     await closeTypeOrmConnections();
   });
 
-  it('deleting a source cascades to linked threads and messages', async () => {
+  it('prevents deleting a source and preserves linked threads and messages', async () => {
     const source = await sourceRepository.findOne({
       where: { channel: 'web' },
     });
@@ -161,9 +161,11 @@ describe('SourceController (TypeORM cascade)', () => {
     expect(threadCountBefore).toBeGreaterThan(0);
     expect(messageCountBefore).toBeGreaterThan(0);
 
-    await controller.deleteSource(source.id);
+    await expect(controller.deleteSource(source.id)).rejects.toThrow(
+      MethodNotAllowedException,
+    );
 
-    const deletedSource = await sourceRepository.findOne({
+    const storedSource = await sourceRepository.findOne({
       where: { id: source.id },
     });
     const threadCountAfter = await threadRepository.count({
@@ -171,8 +173,8 @@ describe('SourceController (TypeORM cascade)', () => {
     });
     const messageCountAfter = await messageRepository.count();
 
-    expect(deletedSource).toBeNull();
-    expect(threadCountAfter).toBe(0);
-    expect(messageCountAfter).toBeLessThan(messageCountBefore);
+    expect(storedSource).not.toBeNull();
+    expect(threadCountAfter).toBe(threadCountBefore);
+    expect(messageCountAfter).toBe(messageCountBefore);
   });
 });
