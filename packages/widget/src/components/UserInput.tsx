@@ -50,13 +50,10 @@ const UserInput: React.FC = () => {
   const [inputActive, setInputActive] = useState(false);
 
   useEffect(() => {
-    // if (userInputRef.current) {
-    //   userInputRef.current.innerHTML = message.current || '';
-    // }
     if (focusOnOpen) {
       focusUserInput();
     }
-  }, [message, focusOnOpen]);
+  }, [focusOnOpen]);
 
   useEffect(() => {
     if (message === "") {

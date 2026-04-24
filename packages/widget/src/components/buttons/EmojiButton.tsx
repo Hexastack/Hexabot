@@ -22,9 +22,6 @@ const EmojiButton: React.FC<{
     if (!e.relatedTarget || e.relatedTarget !== emojiButtonRef.current) {
       togglePicker();
     }
-    // if (inputRef.current) {
-    //   inputRef.current.focus();
-    // }
   };
   const handleSelect = (
     _event: React.MouseEvent<HTMLSpanElement>,

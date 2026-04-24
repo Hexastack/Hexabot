@@ -13,9 +13,5 @@ export const linebreak = (s: string) => {
 };
 
 export const processContent = (s: string) => {
-  let result = truncate(s, 50);
-
-  result = linebreak(s);
-
-  return result;
+  return linebreak(truncate(s, 50));
 };
