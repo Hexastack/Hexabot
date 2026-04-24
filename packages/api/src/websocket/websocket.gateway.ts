@@ -5,7 +5,7 @@
  */
 
 import { type WorkflowEventMap } from '@hexabot-ai/agentic';
-import { Subscriber, StdEventType } from '@hexabot-ai/types';
+import { StdEventType, Subscriber } from '@hexabot-ai/types';
 import { ForbiddenException, Optional } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
@@ -29,8 +29,8 @@ import { validate as isUuid } from 'uuid';
 
 import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { config } from '@/config';
-import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/console-channel.settings';
-import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/web-channel.settings';
+import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings.schema';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings.schema';
 import { LoggerService } from '@/logger/logger.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { UserService } from '@/user/services/user.service';

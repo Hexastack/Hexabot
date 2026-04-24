@@ -14,7 +14,7 @@ import {
 import { Request, Response } from 'express';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/console-channel.settings';
+import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings.schema';
 import { LoggerService } from '@/logger/logger.service';
 import {
   SocketGet,
@@ -26,18 +26,18 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import ChannelHandler from './lib/Handler';
+import type ChannelHandler from './lib/Handler';
+import { ChannelRegistry } from './services/channel-registry.service';
 import { SourceService } from './services/source.service';
 import { ChannelName } from './types';
 
 @Injectable()
 export class ChannelService implements OnApplicationBootstrap {
-  private registry: Map<string, ChannelHandler<ChannelName>> = new Map();
-
   constructor(
     private readonly logger: LoggerService,
     private readonly subscriberService: SubscriberService,
     private readonly sourceService: SourceService,
+    private readonly channelRegistry: ChannelRegistry,
     private readonly workflowService: WorkflowService,
   ) {}
 
@@ -51,28 +51,21 @@ export class ChannelService implements OnApplicationBootstrap {
     name: T,
     channel: C,
   ) {
-    this.registry.set(name, channel);
+    this.channelRegistry.setChannel(name, channel);
   }
 
   public getAll() {
-    return Array.from(this.registry.values());
+    return this.channelRegistry.getAll();
   }
 
   public findChannel(name: ChannelName) {
-    return this.getAll().find((c) => {
-      return c.getName() === name;
-    });
+    return this.channelRegistry.findChannel(name);
   }
 
   public getChannelHandler<T extends ChannelName, C extends ChannelHandler<T>>(
     name: T,
   ): C {
-    const handler = this.registry.get(name);
-    if (!handler) {
-      throw new Error(`Channel ${name} not found`);
-    }
-
-    return handler as C;
+    return this.channelRegistry.getChannelHandler(name);
   }
 
   private async resolveExplicitWorkflowId(

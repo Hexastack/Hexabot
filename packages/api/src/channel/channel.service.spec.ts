@@ -8,14 +8,15 @@ import { Source } from '@hexabot-ai/types';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/console-channel.settings';
-import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/web-channel.settings';
+import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings.schema';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings.schema';
 import { LoggerService } from '@/logger/logger.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
+import { ChannelRegistry } from './services/channel-registry.service';
 import { SourceService } from './services/source.service';
 
 const makeSource = (overrides: Partial<Source> = {}): Source => {
@@ -41,6 +42,7 @@ describe('ChannelService', () => {
     handle: jest.Mock;
   };
   let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
+  let channelRegistry: ChannelRegistry;
   let sourceService: jest.Mocked<
     Pick<SourceService, 'findActiveByRef' | 'ensureDefaultSources'>
   >;
@@ -60,11 +62,13 @@ describe('ChannelService', () => {
     workflowService = {
       findOne: jest.fn(),
     };
+    channelRegistry = new ChannelRegistry();
 
     service = new ChannelService(
       logger as unknown as LoggerService,
       subscriberService as unknown as SubscriberService,
       sourceService as unknown as SourceService,
+      channelRegistry,
       workflowService as unknown as WorkflowService,
     );
 

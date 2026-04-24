@@ -4,16 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ChannelName } from '@/channel/types';
 import { HelperName } from '@/helper/types';
 
-export type TExtension = 'channel' | 'helper';
+export type TExtension = 'helper';
 
-export type TExtractGroup<T extends TExtension> = T extends 'channel'
-  ? ChannelName
-  : HelperName;
+export type TExtractGroup = HelperName;
 
-export type TCriteria<T extends TExtension = TExtension> = {
-  extensionType: T;
-  groups: TExtractGroup<T>[];
+export type TCriteria = {
+  extensionType: TExtension;
+  groups: TExtractGroup[];
 };

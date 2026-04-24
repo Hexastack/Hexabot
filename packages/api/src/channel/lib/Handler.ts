@@ -17,6 +17,7 @@ import { ModuleRef } from '@nestjs/core';
 import { Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
+import z from 'zod';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
@@ -31,8 +32,8 @@ import { Extension } from '@/utils/generics/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
-import { ChannelService } from '../channel.service';
 import { ChannelAttachmentService } from '../services/channel-attachment.service';
+import { ChannelRegistry } from '../services/channel-registry.service';
 import { ChannelName } from '../types';
 
 import {
@@ -56,8 +57,8 @@ export default abstract class ChannelHandler<
   @Inject(ChannelAttachmentService)
   protected readonly channelAttachmentService: ChannelAttachmentService;
 
-  @Inject(ChannelService)
-  protected readonly channelService: ChannelService;
+  @Inject(ChannelRegistry)
+  protected readonly channelRegistry: ChannelRegistry;
 
   @Inject(ChannelEventBus)
   protected readonly channelEventBus: ChannelEventBus;
@@ -65,7 +66,10 @@ export default abstract class ChannelHandler<
   @Inject(ModuleRef)
   private readonly moduleRef: ModuleRef;
 
-  constructor(name: N) {
+  constructor(
+    name: N,
+    private readonly sourceSettingsSchema: z.ZodTypeAny = z.strictObject({}),
+  ) {
     super(name);
   }
 
@@ -75,7 +79,7 @@ export default abstract class ChannelHandler<
 
   async onModuleInit() {
     await super.onModuleInit();
-    this.channelService.setChannel(
+    this.channelRegistry.setChannel(
       this.getName(),
       this as unknown as ChannelHandler<N>,
     );
@@ -103,6 +107,10 @@ export default abstract class ChannelHandler<
    */
   getCapabilities(): ChannelCapabilities {
     return DEFAULT_CHANNEL_CAPABILITIES;
+  }
+
+  getSourceSettingsSchema(): z.ZodTypeAny {
+    return this.sourceSettingsSchema;
   }
 
   /**

@@ -7,34 +7,41 @@
 import { BadRequestException } from '@nestjs/common';
 import z from 'zod';
 
-import { RuntimeSettingsService } from '@/setting/services/runtime-settings.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { SourceRepository } from '../repositories/source.repository';
 
+import { ChannelRegistry } from './channel-registry.service';
 import { SourceService } from './source.service';
 
 describe('SourceService', () => {
   let service: SourceService;
   let repository: jest.Mocked<Pick<SourceRepository, 'create' | 'updateOne'>>;
-  let runtimeSettingsService: jest.Mocked<Pick<RuntimeSettingsService, 'get'>>;
+  let channelRegistry: jest.Mocked<Pick<ChannelRegistry, 'findChannel'>>;
   let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
+
+  const registerSchema = (schema: z.ZodTypeAny) => {
+    channelRegistry.findChannel.mockReturnValue({
+      getSourceSettingsSchema: jest.fn().mockReturnValue(schema),
+    } as any);
+  };
 
   beforeEach(() => {
     repository = {
       create: jest.fn(),
       updateOne: jest.fn(),
     };
-    runtimeSettingsService = {
-      get: jest.fn(),
+    channelRegistry = {
+      findChannel: jest.fn(),
     };
     workflowService = {
       findOne: jest.fn(),
     };
+    registerSchema(z.strictObject({}));
 
     service = new SourceService(
       repository as unknown as SourceRepository,
-      runtimeSettingsService as unknown as RuntimeSettingsService,
+      channelRegistry as unknown as ChannelRegistry,
       workflowService as unknown as WorkflowService,
     );
   });
@@ -43,14 +50,12 @@ describe('SourceService', () => {
     jest.clearAllMocks();
   });
 
-  it('normalizes settings using runtime zod schema defaults', () => {
-    runtimeSettingsService.get.mockReturnValue({
-      schema: z.strictObject({
+  it('normalizes settings using handler zod schema defaults', () => {
+    registerSchema(
+      z.strictObject({
         allowed_domains: z.string().default('https://example.com'),
       }),
-      scope: 'extension',
-      extensionType: 'channel',
-    } as any);
+    );
 
     const settings = service.normalizeSettings('web', {});
 
@@ -60,13 +65,11 @@ describe('SourceService', () => {
   });
 
   it('rejects invalid source settings for channels with schema', () => {
-    runtimeSettingsService.get.mockReturnValue({
-      schema: z.strictObject({
+    registerSchema(
+      z.strictObject({
         allowed_domains: z.string(),
       }),
-      scope: 'extension',
-      extensionType: 'channel',
-    } as any);
+    );
 
     expect(() =>
       service.normalizeSettings('web', {
@@ -75,26 +78,24 @@ describe('SourceService', () => {
     ).toThrow(BadRequestException);
   });
 
-  it('accepts object settings as-is when channel schema is not registered', () => {
-    runtimeSettingsService.get.mockImplementation(() => {
-      throw new Error('missing');
-    });
+  it('rejects source settings when channel handler is not registered', () => {
+    channelRegistry.findChannel.mockReturnValue(undefined);
 
-    const settings = service.normalizeSettings('custom-channel', {
-      any: 'value',
-    });
-
-    expect(settings).toEqual({ any: 'value' });
+    expect(() =>
+      service.normalizeSettings('custom-channel', {
+        any: 'value',
+      }),
+    ).toThrow(
+      new BadRequestException('Channel "custom-channel" is not registered'),
+    );
   });
 
   it('creates default active source payload with normalized settings', async () => {
-    runtimeSettingsService.get.mockReturnValue({
-      schema: z.strictObject({
+    registerSchema(
+      z.strictObject({
         enabled: z.boolean().default(true),
       }),
-      scope: 'extension',
-      extensionType: 'channel',
-    } as any);
+    );
     repository.create.mockResolvedValue({ id: 'source-1' } as any);
 
     await service.create({
@@ -172,7 +173,7 @@ describe('SourceService', () => {
 
     expect(createSpy).toHaveBeenCalledTimes(1);
     expect(createSpy).toHaveBeenCalledWith({
-      name: 'default-web',
+      name: 'Web',
       channel: 'web',
       settings: {},
       state: true,

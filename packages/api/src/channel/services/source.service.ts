@@ -15,7 +15,6 @@ import { FindManyOptions, FindOneOptions } from 'typeorm';
 import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 import z from 'zod';
 
-import { RuntimeSettingsService } from '@/setting/services/runtime-settings.service';
 import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
@@ -24,11 +23,13 @@ import { SourceCreateDto, SourceUpdateDto } from '../dto/source.dto';
 import { SourceOrmEntity } from '../entities/source.entity';
 import { SourceRepository } from '../repositories/source.repository';
 
+import { ChannelRegistry } from './channel-registry.service';
+
 @Injectable()
 export class SourceService extends BaseOrmService<SourceOrmEntity> {
   constructor(
     repository: SourceRepository,
-    private readonly runtimeSettingsService: RuntimeSettingsService,
+    private readonly channelRegistry: ChannelRegistry,
     private readonly workflowService: WorkflowService,
   ) {
     super(repository);
@@ -51,18 +52,14 @@ export class SourceService extends BaseOrmService<SourceOrmEntity> {
     return settings as Record<string, unknown>;
   }
 
-  private resolveChannelSchema(channel: string): z.ZodTypeAny | null {
-    try {
-      const definition = this.runtimeSettingsService.get(channel);
+  private resolveChannelSchema(channel: string): z.ZodTypeAny {
+    const handler = this.channelRegistry.findChannel(channel);
 
-      if (definition.extensionType && definition.extensionType !== 'channel') {
-        return null;
-      }
-
-      return definition.schema;
-    } catch {
-      return null;
+    if (!handler) {
+      throw new BadRequestException(`Channel "${channel}" is not registered`);
     }
+
+    return handler.getSourceSettingsSchema();
   }
 
   normalizeSettings(
@@ -71,11 +68,6 @@ export class SourceService extends BaseOrmService<SourceOrmEntity> {
   ): Record<string, unknown> {
     const rawSettings = this.ensureSettingsObject(settings, channel);
     const schema = this.resolveChannelSchema(channel);
-
-    if (!schema) {
-      return rawSettings;
-    }
-
     const parsed = schema.safeParse(rawSettings);
 
     if (!parsed.success) {
@@ -206,6 +198,10 @@ export class SourceService extends BaseOrmService<SourceOrmEntity> {
     );
   }
 
+  private formatDefaultSourceName(channelName: string): string {
+    return channelName.charAt(0).toUpperCase() + channelName.slice(1);
+  }
+
   async ensureDefaultSources(channelNames: string[]): Promise<void> {
     for (const channelName of channelNames) {
       const existing = await this.findOne({
@@ -217,7 +213,7 @@ export class SourceService extends BaseOrmService<SourceOrmEntity> {
       }
 
       await this.create({
-        name: `default-${channelName}`,
+        name: this.formatDefaultSourceName(channelName),
         channel: channelName,
         settings: {},
         state: true,

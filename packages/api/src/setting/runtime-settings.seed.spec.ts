@@ -20,27 +20,19 @@ describe('runtime-settings.seed', () => {
     });
 
     expect(
-      buildSettingSeedsFromSchema('web', schema, { subgroup: 'channel' }),
+      buildSettingSeedsFromSchema('ollama', schema, { subgroup: 'helper' }),
     ).toEqual([
       {
-        group: 'web',
-        subgroup: 'channel',
+        group: 'ollama',
+        subgroup: 'helper',
         label: 'enabled',
         value: true,
       },
     ]);
   });
 
-  it('adds subgroup marker for channel/helper extension groups from runtime registry', () => {
+  it('adds subgroup marker for helper extension groups from runtime registry', () => {
     const registry: RuntimeSettingRegistryMap = {
-      web: {
-        schema: z.strictObject({
-          enabled: z.boolean().default(true),
-        }),
-        scope: 'extension',
-        extensionType: 'channel',
-        extensionName: 'web',
-      },
       ollama: {
         schema: z.strictObject({
           base_url: z.string().default('http://localhost:11434'),
@@ -65,9 +57,6 @@ describe('runtime-settings.seed', () => {
       },
     };
     const seeds = buildSettingSeedsFromRegistry(registry);
-    const webSeed = seeds.find(
-      (seed) => seed.group === 'web' && seed.label === 'enabled',
-    );
     const ollamaSeed = seeds.find(
       (seed) => seed.group === 'ollama' && seed.label === 'base_url',
     );
@@ -79,12 +68,6 @@ describe('runtime-settings.seed', () => {
         seed.group === 'chatbot_settings' && seed.label === 'global_fallback',
     );
 
-    expect(webSeed).toEqual({
-      group: 'web',
-      subgroup: 'channel',
-      label: 'enabled',
-      value: true,
-    });
     expect(ollamaSeed).toEqual({
       group: 'ollama',
       subgroup: 'helper',

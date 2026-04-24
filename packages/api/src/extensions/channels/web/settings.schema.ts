@@ -6,17 +6,14 @@
 
 import z from 'zod';
 
-import { ChannelSetting } from '@/channel/types';
 import { config } from '@/config';
-import { createSettingGroup } from '@/setting/create-setting-group';
-import { buildSettingSeedsFromSchema } from '@/setting/runtime-settings.seed';
 
-export const CONSOLE_CHANNEL_NAME = 'console' as const;
+export const WEB_CHANNEL_NAME = 'web' as const;
 
-const CONSOLE_ALLOWED_UPLOAD_TYPES =
+const WEB_ALLOWED_UPLOAD_TYPES =
   'audio/mpeg,audio/x-ms-wma,audio/vnd.rn-realaudio,audio/x-wav,image/gif,image/jpeg,image/png,image/tiff,image/vnd.microsoft.icon,image/vnd.djvu,image/svg+xml,text/css,text/csv,text/html,text/plain,text/xml,video/mpeg,video/mp4,video/quicktime,video/x-ms-wmv,video/x-msvideo,video/x-flv,video/web,application/msword,application/vnd.ms-powerpoint,application/pdf,application/vnd.ms-excel,application/vnd.oasis.opendocument.presentation,application/vnd.oasis.opendocument.tex,application/vnd.oasis.opendocument.spreadsheet,application/vnd.oasis.opendocument.graphics,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
-export const CONSOLE_CHANNEL_SETTINGS_SCHEMA = z
+export const WEB_CHANNEL_SOURCE_SETTINGS_SCHEMA = z
   .strictObject({
     allowed_domains: z
       .string()
@@ -45,6 +42,14 @@ export const CONSOLE_CHANNEL_SETTINGS_SCHEMA = z
         description: 'Greeting shown to users when the conversation starts.',
         'ui:widget': 'textarea',
       }),
+    window_title: z.string().default('Widget Title').meta({
+      title: 'Window title',
+      description: 'Title displayed in the web widget header.',
+    }),
+    avatar_url: z.url().default('').optional().meta({
+      title: 'Avatar URL',
+      description: 'URL of the chatbot avatar image.',
+    }),
     show_emoji: z.boolean().default(true).meta({
       title: 'Show emoji',
       description: 'Enable emoji picker in the chat interface.',
@@ -57,14 +62,11 @@ export const CONSOLE_CHANNEL_SETTINGS_SCHEMA = z
       title: 'Show location',
       description: 'Enable location sharing action in the chat interface.',
     }),
-    allowed_upload_types: z
-      .string()
-      .default(CONSOLE_ALLOWED_UPLOAD_TYPES)
-      .meta({
-        title: 'Allowed upload types',
-        description: 'Comma-separated MIME types accepted by the upload input.',
-        'ui:widget': 'textarea',
-      }),
+    allowed_upload_types: z.string().default(WEB_ALLOWED_UPLOAD_TYPES).meta({
+      title: 'Allowed upload types',
+      description: 'Comma-separated MIME types accepted by the upload input.',
+      'ui:widget': 'textarea',
+    }),
     thread_inactivity_hours: z.int().nonnegative().default(24).meta({
       title: 'Thread inactivity (hours)',
       description:
@@ -72,29 +74,5 @@ export const CONSOLE_CHANNEL_SETTINGS_SCHEMA = z
     }),
   })
   .meta({
-    title: 'Admin Chat Console',
+    title: 'Web Channel',
   });
-
-declare global {
-  interface RuntimeSettingRegistry {
-    [CONSOLE_CHANNEL_NAME]: typeof CONSOLE_CHANNEL_SETTINGS_SCHEMA;
-  }
-}
-
-export const ConsoleChannelSettingsGroup = createSettingGroup({
-  group: CONSOLE_CHANNEL_NAME,
-  schema: CONSOLE_CHANNEL_SETTINGS_SCHEMA,
-  scope: 'extension',
-  extensionType: 'channel',
-  extensionName: CONSOLE_CHANNEL_NAME,
-});
-
-export const CONSOLE_CHANNEL_SETTINGS = buildSettingSeedsFromSchema(
-  CONSOLE_CHANNEL_NAME,
-  CONSOLE_CHANNEL_SETTINGS_SCHEMA,
-  {
-    subgroup: 'channel',
-  },
-) as ChannelSetting<typeof CONSOLE_CHANNEL_NAME>[];
-
-export default ConsoleChannelSettingsGroup;

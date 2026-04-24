@@ -23,6 +23,7 @@ import { ChannelEventBus } from './lib/channel-event-bus';
 import { SourceRepository } from './repositories/source.repository';
 import { ChannelAttachmentService } from './services/channel-attachment.service';
 import { ChannelDownloadService } from './services/channel-download.service';
+import { ChannelRegistry } from './services/channel-registry.service';
 import { SourceService } from './services/source.service';
 import { SubscriberResolver } from './services/subscriber-resolver.service';
 import { SourceController } from './source.controller';
@@ -54,6 +55,7 @@ export interface ChannelModuleOptions {
   controllers: [WebhookController, ChannelController, SourceController],
   providers: [
     ChannelEventBus,
+    ChannelRegistry,
     ChannelService,
     SourceRepository,
     SourceService,
@@ -61,6 +63,6 @@ export interface ChannelModuleOptions {
     ChannelDownloadService,
     SubscriberResolver,
   ],
-  exports: [ChannelService, SourceService],
+  exports: [ChannelService, SourceService, ChannelRegistry],
 })
 export class ChannelModule {}

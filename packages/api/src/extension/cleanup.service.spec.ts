@@ -7,7 +7,6 @@
 import { Setting } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
-import { ChannelService } from '@/channel/channel.service';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -16,14 +15,6 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { CleanupService } from './cleanup.service';
-
-const channelServiceMock = {
-  getAll: jest.fn().mockReturnValue([]),
-};
-
-jest.mock('@/channel/channel.service', () => ({
-  ChannelService: jest.fn().mockImplementation(() => channelServiceMock),
-}));
 
 describe('CleanupService', () => {
   let module: TestingModule;
@@ -45,13 +36,7 @@ describe('CleanupService', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [
-        CleanupService,
-        {
-          provide: ChannelService,
-          useValue: channelServiceMock,
-        },
-      ],
+      providers: [CleanupService],
       typeorm: {
         fixtures: installSettingFixturesTypeOrm,
       },
@@ -85,24 +70,14 @@ describe('CleanupService', () => {
   });
 
   describe('delete', () => {
-    it('should delete unregistered extension settings using subgroup markers and purge legacy suffixed groups', async () => {
-      const registeredChannels = cleanupService.getChannelGroups();
+    it('should delete unregistered helper settings using subgroup markers', async () => {
       const registeredHelpers = cleanupService.getHelperGroups();
-      const legacySuffixPattern = /-(channel|helper)$/;
 
       expect(registeredHelpers).toContain('local-storage');
 
       await cleanupService.pruneExtensionSettings();
       const cleanSettings = await settingService.findAll();
       const filteredSettings = initialSettings.filter(({ group, subgroup }) => {
-        if (legacySuffixPattern.test(group)) {
-          return false;
-        }
-
-        if (subgroup === 'channel') {
-          return registeredChannels.includes(group as string);
-        }
-
         if (subgroup === 'helper') {
           return registeredHelpers.includes(group as string);
         }

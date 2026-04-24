@@ -26,6 +26,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
+import type { z } from 'zod';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
@@ -57,8 +58,8 @@ import {
   createWebInboundEventDecoder,
   createWebInboundMessageEncoder,
   WebInboundEventDecoder,
-  WebMessageInboundEvent,
   WebInboundMessageEncoder,
+  WebMessageInboundEvent,
 } from './inbound';
 import {
   createWebOutboundMessageEncoder,
@@ -69,8 +70,8 @@ import {
   WebHistoryService,
 } from './services/web-history.service';
 import { WebSessionService } from './services/web-session.service';
+import { WEB_CHANNEL_NAME } from './settings.schema';
 import { Web } from './types';
-import { WEB_CHANNEL_NAME } from './web-channel.settings';
 
 /**
  * Base handler for the Socket.IO-backed "web" channel.
@@ -110,8 +111,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   @ExtensionInject(WebHistoryService)
   private historyService!: WebHistoryService;
 
-  constructor(name: N) {
-    super(name);
+  constructor(name: N, sourceSettingsSchema?: z.ZodTypeAny) {
+    super(name, sourceSettingsSchema);
   }
 
   async onModuleInit() {

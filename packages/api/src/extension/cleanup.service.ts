@@ -8,7 +8,6 @@ import { Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
 import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
-import { ChannelService } from '@/channel/channel.service';
 import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -21,7 +20,6 @@ export class CleanupService {
     private readonly helperService: HelperService,
     private readonly loggerService: LoggerService,
     private readonly settingService: SettingService,
-    private readonly channelService: ChannelService,
   ) {}
 
   /**
@@ -65,25 +63,14 @@ export class CleanupService {
   }
 
   /**
-   * Retrieves a list of channel setting groups.
-   *
-   * @returns An array of channel groups.
-   */
-  public getChannelGroups(): TExtractGroup<'channel'>[] {
-    return this.channelService
-      .getAll()
-      .map((channel) => channel.getName() as TExtractGroup<'channel'>);
-  }
-
-  /**
    * Retrieves a list of helper setting groups.
    *
    * @returns An array of helper groups.
    */
-  public getHelperGroups(): TExtractGroup<'helper'>[] {
+  public getHelperGroups(): TExtractGroup[] {
     return this.helperService
       .getAll()
-      .map((helper) => helper.getName() as TExtractGroup<'helper'>);
+      .map((helper) => helper.getName() as TExtractGroup);
   }
 
   /**
@@ -91,10 +78,8 @@ export class CleanupService {
    *
    */
   public async pruneExtensionSettings(): Promise<void> {
-    const channels = this.getChannelGroups();
     const helpers = this.getHelperGroups();
     const { deletedCount } = await this.deleteManyBySubgroupAndGroups([
-      { extensionType: 'channel', groups: channels },
       { extensionType: 'helper', groups: helpers },
     ]);
 

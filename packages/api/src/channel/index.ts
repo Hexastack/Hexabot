@@ -38,6 +38,8 @@ export * from './services/channel-attachment.service';
 
 export * from './services/channel-download.service';
 
+export * from './services/channel-registry.service';
+
 export * from './services/source.service';
 
 export * from './services/subscriber-resolver.service';

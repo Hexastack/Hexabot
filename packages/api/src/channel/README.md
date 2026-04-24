@@ -95,7 +95,8 @@ Channels should define contracts as zod schemas, then infer TS types from those 
 
 The web channel is the reference pattern:
 
-- `WEB_CHANNEL_SETTINGS_SCHEMA` is a strict zod object for runtime settings.
+- `WEB_CHANNEL_SOURCE_SETTINGS_SCHEMA` is a strict zod object for per-source
+  channel settings.
 - `Web.eventSchema` is a discriminated zod union for inbound events.
 - Decoder parses first (`Web.eventSchema.parse(raw)`), then maps payloads to event classes.
 
@@ -103,7 +104,7 @@ This gives:
 
 - Runtime validation for external payloads.
 - Strong type inference in handlers/encoders.
-- Automatic settings introspection via JSON schema generation.
+- Automatic source settings introspection via JSON schema generation.
 
 ## Codec Design
 
@@ -148,7 +149,10 @@ Use package name prefix `hexabot-channel-` so it matches dynamic discovery patte
 Your compiled output must contain:
 
 - at least one `*.channel.js` file
-- if using runtime settings, one or more `*.settings.js` files
+
+Per-source channel settings should live on the channel handler, not in
+`*.settings.js` files. The `*.settings.js` dynamic provider pattern is reserved
+for runtime settings groups that are global to the API.
 
 Example `package.json`:
 
@@ -166,50 +170,23 @@ Example `package.json`:
 }
 ```
 
-### 2) Define settings with zod
+### 2) Define source settings with zod
 
 ```ts
 import z from 'zod';
-import {
-  ChannelSetting,
-  createSettingGroup,
-  buildSettingSeedsFromSchema,
-} from '@hexabot-ai/api';
 
 export const ACME_CHANNEL_NAME = 'acme' as const;
 
-export const ACME_CHANNEL_SETTINGS_SCHEMA = z.strictObject({
+export const ACME_CHANNEL_SOURCE_SETTINGS_SCHEMA = z.strictObject({
   api_key: z.string().default('').meta({ title: 'API key' }),
   verify_token: z.string().default('').meta({ title: 'Verify token' }),
 });
-
-declare global {
-  interface RuntimeSettingRegistry {
-    [ACME_CHANNEL_NAME]: typeof ACME_CHANNEL_SETTINGS_SCHEMA;
-  }
-}
-
-export const AcmeChannelSettingsGroup = createSettingGroup({
-  group: ACME_CHANNEL_NAME,
-  schema: ACME_CHANNEL_SETTINGS_SCHEMA,
-  scope: 'extension',
-  extensionType: 'channel',
-  extensionName: ACME_CHANNEL_NAME,
-});
-
-export const ACME_CHANNEL_SETTINGS = buildSettingSeedsFromSchema(
-  ACME_CHANNEL_NAME,
-  ACME_CHANNEL_SETTINGS_SCHEMA,
-  { subgroup: 'channel' },
-) as ChannelSetting<typeof ACME_CHANNEL_NAME>[];
-
-export default AcmeChannelSettingsGroup;
 ```
 
 ### 3) Add channel attribute typing
 
 ```ts
-import { ACME_CHANNEL_NAME } from './acme-channel.settings';
+import { ACME_CHANNEL_NAME } from './acme-channel.source-settings';
 
 declare global {
   interface SubscriberChannelDict {
@@ -227,6 +204,7 @@ import {
   ActionOptions,
   IncomingMessageType,
   StdOutgoingMessageEnvelope,
+  Source,
 } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
@@ -239,7 +217,10 @@ import {
   SyntheticMessageInboundEvent,
 } from '@hexabot-ai/api';
 
-import { ACME_CHANNEL_NAME } from './acme-channel.settings';
+import {
+  ACME_CHANNEL_NAME,
+  ACME_CHANNEL_SOURCE_SETTINGS_SCHEMA,
+} from './acme-channel.source-settings';
 import { acmeEventSchema } from './types';
 
 @Injectable()
@@ -247,7 +228,7 @@ export default class AcmeChannelHandler extends HttpChannelHandler<
   typeof ACME_CHANNEL_NAME
 > {
   constructor() {
-    super(ACME_CHANNEL_NAME);
+    super(ACME_CHANNEL_NAME, ACME_CHANNEL_SOURCE_SETTINGS_SCHEMA);
   }
 
   protected async decode(
@@ -325,7 +306,7 @@ export const acmeEventSchema = z.strictObject({
 
 ## Practical Notes
 
-- Keep channel `name`, settings group key, and extension name aligned (same kebab-case literal).
+- Keep channel `name` and source settings schema name aligned (same kebab-case literal).
 - Always parse unknown inbound payloads with zod before converting to internal events.
 - Use `ChannelCapabilities` to prevent unsupported outgoing message types from being sent.
 - Prefer `@ExtensionInject()` when helper services need per-channel binding.

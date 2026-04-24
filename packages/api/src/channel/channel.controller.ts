@@ -6,8 +6,10 @@
 
 import { ChannelMetadata } from '@hexabot-ai/types';
 import { Controller, Get } from '@nestjs/common';
+import { I18nContext } from 'nestjs-i18n';
 
-import { RuntimeSettingsService } from '@/setting/services/runtime-settings.service';
+import { I18nService } from '@/i18n/services/i18n.service';
+import { toDraft07JsonSchema } from '@/utils/helpers/zod';
 
 import { ChannelService } from './channel.service';
 
@@ -15,7 +17,7 @@ import { ChannelService } from './channel.service';
 export class ChannelController {
   constructor(
     private readonly channelService: ChannelService,
-    private readonly runtimeSettingsService: RuntimeSettingsService,
+    private readonly i18nService: I18nService,
   ) {}
 
   /**
@@ -25,19 +27,17 @@ export class ChannelController {
    */
   @Get()
   getChannels(): ChannelMetadata[] {
-    const schemaDefinitions =
-      this.runtimeSettingsService.getAllSchemaDefinitions();
+    const lang = I18nContext.current()?.lang;
 
     return this.channelService.getAll().map((handler) => {
       const channelName = handler.getName();
-      const schemaDefinition = schemaDefinitions[channelName];
 
       return {
         name: channelName,
-        settingsSchema:
-          schemaDefinition?.extensionType === 'channel'
-            ? (schemaDefinition.schema as Record<string, unknown>)
-            : {},
+        settingsSchema: toDraft07JsonSchema(
+          handler.getSourceSettingsSchema(),
+          this.i18nService.getJsonSchemaLocalizationOptions(channelName, lang),
+        ) as Record<string, unknown>,
       };
     });
   }

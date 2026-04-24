@@ -54,7 +54,7 @@ describe('RuntimeSettingsService', () => {
       group,
       schema,
       scope: 'extension',
-      extensionType: 'channel',
+      extensionType: 'helper',
       extensionName: 'test',
     });
 
@@ -65,7 +65,7 @@ describe('RuntimeSettingsService', () => {
     expect(fieldResult.success).toBe(true);
     expect(definitions[group]).toBeDefined();
     expect(definitions[group]?.scope).toBe('extension');
-    expect(definitions[group]?.extensionType).toBe('channel');
+    expect(definitions[group]?.extensionType).toBe('helper');
     expect(definitions[group]?.extensionName).toBe('test');
     expect(definitions[group]?.schema.$schema).toBe(
       'http://json-schema.org/draft-07/schema#',
