@@ -50,18 +50,22 @@ export class ChannelAttachmentService {
    */
   public async getPublicUrl(
     channelName: string,
-    attachment: AttachmentRef | AttachmentOrmEntity,
+    attachment?: AttachmentRef | AttachmentOrmEntity | null,
   ) {
     const fallbackUrl = this.buildNotFoundUrl(channelName);
+    if (!attachment || typeof attachment !== 'object') {
+      this.logger.warn(
+        'Unable to resolve the attachment public URL.',
+        attachment as unknown,
+      );
 
-    if (attachment && 'id' in attachment) {
-      if (!attachment.id) {
-        this.logger.warn('Unable to build public URL: Empty attachment ID');
+      return fallbackUrl;
+    }
 
-        return fallbackUrl;
-      }
-
-      const resource = await this.attachmentService.findOne(attachment.id);
+    const attachmentId = 'id' in attachment ? attachment.id : undefined;
+    const attachmentUrl = 'url' in attachment ? attachment.url : undefined;
+    if (typeof attachmentId === 'string' && attachmentId.length > 0) {
+      const resource = await this.attachmentService.findOne(attachmentId);
 
       if (!resource) {
         this.logger.warn('Unable to find attachment sending fallback image');
@@ -77,14 +81,20 @@ export class ChannelAttachmentService {
       );
     }
 
-    if ('url' in attachment && attachment.url) {
+    if (typeof attachmentUrl === 'string' && attachmentUrl.length > 0) {
       // In case the url is external
-      return attachment.url;
+      return attachmentUrl;
+    }
+
+    if ('id' in attachment && !attachment.id) {
+      this.logger.warn('Unable to build public URL: Empty attachment ID');
+
+      return fallbackUrl;
     }
 
     this.logger.warn(
       'Unable to resolve the attachment public URL.',
-      attachment,
+      attachment as unknown,
     );
 
     return fallbackUrl;

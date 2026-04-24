@@ -60,6 +60,7 @@ import {
   WebInboundEventDecoder,
   WebMessageInboundEvent,
 } from './inbound';
+import { WebInboundMessageEncoder } from './inbound/web-inbound-message-encoder';
 import {
   createWebOutboundMessageEncoder,
   WebOutboundMessageEncoder,
@@ -94,6 +95,9 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
   @ExtensionInject((name) => createWebOutboundMessageEncoder(name))
   private outboundMessageEncoder!: WebOutboundMessageEncoder;
+
+  @ExtensionInject(WebInboundMessageEncoder)
+  private inboundMessageEncoder!: WebInboundMessageEncoder;
 
   @ExtensionInject((name) => createWebInboundEventDecoder(name))
   private inboundEventDecoder!: WebInboundEventDecoder<N>;
@@ -133,7 +137,8 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
   private formatCtx(): WebFormatContext {
     return {
-      encoder: this.outboundMessageEncoder,
+      inboundEncoder: this.inboundMessageEncoder,
+      outboundEncoder: this.outboundMessageEncoder,
       channelName: this.getName(),
       generateId: () => this.generateId(),
     };

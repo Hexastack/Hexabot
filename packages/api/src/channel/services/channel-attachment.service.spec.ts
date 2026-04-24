@@ -104,6 +104,16 @@ describe('ChannelAttachmentService', () => {
     );
   });
 
+  it('returns the not-found URL when attachment payload is undefined', async () => {
+    const url = await service.getPublicUrl('web');
+
+    expect(url).toBe(buildURL(config.apiBaseUrl, '/webhook/web/not-found'));
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Unable to resolve the attachment public URL.',
+      undefined,
+    );
+  });
+
   it('downloads an attachment when token is valid and access policy allows it', async () => {
     const req = {} as Request;
     const attachment = {
