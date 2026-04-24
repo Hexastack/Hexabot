@@ -6,8 +6,15 @@
 
 import { Activity, Play, Settings, XCircle } from "lucide-react";
 
+import { RouterType } from "@/services/types";
+
 export const mockQuickActions = [
-  { id: "create", label: "Create Workflow", icon: Activity, url: "" }, // icon will be handled in component
+  {
+    id: "create",
+    label: "Create Workflow",
+    icon: Activity,
+    url: `/${RouterType.WORKFLOW_EDITOR}`,
+  }, // icon will be handled in component
   { id: "run", label: "Run Manual Workflow", icon: Play, url: "" },
   { id: "connect", label: "Connect Channel", icon: Settings, url: "" },
   {
