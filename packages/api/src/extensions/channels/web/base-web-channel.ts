@@ -348,28 +348,6 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     return formattedMessages;
   }
 
-  private normalizeThreadId(raw: unknown): string | undefined {
-    if (typeof raw !== 'string') {
-      return undefined;
-    }
-    const value = raw.trim();
-
-    return value.length > 0 ? value : undefined;
-  }
-
-  private getThreadIdFromQuery(req: SocketRequest): string | undefined {
-    const raw = req.query.thread_id;
-    const candidate = Array.isArray(raw) ? raw[0] : raw;
-
-    return this.normalizeThreadId(candidate);
-  }
-
-  private getThreadIdFromBody(req: SocketRequest): string | undefined {
-    const body = req.body as { thread_id?: unknown } | undefined;
-
-    return this.normalizeThreadId(body?.thread_id);
-  }
-
   /**
    * Verify the origin against whitelisted domains.
    *
