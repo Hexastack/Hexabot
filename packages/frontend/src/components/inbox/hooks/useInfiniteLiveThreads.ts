@@ -15,7 +15,7 @@ import { SearchPayload } from "@/types/search.types";
 import { AssignedTo } from "../types";
 
 type ConversationsFilters = {
-  channels: string[];
+  sources: string[];
   searchPayload: SearchPayload<EntityType.SUBSCRIBER>;
   assignedTo: AssignedTo;
 };
@@ -75,7 +75,6 @@ export const buildThreadSearchPayload = (
 ) => {
   const subscriberWhere = {
     ...(props.searchPayload.where ?? {}),
-    "channel.name": { $in: props.channels },
     ...(props.assignedTo === AssignedTo.ME
       ? { "assignedTo.id": userId }
       : props.assignedTo === AssignedTo.OTHERS
@@ -85,7 +84,14 @@ export const buildThreadSearchPayload = (
   const where = mapSubscriberWhereToThreadWhere(subscriberWhere);
 
   return {
-    where,
+    where: {
+      ...where,
+      ...(props.sources.length > 0
+        ? {
+            "source.id": { $in: props.sources },
+          }
+        : {}),
+    },
   } satisfies SearchPayload<EntityType.THREAD>;
 };
 

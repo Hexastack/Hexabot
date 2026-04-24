@@ -5,10 +5,17 @@
  */
 
 import { INestApplication } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { DataSource, Repository } from 'typeorm';
 
+import { MessageOrmEntity } from '@/chat/entities/message.entity';
+import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
+import { installMessageFixturesTypeOrm } from '@/utils/test/fixtures/message';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { SourceOrmEntity } from './entities/source.entity';
 import { SourceService } from './services/source.service';
 import { SourceController } from './source.controller';
 
@@ -102,5 +109,70 @@ describe('SourceController (HTTP pipes)', () => {
 
   it('rejects malformed source id before reaching controller logic', async () => {
     await request(app.getHttpServer()).get('/source/not-a-uuid').expect(404);
+  });
+});
+
+describe('SourceController (TypeORM cascade)', () => {
+  let module: TestingModule;
+  let controller: SourceController;
+  let sourceRepository: Repository<SourceOrmEntity>;
+  let threadRepository: Repository<ThreadOrmEntity>;
+  let messageRepository: Repository<MessageOrmEntity>;
+
+  beforeAll(async () => {
+    const testing = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
+      controllers: [SourceController],
+      typeorm: {
+        fixtures: installMessageFixturesTypeOrm,
+      },
+    });
+
+    module = testing.module;
+    [controller] = await testing.getMocks([SourceController]);
+    const dataSource = module.get<DataSource>(DataSource);
+    sourceRepository = dataSource.getRepository(SourceOrmEntity);
+    threadRepository = dataSource.getRepository(ThreadOrmEntity);
+    messageRepository = dataSource.getRepository(MessageOrmEntity);
+  });
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+
+    await closeTypeOrmConnections();
+  });
+
+  it('deleting a source cascades to linked threads and messages', async () => {
+    const source = await sourceRepository.findOne({
+      where: { channel: 'web' },
+    });
+
+    if (!source) {
+      throw new Error('Expected a source fixture for web channel');
+    }
+
+    const threadCountBefore = await threadRepository.count({
+      where: { source: { id: source.id } },
+    });
+    const messageCountBefore = await messageRepository.count();
+
+    expect(threadCountBefore).toBeGreaterThan(0);
+    expect(messageCountBefore).toBeGreaterThan(0);
+
+    await controller.deleteSource(source.id);
+
+    const deletedSource = await sourceRepository.findOne({
+      where: { id: source.id },
+    });
+    const threadCountAfter = await threadRepository.count({
+      where: { source: { id: source.id } },
+    });
+    const messageCountAfter = await messageRepository.count();
+
+    expect(deletedSource).toBeNull();
+    expect(threadCountAfter).toBe(0);
+    expect(messageCountAfter).toBeLessThan(messageCountBefore);
   });
 });

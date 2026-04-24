@@ -50,8 +50,15 @@ export const getConversationSecondaryText = (
   return [firstValue, formattedDate].filter(Boolean).join(" • ");
 };
 
+export const getConversationSourceLabel = (
+  sourceName: string | null | undefined,
+  unknownLabel: string,
+) => {
+  return sourceName || unknownLabel;
+};
+
 export const ConversationsList = (props: {
-  channels: string[];
+  sources: string[];
   searchPayload: SearchPayload<EntityType.SUBSCRIBER>;
   assignedTo: AssignedTo;
 }) => {
@@ -60,6 +67,7 @@ export const ConversationsList = (props: {
   const { t, i18n } = useTranslate();
   const chat = useChat();
   const getSubscriberFromCache = useGetFromCache(EntityType.SUBSCRIBER);
+  const getSourceFromCache = useGetFromCache(EntityType.SOURCE);
   const { fetchNextPage, isFetching, threads, hasNextPage } =
     useInfiniteLiveThreads(props);
   const handleLoadMore = debounce(() => {
@@ -106,6 +114,10 @@ export const ConversationsList = (props: {
           typeof thread.subscriber === "string"
             ? getSubscriberFromCache(thread.subscriber)
             : thread.subscriber;
+        const source =
+          typeof thread.source === "string"
+            ? getSourceFromCache(thread.source)
+            : thread.source;
         const subscriberName = [subscriber?.firstName, subscriber?.lastName]
           .filter(Boolean)
           .join(" ");
@@ -149,7 +161,13 @@ export const ConversationsList = (props: {
                   },
                 }}
               />
-              <Chip size="small" label={subscriber.channel.name} />
+              <Chip
+                size="small"
+                label={getConversationSourceLabel(
+                  source?.name,
+                  t("label.unknown"),
+                )}
+              />
             </ListItemButton>
           </ListItem>
         );

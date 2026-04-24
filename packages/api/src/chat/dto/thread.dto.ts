@@ -66,7 +66,16 @@ export class ThreadCreateDto {
   closeReason?: 'manual' | 'inactivity' | null;
 }
 
-export class ThreadUpdateDto extends PartialType(ThreadCreateDto) {}
+export class ThreadUpdateDto extends PartialType(ThreadCreateDto) {
+  @ApiPropertyOptional({
+    description: 'Thread source id (immutable)',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  @IsUUIDv4({ message: 'Source must be a valid UUID' })
+  source?: string;
+}
 
 export type ThreadDto = TDto<
   {

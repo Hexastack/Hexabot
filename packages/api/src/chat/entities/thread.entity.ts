@@ -7,6 +7,7 @@
 import { threadSchema, threadFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
 
+import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -40,6 +41,17 @@ export class ThreadOrmEntity extends BaseOrmEntity<ThreadDto> {
 
   @RelationId((thread: ThreadOrmEntity) => thread.subscriber)
   private readonly subscriberId!: string;
+
+  @ManyToOne(() => SourceOrmEntity, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'source_id' })
+  @AsRelation()
+  source!: SourceOrmEntity;
+
+  @RelationId((thread: ThreadOrmEntity) => thread.source)
+  private readonly sourceId!: string;
 
   @EnumColumn({ enum: THREAD_STATUSES, default: 'open' })
   status!: ThreadStatus;

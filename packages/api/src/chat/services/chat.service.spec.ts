@@ -111,6 +111,7 @@ describe('ChatService', () => {
       subscriberId: subscriber.id,
       explicitThreadId: undefined,
       inactivityHours: 24,
+      sourceId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
     });
     expect(event.setThreadId).toHaveBeenCalledWith('thread-1');
     expect(threadService.buildThreadTitleFromIncomingText).toHaveBeenCalledWith(

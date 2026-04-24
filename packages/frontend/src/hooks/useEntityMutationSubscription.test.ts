@@ -14,16 +14,18 @@ import {
 } from "./useEntityMutationSubscription";
 
 describe("useEntityMutationSubscription helpers", () => {
-  it("keeps populated thread subscriber when incoming payload has a subscriber id", () => {
+  it("keeps populated thread relations when incoming payload has relation ids", () => {
     const previousData = {
       id: "thread-1",
       title: "Support",
       subscriber: { id: "sub-1", fullName: "Subscriber One" },
+      source: { id: "source-1", name: "Main web" },
     };
     const nextEntityData = {
       id: "thread-1",
       status: "open",
       subscriber: "sub-1",
+      source: "source-1",
     };
     const merged = mergeEntityCachePayload(
       EntityType.THREAD,
@@ -32,6 +34,7 @@ describe("useEntityMutationSubscription helpers", () => {
     );
 
     expect(merged.subscriber).toEqual(previousData.subscriber);
+    expect(merged.source).toEqual(previousData.source);
     expect(merged.status).toBe("open");
   });
 

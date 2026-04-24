@@ -5,12 +5,17 @@
  */
 
 import { Thread } from '@hexabot-ai/types';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { FindOneOptions } from 'typeorm';
 
+import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
+import { ThreadCreateDto, ThreadUpdateDto } from '../dto/thread.dto';
 import { ThreadOrmEntity } from '../entities/thread.entity';
 import { ThreadRepository } from '../repositories/thread.repository';
+
+import { SubscriberService } from './subscriber.service';
 
 @Injectable()
 export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
@@ -18,8 +23,68 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
 
   public static readonly THREAD_TITLE_ELLIPSIS = '...';
 
-  constructor(readonly repository: ThreadRepository) {
+  private extractSourceId(source: unknown): string | null {
+    if (typeof source === 'string' && source.length > 0) {
+      return source;
+    }
+    if (
+      source &&
+      typeof source === 'object' &&
+      'id' in source &&
+      typeof (source as { id?: unknown }).id === 'string'
+    ) {
+      return (source as { id: string }).id;
+    }
+
+    return null;
+  }
+
+  constructor(
+    readonly repository: ThreadRepository,
+    private readonly subscriberService: SubscriberService,
+  ) {
     super(repository);
+  }
+
+  private async resolveThreadSourceId({
+    subscriberId,
+    sourceId,
+  }: {
+    subscriberId: string;
+    sourceId?: string;
+  }): Promise<string> {
+    // Incoming event context is authoritative when present.
+    if (sourceId) {
+      return sourceId;
+    }
+
+    const subscriber = await this.subscriberService.findOne(subscriberId);
+    if (!subscriber) {
+      throw new Error(
+        `Unable to resolve source for subscriber ${subscriberId}`,
+      );
+    }
+
+    const subscriberSourceId = this.extractSourceId(subscriber.source);
+    if (subscriberSourceId) {
+      return subscriberSourceId;
+    }
+
+    throw new Error(`Unable to resolve source for subscriber ${subscriberId}`);
+  }
+
+  override async create(
+    payload: ThreadCreateDto & { source?: string },
+  ): Promise<Thread> {
+    const sourceId = await this.resolveThreadSourceId({
+      subscriberId: payload.subscriber,
+      sourceId: payload.source,
+    });
+
+    return await super.create({
+      ...payload,
+      source: sourceId,
+    } as ThreadCreateDto);
   }
 
   getDefaultInactivityHours(): number {
@@ -41,15 +106,34 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
     return await this.repository.findOneForSubscriber(threadId, subscriberId);
   }
 
-  async createThread(subscriberId: string, title?: string | null) {
+  async createThread(
+    subscriberId: string,
+    title?: string | null,
+    sourceId?: string,
+  ) {
     return await this.create({
       subscriber: subscriberId,
+      source: sourceId,
       title: title ?? null,
       status: 'open',
       lastMessageAt: new Date(),
       closeReason: null,
       closedAt: null,
     });
+  }
+
+  override async updateOne(
+    idOrOptions: string | FindOneOptions<ThreadOrmEntity>,
+    payload: ThreadUpdateDto,
+    options?: UpdateOneOptions,
+  ): Promise<Thread> {
+    if ('subscriber' in (payload ?? {}) || 'source' in (payload ?? {})) {
+      throw new BadRequestException(
+        'Thread subscriber and source cannot be updated',
+      );
+    }
+
+    return await super.updateOne(idOrOptions, payload, options);
   }
 
   buildThreadTitleFromIncomingText(input?: string | null): string | null {
@@ -111,10 +195,12 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
     subscriberId,
     explicitThreadId,
     inactivityHours,
+    sourceId,
   }: {
     subscriberId: string;
     explicitThreadId?: string;
     inactivityHours?: number;
+    sourceId?: string;
   }): Promise<Thread> {
     const now = new Date();
 
@@ -144,7 +230,7 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
       await this.repository.findLatestOpenThreadForSubscriber(subscriberId);
 
     if (!latestOpen) {
-      return await this.createThread(subscriberId);
+      return await this.createThread(subscriberId, null, sourceId);
     }
 
     const anchor = latestOpen.lastMessageAt ?? latestOpen.createdAt;
@@ -154,7 +240,7 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
     if (hasExpired) {
       await this.closeThread(latestOpen.id, 'inactivity', now);
 
-      return await this.createThread(subscriberId);
+      return await this.createThread(subscriberId, null, sourceId);
     }
 
     await this.touchThread(latestOpen.id, now);
@@ -165,9 +251,11 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
   async resolveOrCreateThread({
     subscriberId,
     explicitThreadId,
+    sourceId,
   }: {
     subscriberId: string;
     explicitThreadId?: string;
+    sourceId?: string;
   }): Promise<Thread> {
     const resolved = await this.resolveThread({
       subscriberId,
@@ -177,7 +265,7 @@ export class ThreadService extends BaseOrmService<ThreadOrmEntity> {
       return resolved;
     }
 
-    return await this.createThread(subscriberId);
+    return await this.createThread(subscriberId, null, sourceId);
   }
 
   async resolveThread({

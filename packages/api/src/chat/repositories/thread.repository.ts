@@ -19,7 +19,7 @@ export class ThreadRepository extends BaseOrmRepository<ThreadOrmEntity> {
     @InjectRepository(ThreadOrmEntity)
     repository: Repository<ThreadOrmEntity>,
   ) {
-    super(repository, ['subscriber']);
+    super(repository, ['subscriber', 'source']);
   }
 
   async findLatestOpenThreadForSubscriber(

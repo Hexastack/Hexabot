@@ -267,6 +267,16 @@ describe("@hexabot-ai/types schemas", () => {
         updatedAt: now,
         status: "open",
         subscriberId: "s_1",
+        source: {
+          id: "source_1",
+          createdAt: now,
+          updatedAt: now,
+          name: "main-web",
+          channel: "web",
+          settings: {},
+          state: true,
+          defaultWorkflow: null,
+        },
       }),
       "subscriber",
     );

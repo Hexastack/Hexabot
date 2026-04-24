@@ -6,6 +6,7 @@
 
 import { z } from "zod";
 
+import { sourceSchema } from "../channel/source";
 import { asId, withAliases } from "../shared/aliases";
 import { baseStubSchema } from "../shared/base";
 import { preprocess } from "../shared/preprocess";
@@ -16,6 +17,7 @@ const nullableOptionalDateSchema = z.coerce.date().nullable().optional();
 const nullableOptionalStringSchema = z.string().nullable().optional();
 const threadAliasMap = {
   subscriberId: "subscriber",
+  sourceId: "source",
 } as const;
 const threadStubObjectSchema = baseStubSchema.extend({
   status: z.enum(["open", "closed"]),
@@ -34,11 +36,16 @@ export const threadSchema = preprocess(
       (value) => (value == null ? null : asId(value)),
       z.string(),
     ),
+    source: preprocess(
+      (value) => (value == null ? null : asId(value)),
+      z.string(),
+    ),
   }),
 );
 
 export const threadFullSchema = threadStubObjectSchema.extend({
   subscriber: subscriberSchema,
+  source: sourceSchema,
 });
 
 export type ThreadStub = z.infer<typeof threadStubSchema>;

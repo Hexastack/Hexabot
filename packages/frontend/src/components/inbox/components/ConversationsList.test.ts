@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   getActiveThreadId,
+  getConversationSourceLabel,
   getConversationSecondaryText,
   getInboxThreadPath,
 } from "./ConversationsList";
@@ -30,5 +31,10 @@ describe("ConversationsList helpers", () => {
     expect(getConversationSecondaryText(undefined, "4/11/2026, 10:52 AM")).toBe(
       "4/11/2026, 10:52 AM",
     );
+  });
+
+  it("prefers source name for conversation badge labels", () => {
+    expect(getConversationSourceLabel("main-web", "Unknown")).toBe("main-web");
+    expect(getConversationSourceLabel(undefined, "Unknown")).toBe("Unknown");
   });
 });

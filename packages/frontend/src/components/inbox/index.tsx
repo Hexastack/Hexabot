@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Source } from "@hexabot-ai/types";
 import Box from "@mui/material/Box";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
@@ -16,7 +17,6 @@ import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
-import { IChannel } from "@/types/channel.types";
 
 import { Chat } from "./components/Chat";
 import { ConversationsList } from "./components/ConversationsList";
@@ -32,7 +32,7 @@ export const Inbox = () => {
       },
       { syncUrl: true },
     );
-  const [channels, setChannels] = useState<string[]>([]);
+  const [sources, setSources] = useState<string[]>([]);
   const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
 
   return (
@@ -60,18 +60,19 @@ export const Inbox = () => {
           <Stack spacing={2} sx={{ height: "100%" }}>
             <Stack spacing={1} sx={{ p: 2, pb: 1.5 }}>
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
-              <AutoCompleteEntitySelect<IChannel, "name">
-                searchFields={["name"]}
-                entity={EntityType.CHANNEL}
+              <AutoCompleteEntitySelect<Source, "name">
+                searchFields={["name", "channel"]}
+                entity={EntityType.SOURCE}
                 format={Format.BASIC}
-                idKey="name"
+                idKey="id"
                 labelKey="name"
                 multiple={true}
                 onChange={(_e, selected, ..._) => {
-                  setChannels((selected || [])?.map(({ name }) => name));
+                  setSources((selected || [])?.map(({ id }) => id));
                 }}
-                label={t("label.channel")}
-                value={channels}
+                label={t("label.source")}
+                value={sources}
+                where={{ state: true }}
                 limitTags={2}
               />
               <TextField
@@ -88,7 +89,7 @@ export const Inbox = () => {
               </TextField>
             </Stack>
             <ConversationsList
-              channels={channels}
+              sources={sources}
               searchPayload={searchPayload}
               assignedTo={assignment}
             />

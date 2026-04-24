@@ -50,9 +50,21 @@ export const mergeEntityCachePayload = (
     previousData.subscriber !== null &&
     typeof nextEntityData.subscriber === "string"
   ) {
+    mergedPayload.subscriber = previousData.subscriber;
+  }
+
+  if (
+    entityType === EntityType.THREAD &&
+    typeof previousData?.source === "object" &&
+    previousData.source !== null &&
+    typeof nextEntityData.source === "string"
+  ) {
+    mergedPayload.source = previousData.source;
+  }
+
+  if (entityType === EntityType.THREAD) {
     return {
       ...mergedPayload,
-      subscriber: previousData.subscriber,
     };
   }
 

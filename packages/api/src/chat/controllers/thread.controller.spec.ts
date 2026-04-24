@@ -5,7 +5,7 @@
  */
 
 import { Thread, ThreadFull } from '@hexabot-ai/types';
-import { ArgumentMetadata } from '@nestjs/common';
+import { BadRequestException, ArgumentMetadata } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 
 import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
@@ -151,6 +151,32 @@ describe('ThreadController (TypeORM)', () => {
         ),
       ).toBe(true);
     });
+
+    it('accepts source-based filters', async () => {
+      const pipe = new TypeOrmSearchFilterPipe<ThreadOrmEntity>({
+        allowedFields: THREAD_ALLOWED_FILTER_FIELDS,
+      });
+      const sourceId = referencePopulated.source.id;
+      const options = await pipe.transform(
+        {
+          where: {
+            'source.id': sourceId,
+          },
+        } as any,
+        {} as ArgumentMetadata,
+      );
+      const result = await threadController.findThreads(
+        ['subscriber', 'source'],
+        options,
+      );
+
+      expect(result.length).toBeGreaterThan(0);
+      expect(
+        (result as ThreadFull[]).every(
+          (thread) => thread.source.id === sourceId,
+        ),
+      ).toBe(true);
+    });
   });
 
   describe('create', () => {
@@ -181,6 +207,19 @@ describe('ThreadController (TypeORM)', () => {
       expect(closed.closeReason).toBe('manual');
       expect(stored?.status).toBe('closed');
       expect(stored?.closeReason).toBe('manual');
+    });
+
+    it('rejects subscriber/source updates on thread patch payload', async () => {
+      await expect(
+        threadController.updateOne(referencePlain.id, {
+          subscriber: referencePlain.subscriber,
+        } as any),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        threadController.updateOne(referencePlain.id, {
+          source: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        } as any),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

@@ -293,6 +293,9 @@ export const SourceEntity = new schema.Entity(
     processStrategy: processCommonStrategy,
   },
 );
+ThreadEntity.define({
+  source: SourceEntity,
+});
 
 WorkflowVersionEntity.define({
   workflow: WorkflowEntity,

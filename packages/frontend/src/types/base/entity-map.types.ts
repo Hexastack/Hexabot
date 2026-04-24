@@ -203,6 +203,9 @@ export interface IEntityMapTypes {
           id: string;
         };
       };
+      source: {
+        id: string;
+      };
     },
     ThreadFull
   >;

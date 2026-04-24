@@ -207,12 +207,17 @@ export class ChatService {
   async handleEchoMessage(event: MessageInboundEvent) {
     this.logger.verbose('Message echo received', event.getRaw());
     const foreignId = event.getRecipientForeignId();
+    const sourceId =
+      typeof event.getSourceId === 'function'
+        ? (event.getSourceId() ?? undefined)
+        : undefined;
 
     if (foreignId) {
       try {
-        const recipient = await this.subscriberService.findOne({
-          where: { foreignId },
-        });
+        const recipient = await this.subscriberService.findOneByForeignId(
+          foreignId,
+          sourceId,
+        );
 
         if (!recipient) {
           throw new Error(`Subscriber with foreign ID ${foreignId} not found`);
@@ -225,6 +230,7 @@ export class ChatService {
             await this.threadService.resolveOrCreateThread({
               subscriberId: recipient.id,
               explicitThreadId: event.getThreadId(),
+              sourceId,
             })
           ).id,
           message: event.getMessage(),
@@ -311,6 +317,7 @@ export class ChatService {
         subscriberId: subscriber.id,
         explicitThreadId: event.getThreadId(),
         inactivityHours,
+        sourceId,
       });
       event.setThreadId(thread.id);
 
