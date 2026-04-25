@@ -15,6 +15,7 @@ export const POPULATE_BY_TYPE = {
     "triggeredBy",
     "thread",
   ],
+  [EntityType.AUDIT_LOG]: [],
   [EntityType.MCP_SERVER]: ["credential"],
   [EntityType.MEMORY_DEFINITION]: [],
   [EntityType.THREAD]: ["subscriber", "source"],

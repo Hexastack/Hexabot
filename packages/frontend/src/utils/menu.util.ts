@@ -19,6 +19,7 @@ import {
   Menu,
   MessagesSquare,
   Plug,
+  ScrollText,
   Settings,
   Shield,
   Tag,
@@ -170,6 +171,14 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         Icon: KeyRound,
         requires: {
           [EntityType.CREDENTIAL]: [Action.READ],
+        },
+      },
+      {
+        text: "menu.audit_trail",
+        href: "/audit",
+        Icon: ScrollText,
+        requires: {
+          [EntityType.AUDIT_LOG]: [Action.READ],
         },
       },
     ],

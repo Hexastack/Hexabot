@@ -227,6 +227,7 @@
     "channel_sources": "Sources de canaux",
     "settings": "Paramètres",
     "event_log": "Journal des événements",
+    "audit_trail": "Journal d'audit",
     "home": "Accueil",
     "admin": "Administration"
   },
@@ -296,6 +297,8 @@
     "handled_by_chatbot": "Autres",
     "settings": "Paramètres",
     "event_log": "Journal des événements",
+    "audit_trail": "Journal d'audit",
+    "audit_log_details": "Détails du journal d'audit",
     "log_entry": "Journal des entrées",
     "dashboard": "Tableau de bord",
     "warning": "Avertissement",
@@ -344,6 +347,12 @@
         "unhealthy": "Défaillant",
         "disabled": "Désactivé"
       }
+    },
+    "activity": {
+      "title": "Activité",
+      "loading": "Chargement de l'activité...",
+      "error": "Impossible de charger l'activité.",
+      "empty": "Aucune activité à afficher"
     }
   },
   "label": {
@@ -590,6 +599,25 @@
     "body": "Corps",
     "datetime": "Date/Heure",
     "action": "Action",
+    "operation_type": "Type d'opération",
+    "operation_id": "ID d'opération",
+    "operation_status": "Statut d'opération",
+    "resource_type": "Type de ressource",
+    "resource_id": "ID de ressource",
+    "actor_id": "ID acteur",
+    "actor_type": "Type d'acteur",
+    "actor_ip": "IP acteur",
+    "actor_agent": "Agent acteur",
+    "request_id": "ID requête",
+    "request_method": "Méthode requête",
+    "request_path": "Chemin requête",
+    "data_before": "Données avant",
+    "data_after": "Données après",
+    "data_diff": "Différence",
+    "raw": "Brut",
+    "audit_status_succeeded": "Réussie",
+    "audit_status_failed": "Échouée",
+    "audit_status_unspecified": "Non spécifiée",
     "relation": "Relation",
     "read": "Lecture",
     "create": "Ajout",

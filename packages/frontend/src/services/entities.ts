@@ -332,12 +332,22 @@ export const WorkflowRunEntity = new schema.Entity(
   },
 );
 
+export const AuditLogEntity = new schema.Entity(
+  EntityType.AUDIT_LOG,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const ENTITY_MAP = {
   [EntityType.WORKFLOW]: WorkflowEntity,
   [EntityType.WORKFLOW_VERSION]: WorkflowVersionEntity,
   [EntityType.WORKFLOW_RUN]: WorkflowRunEntity,
   [EntityType.MCP_SERVER]: McpServerEntity,
   [EntityType.MEMORY_DEFINITION]: MemoryDefinitionEntity,
+  [EntityType.AUDIT_LOG]: AuditLogEntity,
   [EntityType.THREAD]: ThreadEntity,
   [EntityType.SUBSCRIBER]: SubscriberEntity,
   [EntityType.LABEL]: LabelEntity,

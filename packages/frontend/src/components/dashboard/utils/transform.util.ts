@@ -8,8 +8,11 @@ import { alpha } from "@mui/material";
 import {
   AlertCircle,
   AlertTriangle,
+  Calendar,
+  FileText,
   LucideIcon,
   Mail,
+  MousePointer2,
   PlayIcon,
   RefreshCcw,
   Settings,
@@ -66,6 +69,12 @@ export const getActivityIcon = (text: string) => {
   if (text.includes("missed")) return AlertTriangle;
 
   return RefreshCcw;
+};
+export const getWorkflowIcon = (type: string): LucideIcon => {
+  if (type === "Conversational") return FileText;
+  if (type === "Scheduled") return Calendar;
+
+  return MousePointer2;
 };
 
 export const getIntegrationIcon = (name: string): LucideIcon => {

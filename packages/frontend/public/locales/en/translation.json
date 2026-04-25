@@ -227,6 +227,7 @@
     "channel_sources": "Channel Sources",
     "settings": "Settings",
     "event_log": "Events Log",
+    "audit_trail": "Audit Trail",
     "home": "Home",
     "admin": "Admin"
   },
@@ -296,6 +297,8 @@
     "handled_by_chatbot": "Others",
     "settings": "Settings",
     "event_log": "Events Log",
+    "audit_trail": "Audit Trail",
+    "audit_log_details": "Audit Log Details",
     "log_entry": "Log entry",
     "dashboard": "Dashboard",
     "warning": "Warning",
@@ -344,6 +347,12 @@
         "unhealthy": "Unhealthy",
         "disabled": "Disabled"
       }
+    },
+    "activity": {
+      "title": "Activity",
+      "loading": "Loading activity...",
+      "error": "Unable to load activity.",
+      "empty": "No activity to display"
     }
   },
   "label": {
@@ -591,6 +600,25 @@
     "body": "Body",
     "datetime": "Date/Time",
     "action": "Action",
+    "operation_type": "Operation Type",
+    "operation_id": "Operation ID",
+    "operation_status": "Operation Status",
+    "resource_type": "Resource Type",
+    "resource_id": "Resource ID",
+    "actor_id": "Actor ID",
+    "actor_type": "Actor Type",
+    "actor_ip": "Actor IP",
+    "actor_agent": "Actor Agent",
+    "request_id": "Request ID",
+    "request_method": "Request Method",
+    "request_path": "Request Path",
+    "data_before": "Data Before",
+    "data_after": "Data After",
+    "data_diff": "Data Diff",
+    "raw": "Raw",
+    "audit_status_succeeded": "Succeeded",
+    "audit_status_failed": "Failed",
+    "audit_status_unspecified": "Unspecified",
     "relation": "Relation",
     "read": "Read",
     "create": "Create",

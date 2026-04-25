@@ -106,6 +106,7 @@ export const ROUTES = {
   [EntityType.WORKFLOW_RUN]: "/workflowrun",
   [EntityType.MCP_SERVER]: "/mcpserver",
   [EntityType.MEMORY_DEFINITION]: "/memorydefinition",
+  [EntityType.AUDIT_LOG]: "/auditlog",
   [EntityType.THREAD]: "/thread",
 } as const;
 
