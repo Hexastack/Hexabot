@@ -4,22 +4,27 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Activity, Play, Settings, XCircle } from "lucide-react";
+import { Activity, Play, Webhook, XCircle } from "lucide-react";
 
 import { RouterType } from "@/services/types";
 
 export const mockQuickActions = [
   {
     id: "create",
-    label: "Create Workflow",
+    label: "button.create_workflow",
     icon: Activity,
     url: `/${RouterType.WORKFLOW_EDITOR}`,
-  }, // icon will be handled in component
-  { id: "run", label: "Run Manual Workflow", icon: Play, url: "" },
-  { id: "connect", label: "Connect Channel", icon: Settings, url: "" },
+  },
+  { id: "run", label: "button.run_manual_workflow", icon: Play, url: "" },
+  {
+    id: "connect",
+    label: "menu.channel_sources",
+    icon: Webhook,
+    url: "/settings/sources",
+  },
   {
     id: "failed",
-    label: "View Failed Runs",
+    label: "button.view_failed_runs",
     icon: XCircle,
     url: "/workflow/runs?status=failed",
   },
