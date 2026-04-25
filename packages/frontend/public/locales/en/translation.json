@@ -290,6 +290,7 @@
     "manage_permissions": "Manage permissions",
     "active_users": "Active users",
     "inbox": "Inbox",
+    "quick_actions": "Quick Actions",
     "all_messages": "All Messages",
     "handled_by_me": "Assigned to me",
     "handled_by_chatbot": "Others",
@@ -318,7 +319,7 @@
       "last_24h": "Last 24h",
       "loading": "—"
     },
-    "upcoming_schedules": "Upcoming"
+    "upcoming_schedules": "Upcoming",
     "thread_snapshot": {
       "title": "Thread Snapshot",
       "range": "Last 7 days",
@@ -739,6 +740,9 @@
     "edit": "Edit",
     "save": "Save",
     "run": "Run",
+    "create_workflow": "Create Workflow",
+    "run_manual_workflow": "Run Manual Workflow",
+    "view_failed_runs": "View Failed Runs",
     "test_connection": "Test Connection",
     "tools": "Tools",
     "publish": "Publish",
