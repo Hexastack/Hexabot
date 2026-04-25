@@ -7,17 +7,19 @@
 import { Box, Button, Stack, Typography, useTheme } from "@mui/material";
 
 import { useAppRouter } from "@/hooks/useAppRouter";
+import { useTranslate } from "@/hooks/useTranslate";
 
 import { mockQuickActions } from "../mockData";
 
 export const QuickActions = () => {
   const router = useAppRouter();
   const theme = useTheme();
+  const { t } = useTranslate();
 
   return (
     <Box>
       <Typography variant="h6" mb={2}>
-        Quick Actions
+        {t("title.quick_actions")}
       </Typography>
       <Stack direction="row" gap={2} flexWrap="wrap">
         {mockQuickActions.map(({ icon: Icon, id, url, label }) => (
@@ -27,7 +29,7 @@ export const QuickActions = () => {
             startIcon={<Icon size={18} color={theme.palette.primary.main} />}
             onClick={() => url && router.push(url)}
           >
-            {label}
+            {t(label)}
           </Button>
         ))}
       </Stack>
