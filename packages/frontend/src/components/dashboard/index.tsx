@@ -75,7 +75,6 @@ export const Dashboard = () => {
             <UpcomingScheduleTimeline />
           </Grid>
           <Grid size={12}>
-            {/* TODO replace mock data by an API integration */}
             <IntegrationsHealth />
           </Grid>
         </Grid>

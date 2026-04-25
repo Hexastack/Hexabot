@@ -5,6 +5,17 @@
  */
 
 export {
+  integrationHealthItemSchema,
+  integrationHealthKindSchema,
+  integrationHealthResponseSchema,
+  integrationHealthStatusSchema,
+  type IntegrationHealthItem,
+  type IntegrationHealthKind,
+  type IntegrationHealthResponse,
+  type IntegrationHealthStatus,
+} from "./integration-health";
+
+export {
   StatsType,
   statsFullSchema,
   statsSchema,

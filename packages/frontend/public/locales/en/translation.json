@@ -318,6 +318,19 @@
       "messages": "Messages",
       "last_24h": "Last 24h",
       "loading": "—"
+    },
+    "integrations": {
+      "title": "Integrations Health",
+      "checked": "Checked: {{0}}",
+      "loading": "Checking integrations...",
+      "error": "Unable to load integration health.",
+      "empty": "No integrations to display",
+      "status": {
+        "healthy": "Healthy",
+        "warning": "Action Required",
+        "unhealthy": "Unhealthy",
+        "disabled": "Disabled"
+      }
     }
   },
   "label": {

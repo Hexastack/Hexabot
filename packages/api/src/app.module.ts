@@ -35,6 +35,7 @@ import { config } from './config';
 import { TypeormConfigService } from './database/typeorm-config.service';
 import { ExtensionModule } from './extension/extension.module';
 import extraModules from './extra';
+import { HealthService } from './health/health.service';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
 import { ExtensionJsonLoader } from './i18n/loaders/extension-json.loader';
@@ -151,6 +152,7 @@ export const HEXABOT_MODULE_CONTROLLERS: ModuleControllers = [AppController];
 export const HEXABOT_MODULE_PROVIDERS: ModuleProviders = [
   { provide: APP_GUARD, useClass: Ability },
   TypeormConfigService,
+  HealthService,
   AppService,
 ];
 

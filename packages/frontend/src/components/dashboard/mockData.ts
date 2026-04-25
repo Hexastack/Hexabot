@@ -106,27 +106,6 @@ export const mockRecentActivity = [
   },
 ];
 
-export const mockIntegrations = [
-  {
-    id: "int-1",
-    name: "WhatsApp",
-    status: "Connected",
-    lastSync: "Just now",
-  },
-  {
-    id: "int-2",
-    name: "Slack",
-    status: "Action Required",
-    lastSync: "3d ago",
-  },
-  {
-    id: "int-3",
-    name: "Email (SMTP)",
-    status: "Connected",
-    lastSync: "1h ago",
-  },
-];
-
 export const mockConversationData = {
   xAxis: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   series: [
