@@ -6,9 +6,17 @@
 
 import { Activity, Play, Webhook, XCircle } from "lucide-react";
 
+import type { TTranslationKeys } from "@/i18n/i18n.types";
 import { RouterType } from "@/services/types";
 
-export const mockQuickActions = [
+type TQuickAction = {
+  id: string;
+  label: TTranslationKeys;
+  icon: typeof Activity;
+  url: string;
+};
+
+export const mockQuickActions: TQuickAction[] = [
   {
     id: "create",
     label: "button.create_workflow",
