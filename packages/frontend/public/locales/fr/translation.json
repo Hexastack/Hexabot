@@ -319,6 +319,19 @@
       "loading": "—"
     },
     "upcoming_schedules": "À venir"
+    "integrations": {
+      "title": "Santé des intégrations",
+      "checked": "Vérifié : {{0}}",
+      "loading": "Vérification des intégrations...",
+      "error": "Impossible de charger l'état des intégrations.",
+      "empty": "Aucune intégration à afficher",
+      "status": {
+        "healthy": "Sain",
+        "warning": "Action requise",
+        "unhealthy": "Défaillant",
+        "disabled": "Désactivé"
+      }
+    }
   },
   "label": {
     "terms": "J'ai lu et approuvé les termes et conditions.",

@@ -21,12 +21,14 @@
     "build": "pnpm run build:cjs && pnpm run build:esm",
     "build:cjs": "tsc -p tsconfig.build.cjs.json",
     "build:esm": "tsc -p tsconfig.build.esm.json",
-    "dev": "pnpm run build:watch",
+    "dev": "pnpm exec concurrently -k -n cjs,esm \"pnpm run build:cjs:watch\" \"pnpm run build:esm:watch\"",
     "build:watch": "tsc -p tsconfig.json --watch",
     "lint": "eslint \"src/**/*.ts\" \"jest.config.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"jest.config.ts\" --fix",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "jest --config jest.config.ts"
+    "test": "jest --config jest.config.ts",
+    "build:cjs:watch": "tsc -p tsconfig.build.cjs.json --watch",
+    "build:esm:watch": "tsc -p tsconfig.build.esm.json --watch"
   },
   "dependencies": {
     "zod": "^4.3.6"

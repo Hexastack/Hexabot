@@ -52,33 +52,6 @@ export const mockAttentionItems = [
   },
 ];
 
-export const mockPinnedWorkflows = [
-  {
-    id: "wf-1",
-    name: "Customer Support Bot",
-    type: "Conversational",
-    status: "Enabled",
-    lastRun: "2m ago",
-    lastResult: "success",
-  },
-  {
-    id: "wf-2",
-    name: "Nightly Data Sync",
-    type: "Scheduled",
-    status: "Enabled",
-    lastRun: "4h ago",
-    lastResult: "success",
-  },
-  {
-    id: "wf-3",
-    name: "Manual User Export",
-    type: "Manual",
-    status: "Draft",
-    lastRun: "2d ago",
-    lastResult: "warning",
-  },
-];
-
 export const mockRecentActivity = [
   {
     id: "evt-1",
@@ -103,27 +76,6 @@ export const mockRecentActivity = [
     text: "WhatsApp Integration reconnected",
     user: "Admin",
     time: "6h ago",
-  },
-];
-
-export const mockIntegrations = [
-  {
-    id: "int-1",
-    name: "WhatsApp",
-    status: "Connected",
-    lastSync: "Just now",
-  },
-  {
-    id: "int-2",
-    name: "Slack",
-    status: "Action Required",
-    lastSync: "3d ago",
-  },
-  {
-    id: "int-3",
-    name: "Email (SMTP)",
-    status: "Connected",
-    lastSync: "1h ago",
   },
 ];
 
