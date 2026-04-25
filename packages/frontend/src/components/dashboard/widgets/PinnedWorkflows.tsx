@@ -5,7 +5,6 @@
  */
 
 import { Box, Button, Grid } from "@mui/material";
-import { Workflow } from "@hexabot-ai/types";
 
 import { useFind } from "@/hooks/crud/useFind";
 import { EntityType } from "@/services/types";
@@ -14,7 +13,7 @@ import { PinnedWorkflowsCard } from "../components/PinnedWorkflowsCard";
 import { TitleWithActions } from "../components/TitleWithActions";
 
 export const PinnedWorkflows = () => {
-  const { data: latestWorkflows } = useFind<Workflow>(
+  const { data: latestWorkflows } = useFind(
     { entity: EntityType.WORKFLOW },
     {
       hasCount: false,
