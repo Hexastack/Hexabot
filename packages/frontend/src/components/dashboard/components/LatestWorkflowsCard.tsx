@@ -22,7 +22,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 
 import { IconContainer } from "./IconContainer";
 
-export const PinnedWorkflowsCard = ({ workflow }: { workflow: Workflow }) => {
+export const LatestWorkflowsCard = ({ workflow }: { workflow: Workflow }) => {
   const theme = useTheme();
   const router = useAppRouter();
   const { t } = useTranslate();
