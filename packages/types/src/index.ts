@@ -8,6 +8,8 @@ export * from "./attachment";
 
 export * from "./analytics";
 
+export * from "./audit";
+
 export * from "./channel";
 
 export * from "./chat";

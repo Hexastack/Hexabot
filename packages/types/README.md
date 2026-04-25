@@ -5,6 +5,7 @@ Shared zod-first runtime contracts for Hexabot API entity outputs.
 ## Migrated Modules
 
 - `analytics`: `Stats*`, `IntegrationHealth*`
+- `audit`: `AuditLog*`
 - `channel`: `Source*`, `ChannelMetadata*`
 - `chat`: `LabelGroup*`, `Label*`, `Subscriber*`, `Thread*`, `Message*`
 - `cms`: `ContentType*`, `Content*`, `Menu*`

@@ -31,6 +31,7 @@ export type TModel =
   | "nlpvalue"
   | "setting"
   | "attachment"
+  | "auditlog"
   | "user"
   | "role"
   | "permission"
@@ -68,6 +69,7 @@ export const modelIdentitySchema = z.enum([
   "nlpvalue",
   "setting",
   "attachment",
+  "auditlog",
   "user",
   "role",
   "permission",

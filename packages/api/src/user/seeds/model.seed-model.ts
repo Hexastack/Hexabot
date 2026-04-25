@@ -28,6 +28,11 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
+    name: 'AuditLog',
+    identity: 'auditlog',
+    attributes: {},
+  },
+  {
     name: 'User',
     identity: 'user',
     attributes: {},

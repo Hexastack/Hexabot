@@ -15,6 +15,8 @@ import {
   StatsType,
   WorkflowType,
   WorkflowVersionAction,
+  auditLogFullSchema,
+  auditLogSchema,
   attachmentFullSchema,
   attachmentSchema,
   channelMetadataSchema,
@@ -558,7 +560,7 @@ describe("@hexabot-ai/types schemas", () => {
     expect(metadata.name).toBe("web");
   });
 
-  it("accepts source as a valid model identity", () => {
+  it("accepts source and auditlog as valid model identities", () => {
     const model = modelSchema.parse({
       id: "m_source",
       createdAt: now,
@@ -569,6 +571,55 @@ describe("@hexabot-ai/types schemas", () => {
     });
 
     expect(model.identity).toBe("source");
+    expect(
+      modelSchema.parse({
+        id: "m_auditlog",
+        createdAt: now,
+        updatedAt: now,
+        name: "AuditLog",
+        identity: "auditlog",
+        attributes: {},
+      }).identity,
+    ).toBe("auditlog");
+  });
+
+  it("parses audit log contracts", () => {
+    const auditLog = auditLogSchema.parse({
+      id: "audit_1",
+      createdAt: now,
+      updatedAt: now,
+      resourceId: "user_1",
+      resourceType: "User",
+      operationId: "typeorm.User.update",
+      operationType: "Update",
+      operationStatus: "SUCCEEDED",
+      actorId: "admin_1",
+      actorType: "admin",
+      actorIp: "203.0.113.1",
+      actorAgent: "browser",
+      requestId: "req_1",
+      requestMethod: "PATCH",
+      requestPath: "/api/user/user_1",
+      dataBefore: { email: "old@example.com" },
+      dataAfter: { email: "new@example.com" },
+      dataDiff: {
+        email: {
+          before: "old@example.com",
+          after: "new@example.com",
+        },
+      },
+      raw: null,
+      shouldDrop: true,
+    });
+
+    expect(auditLog.resourceType).toBe("User");
+    expect("shouldDrop" in auditLog).toBe(false);
+    expect(auditLogFullSchema.parse(auditLog).dataDiff).toEqual({
+      email: {
+        before: "old@example.com",
+        after: "new@example.com",
+      },
+    });
   });
 
   it("normalizes nullable and optional values for setting/menu/mcp", () => {
