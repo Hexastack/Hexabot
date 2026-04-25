@@ -239,7 +239,16 @@ export class WebsocketGateway
           return;
         }
         const session = client.request.session;
-        const sourceId = this.normalizeSourceId(searchParams.get('source_id'));
+        const rawSourceId = searchParams.get('source_id');
+        const sourceId = this.normalizeSourceId(rawSourceId);
+        const userId = session.passport?.user?.id;
+
+        if (!rawSourceId && userId) {
+          // Core websocket connection for system notifications (not the web/console channel one)
+          next();
+
+          return;
+        }
 
         if (!sourceId) {
           next(
@@ -274,7 +283,7 @@ export class WebsocketGateway
 
         if (
           // Either the WS connection is with an authenticated user
-          session.passport?.user?.id
+          userId
         ) {
           session.save((err) => {
             if (err) {
