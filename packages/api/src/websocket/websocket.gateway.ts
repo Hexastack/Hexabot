@@ -244,6 +244,7 @@ export class WebsocketGateway
         const userId = session.passport?.user?.id;
 
         if (!rawSourceId && userId) {
+          // Core websocket connection for system notifications (not the web/console channel one)
           next();
 
           return;

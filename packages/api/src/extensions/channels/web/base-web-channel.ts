@@ -167,6 +167,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
 
       if (!sourceId) {
         if (client.request.session.passport?.user?.id) {
+          // Core websocket connection for system notifications (not the web/console channel one)
           return;
         }
 
