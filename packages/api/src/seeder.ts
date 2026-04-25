@@ -71,7 +71,7 @@ export async function seedDatabase(app: INestApplicationContext) {
   const adminRole = roles.find(({ name }) => name === 'admin') as Role;
   const managerRole = roles.find(({ name }) => name === 'manager') as Role;
   const managerModels = models.filter(
-    (model) => !['Role', 'User', 'Permission'].includes(model.name),
+    (model) => !['AuditLog', 'Role', 'User', 'Permission'].includes(model.name),
   );
   const roleModelsCombinations = [
     ...models.map((model) => [model.id, adminRole.id]),

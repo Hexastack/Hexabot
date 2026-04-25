@@ -54,7 +54,6 @@ export const Dashboard = () => {
               <ThreadSnapshot />
             </Grid>
             <Grid size={{ md: 6, xs: 12 }}>
-              {/* TODO replace mock data by an API integration */}
               <RecentActivityTimeline />
             </Grid>
           </Grid>

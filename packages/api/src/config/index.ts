@@ -35,6 +35,40 @@ const parseOptionalInt = (value: string | undefined): number | undefined => {
 
   return Number.isNaN(parsed) ? undefined : parsed;
 };
+const parseCsv = (value: string | undefined, fallback: string[]): string[] => {
+  if (!value) {
+    return fallback;
+  }
+
+  return value
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+};
+const parseAuditHeaders = (
+  value: string | undefined,
+): Record<string, string> => {
+  if (!value) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      Object.entries(parsed).map(([key, headerValue]) => [
+        key,
+        String(headerValue),
+      ]),
+    );
+  } catch {
+    return {};
+  }
+};
 const sessionMaxAge = parseIntWithFallback(
   process.env.SESSION_MAX_AGE,
   24 * 60 * 60 * 1000,
@@ -245,6 +279,53 @@ export const config: Config = {
       returning: 20 * 60 * 60 * 1000, // 20 hours
       retention: 3 * 24 * 60 * 60 * 1000, // 3 days
       retentionReset: 24 * 60 * 60 * 1000, // 1 day
+    },
+  },
+  audit: {
+    enabled:
+      process.env.AUDIT_LOG_ENABLED === undefined
+        ? true
+        : process.env.AUDIT_LOG_ENABLED === 'true',
+    backend:
+      (process.env.AUDIT_LOG_BACKEND as Config['audit']['backend']) ||
+      'database',
+    failClosed: process.env.AUDIT_LOG_FAIL_CLOSED === 'true',
+    serviceName: process.env.AUDIT_LOG_SERVICE_NAME || 'hexabot-api',
+    serviceNamespace:
+      process.env.AUDIT_LOG_SERVICE_NAMESPACE || '@hexabot-ai/api',
+    serviceEnvironmentName:
+      process.env.AUDIT_LOG_SERVICE_ENVIRONMENT ||
+      process.env.NODE_ENV ||
+      'development',
+    maskFields: parseCsv(process.env.AUDIT_LOG_MASK_FIELDS, [
+      'password',
+      'resetToken',
+      'reset_token',
+      'token',
+      'secret',
+      'authorization',
+      'apiKey',
+      'privateKey',
+      'value',
+    ]),
+    opentelemetry: {
+      url: process.env.AUDIT_LOG_OTEL_URL,
+      hostname: process.env.AUDIT_LOG_OTEL_HOSTNAME,
+      headers: parseAuditHeaders(process.env.AUDIT_LOG_OTEL_HEADERS),
+      timeoutMillis: parseOptionalInt(
+        process.env.AUDIT_LOG_OTEL_TIMEOUT_MILLIS,
+      ),
+      concurrencyLimit: parseOptionalInt(
+        process.env.AUDIT_LOG_OTEL_CONCURRENCY_LIMIT,
+      ),
+    },
+    clickhouse: {
+      url: process.env.AUDIT_LOG_CLICKHOUSE_URL,
+      databaseName:
+        process.env.AUDIT_LOG_CLICKHOUSE_DATABASE || 'hexabot_auditlog',
+      logExpired: parseOptionalInt(
+        process.env.AUDIT_LOG_CLICKHOUSE_LOG_EXPIRED_DAYS,
+      ),
     },
   },
 };

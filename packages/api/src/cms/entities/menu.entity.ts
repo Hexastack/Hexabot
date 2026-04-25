@@ -18,6 +18,7 @@ import {
   UpdateEvent,
 } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import {
   OnBeforeInsert,
@@ -51,6 +52,7 @@ export class MenuOrmEntity extends BaseOrmEntity<MenuDto> {
   /**
    * The displayed title of the menu.
    */
+  @AuditLabel()
   @Column()
   title!: string;
 

@@ -26,6 +26,8 @@ export * from './bindings';
 
 export * from './analytics';
 
+export * from './audit';
+
 export * from './attachment';
 
 export * from './channel';

@@ -14,6 +14,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
@@ -28,6 +29,7 @@ export class CredentialOrmEntity extends BaseOrmEntity<CredentialDto> {
 
   fullCls = credentialFullSchema;
 
+  @AuditLabel()
   @Column()
   name!: string;
 

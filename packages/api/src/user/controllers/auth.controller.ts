@@ -19,6 +19,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
 import { Session as ExpressSession } from 'express-session';
 
+import { AuditAuthLogin, AuditAuthLogout } from '@/audit';
 import { config } from '@/config';
 import { LicenseService } from '@/license/services/license.service';
 import { LoggerService } from '@/logger/logger.service';
@@ -59,6 +60,7 @@ export class BaseAuthController {
    * @returns A status object indicating successful logout.
    */
   @Post('logout')
+  @AuditAuthLogout()
   logout(
     @Session() session: ExpressSession,
     @Res({ passthrough: true }) res: Response,
@@ -93,6 +95,7 @@ export class LocalAuthController extends BaseAuthController {
   @UseGuards(LocalAuthGuard)
   @Roles('public')
   @Post('local')
+  @AuditAuthLogin()
   async login(@Req() req: Request) {
     return {
       ...req.user,

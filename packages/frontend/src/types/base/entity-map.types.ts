@@ -13,6 +13,8 @@ import type {
   Attachment,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
+  AuditLog,
+  AuditLogFull,
   Content,
   ContentFull,
   ContentType,
@@ -180,6 +182,7 @@ export interface IEntityMapTypes {
       "name" | "slug" | "scope" | "schema" | "ttlSeconds"
     >
   >;
+  [EntityType.AUDIT_LOG]: IEntityTypes<AuditLog, never, never, AuditLogFull>;
   [EntityType.THREAD]: IEntityTypes<
     Thread,
     EntityPayload<

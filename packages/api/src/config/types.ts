@@ -23,6 +23,11 @@ type TCacheConfig = {
   user: string;
   password: string;
 };
+type TAuditBackend =
+  | 'database'
+  | 'opentelemetry-http'
+  | 'opentelemetry-grpc'
+  | 'clickhouse';
 type TDatabaseType = 'sqlite' | 'postgres' | 'mongodb';
 type TDatabaseConfig = {
   type: TDatabaseType;
@@ -135,6 +140,27 @@ export type Config = {
       returning: number;
       retention: number;
       retentionReset: number;
+    };
+  };
+  audit: {
+    enabled: boolean;
+    backend: TAuditBackend;
+    failClosed: boolean;
+    serviceName: string;
+    serviceNamespace: string;
+    serviceEnvironmentName: string;
+    maskFields: string[];
+    opentelemetry: {
+      url?: string;
+      hostname?: string;
+      headers: Record<string, string>;
+      timeoutMillis?: number;
+      concurrencyLimit?: number;
+    };
+    clickhouse: {
+      url?: string;
+      databaseName: string;
+      logExpired?: number;
     };
   };
 };

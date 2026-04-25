@@ -7,6 +7,7 @@
 import { modelSchema, modelFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -23,6 +24,7 @@ export class ModelOrmEntity extends BaseOrmEntity<ModelDto> {
 
   fullCls = modelFullSchema;
 
+  @AuditLabel()
   @Column()
   name!: string;
 

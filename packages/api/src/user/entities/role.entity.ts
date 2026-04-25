@@ -7,6 +7,7 @@
 import { roleSchema, roleFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index, ManyToMany, OneToMany } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { RoleDto } from '../dto/role.dto';
@@ -23,6 +24,7 @@ export class RoleOrmEntity extends BaseOrmEntity<RoleDto> {
 
   fullCls = roleFullSchema;
 
+  @AuditLabel()
   @Column()
   name!: string;
 

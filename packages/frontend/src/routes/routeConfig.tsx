@@ -15,6 +15,7 @@ import {
 import { Login } from "@/app-components/auth/Login";
 import { ResetPassword } from "@/app-components/auth/ResetPassword";
 import { ResetPasswordRequest } from "@/app-components/auth/resetPasswordRequest";
+import { Audit } from "@/components/audit";
 import { ContentTypes } from "@/components/content-types";
 import { Contents } from "@/components/contents";
 import { Credentials } from "@/components/credentials";
@@ -159,6 +160,13 @@ export const routes: RouteObjectItem[] = [
     Component: Roles,
     handle: {
       requiredPermissions: [[EntityType.ROLE, Action.READ]],
+    },
+  },
+  {
+    path: "/audit",
+    Component: Audit,
+    handle: {
+      requiredPermissions: [[EntityType.AUDIT_LOG, Action.READ]],
     },
   },
   {

@@ -14,6 +14,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import {
@@ -36,6 +37,7 @@ export class UserOrmEntity extends SubscriberOrmEntity<UserDto> {
 
   fullCls = userFullSchema;
 
+  @AuditLabel()
   @Column()
   username!: string;
 

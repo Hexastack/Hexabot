@@ -16,6 +16,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import {
@@ -41,6 +42,7 @@ export class McpServerOrmEntity extends BaseOrmEntity<McpServerDto> {
   private originalCredentialId?: string | null;
 
   /** Human-friendly name used in workflow tool bindings. */
+  @AuditLabel()
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 

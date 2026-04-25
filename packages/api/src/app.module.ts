@@ -27,6 +27,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AttachmentModule } from './attachment/attachment.module';
+import { AuditModule } from './audit/audit.module';
 import { BindingsModule } from './bindings/bindings.module';
 import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
@@ -94,6 +95,7 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
   SettingModule,
   LicenseModule,
   AttachmentModule,
+  AuditModule,
   AnalyticsModule,
   ChatModule,
   ChannelModule,

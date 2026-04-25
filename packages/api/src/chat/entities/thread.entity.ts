@@ -7,6 +7,7 @@
 import { threadSchema, threadFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
@@ -65,6 +66,7 @@ export class ThreadOrmEntity extends BaseOrmEntity<ThreadDto> {
   @EnumColumn({ enum: THREAD_CLOSE_REASONS, nullable: true })
   closeReason?: ThreadCloseReason | null;
 
+  @AuditLabel()
   @Column({ name: 'title', type: 'varchar', length: 255, nullable: true })
   title?: string | null;
 }

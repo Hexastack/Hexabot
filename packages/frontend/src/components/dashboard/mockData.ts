@@ -64,30 +64,3 @@ export const mockAttentionItems = [
     action: "Check schedule",
   },
 ];
-
-export const mockRecentActivity = [
-  {
-    id: "evt-1",
-    text: "Ameni edited workflow 'Support Bot'",
-    user: "Ameni",
-    time: "15m ago",
-  },
-  {
-    id: "evt-2",
-    text: "Manual run executed by Mohamed",
-    user: "Mohamed",
-    time: "1h ago",
-  },
-  {
-    id: "evt-3",
-    text: "Schedule 'Daily Report' missed",
-    user: "System",
-    time: "5h ago",
-  },
-  {
-    id: "evt-4",
-    text: "WhatsApp Integration reconnected",
-    user: "Admin",
-    time: "6h ago",
-  },
-];

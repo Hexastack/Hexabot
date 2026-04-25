@@ -7,6 +7,7 @@
 import { labelGroupSchema, labelGroupFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { LabelGroupDto } from '../dto/label-group.dto';
@@ -20,6 +21,7 @@ export class LabelGroupOrmEntity extends BaseOrmEntity<LabelGroupDto> {
 
   fullCls = labelGroupFullSchema;
 
+  @AuditLabel()
   @Column()
   name!: string;
 

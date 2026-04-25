@@ -5,6 +5,7 @@ Shared zod-first runtime contracts for Hexabot API entity outputs.
 ## Migrated Modules
 
 - `analytics`: `Stats*`, `IntegrationHealth*`
+- `audit`: `AuditLog*`
 - `channel`: `Source*`, `ChannelMetadata*`
 - `chat`: `LabelGroup*`, `Label*`, `Subscriber*`, `Thread*`, `Message*`
 - `cms`: `ContentType*`, `Content*`, `Menu*`
@@ -14,6 +15,9 @@ Shared zod-first runtime contracts for Hexabot API entity outputs.
 - `workflow`: `Workflow*`, `WorkflowVersion*`, `WorkflowRun*`, `MemoryDefinition*`, `MemoryRecord*`, `McpServer*`
 - `utils/test/dummy`: `Dummy*`
 - `attachment`: `Attachment*`
+
+`AuditLog` includes nullable `actorLabel` and `resourceLabel` display fields in
+addition to the stable actor/resource identifiers.
 
 ## Standard Export Pattern
 

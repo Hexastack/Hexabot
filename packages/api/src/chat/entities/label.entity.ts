@@ -15,6 +15,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
@@ -32,6 +33,7 @@ export class LabelOrmEntity extends BaseOrmEntity<LabelDto> {
 
   fullCls = labelFullSchema;
 
+  @AuditLabel()
   @Column()
   title!: string;
 

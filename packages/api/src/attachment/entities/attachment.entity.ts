@@ -18,6 +18,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { ChannelName } from '@/channel/types';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database';
@@ -41,6 +42,7 @@ export class AttachmentOrmEntity extends BaseOrmEntity<AttachmentDto> {
 
   fullCls = attachmentFullSchema;
 
+  @AuditLabel()
   @Column()
   name!: string;
 
