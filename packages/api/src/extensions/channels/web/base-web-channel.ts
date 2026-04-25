@@ -166,6 +166,10 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
       const sourceId = this.getSourceIdFromHandshake(client);
 
       if (!sourceId) {
+        if (client.request.session.passport?.user?.id) {
+          return;
+        }
+
         this.logger.warn('Missing source_id in websocket handshake');
         client.disconnect();
 
