@@ -4,9 +4,26 @@
  * Full terms: see LICENSE.md.
  */
 
+import { StatsType } from "@hexabot-ai/types";
+
 export type StatsSummary = {
   totalWorkflows: number;
   totalRunsLast24h: number;
   successRateLast24h: number;
   totalMessagesLast24h: number;
+};
+
+export type ThreadSnapshotSeries = {
+  type: StatsType.new_threads | StatsType.handoffs;
+  data: number[];
+};
+
+export type ThreadSnapshot = {
+  xAxis: string[];
+  series: [ThreadSnapshotSeries, ThreadSnapshotSeries];
+};
+
+export type ThreadSnapshotQuery = {
+  from?: Date | string;
+  to?: Date | string;
 };

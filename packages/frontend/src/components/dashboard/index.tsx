@@ -11,13 +11,13 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 
 import { AttentionRequired } from "./widgets/AttentionRequired";
-import { ConversationSnapshot } from "./widgets/ConversationSnapshot";
 import { IntegrationsHealth } from "./widgets/IntegrationsHealth";
 import { KPICards } from "./widgets/KPICards";
 import { PinnedWorkflows } from "./widgets/PinnedWorkflows";
 import { QuickActions } from "./widgets/QuickActions";
 import { RecentActivityTimeline } from "./widgets/RecentActivityTimeline";
 import { RecentRuns } from "./widgets/RecentRuns";
+import { ThreadSnapshot } from "./widgets/ThreadSnapshot";
 import { UpcomingScheduleTimeline } from "./widgets/UpcomingScheduleTimeline";
 
 export const Dashboard = () => {
@@ -51,8 +51,7 @@ export const Dashboard = () => {
           </Grid>
           <Grid container spacing={3}>
             <Grid size={{ md: 6, xs: 12 }}>
-              {/* TODO replace mock data by an API integration */}
-              <ConversationSnapshot />
+              <ThreadSnapshot />
             </Grid>
             <Grid size={{ md: 6, xs: 12 }}>
               {/* TODO replace mock data by an API integration */}
