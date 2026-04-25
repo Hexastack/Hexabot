@@ -12,6 +12,7 @@ import {
   StatsFindDatumDto,
   StatsFindDto,
   StatsSummaryDto,
+  StatsThreadSnapshotDto,
 } from '../dto/stats.dto';
 import {
   StatsOrmEntity,
@@ -86,6 +87,22 @@ export class StatsController extends BaseOrmController<StatsOrmEntity> {
     const result = await this.statsService.findMessages(from, to, types);
 
     return StatsOrmEntity.toLines(result, types);
+  }
+
+  /**
+   * Retrieves new thread and handoff stats for the thread snapshot chart.
+   *
+   * @param dto - Parameters for filtering snapshot days (Start & End dates).
+   * @returns A promise that resolves to bar chart compatible thread stats.
+   */
+  @Get('thread-snapshot')
+  async threadSnapshot(
+    @Query()
+    dto: StatsFindDto,
+  ): Promise<StatsThreadSnapshotDto> {
+    const { from, to } = dto;
+
+    return await this.statsService.getThreadSnapshot(from, to);
   }
 
   /**

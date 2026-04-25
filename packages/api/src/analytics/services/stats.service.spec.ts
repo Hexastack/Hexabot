@@ -153,7 +153,7 @@ describe('StatsService', () => {
   });
 
   describe('handleSubscriberPreCreate', () => {
-    it('should emit new users stat entry', () => {
+    it('should emit new users stat entry', async () => {
       const emitSpy = jest.spyOn(eventEmitter, 'emitAsync');
       const subscriber = { id: 'subscriber-id', first_name: 'John' };
       const event = {
@@ -162,7 +162,7 @@ describe('StatsService', () => {
         },
       } as any;
 
-      statsService.handleSubscriberPreCreate(event);
+      await statsService.handleSubscriberPreCreate(event);
 
       expect(emitSpy).toHaveBeenCalledTimes(1);
       expect(emitSpy).toHaveBeenCalledWith(
@@ -171,6 +171,100 @@ describe('StatsService', () => {
         'New users',
         subscriber,
       );
+    });
+  });
+
+  describe('thread snapshot events', () => {
+    it('should emit new thread stat entry when a thread is created', async () => {
+      const emitSpy = jest.spyOn(eventEmitter, 'emitAsync');
+
+      await statsService.handleThreadPostCreate();
+
+      expect(emitSpy).toHaveBeenCalledWith(
+        'hook:stats:entry',
+        StatsType.new_threads,
+        'New Threads',
+      );
+    });
+
+    it('should emit handoff stat entry when a subscriber is assigned', async () => {
+      const emitSpy = jest.spyOn(eventEmitter, 'emitAsync');
+
+      await statsService.handleSubscriberAssign({
+        assignedTo: 'user-id',
+      } as any);
+
+      expect(emitSpy).toHaveBeenCalledWith(
+        'hook:stats:entry',
+        StatsType.handoffs,
+        'Handoffs',
+      );
+    });
+
+    it('should ignore subscriber assign events without an assignee', async () => {
+      const emitSpy = jest.spyOn(eventEmitter, 'emitAsync');
+
+      await statsService.handleSubscriberAssign({
+        assignedTo: null,
+      } as any);
+
+      expect(emitSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getThreadSnapshot', () => {
+    it('should aggregate seven sorted daily buckets and fill missing days', async () => {
+      const from = new Date(2024, 0, 1);
+      const to = new Date(2024, 0, 7);
+
+      await statsService.create({
+        day: new Date(2024, 0, 1),
+        type: StatsType.new_threads,
+        name: 'New Threads',
+        value: 2,
+      });
+      await statsService.create({
+        day: new Date(2024, 0, 3),
+        type: StatsType.new_threads,
+        name: 'New Threads',
+        value: 4,
+      });
+      await statsService.create({
+        day: new Date(2024, 0, 3),
+        type: StatsType.new_threads,
+        name: 'New Threads from import',
+        value: 1,
+      });
+      await statsService.create({
+        day: new Date(2024, 0, 4),
+        type: StatsType.handoffs,
+        name: 'Handoffs',
+        value: 2,
+      });
+
+      const result = await statsService.getThreadSnapshot(from, to);
+
+      expect(result).toEqual({
+        xAxis: [
+          '2024-01-01',
+          '2024-01-02',
+          '2024-01-03',
+          '2024-01-04',
+          '2024-01-05',
+          '2024-01-06',
+          '2024-01-07',
+        ],
+        series: [
+          {
+            type: StatsType.new_threads,
+            data: [2, 0, 5, 0, 0, 0, 0],
+          },
+          {
+            type: StatsType.handoffs,
+            data: [0, 0, 0, 2, 0, 0, 0],
+          },
+        ],
+      });
     });
   });
 

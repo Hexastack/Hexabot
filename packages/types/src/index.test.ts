@@ -47,6 +47,7 @@ import {
   permissionSchema,
   resolveRunDurationMs,
   settingSchema,
+  statsSchema,
   subscriberFullSchema,
   subscriberSchema,
   threadFullSchema,
@@ -886,17 +887,24 @@ describe("@hexabot-ai/types schemas", () => {
   });
 
   it("supports analytics enums in stats payloads", () => {
-    const stats = {
+    const stats = statsSchema.parse({
       id: "st_1",
       createdAt: now,
       updatedAt: now,
-      type: StatsType.incoming,
+      type: StatsType.new_threads,
       day: now,
       value: 15,
-      name: "incoming",
-    };
+      name: "New Threads",
+    });
 
-    expect(stats.type).toBe(StatsType.incoming);
+    expect(stats.type).toBe(StatsType.new_threads);
+    expect(
+      statsSchema.parse({
+        ...stats,
+        type: StatsType.handoffs,
+        name: "Handoffs",
+      }).type,
+    ).toBe(StatsType.handoffs);
   });
 
   it("parses integration health payload contracts", () => {

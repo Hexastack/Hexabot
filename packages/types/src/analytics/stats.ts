@@ -16,6 +16,8 @@ export enum StatsType {
   returning_users = "returning_users",
   retention = "retention",
   echo = "echo",
+  new_threads = "new_threads",
+  handoffs = "handoffs",
 }
 
 const statsTypeSchema = z.enum(StatsType);
