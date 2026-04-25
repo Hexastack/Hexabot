@@ -322,6 +322,7 @@
     "thread_snapshot": {
       "title": "Aperçu des discussions",
       "range": "7 derniers jours",
+      "chart_description": "Histogramme des nouvelles discussions et des transferts sur les 7 derniers jours.",
       "loading": "Chargement des statistiques des discussions...",
       "error": "Impossible de charger les statistiques des discussions.",
       "empty": "Aucune activité de discussion à afficher",

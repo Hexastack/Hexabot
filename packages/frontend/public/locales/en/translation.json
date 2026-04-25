@@ -322,6 +322,7 @@
     "thread_snapshot": {
       "title": "Thread Snapshot",
       "range": "Last 7 days",
+      "chart_description": "Bar chart of new threads and handoffs over the last 7 days.",
       "loading": "Loading thread stats...",
       "error": "Unable to load thread stats.",
       "empty": "No thread activity to display",
