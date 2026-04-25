@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Workflow } from "@hexabot-ai/types";
 import {
   alpha,
   Box,
@@ -13,7 +14,6 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Workflow } from "@hexabot-ai/types";
 import { Eye } from "lucide-react";
 
 import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
