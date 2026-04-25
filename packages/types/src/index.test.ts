@@ -24,6 +24,7 @@ import {
   credentialFullSchema,
   credentialSchema,
   dummySchema,
+  integrationHealthResponseSchema,
   messageSchema,
   IncomingMessageType,
   labelFullSchema,
@@ -896,6 +897,39 @@ describe("@hexabot-ai/types schemas", () => {
     };
 
     expect(stats.type).toBe(StatsType.incoming);
+  });
+
+  it("parses integration health payload contracts", () => {
+    const health = integrationHealthResponseSchema.parse({
+      checkedAt: now,
+      integrations: [
+        {
+          id: "channel:web",
+          kind: "channel",
+          name: "Web",
+          status: "healthy",
+          checkedAt: now,
+          reason: "channel.active_sources",
+          message: "1 active source",
+          details: {
+            activeSources: 1,
+            inactiveSources: 0,
+          },
+          shouldDrop: true,
+        },
+        {
+          id: "service:smtp",
+          kind: "service",
+          name: "Email (SMTP)",
+          status: "disabled",
+          checkedAt: now,
+        },
+      ],
+    });
+
+    expect(health.integrations[0].status).toBe("healthy");
+    expect(health.integrations[1].kind).toBe("service");
+    expect("shouldDrop" in health.integrations[0]).toBe(false);
   });
 
   it("supports memory scope enum values", () => {

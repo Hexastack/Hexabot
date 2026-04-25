@@ -7,6 +7,7 @@
 import { ForbiddenException } from '@nestjs/common';
 
 import { AppService } from './app.service';
+import { HealthService } from './health/health.service';
 import { I18nService } from './i18n/services/i18n.service';
 import { PermissionService } from './user/services/permission.service';
 import { UserService } from './user/services/user.service';
@@ -41,6 +42,9 @@ describe('AppService', () => {
   };
   const permissionServiceMock: Pick<PermissionService, 'getPermissions'> = {
     getPermissions: jest.fn(),
+  };
+  const healthServiceMock: Pick<HealthService, 'getIntegrationHealth'> = {
+    getIntegrationHealth: jest.fn(),
   };
 
   let emit: jest.Mock;
@@ -112,13 +116,34 @@ describe('AppService', () => {
       userServiceMock as unknown as UserService,
       permissionServiceMock as unknown as PermissionService,
       websocketGatewayMock as unknown as WebsocketGateway,
+      healthServiceMock as unknown as HealthService,
     );
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe('getHello', () => {
     it('delegates translation to i18n service', () => {
       expect(appService.getHello()).toBe('Welcome');
       expect(i18nServiceMock.t).toHaveBeenCalledWith('welcome', { lang: 'en' });
+    });
+  });
+
+  describe('getIntegrationHealth', () => {
+    it('delegates to the health service', async () => {
+      const health = {
+        checkedAt: '2026-01-01T00:00:00.000Z',
+        integrations: [],
+      };
+
+      (healthServiceMock.getIntegrationHealth as jest.Mock).mockResolvedValue(
+        health,
+      );
+
+      await expect(appService.getIntegrationHealth()).resolves.toBe(health);
+      expect(healthServiceMock.getIntegrationHealth).toHaveBeenCalledTimes(1);
     });
   });
 

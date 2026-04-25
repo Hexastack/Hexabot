@@ -4,8 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { AttachmentResourceRef } from "@hexabot-ai/types";
-import type { Workflow } from "@hexabot-ai/types";
+import {
+  AttachmentResourceRef,
+  type IntegrationHealthResponse,
+  type Workflow,
+} from "@hexabot-ai/types";
 import { AxiosInstance, AxiosResponse } from "axios";
 
 import { WorkflowBindingsCatalog } from "@/contexts/workflow-bindings.context";
@@ -66,6 +69,7 @@ export const ROUTES = {
   WORKFLOW_ACTIONS: "/workflow/actions/:type",
   MCP_SERVER_TEST: "/mcpserver/:id/test",
   MCP_TOOLS: "/mcpserver/:id/tools",
+  INTEGRATION_HEALTH: "/stats/integration-health",
   SETTING_SCHEMAS: "setting/schemas",
 
   // Entities
@@ -217,6 +221,14 @@ export class ApiClient extends TranslatableMethods {
 
   async getStatsSummary() {
     const { data } = await this.request.get<StatsSummary>(ROUTES.STATS_SUMMARY);
+
+    return data;
+  }
+
+  async getIntegrationHealth() {
+    const { data } = await this.request.get<IntegrationHealthResponse>(
+      ROUTES.INTEGRATION_HEALTH,
+    );
 
     return data;
   }

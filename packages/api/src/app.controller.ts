@@ -22,6 +22,11 @@ export class AppController {
     return 'OK';
   }
 
+  @Get('stats/integration-health')
+  async integrationHealth() {
+    return await this.appService.getIntegrationHealth();
+  }
+
   @Roles('public')
   @Get('config')
   getConfig(@Req() req: Request) {

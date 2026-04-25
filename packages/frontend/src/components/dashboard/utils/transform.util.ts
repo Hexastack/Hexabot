@@ -10,15 +10,14 @@ import {
   AlertTriangle,
   Calendar,
   FileText,
-  Link2,
   LucideIcon,
   Mail,
-  MessageCircle,
   MousePointer2,
   PlayIcon,
   RefreshCcw,
   Settings,
   User,
+  Webhook,
   XCircle,
 } from "lucide-react";
 
@@ -80,8 +79,10 @@ export const getActivityIcon = (text: string) => {
 };
 
 export const getIntegrationIcon = (name: string): LucideIcon => {
-  if (name.includes("WhatsApp")) return MessageCircle;
-  if (name.includes("Email")) return Mail;
+  const normalizedName = name.toLowerCase();
 
-  return Link2;
+  if (normalizedName.includes("email") || normalizedName.includes("smtp"))
+    return Mail;
+
+  return Webhook;
 };
