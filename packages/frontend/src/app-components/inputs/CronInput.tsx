@@ -14,15 +14,24 @@ import {
   Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
+import {
+  DEFAULT_CRON_STATE,
+  DOW_VALUES,
+  FREQUENCY_VALUES,
+  type CronState,
+  type Frequency,
+  fromCron,
+  pad,
+  toCron,
+} from "@/utils/cron.utils";
 
 export type CronInputProps = {
   value?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
-  name?: string;
   error?: boolean;
   helperText?: React.ReactNode;
   label?: React.ReactNode;
@@ -30,124 +39,10 @@ export type CronInputProps = {
   required?: boolean;
 };
 
-type Frequency = "second" | "minute" | "hour" | "day" | "week" | "month";
-
-type CronState = {
-  frequency: Frequency;
-  minute: number;
-  hour: number;
-  dayOfWeek: number;
-  dayOfMonth: number;
-};
-
-const FREQUENCY_VALUES: Frequency[] = [
-  "second",
-  "minute",
-  "hour",
-  "day",
-  "week",
-  "month",
-];
-const DOW_VALUES = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-] as const;
-const DEFAULT_STATE: CronState = {
-  frequency: "day",
-  minute: 0,
-  hour: 0,
-  dayOfWeek: 1,
-  dayOfMonth: 1,
-};
-
-function pad(n: number): string {
-  return String(n).padStart(2, "0");
-}
-
-function toCron(state: CronState): string {
-  const { frequency, minute, hour, dayOfWeek, dayOfMonth } = state;
-
-  switch (frequency) {
-    case "second":
-      return "* * * * * *";
-    case "minute":
-      return "0 * * * * *";
-    case "hour":
-      return `0 ${minute} * * * *`;
-    case "day":
-      return `0 ${minute} ${hour} * * *`;
-    case "week":
-      return `0 ${minute} ${hour} * * ${dayOfWeek}`;
-    case "month":
-      return `0 ${minute} ${hour} ${dayOfMonth} * *`;
-  }
-}
-
-function fromCron(expression: string): CronState {
-  const parts = expression.trim().split(/\s+/);
-  const normalized =
-    parts.length === 6 ? parts : parts.length === 5 ? ["0", ...parts] : null;
-
-  if (!normalized) return { ...DEFAULT_STATE };
-
-  const [sec, min, hour, dom, , dow] = normalized;
-  const isWild = (v: string) => v === "*";
-  const toNum = (v: string, fallback: number) => {
-    const n = parseInt(v, 10);
-
-    return isNaN(n) ? fallback : n;
-  };
-
-  if (isWild(sec) && isWild(min) && isWild(hour)) {
-    return { ...DEFAULT_STATE, frequency: "second" };
-  }
-  if (sec === "0" && isWild(min) && isWild(hour)) {
-    return { ...DEFAULT_STATE, frequency: "minute" };
-  }
-  if ((sec === "0" || isWild(sec)) && !isWild(min) && isWild(hour)) {
-    return { ...DEFAULT_STATE, frequency: "hour", minute: toNum(min, 0) };
-  }
-  if ((sec === "0" || isWild(sec)) && !isWild(min) && !isWild(hour)) {
-    if (!isWild(dow)) {
-      return {
-        ...DEFAULT_STATE,
-        frequency: "week",
-        minute: toNum(min, 0),
-        hour: toNum(hour, 0),
-        dayOfWeek: toNum(dow, 1),
-      };
-    }
-    if (!isWild(dom)) {
-      return {
-        ...DEFAULT_STATE,
-        frequency: "month",
-        minute: toNum(min, 0),
-        hour: toNum(hour, 0),
-        dayOfMonth: toNum(dom, 1),
-      };
-    }
-
-    return {
-      ...DEFAULT_STATE,
-      frequency: "day",
-      minute: toNum(min, 0),
-      hour: toNum(hour, 0),
-    };
-  }
-
-  return { ...DEFAULT_STATE };
-}
-
 export const CronInput: FC<CronInputProps> = ({
   value = "",
   onChange,
   onBlur,
-  name,
   error,
   helperText,
   label,
@@ -164,26 +59,11 @@ export const CronInput: FC<CronInputProps> = ({
     [t],
   );
   const [state, setState] = useState<CronState>(() =>
-    value ? fromCron(value) : { ...DEFAULT_STATE },
+    value ? fromCron(value) : { ...DEFAULT_CRON_STATE },
   );
-  const mountedRef = useRef(false);
-
-  // Seed the form with the default cron when no value is provided yet
-  useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-      if (!value) {
-        onChange?.(toCron(state));
-      }
-    }
-    // Intentional: only run on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
-    if (value) {
-      setState(fromCron(value));
-    }
+    setState(value ? fromCron(value) : { ...DEFAULT_CRON_STATE });
   }, [value]);
 
   const update = useCallback(
@@ -214,11 +94,11 @@ export const CronInput: FC<CronInputProps> = ({
     update({ dayOfMonth: Number(e.target.value) });
   };
   const { frequency, hour, minute, dayOfWeek, dayOfMonth } = state;
-  const showHourMinute =
+  const showMinute =
+    frequency === "hour" ||
     frequency === "day" ||
     frequency === "week" ||
-    frequency === "month" ||
-    frequency === "hour";
+    frequency === "month";
   const showHour =
     frequency === "day" || frequency === "week" || frequency === "month";
   const showDow = frequency === "week";
@@ -313,7 +193,7 @@ export const CronInput: FC<CronInputProps> = ({
           </>
         )}
 
-        {showHourMinute && (
+        {showMinute && (
           <>
             <Typography variant="body2">:</Typography>
             <Select
@@ -334,8 +214,6 @@ export const CronInput: FC<CronInputProps> = ({
       </Stack>
 
       {helperText && <FormHelperText>{helperText}</FormHelperText>}
-
-      <input type="hidden" name={name} value={toCron(state)} readOnly />
     </FormControl>
   );
 };

@@ -40,6 +40,7 @@ import {
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useAuth } from "@/hooks/useAuth";
+import { useCronFormatter } from "@/hooks/useCronFormatter";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -84,6 +85,7 @@ const openPricing = () => {
 
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
+  const formatCron = useCronFormatter();
   const dialogs = useDialogs();
   const { user, refetchUser } = useAuth();
   const { getLocalStorage, setLocalStorage } = useLocalStorage();
@@ -239,7 +241,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
 
         return {
           secondaryText: schedule
-            ? t("visual_editor.flows_drawer.meta.cron", { 0: schedule })
+            ? formatCron(schedule)
             : t("visual_editor.flows_drawer.meta.no_schedule"),
         };
       }

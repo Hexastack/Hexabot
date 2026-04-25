@@ -74,7 +74,6 @@
     "title_is_required": "Le Titre est requis",
     "type_is_required": "Le Type est requis",
     "schedule_is_required": "Le planning est requis pour les workflows planifiés",
-    "cron_format": "Format : */5 * * * * *",
     "url_is_required": "L'Url est requis",
     "url_is_invalid": "L'URL fournie est invalide",
     "command_is_required": "La commande est obligatoire",
@@ -318,7 +317,8 @@
       "messages": "Messages",
       "last_24h": "Dernières 24 h",
       "loading": "—"
-    }
+    },
+    "upcoming_schedules": "À venir"
   },
   "label": {
     "terms": "J'ai lu et approuvé les termes et conditions.",

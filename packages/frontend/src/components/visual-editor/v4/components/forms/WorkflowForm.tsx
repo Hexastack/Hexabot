@@ -5,8 +5,8 @@
  */
 
 import type { WorkflowDefinition } from "@hexabot-ai/agentic";
-import { WorkflowType } from "@hexabot-ai/types";
 import type { Workflow } from "@hexabot-ai/types";
+import { WorkflowType } from "@hexabot-ai/types";
 import { TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import type { JSONSchema7 as JsonSchema } from "json-schema";
@@ -371,7 +371,6 @@ export const WorkflowForm: FC<
                       }}
                       render={({ field }) => (
                         <CronInput
-                          name={field.name}
                           value={field.value}
                           onChange={field.onChange}
                           onBlur={field.onBlur}
@@ -379,13 +378,6 @@ export const WorkflowForm: FC<
                             defaultValue: "Schedule",
                           })}
                           error={!!errors.schedule}
-                          helperText={
-                            errors.schedule
-                              ? errors.schedule.message
-                              : t("message.cron_format", {
-                                  defaultValue: "Format: */5 * * * * *",
-                                })
-                          }
                         />
                       )}
                     />

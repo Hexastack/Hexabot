@@ -95,9 +95,9 @@ export const formatDurationMs = (
   return `${s}s`;
 };
 
-export const getRemainingTime = (ms: number): string => {
+export const getRemainingTime = (ms: number, locale: string = "en"): string => {
   try {
-    return dayjs.duration(ms).humanize(true);
+    return dayjs.duration(ms).locale(locale).humanize(true);
   } catch {
     return "Invalid";
   }
