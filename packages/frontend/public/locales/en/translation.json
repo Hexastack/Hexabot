@@ -350,6 +350,8 @@
     },
     "activity": {
       "title": "Activity",
+      "by": "By",
+      "target": "Target",
       "loading": "Loading activity...",
       "error": "Unable to load activity.",
       "empty": "No activity to display"

@@ -4,14 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { AuditLog } from "@hexabot-ai/types";
 import { Timeline } from "@mui/lab";
-import { Alert, Box, Button, Grid, Typography } from "@mui/material";
+import { Alert, Box, Button, Stack, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { ScrollText } from "lucide-react";
 
 import {
   formatAuditActor,
-  formatAuditResource,
   getAuditStatusMeta,
 } from "@/components/audit/audit-display.utils";
 import { useFind } from "@/hooks/crud/useFind";
@@ -23,6 +23,57 @@ import { formatSmartDate } from "@/utils/date";
 import { DashboardTimelineItem } from "../components/DashboardTimelineItem";
 import { IconContainer } from "../components/IconContainer";
 import { TitleWithActions } from "../components/TitleWithActions";
+
+const AUTH_ACTIVITY_OPERATIONS = new Set(["login", "logout"]);
+const normalizeActivityValue = (value?: string | null): string | undefined => {
+  const trimmed = value?.trim();
+
+  return trimmed ? trimmed : undefined;
+};
+const isSameActivityValue = (left: string, right?: string): boolean =>
+  left.toLocaleLowerCase() === right?.toLocaleLowerCase();
+const getActivityResourceTarget = (event: AuditLog): string | undefined =>
+  normalizeActivityValue(event.resourceLabel) ??
+  normalizeActivityValue(event.resourceId);
+const formatActivityAction = (event: AuditLog): string => {
+  const operationType = normalizeActivityValue(event.operationType);
+  const resourceType = normalizeActivityValue(event.resourceType);
+  const shouldHideAuthResource =
+    operationType !== undefined &&
+    resourceType?.toLocaleLowerCase() === "auth" &&
+    AUTH_ACTIVITY_OPERATIONS.has(operationType.toLocaleLowerCase());
+
+  return [operationType, shouldHideAuthResource ? undefined : resourceType]
+    .filter(Boolean)
+    .join(" ");
+};
+
+type ActivityMetaItemProps = {
+  label: string;
+  value: string;
+};
+
+const ActivityMetaItem = ({ label, value }: ActivityMetaItemProps) => (
+  <Stack component="span" direction="row" spacing={0.5} alignItems="baseline">
+    <Typography
+      component="span"
+      variant="caption"
+      color="text.secondary"
+      fontWeight={700}
+      sx={{ flexShrink: 0 }}
+    >
+      {label}
+    </Typography>
+    <Typography
+      component="span"
+      variant="caption"
+      color="text.primary"
+      sx={{ overflowWrap: "anywhere" }}
+    >
+      {value}
+    </Typography>
+  </Stack>
+);
 
 export const RecentActivityTimeline = () => {
   const theme = useTheme();
@@ -73,37 +124,63 @@ export const RecentActivityTimeline = () => {
               const statusMeta = getAuditStatusMeta(event.operationStatus);
               const IconType = statusMeta.icon;
               const actor = formatAuditActor(event);
-              const activityDetails = [
-                event.operationType,
-                formatAuditResource(event),
-              ]
-                .filter(Boolean)
-                .join(" ");
+              const activityAction =
+                formatActivityAction(event) || t("dashboard.activity.title");
+              const resourceTarget = getActivityResourceTarget(event);
+              const resourceType = normalizeActivityValue(event.resourceType);
+              const shouldShowResourceTarget =
+                resourceTarget !== undefined &&
+                !isSameActivityValue(resourceTarget, actor) &&
+                !isSameActivityValue(resourceTarget, resourceType);
 
               return (
                 <DashboardTimelineItem
                   key={event.id}
                   time={formatSmartDate(event.createdAt, locale)}
-                  secondaryText={event.requestPath ?? undefined}
                   renderTitle={() => (
-                    <Grid display="flex" gap={1} alignItems="center">
-                      <IconContainer
-                        icon={IconType}
-                        color={theme.palette[statusMeta.tone].main}
-                        borderRadius="16px"
-                        size={14}
-                      />
-                      <Typography variant="caption">
-                        <Box
-                          component="span"
-                          fontWeight="bold"
+                    <Stack
+                      direction="row"
+                      gap={1.25}
+                      alignItems="flex-start"
+                      sx={{ minWidth: 0 }}
+                    >
+                      <Box sx={{ flexShrink: 0 }}>
+                        <IconContainer
+                          icon={IconType}
+                          color={theme.palette[statusMeta.tone].main}
+                          borderRadius="16px"
+                          size={14}
+                        />
+                      </Box>
+                      <Stack gap={0.5} sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={700}
                           color="text.primary"
+                          sx={{ overflowWrap: "anywhere" }}
                         >
-                          {actor}
-                        </Box>{" "}
-                        {activityDetails}
-                      </Typography>
-                    </Grid>
+                          {activityAction}
+                        </Typography>
+                        <Stack
+                          direction="row"
+                          gap={1.25}
+                          flexWrap="wrap"
+                          useFlexGap
+                          sx={{ minWidth: 0 }}
+                        >
+                          <ActivityMetaItem
+                            label={t("dashboard.activity.by")}
+                            value={actor}
+                          />
+                          {shouldShowResourceTarget && resourceTarget ? (
+                            <ActivityMetaItem
+                              label={t("dashboard.activity.target")}
+                              value={resourceTarget}
+                            />
+                          ) : null}
+                        </Stack>
+                      </Stack>
+                    </Stack>
                   )}
                 />
               );

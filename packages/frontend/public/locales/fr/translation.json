@@ -350,6 +350,8 @@
     },
     "activity": {
       "title": "Activité",
+      "by": "Par",
+      "target": "Cible",
       "loading": "Chargement de l'activité...",
       "error": "Impossible de charger l'activité.",
       "empty": "Aucune activité à afficher"
