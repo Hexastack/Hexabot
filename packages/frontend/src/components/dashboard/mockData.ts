@@ -52,33 +52,6 @@ export const mockAttentionItems = [
   },
 ];
 
-export const mockPinnedWorkflows = [
-  {
-    id: "wf-1",
-    name: "Customer Support Bot",
-    type: "Conversational",
-    status: "Enabled",
-    lastRun: "2m ago",
-    lastResult: "success",
-  },
-  {
-    id: "wf-2",
-    name: "Nightly Data Sync",
-    type: "Scheduled",
-    status: "Enabled",
-    lastRun: "4h ago",
-    lastResult: "success",
-  },
-  {
-    id: "wf-3",
-    name: "Manual User Export",
-    type: "Manual",
-    status: "Draft",
-    lastRun: "2d ago",
-    lastResult: "warning",
-  },
-];
-
 export const mockRecentActivity = [
   {
     id: "evt-1",

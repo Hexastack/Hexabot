@@ -8,11 +8,8 @@ import { alpha } from "@mui/material";
 import {
   AlertCircle,
   AlertTriangle,
-  Calendar,
-  FileText,
   LucideIcon,
   Mail,
-  MousePointer2,
   PlayIcon,
   RefreshCcw,
   Settings,
@@ -60,13 +57,6 @@ export const getColor = (c: string) => {
   };
 
   return colors[c] || theme.palette.primary.main;
-};
-
-export const getWorkflowIcon = (type: string): LucideIcon => {
-  if (type === "Conversational") return FileText;
-  if (type === "Scheduled") return Calendar;
-
-  return MousePointer2;
 };
 
 export const getActivityIcon = (text: string) => {

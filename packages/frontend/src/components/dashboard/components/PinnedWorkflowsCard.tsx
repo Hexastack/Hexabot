@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { Workflow } from "@hexabot-ai/types";
 import {
   alpha,
   Box,
@@ -13,22 +14,29 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Play } from "lucide-react";
+import { Eye } from "lucide-react";
 
-import { getWorkflowIcon } from "../utils/transform.util";
+import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
+import { useAppRouter } from "@/hooks/useAppRouter";
+import { useTranslate } from "@/hooks/useTranslate";
 
 import { IconContainer } from "./IconContainer";
 
-export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
+export const PinnedWorkflowsCard = ({ workflow }: { workflow: Workflow }) => {
   const theme = useTheme();
-  const isEnabled = workflow.status === "Enabled";
-  const statusColor = isEnabled
-    ? theme.palette.success.main
-    : theme.palette.text.disabled;
-  const Icon = getWorkflowIcon(workflow.type);
+  const router = useAppRouter();
+  const { t } = useTranslate();
+  const workflowTypeInfo = WORKFLOW_TYPES[workflow.type];
+  const Icon = workflowTypeInfo.icon;
+  const openWorkflow = () => {
+    router.push({
+      pathname: `/workflow-editor/${workflow.id}`,
+    });
+  };
 
   return (
     <Card
+      onClick={openWorkflow}
       elevation={0}
       sx={{
         borderRadius: 3,
@@ -42,7 +50,7 @@ export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
           border: `1px solid ${alpha(theme.palette.primary.main, 1)}`,
           boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
           transform: "translateY(-2px)",
-          "& .play-button": { opacity: 1, transform: "scale(1)" },
+          "& .view-button": { opacity: 1, transform: "scale(1)" },
         },
       }}
     >
@@ -67,25 +75,21 @@ export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
             <Typography variant="subtitle2" fontWeight="bold" noWrap>
               {workflow.name}
             </Typography>
-            <Box
-              sx={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                bgcolor: statusColor,
-                boxShadow: isEnabled ? `0 0 8px ${statusColor}` : "none",
-              }}
-            />
           </Box>
           <Typography variant="caption" color="text.secondary" display="block">
-            {workflow.type} • {workflow.lastRun}
+            {t(workflowTypeInfo.labelKey)}
           </Typography>
         </Box>
 
         {/* Hover Action */}
         <IconButton
-          className="play-button"
+          className="view-button"
           color="primary"
+          aria-label={t("label.view")}
+          onClick={(event) => {
+            event.stopPropagation();
+            openWorkflow();
+          }}
           sx={{
             position: "absolute",
             right: 16,
@@ -96,7 +100,7 @@ export const PinnedWorkflowsCard = ({ workflow }: { workflow: any }) => {
             "&:hover": { bgcolor: theme.palette.primary.main, color: "white" },
           }}
         >
-          <Play size={18} fill="currentColor" />
+          <Eye size={18} />
         </IconButton>
       </CardContent>
     </Card>
