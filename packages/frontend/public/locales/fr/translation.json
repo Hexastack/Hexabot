@@ -322,6 +322,7 @@
       "last_24h": "Dernières 24 h",
       "loading": "—"
     },
+    "latest_workflows": "Récents",
     "upcoming_schedules": "À venir",
     "thread_snapshot": {
       "title": "Aperçu des discussions",
@@ -801,6 +802,7 @@
     "export": "Export",
     "manage": "Gérer",
     "view": "Voir",
+    "view_all": "Voir tout",
     "close": "Fermer",
     "validate": "Valider",
     "back": "Retour",

@@ -13,7 +13,7 @@ import { PageHeader } from "@/layout/content/PageHeader";
 import { AttentionRequired } from "./widgets/AttentionRequired";
 import { IntegrationsHealth } from "./widgets/IntegrationsHealth";
 import { KPICards } from "./widgets/KPICards";
-import { PinnedWorkflows } from "./widgets/PinnedWorkflows";
+import { LatestWorkflows } from "./widgets/LatestWorkflows";
 import { QuickActions } from "./widgets/QuickActions";
 import { RecentActivityTimeline } from "./widgets/RecentActivityTimeline";
 import { RecentRuns } from "./widgets/RecentRuns";
@@ -44,7 +44,7 @@ export const Dashboard = () => {
           </Grid>
           <Grid size={12}>
             {/* TODO replace mock data by an API integration */}
-            <PinnedWorkflows />
+            <LatestWorkflows />
           </Grid>
           <Grid size={12}>
             <RecentRuns />

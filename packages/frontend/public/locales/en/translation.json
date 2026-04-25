@@ -322,6 +322,7 @@
       "last_24h": "Last 24h",
       "loading": "—"
     },
+    "latest_workflows": "Latest",
     "upcoming_schedules": "Upcoming",
     "thread_snapshot": {
       "title": "Thread Snapshot",
@@ -803,6 +804,7 @@
     "export": "Export",
     "manage": "Manage",
     "view": "View",
+    "view_all": "View All",
     "close": "Close",
     "validate": "Validate",
     "back": "Back",
