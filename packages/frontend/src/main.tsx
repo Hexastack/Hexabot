@@ -77,9 +77,7 @@ ReactDOM.createRoot(rootElement).render(
                     <SettingsProvider>
                       <DialogsProvider>
                         <SocketProvider>
-                          {/* <ErrorBoundary> */}
                           <App />
-                          {/* </ErrorBoundary> */}
                         </SocketProvider>
                       </DialogsProvider>
                     </SettingsProvider>
