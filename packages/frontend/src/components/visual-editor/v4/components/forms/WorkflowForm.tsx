@@ -5,8 +5,8 @@
  */
 
 import type { WorkflowDefinition } from "@hexabot-ai/agentic";
-import { WorkflowType } from "@hexabot-ai/types";
 import type { Workflow } from "@hexabot-ai/types";
+import { WorkflowType } from "@hexabot-ai/types";
 import { TextField } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import type { JSONSchema7 as JsonSchema } from "json-schema";
@@ -14,6 +14,7 @@ import { FC, Fragment, useEffect, useMemo, useRef } from "react";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
+import { CronInput } from "@/app-components/inputs/CronInput";
 import {
   JsonSchemaObjectBuilder,
   SchemaNodeForm,
@@ -213,20 +214,6 @@ export const WorkflowForm: FC<
       defaultValue: buildInputSchemaNode(nextType, translateRef.current),
     });
   };
-  const scheduleRegister = register("schedule", {
-    validate: (value) => {
-      if (typeValue !== WorkflowType.scheduled) {
-        return true;
-      }
-
-      return (
-        (value && value.trim().length > 0) ||
-        t("message.schedule_is_required", {
-          defaultValue: "Schedule is required for scheduled workflows.",
-        })
-      );
-    },
-  });
   const options = {
     onError: (error: Error & { statusCode?: number }) => {
       if (error.statusCode === 403) {
@@ -371,18 +358,28 @@ export const WorkflowForm: FC<
                 </ContentItem>
                 {typeValue === WorkflowType.scheduled && (
                   <ContentItem>
-                    <TextField
-                      label={t("label.schedule", { defaultValue: "Schedule" })}
-                      placeholder="*/5 * * * * *"
-                      error={!!errors.schedule}
-                      helperText={
-                        errors.schedule
-                          ? errors.schedule.message
-                          : t("message.cron_format", {
-                              defaultValue: "Format: */5 * * * * *",
-                            })
-                      }
-                      {...scheduleRegister}
+                    <Controller
+                      name="schedule"
+                      control={control}
+                      rules={{
+                        validate: (value) =>
+                          (value && value.trim().length > 0) ||
+                          t("message.schedule_is_required", {
+                            defaultValue:
+                              "Schedule is required for scheduled workflows.",
+                          }),
+                      }}
+                      render={({ field }) => (
+                        <CronInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          label={t("label.schedule", {
+                            defaultValue: "Schedule",
+                          })}
+                          error={!!errors.schedule}
+                        />
+                      )}
                     />
                   </ContentItem>
                 )}

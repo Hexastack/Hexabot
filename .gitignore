@@ -7,3 +7,4 @@ node_modules/
 .idea/
 .turbo
 *.sqlite
+.claude

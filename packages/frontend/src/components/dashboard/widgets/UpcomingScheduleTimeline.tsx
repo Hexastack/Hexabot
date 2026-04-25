@@ -11,6 +11,7 @@ import { Box, Grid, Paper, Typography } from "@mui/material";
 import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
 import { useFind } from "@/hooks/crud/useFind";
 import { useAppRouter } from "@/hooks/useAppRouter";
+import { useCronFormatter } from "@/hooks/useCronFormatter";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { getRemainingTime } from "@/utils/date";
@@ -20,7 +21,8 @@ import { IconContainer } from "../components/IconContainer";
 import { TitleWithActions } from "../components/TitleWithActions";
 
 export const UpcomingScheduleTimeline = () => {
-  const { t } = useTranslate();
+  const { t, i18n } = useTranslate();
+  const formatCron = useCronFormatter();
   const router = useAppRouter();
   const { data: scheduledWorkflows } = useFind(
     { entity: EntityType.WORKFLOW },
@@ -37,7 +39,7 @@ export const UpcomingScheduleTimeline = () => {
 
   return (
     <Timeline>
-      <TitleWithActions title="Upcoming" />
+      <TitleWithActions title={t("dashboard.upcoming_schedules")} />
       {scheduledWorkflows.length ? (
         <Box>
           {scheduledWorkflows
@@ -48,7 +50,7 @@ export const UpcomingScheduleTimeline = () => {
               <DashboardTimelineItem
                 key={id}
                 text={description || ""}
-                time={getRemainingTime(runAfterMs)}
+                time={getRemainingTime(runAfterMs, i18n.language)}
                 onClick={() => {
                   router.push({
                     pathname: `/workflow-editor/${id}`,
@@ -70,7 +72,7 @@ export const UpcomingScheduleTimeline = () => {
                     </>
                   );
                 }}
-                secondaryText={schedule || ""}
+                secondaryText={schedule ? formatCron(schedule) : ""}
               />
             ))}
         </Box>
