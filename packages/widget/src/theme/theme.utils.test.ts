@@ -59,6 +59,7 @@ describe("resolveWidgetTheme", () => {
     });
 
     expect(theme.palette.primary).toBe("#1BA089");
+    expect(theme.palette.onPrimary).toBe("#FCFCFC");
     expect(theme.tokens.surface.header).toBe("#1BA089");
   });
 

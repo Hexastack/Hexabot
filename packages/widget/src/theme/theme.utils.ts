@@ -23,6 +23,7 @@ const DEFAULT_LIGHT_PRIMARY_COLOR = "#0074D9";
 const DEFAULT_DARK_PRIMARY_COLOR = "#111827";
 const WHITE_TEXT_COLOR = "#FCFCFC";
 const DARK_TEXT_COLOR = "#343842";
+const MIN_ACCEPTABLE_LIGHT_TEXT_CONTRAST = 3;
 const HEX_COLOR_PATTERN = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 const COLOR_FUNCTION_PATTERN = /^(rgba?|hsla?)\(/i;
 const DEFAULT_TYPOGRAPHY: ThemeTypography = {
@@ -80,10 +81,13 @@ const contrastRatio = (first: string, second: string): number => {
   return chroma.contrast(first, second);
 };
 const getReadableTextColor = (backgroundColor: string): string => {
-  return contrastRatio(backgroundColor, WHITE_TEXT_COLOR) >=
-    contrastRatio(backgroundColor, DARK_TEXT_COLOR)
-    ? WHITE_TEXT_COLOR
-    : DARK_TEXT_COLOR;
+  const lightTextContrast = contrastRatio(backgroundColor, WHITE_TEXT_COLOR);
+
+  if (lightTextContrast >= MIN_ACCEPTABLE_LIGHT_TEXT_CONTRAST) {
+    return WHITE_TEXT_COLOR;
+  }
+
+  return DARK_TEXT_COLOR;
 };
 const toRgbaColor = (value: string, alpha: number): string => {
   const [red, green, blue] = chroma(value)
