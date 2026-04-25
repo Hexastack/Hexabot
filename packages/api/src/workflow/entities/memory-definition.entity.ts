@@ -11,6 +11,7 @@ import {
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { Column, Entity, Index } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { EnumColumn } from '@/database/decorators/enum-column.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
@@ -27,6 +28,7 @@ export class MemoryDefinitionOrmEntity extends BaseOrmEntity<MemoryDefinitionDto
   fullCls = memoryDefinitionFullSchema;
 
   /** Human-friendly label for the memory definition. */
+  @AuditLabel()
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 

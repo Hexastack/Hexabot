@@ -87,6 +87,7 @@ describe('LocalAuthGuard', () => {
       resource: {
         id: 'admin@example.com',
         type: 'Auth',
+        label: 'admin@example.com',
       },
       operation: {
         id: 'auth.login',
@@ -96,6 +97,7 @@ describe('LocalAuthGuard', () => {
       actor: {
         id: 'admin@example.com',
         type: 'user',
+        label: 'admin@example.com',
         ip: '203.0.113.1',
         agent: 'jest',
       },

@@ -7,6 +7,7 @@
 import { settingSchema, settingFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -26,6 +27,7 @@ export class SettingOrmEntity extends BaseOrmEntity<SettingDto> {
   @Column({ nullable: true })
   subgroup?: string;
 
+  @AuditLabel()
   @Column()
   @Index()
   label!: string;

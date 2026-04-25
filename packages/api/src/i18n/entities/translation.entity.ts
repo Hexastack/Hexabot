@@ -7,6 +7,7 @@
 import { translationSchema, translationFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -18,6 +19,7 @@ export class TranslationOrmEntity extends BaseOrmEntity<TranslationDto> {
 
   fullCls = translationFullSchema;
 
+  @AuditLabel()
   @Column({ unique: true })
   @Index()
   str!: string;

@@ -65,7 +65,8 @@ export class LocalAuthGuard extends AuthGuard('local') {
       resource: {
         id: identifier,
         type: 'Auth',
-      },
+        label: identifier,
+      } as IAuditLog['resource'] & { label: string },
       operation: {
         id: 'auth.login',
         type: 'Login',
@@ -74,9 +75,10 @@ export class LocalAuthGuard extends AuthGuard('local') {
       actor: {
         id: identifier,
         type: 'user',
+        label: identifier,
         ip: resolveRequestIp(request),
         agent: resolveUserAgent(request),
-      },
+      } as IAuditLog['actor'] & { label: string },
     };
   }
 

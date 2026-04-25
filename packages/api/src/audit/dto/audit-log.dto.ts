@@ -28,6 +28,11 @@ export class AuditLogCreateDto {
   @IsNotEmpty()
   resourceType: string;
 
+  @ApiPropertyOptional({ description: 'Audited resource display label' })
+  @IsString()
+  @IsOptional()
+  resourceLabel?: string | null;
+
   @ApiProperty({ description: 'Audited operation identifier', type: String })
   @IsString()
   @IsNotEmpty()
@@ -54,6 +59,11 @@ export class AuditLogCreateDto {
   @IsString()
   @IsNotEmpty()
   actorType: string;
+
+  @ApiPropertyOptional({ description: 'Actor display label' })
+  @IsString()
+  @IsOptional()
+  actorLabel?: string | null;
 
   @ApiPropertyOptional({ description: 'Actor IP address', type: String })
   @IsString()

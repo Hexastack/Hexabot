@@ -33,31 +33,3 @@ export const AuditAuthLogout = () =>
     actor_id_field_map: 'session.passport.user.id',
     actor_type_field_map: 'user.roles',
   });
-
-export const AuditLogReadMany = () =>
-  AuditLog({
-    resource: {
-      id: 'audit_logs',
-      type: 'AuditLog',
-    },
-    operation: {
-      id: 'auditlog.read',
-      type: 'Query',
-    },
-    actor_id_field_map: 'user.id',
-    actor_type_field_map: 'user.roles',
-  });
-
-export const AuditLogReadOne = () =>
-  AuditLog({
-    resource: {
-      type: 'AuditLog',
-    },
-    operation: {
-      id: 'auditlog.readOne',
-      type: 'Query',
-    },
-    resource_id_field_map: 'params.id',
-    actor_id_field_map: 'user.id',
-    actor_type_field_map: 'user.roles',
-  });

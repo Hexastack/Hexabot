@@ -16,6 +16,9 @@ Shared zod-first runtime contracts for Hexabot API entity outputs.
 - `utils/test/dummy`: `Dummy*`
 - `attachment`: `Attachment*`
 
+`AuditLog` includes nullable `actorLabel` and `resourceLabel` display fields in
+addition to the stable actor/resource identifiers.
+
 ## Standard Export Pattern
 
 Each migrated entity exposes:

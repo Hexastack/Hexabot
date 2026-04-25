@@ -66,6 +66,9 @@ describe('AuditContextService', () => {
       socket: {},
       user: {
         id: 'user-1',
+        username: 'admin',
+        firstName: 'Admin',
+        lastName: 'User',
         roles: ['admin'],
       },
       session: {
@@ -81,6 +84,7 @@ describe('AuditContextService', () => {
       requestId: 'request-1',
       actorId: 'user-1',
       actorType: 'admin',
+      actorLabel: 'Admin User (admin)',
       ip: '203.0.113.1',
       userAgent: 'browser',
       method: 'PATCH',

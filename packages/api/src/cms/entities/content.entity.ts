@@ -19,6 +19,7 @@ import {
   RelationId,
 } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { config } from '@/config';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import {
@@ -57,6 +58,7 @@ export class ContentOrmEntity extends BaseOrmEntity<ContentDto> {
   /**
    * The title of the content.
    */
+  @AuditLabel()
   @Column()
   title!: string;
 

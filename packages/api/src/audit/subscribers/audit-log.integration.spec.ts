@@ -45,6 +45,7 @@ describe('AuditLogSubscriber integration', () => {
         requestId: 'req-integration',
         actorId: 'admin-1',
         actorType: 'admin',
+        actorLabel: 'Admin User (admin)',
         ip: '203.0.113.1',
         userAgent: 'jest',
         method: 'POST',
@@ -96,6 +97,7 @@ describe('AuditLogSubscriber integration', () => {
     expect(records[0]).toMatchObject({
       resourceType: 'Dummy',
       actorId: 'admin-1',
+      actorLabel: 'Admin User (admin)',
       actorIp: '203.0.113.1',
       requestId: 'req-integration',
       requestPath: '/api/dummy',

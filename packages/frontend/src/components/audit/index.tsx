@@ -19,17 +19,23 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { getAuditStatusMeta } from "./audit-display.utils";
+import {
+  formatAuditActor,
+  formatAuditResource,
+  getAuditStatusMeta,
+} from "./audit-display.utils";
 import { AuditLogDetailsDrawer } from "./AuditLogDetailsDrawer";
 
 const AUDIT_LOG_SEARCH_FIELDS = [
   "resourceId",
   "resourceType",
+  "resourceLabel",
   "operationId",
   "operationType",
   "operationStatus",
   "actorId",
   "actorType",
+  "actorLabel",
   "actorIp",
   "requestId",
   "requestMethod",
@@ -101,25 +107,20 @@ export const Audit = () => {
           headerAlign: "left",
         },
         {
-          minWidth: 140,
-          field: "resourceType",
-          headerName: t("label.resource_type"),
+          minWidth: 240,
+          field: "resourceLabel",
+          headerName: t("label.resource"),
           disableColumnMenu: true,
           headerAlign: "left",
+          renderCell: ({ row }) => formatAuditResource(row),
         },
         {
           minWidth: 220,
-          field: "resourceId",
-          headerName: t("label.resource_id"),
+          field: "actorLabel",
+          headerName: t("label.actor"),
           disableColumnMenu: true,
           headerAlign: "left",
-        },
-        {
-          minWidth: 180,
-          field: "actorId",
-          headerName: t("label.actor_id"),
-          disableColumnMenu: true,
-          headerAlign: "left",
+          renderCell: ({ row }) => formatAuditActor(row),
         },
         {
           minWidth: 120,

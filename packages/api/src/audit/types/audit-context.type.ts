@@ -8,6 +8,7 @@ export type AuditRequestContext = {
   requestId?: string;
   actorId?: string;
   actorType?: string;
+  actorLabel?: string;
   ip?: string;
   userAgent?: string;
   method?: string;

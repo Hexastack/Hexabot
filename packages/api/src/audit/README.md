@@ -113,6 +113,7 @@ For each write event, it builds an audit payload:
   resource: {
     id: "<entity primary key>",
     type: "<entity name without OrmEntity suffix>",
+    label: "<@AuditLabel field value, when configured>",
   },
   operation: {
     id: "typeorm.<Entity>.<create|update|remove>",
@@ -122,6 +123,7 @@ For each write event, it builds an audit payload:
   actor: {
     id: "<request user id or system>",
     type: "<request user roles or system>",
+    label: "<request username/name, when available>",
     ip: "<client ip>",
     agent: "<user agent>",
   },
@@ -138,8 +140,13 @@ The subscriber skips internal infrastructure tables:
 - `audit_logs`
 - `migrations`
 - `sessions`
+- `stats`
 
 Audit is also skipped globally when `AUDIT_LOG_ENABLED=false`.
+
+Use `@AuditLabel()` on one entity property to capture a stable display label
+inside future audit records. Labels are copied from the event payload only; audit
+reads do not resolve labels from live entities.
 
 ### Controller Decorators
 
@@ -150,8 +157,6 @@ Currently provided decorators:
 
 - `AuditAuthLogin()`
 - `AuditAuthLogout()`
-- `AuditLogReadMany()`
-- `AuditLogReadOne()`
 
 Example:
 
@@ -194,6 +199,7 @@ type AuditRequestContext = {
   requestId?: string;
   actorId?: string;
   actorType?: string;
+  actorLabel?: string;
   ip?: string;
   userAgent?: string;
   method?: string;
@@ -352,11 +358,13 @@ Stored fields:
 | `updatedAt` | Record update timestamp. |
 | `resourceId` | Audited resource identifier. |
 | `resourceType` | Audited resource type. |
+| `resourceLabel` | Audited resource display label, when available. |
 | `operationId` | Specific operation identifier. |
 | `operationType` | High-level operation type. |
 | `operationStatus` | `UNSPECIFIED`, `SUCCEEDED`, or `FAILED`. |
 | `actorId` | Actor identifier. |
 | `actorType` | Actor type or comma-separated role IDs. |
+| `actorLabel` | Actor display label, when available. |
 | `actorIp` | Client IP, when available. |
 | `actorAgent` | User-agent, when available. |
 | `requestId` | Correlation/request ID, when available. |
@@ -387,17 +395,22 @@ Supported filter fields:
 
 - `resourceId`
 - `resourceType`
+- `resourceLabel`
 - `operationId`
 - `operationType`
 - `operationStatus`
 - `actorId`
 - `actorType`
+- `actorLabel`
 - `actorIp`
 - `requestId`
 - `requestMethod`
 - `requestPath`
 
 The list endpoint defaults to sorting by `createdAt desc`.
+List and count responses hide `AuditLog` and `Stats` resource records by
+default so audit reads and statistics writes do not pollute the user-facing
+trail.
 
 Example:
 

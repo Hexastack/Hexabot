@@ -11,7 +11,7 @@ import { ScrollText } from "lucide-react";
 
 import {
   formatAuditActor,
-  formatAuditActivity,
+  formatAuditResource,
   getAuditStatusMeta,
 } from "@/components/audit/audit-display.utils";
 import { useFind } from "@/hooks/crud/useFind";
@@ -73,8 +73,12 @@ export const RecentActivityTimeline = () => {
               const statusMeta = getAuditStatusMeta(event.operationStatus);
               const IconType = statusMeta.icon;
               const actor = formatAuditActor(event);
-              const activityText = formatAuditActivity(event);
-              const activityDetails = activityText.replace(actor, "").trim();
+              const activityDetails = [
+                event.operationType,
+                formatAuditResource(event),
+              ]
+                .filter(Boolean)
+                .join(" ");
 
               return (
                 <DashboardTimelineItem

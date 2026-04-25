@@ -46,16 +46,71 @@ export class AuditContextService {
       : user
         ? 'user'
         : undefined;
+    const actorLabel = this.resolveActorLabel(user, sessionUser, actorId);
 
     this.setContext({
       requestId: resolveRequestId(req),
       actorId,
       actorType,
+      actorLabel,
       ip: resolveRequestIp(req),
       userAgent: resolveUserAgent(req),
       method: req.method,
       path: resolveRequestPath(req),
     });
+  }
+
+  private resolveActorLabel(
+    user:
+      | (User & {
+          id?: string;
+          username?: string;
+          firstName?: string;
+          lastName?: string;
+        })
+      | undefined,
+    sessionUser:
+      | {
+          id?: string;
+          first_name?: string;
+          last_name?: string;
+        }
+      | undefined,
+    actorId?: string,
+  ): string | undefined {
+    const username = this.normalizeLabelPart(user?.username);
+    const fullName = this.joinName(
+      user?.firstName ?? sessionUser?.first_name,
+      user?.lastName ?? sessionUser?.last_name,
+    );
+
+    if (fullName && username) {
+      return `${fullName} (${username})`;
+    }
+
+    return username ?? fullName ?? actorId;
+  }
+
+  private joinName(
+    firstName?: string | null,
+    lastName?: string | null,
+  ): string | undefined {
+    const value = [firstName, lastName]
+      .map((part) => this.normalizeLabelPart(part))
+      .filter(Boolean)
+      .join(' ');
+
+    return value.length > 0 ? value : undefined;
+  }
+
+  private normalizeLabelPart(value?: string | null): string | undefined {
+    if (typeof value !== 'string') {
+      return undefined;
+    }
+
+    const trimmed = value.trim();
+
+    return trimmed.length > 0 ? trimmed : undefined;
   }
 
   getContext(): AuditRequestContext {

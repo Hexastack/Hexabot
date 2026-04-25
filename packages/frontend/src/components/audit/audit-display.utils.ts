@@ -22,16 +22,11 @@ export type AuditStatusMeta = {
   tone: AuditStatusTone;
 };
 
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const isUuid = (value?: string | null): boolean =>
-  typeof value === "string" && UUID_PATTERN.test(value);
-const isUuidList = (value?: string | null): boolean =>
-  typeof value === "string" &&
-  value.length > 0 &&
-  value.split(",").every((part) => isUuid(part.trim()));
-const isTechnicalId = (value?: string | null): boolean =>
-  isUuid(value) || isUuidList(value);
+const normalizeDisplayLabel = (value?: string | null): string | undefined => {
+  const trimmed = value?.trim();
+
+  return trimmed ? trimmed : undefined;
+};
 
 export const AUDIT_STATUS_META: Record<
   AuditLog["operationStatus"],
@@ -60,24 +55,24 @@ export const getAuditStatusMeta = (
   AUDIT_STATUS_META[status] ?? AUDIT_STATUS_META.UNSPECIFIED;
 
 export const formatAuditActor = (auditLog: AuditLog): string => {
-  if (auditLog.actorId === "system") {
-    return auditLog.actorId;
+  const actorLabel = normalizeDisplayLabel(auditLog.actorLabel);
+
+  if (actorLabel) {
+    return actorLabel;
   }
 
-  if (!isTechnicalId(auditLog.actorId)) {
-    return auditLog.actorId || auditLog.actorType || "user";
-  }
-
-  if (auditLog.actorType && !isTechnicalId(auditLog.actorType)) {
-    return auditLog.actorType;
-  }
-
-  return auditLog.resourceType === "Auth" ? "user" : "system";
+  return (
+    normalizeDisplayLabel(auditLog.actorId) ??
+    normalizeDisplayLabel(auditLog.actorType) ??
+    "system"
+  );
 };
 
 export const formatAuditResource = (auditLog: AuditLog): string => {
-  if (auditLog.resourceType === "Auth" || isTechnicalId(auditLog.resourceId)) {
-    return auditLog.resourceType;
+  const resourceLabel = normalizeDisplayLabel(auditLog.resourceLabel);
+
+  if (resourceLabel) {
+    return [auditLog.resourceType, resourceLabel].filter(Boolean).join(" ");
   }
 
   return [auditLog.resourceType, auditLog.resourceId].filter(Boolean).join(" ");

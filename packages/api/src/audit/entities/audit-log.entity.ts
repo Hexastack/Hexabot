@@ -28,6 +28,9 @@ export class AuditLogOrmEntity extends BaseOrmEntity<AuditLogDto> {
   @Column({ name: 'resource_type' })
   resourceType!: string;
 
+  @Column({ name: 'resource_label', nullable: true, type: 'text' })
+  resourceLabel?: string | null;
+
   @Column({ name: 'operation_id' })
   operationId!: string;
 
@@ -42,6 +45,9 @@ export class AuditLogOrmEntity extends BaseOrmEntity<AuditLogDto> {
 
   @Column({ name: 'actor_type' })
   actorType!: string;
+
+  @Column({ name: 'actor_label', nullable: true, type: 'text' })
+  actorLabel?: string | null;
 
   @Column({ name: 'actor_ip', nullable: true, type: 'text' })
   actorIp?: string | null;

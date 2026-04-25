@@ -17,11 +17,13 @@ const nullableRecordSchema = preprocess(
 export const auditLogSchema = baseStubSchema.extend({
   resourceId: z.string(),
   resourceType: z.string(),
+  resourceLabel: z.string().nullable(),
   operationId: z.string(),
   operationType: z.string(),
   operationStatus: z.enum(["UNSPECIFIED", "SUCCEEDED", "FAILED"]),
   actorId: z.string(),
   actorType: z.string(),
+  actorLabel: z.string().nullable(),
   actorIp: z.string().nullable(),
   actorAgent: z.string().nullable(),
   requestId: z.string().nullable(),

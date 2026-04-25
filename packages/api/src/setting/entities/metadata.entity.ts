@@ -7,6 +7,7 @@
 import { metadataSchema, metadataFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -19,6 +20,7 @@ export class MetadataOrmEntity extends BaseOrmEntity<MetadataDto> {
 
   fullCls = metadataFullSchema;
 
+  @AuditLabel()
   @Column()
   name!: string;
 

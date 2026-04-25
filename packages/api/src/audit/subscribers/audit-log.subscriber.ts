@@ -23,11 +23,21 @@ import {
 
 import { config } from '@/config';
 
+import { getAuditLabelProperty } from '../decorators/audit-label.decorator';
 import { AuditContextService } from '../services/audit-context.service';
 
 type AuditOperation = 'Create' | 'Update' | 'Remove';
+type LabeledAuditLog = IAuditLog & {
+  resource: IAuditLog['resource'] & { label?: string };
+  actor: IAuditLog['actor'] & { label?: string };
+};
 
-const INTERNAL_TABLES = new Set(['audit_logs', 'migrations', 'sessions']);
+const INTERNAL_TABLES = new Set([
+  'audit_logs',
+  'migrations',
+  'sessions',
+  'stats',
+]);
 const UNKNOWN_VALUE = 'unknown';
 
 @Injectable()
@@ -91,11 +101,15 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
 
     const beforeData = this.toAuditData(event.metadata, before);
     const afterData = this.toAuditData(event.metadata, after);
+    const resourceLabel =
+      this.getResourceLabel(event.metadata, afterData) ??
+      this.getResourceLabel(event.metadata, beforeData);
     const auditLog = this.buildAuditLog(
       operation,
       event,
       beforeData,
       afterData,
+      resourceLabel,
     );
 
     await this.auditLogService.sendAuditLog(auditLog);
@@ -109,16 +123,17 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
       | RemoveEvent<ObjectLiteral>,
     before?: Record<string, unknown>,
     after?: Record<string, unknown>,
+    resourceLabel?: string,
   ): IAuditLog {
     const context = this.auditContext.getContext();
     const resourceId =
       this.getResourceId(event, before) ?? this.getResourceId(event, after);
     const entityName = this.getEntityName(event.metadata);
-
-    return {
+    const auditLog: LabeledAuditLog = {
       resource: {
         id: resourceId ?? UNKNOWN_VALUE,
         type: entityName,
+        ...(resourceLabel ? { label: resourceLabel } : {}),
       },
       operation: {
         id: `typeorm.${entityName}.${operation.toLowerCase()}`,
@@ -128,6 +143,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
       actor: {
         id: context.actorId ?? 'system',
         type: context.actorType ?? 'system',
+        ...(context.actorLabel ? { label: context.actorLabel } : {}),
         ip: context.ip,
         agent: context.userAgent,
       },
@@ -137,6 +153,8 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
         diff: this.diff(before, after),
       },
     };
+
+    return auditLog;
   }
 
   private getEntityName(metadata: EntityMetadata): string {
@@ -167,6 +185,36 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
     const primaryValue = primaryColumn ? data?.[primaryColumn] : undefined;
 
     return primaryValue === undefined ? undefined : String(primaryValue);
+  }
+
+  private getResourceLabel(
+    metadata: EntityMetadata,
+    data?: Record<string, unknown>,
+  ): string | undefined {
+    const labelProperty = getAuditLabelProperty(metadata);
+    if (!labelProperty) {
+      return undefined;
+    }
+
+    return this.toLabel(data?.[labelProperty]);
+  }
+
+  private toLabel(value: unknown): string | undefined {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+
+      return trimmed.length > 0 ? trimmed : undefined;
+    }
+
+    if (
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      typeof value === 'bigint'
+    ) {
+      return String(value);
+    }
+
+    return undefined;
   }
 
   private toAuditData(

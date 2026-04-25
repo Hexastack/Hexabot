@@ -590,11 +590,13 @@ describe("@hexabot-ai/types schemas", () => {
       updatedAt: now,
       resourceId: "user_1",
       resourceType: "User",
+      resourceLabel: "admin",
       operationId: "typeorm.User.update",
       operationType: "Update",
       operationStatus: "SUCCEEDED",
       actorId: "admin_1",
       actorType: "admin",
+      actorLabel: "Admin User (admin)",
       actorIp: "203.0.113.1",
       actorAgent: "browser",
       requestId: "req_1",
@@ -613,6 +615,8 @@ describe("@hexabot-ai/types schemas", () => {
     });
 
     expect(auditLog.resourceType).toBe("User");
+    expect(auditLog.resourceLabel).toBe("admin");
+    expect(auditLog.actorLabel).toBe("Admin User (admin)");
     expect("shouldDrop" in auditLog).toBe(false);
     expect(auditLogFullSchema.parse(auditLog).dataDiff).toEqual({
       email: {

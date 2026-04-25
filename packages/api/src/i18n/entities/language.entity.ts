@@ -7,6 +7,7 @@
 import { languageSchema, languageFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index, InsertEvent, UpdateEvent } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import {
   OnBeforeInsert,
   OnBeforeRemove,
@@ -22,6 +23,7 @@ export class LanguageOrmEntity extends BaseOrmEntity<LanguageDto> {
 
   fullCls = languageFullSchema;
 
+  @AuditLabel()
   @Column({ unique: true })
   @Index()
   title!: string;

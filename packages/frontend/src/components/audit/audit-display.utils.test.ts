@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatAuditActor,
   formatAuditActivity,
+  formatAuditResource,
   getAuditStatusMeta,
   normalizeAuditJsonValue,
 } from "./audit-display.utils";
@@ -21,11 +22,13 @@ const baseAuditLog: AuditLog = {
   updatedAt: new Date("2026-04-25T10:00:00.000Z"),
   resourceId: "user_1",
   resourceType: "User",
+  resourceLabel: null,
   operationId: "typeorm.User.update",
   operationType: "Update",
   operationStatus: "SUCCEEDED",
   actorId: "admin_1",
   actorType: "admin",
+  actorLabel: null,
   actorIp: null,
   actorAgent: null,
   requestId: null,
@@ -44,14 +47,33 @@ describe("audit display utils", () => {
     );
   });
 
-  it("hides technical UUIDs from compact activity text", () => {
+  it("prefers actor and resource labels when present", () => {
+    const labeledAuditLog: AuditLog = {
+      ...baseAuditLog,
+      resourceId: "ff227083-cfce-4abb-a566-19df8d9ba991",
+      resourceType: "Workflow",
+      resourceLabel: "Customer intake",
+      actorId: "0a575e2b-6cec-45e7-b098-9a4434d189c2",
+      actorLabel: "Ada Lovelace (ada)",
+    };
+
+    expect(formatAuditActor(labeledAuditLog)).toBe("Ada Lovelace (ada)");
+    expect(formatAuditResource(labeledAuditLog)).toBe(
+      "Workflow Customer intake",
+    );
+    expect(formatAuditActivity(labeledAuditLog)).toBe(
+      "Ada Lovelace (ada) Update Workflow Customer intake",
+    );
+  });
+
+  it("uses raw stored IDs when labels are missing", () => {
     const sourceAuditLog: AuditLog = {
       ...baseAuditLog,
       resourceId: "ff227083-cfce-4abb-a566-19df8d9ba991",
       resourceType: "Source",
       operationType: "Create",
-      actorId: "system",
-      actorType: "system",
+      actorId: "0a575e2b-6cec-45e7-b098-9a4434d189c2",
+      actorType: "0d36ee69-b8ad-4a08-9685-6858eaf1f90d",
     };
     const loginAuditLog: AuditLog = {
       ...baseAuditLog,
@@ -62,9 +84,15 @@ describe("audit display utils", () => {
       actorType: "0d36ee69-b8ad-4a08-9685-6858eaf1f90d",
     };
 
-    expect(formatAuditActivity(sourceAuditLog)).toBe("system Create Source");
-    expect(formatAuditActor(loginAuditLog)).toBe("user");
-    expect(formatAuditActivity(loginAuditLog)).toBe("user Login Auth");
+    expect(formatAuditActivity(sourceAuditLog)).toBe(
+      "0a575e2b-6cec-45e7-b098-9a4434d189c2 Create Source ff227083-cfce-4abb-a566-19df8d9ba991",
+    );
+    expect(formatAuditActor(loginAuditLog)).toBe(
+      "0a575e2b-6cec-45e7-b098-9a4434d189c2",
+    );
+    expect(formatAuditActivity(loginAuditLog)).toBe(
+      "0a575e2b-6cec-45e7-b098-9a4434d189c2 Login Auth 0a575e2b-6cec-45e7-b098-9a4434d189c2",
+    );
   });
 
   it("maps audit statuses to display metadata", () => {

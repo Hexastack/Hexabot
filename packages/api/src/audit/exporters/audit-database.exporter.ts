@@ -22,6 +22,13 @@ const normalizeAuditValue = (
 
   return value ?? fallback;
 };
+const normalizeAuditLabel = (value: unknown): string | null => {
+  if (Array.isArray(value)) {
+    return value.join(',');
+  }
+
+  return typeof value === 'string' && value.length > 0 ? value : null;
+};
 
 @Injectable()
 export class AuditDatabaseExporter implements IAuditLogExporter {
@@ -41,9 +48,18 @@ export class AuditDatabaseExporter implements IAuditLogExporter {
   async sendAuditLog(log: IAuditLog): Promise<void> {
     const context = this.auditContext.getContext();
     const repository = this.dataSource.getRepository(AuditLogOrmEntity);
+    const actorLabel =
+      normalizeAuditLabel((log.actor as { label?: unknown }).label) ??
+      context.actorLabel ??
+      null;
+    const resourceType = log.resource.type || 'unknown';
+    const resourceLabel =
+      normalizeAuditLabel((log.resource as { label?: unknown }).label) ??
+      (resourceType === 'Auth' ? actorLabel : null);
     const record = repository.create({
       resourceId: normalizeAuditValue(log.resource.id, 'unknown'),
-      resourceType: log.resource.type || 'unknown',
+      resourceType,
+      resourceLabel,
       operationId: normalizeAuditValue(log.operation.id, 'unknown'),
       operationType: log.operation.type || 'unknown',
       operationStatus: log.operation.status ?? 'UNSPECIFIED',
@@ -52,6 +68,7 @@ export class AuditDatabaseExporter implements IAuditLogExporter {
         log.actor.type as unknown as string | string[] | undefined,
         context.actorType ?? 'system',
       ),
+      actorLabel,
       actorIp: log.actor.ip ?? context.ip ?? null,
       actorAgent: log.actor.agent ?? context.userAgent ?? null,
       requestId: context.requestId ?? null,

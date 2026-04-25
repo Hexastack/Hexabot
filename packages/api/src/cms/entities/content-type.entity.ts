@@ -8,6 +8,7 @@ import { contentTypeSchema, contentTypeFullSchema } from '@hexabot-ai/types';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
+import { AuditLabel } from '@/audit/decorators/audit-label.decorator';
 import { JsonColumn } from '@/database/decorators/json-column.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
@@ -22,6 +23,7 @@ export class ContentTypeOrmEntity extends BaseOrmEntity<ContentTypeDto> {
 
   fullCls = contentTypeFullSchema;
 
+  @AuditLabel()
   @Column({ unique: true })
   name!: string;
 

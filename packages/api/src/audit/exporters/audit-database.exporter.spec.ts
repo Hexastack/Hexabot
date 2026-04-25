@@ -30,7 +30,8 @@ describe('AuditDatabaseExporter', () => {
       resource: {
         id: 'user-1',
         type: 'User',
-      },
+        label: 'admin',
+      } as IAuditLog['resource'] & { label: string },
       operation: {
         id: 'typeorm.User.update',
         type: 'Update',
@@ -39,9 +40,10 @@ describe('AuditDatabaseExporter', () => {
       actor: {
         id: 'admin-1',
         type: 'admin',
+        label: 'Admin User (admin)',
         ip: '203.0.113.1',
         agent: 'browser',
-      },
+      } as IAuditLog['actor'] & { label: string },
       data_diff: {
         before: { email: 'old@example.com' },
         after: { email: 'new@example.com' },
@@ -59,11 +61,13 @@ describe('AuditDatabaseExporter', () => {
     expect(create).toHaveBeenCalledWith({
       resourceId: 'user-1',
       resourceType: 'User',
+      resourceLabel: 'admin',
       operationId: 'typeorm.User.update',
       operationType: 'Update',
       operationStatus: 'SUCCEEDED',
       actorId: 'admin-1',
       actorType: 'admin',
+      actorLabel: 'Admin User (admin)',
       actorIp: '203.0.113.1',
       actorAgent: 'browser',
       requestId: 'request-1',
@@ -81,6 +85,44 @@ describe('AuditDatabaseExporter', () => {
     });
     expect(save).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'record-1' }),
+    );
+  });
+
+  it('uses the actor label as the auth resource label when none is provided', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn((record) => ({ id: 'record-1', ...record }));
+    const dataSource = {
+      getRepository: jest.fn().mockReturnValue({ create, save }),
+    } as unknown as DataSource;
+    const auditContext = {
+      getContext: jest.fn().mockReturnValue({
+        actorLabel: 'Admin User (admin)',
+      }),
+    } as unknown as AuditContextService;
+    const exporter = new AuditDatabaseExporter(dataSource, auditContext);
+    const log: IAuditLog = {
+      resource: {
+        id: 'admin-1',
+        type: 'Auth',
+      },
+      operation: {
+        id: 'auth.login',
+        type: 'Login',
+        status: 'SUCCEEDED',
+      },
+      actor: {
+        id: 'admin-1',
+        type: 'admin',
+      },
+    };
+
+    await exporter.sendAuditLog(log);
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resourceLabel: 'Admin User (admin)',
+        actorLabel: 'Admin User (admin)',
+      }),
     );
   });
 });

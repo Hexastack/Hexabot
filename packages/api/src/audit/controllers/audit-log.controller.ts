@@ -13,10 +13,6 @@ import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';
 import { TFilterNestedKeysOfType } from '@/utils/types/filter.types';
 
-import {
-  AuditLogReadMany,
-  AuditLogReadOne,
-} from '../decorators/audit-log.decorators';
 import { AuditLogOrmEntity } from '../entities/audit-log.entity';
 import { AuditLogRecordService } from '../services/audit-log-record.service';
 
@@ -24,11 +20,13 @@ export const AUDIT_LOG_ALLOWED_FILTER_FIELDS: TFilterNestedKeysOfType<AuditLogOr
   [
     'resourceId',
     'resourceType',
+    'resourceLabel',
     'operationId',
     'operationType',
     'operationStatus',
     'actorId',
     'actorType',
+    'actorLabel',
     'actorIp',
     'requestId',
     'requestMethod',
@@ -41,7 +39,6 @@ export class AuditLogController extends BaseOrmController<AuditLogOrmEntity> {
     super(auditLogService);
   }
 
-  @AuditLogReadMany()
   @Get()
   async findAuditLogs(
     @Query(
@@ -57,7 +54,6 @@ export class AuditLogController extends BaseOrmController<AuditLogOrmEntity> {
     return await this.find(options);
   }
 
-  @AuditLogReadMany()
   @Get('count')
   async filterCount(
     @Query(
@@ -72,7 +68,6 @@ export class AuditLogController extends BaseOrmController<AuditLogOrmEntity> {
     return await this.count(options);
   }
 
-  @AuditLogReadOne()
   @Get(':id')
   async findAuditLog(@UuidParam('id') id: string): Promise<AuditLog> {
     this.auditLogService.assertReadableBackend();

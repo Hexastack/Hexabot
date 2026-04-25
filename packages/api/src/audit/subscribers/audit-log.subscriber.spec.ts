@@ -9,6 +9,7 @@ import { DataSource, InsertEvent, ObjectLiteral } from 'typeorm';
 
 import { config } from '@/config';
 
+import { AuditLabel } from '../decorators/audit-label.decorator';
 import { AuditContextService } from '../services/audit-context.service';
 
 import { AuditLogSubscriber } from './audit-log.subscriber';
@@ -21,6 +22,11 @@ const createRelation = (propertyName: string) => ({
   propertyName,
   getEntityValue: (entity: ObjectLiteral) => entity[propertyName],
 });
+
+class LabeledAuditEntity {
+  @AuditLabel()
+  name!: string;
+}
 
 describe('AuditLogSubscriber', () => {
   const originalAudit = { ...config.audit };
@@ -43,6 +49,7 @@ describe('AuditLogSubscriber', () => {
       getContext: jest.fn().mockReturnValue({
         actorId: 'admin-1',
         actorType: 'admin',
+        actorLabel: 'Admin User (admin)',
         ip: '203.0.113.1',
         userAgent: 'browser',
       }),
@@ -67,12 +74,14 @@ describe('AuditLogSubscriber', () => {
     expect(dataSource.subscribers).toHaveLength(1);
   });
 
-  it('skips internal audit tables', async () => {
-    await subscriber.afterInsert({
-      metadata: {
-        tableName: 'audit_logs',
-      },
-    } as InsertEvent<ObjectLiteral>);
+  it('skips internal audit and stats tables', async () => {
+    for (const tableName of ['audit_logs', 'stats']) {
+      await subscriber.afterInsert({
+        metadata: {
+          tableName,
+        },
+      } as InsertEvent<ObjectLiteral>);
+    }
 
     expect(sdkAuditLogService.sendAuditLog).not.toHaveBeenCalled();
   });
@@ -112,6 +121,7 @@ describe('AuditLogSubscriber', () => {
       actor: {
         id: 'admin-1',
         type: 'admin',
+        label: 'Admin User (admin)',
         ip: '203.0.113.1',
         agent: 'browser',
       },
@@ -131,5 +141,33 @@ describe('AuditLogSubscriber', () => {
         },
       },
     });
+  });
+
+  it('emits resource labels from @AuditLabel metadata', async () => {
+    await subscriber.afterInsert({
+      metadata: {
+        tableName: 'labeled',
+        target: LabeledAuditEntity,
+        targetName: 'LabeledAuditEntity',
+        name: 'LabeledAuditEntity',
+        primaryColumns: [{ propertyName: 'id' }],
+        columns: [createColumn('id'), createColumn('name')],
+        relations: [],
+      },
+      entity: {
+        id: 'labeled-1',
+        name: 'Readable label',
+      },
+    } as unknown as InsertEvent<ObjectLiteral>);
+
+    expect(sdkAuditLogService.sendAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resource: {
+          id: 'labeled-1',
+          type: 'LabeledAuditEntity',
+          label: 'Readable label',
+        },
+      }),
+    );
   });
 });
