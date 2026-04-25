@@ -23,7 +23,11 @@ import {
 } from "@/types/mcp-server.types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
 import { ISettingSchemasMap } from "@/types/setting.types";
-import { StatsSummary } from "@/types/stat.types";
+import {
+  StatsSummary,
+  ThreadSnapshot,
+  ThreadSnapshotQuery,
+} from "@/types/stat.types";
 import { UserStub, User, IProfileAttributes } from "@/types/user.types";
 import { applyFullNameDerivedFields } from "@/utils/full-name.utils";
 
@@ -63,6 +67,7 @@ export const ROUTES = {
   RESET: "/user/reset",
   CONTENT_IMPORT: "/content/import",
   STATS_SUMMARY: "/stats/summary",
+  STATS_THREAD_SNAPSHOT: "/stats/thread-snapshot",
   WORKFLOW_PUBLISH: "/workflow/:id/publish",
   WORKFLOW_UNPUBLISH: "/workflow/:id/unpublish",
   WORKFLOW_BINDINGS: "/workflow/bindings",
@@ -221,6 +226,15 @@ export class ApiClient extends TranslatableMethods {
 
   async getStatsSummary() {
     const { data } = await this.request.get<StatsSummary>(ROUTES.STATS_SUMMARY);
+
+    return data;
+  }
+
+  async getThreadSnapshot(params?: ThreadSnapshotQuery) {
+    const { data } = await this.request.get<ThreadSnapshot>(
+      ROUTES.STATS_THREAD_SNAPSHOT,
+      { params },
+    );
 
     return data;
   }

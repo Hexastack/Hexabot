@@ -210,4 +210,22 @@ describe('StatsController', () => {
       });
     });
   });
+
+  describe('threadSnapshot', () => {
+    it('should return default seven-day thread snapshot stats', async () => {
+      const result = await statsController.threadSnapshot({});
+
+      expect(result.xAxis).toHaveLength(7);
+      expect(result.series).toEqual([
+        {
+          type: StatsType.new_threads,
+          data: Array(7).fill(0),
+        },
+        {
+          type: StatsType.handoffs,
+          data: Array(7).fill(0),
+        },
+      ]);
+    });
+  });
 });

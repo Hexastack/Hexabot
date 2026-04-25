@@ -9,6 +9,7 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Between } from 'typeorm';
 
+import { SubscriberUpdateDto } from '@/chat/dto/subscriber.dto';
 import { SubscriberOrmEntity } from '@/chat/entities/subscriber.entity';
 import { MessageService } from '@/chat/services/message.service';
 import { config } from '@/config';
@@ -17,9 +18,36 @@ import { InsertEntityEvent } from '@/utils/types/entity-event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import { StatsSummaryDto } from '../dto/stats.dto';
+import { StatsSummaryDto, StatsThreadSnapshotDto } from '../dto/stats.dto';
 import { StatsOrmEntity, StatsType } from '../entities/stats.entity';
 import { StatsRepository } from '../repositories/stats.repository';
+
+const THREAD_SNAPSHOT_TYPES = [
+  StatsType.new_threads,
+  StatsType.handoffs,
+] as const;
+const startOfDay = (date: Date): Date => {
+  const day = new Date(date);
+  day.setMilliseconds(0);
+  day.setSeconds(0);
+  day.setMinutes(0);
+  day.setHours(0);
+
+  return day;
+};
+const addDays = (date: Date, days: number): Date => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+
+  return result;
+};
+const formatDayKey = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
 
 @Injectable()
 export class StatsService extends BaseOrmService<StatsOrmEntity> {
@@ -61,6 +89,49 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
     types: StatsType[],
   ): Promise<Stats[]> {
     return await this.repository.findMessages(from, to, types);
+  }
+
+  async getThreadSnapshot(
+    from?: Date,
+    to?: Date,
+  ): Promise<StatsThreadSnapshotDto> {
+    const end = startOfDay(to ?? new Date());
+    const start = startOfDay(from ?? addDays(end, -6));
+    const days: string[] = [];
+
+    for (
+      let current = new Date(start);
+      current.getTime() <= end.getTime();
+      current = addDays(current, 1)
+    ) {
+      days.push(formatDayKey(current));
+    }
+
+    const stats = await this.findMessages(start, end, [
+      ...THREAD_SNAPSHOT_TYPES,
+    ]);
+    const valuesByTypeAndDay = new Map<StatsType, Map<string, number>>();
+
+    for (const type of THREAD_SNAPSHOT_TYPES) {
+      valuesByTypeAndDay.set(type, new Map());
+    }
+
+    for (const stat of stats) {
+      const dayKey = formatDayKey(startOfDay(stat.day));
+      const valuesByDay = valuesByTypeAndDay.get(stat.type);
+
+      if (valuesByDay) {
+        valuesByDay.set(dayKey, (valuesByDay.get(dayKey) ?? 0) + stat.value);
+      }
+    }
+
+    return {
+      xAxis: days,
+      series: THREAD_SNAPSHOT_TYPES.map((type) => ({
+        type,
+        data: days.map((day) => valuesByTypeAndDay.get(type)?.get(day) ?? 0),
+      })) as StatsThreadSnapshotDto['series'],
+    };
   }
 
   async getSummary(): Promise<StatsSummaryDto> {
@@ -144,6 +215,28 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
     }
   }
 
+  @OnEvent('hook:thread:postCreate')
+  async handleThreadPostCreate(): Promise<void> {
+    await this.eventEmitter.emitAsync(
+      'hook:stats:entry',
+      StatsType.new_threads,
+      'New Threads',
+    );
+  }
+
+  @OnEvent('hook:subscriber:assign')
+  async handleSubscriberAssign(update: SubscriberUpdateDto): Promise<void> {
+    if (!update.assignedTo) {
+      return;
+    }
+
+    await this.eventEmitter.emitAsync(
+      'hook:stats:entry',
+      StatsType.handoffs,
+      'Handoffs',
+    );
+  }
+
   /**
    * Handles the event to update bot statistics.
    *
@@ -152,11 +245,7 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
    */
   @OnEvent('hook:stats:entry')
   async handleStatEntry(type: StatsType, name: string): Promise<void> {
-    const day = new Date();
-    day.setMilliseconds(0);
-    day.setSeconds(0);
-    day.setMinutes(0);
-    day.setHours(0);
+    const day = startOfDay(new Date());
 
     try {
       const insight = await this.findOneOrCreate(

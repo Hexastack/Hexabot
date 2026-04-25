@@ -319,6 +319,17 @@
       "last_24h": "Last 24h",
       "loading": "—"
     },
+    "thread_snapshot": {
+      "title": "Thread Snapshot",
+      "range": "Last 7 days",
+      "loading": "Loading thread stats...",
+      "error": "Unable to load thread stats.",
+      "empty": "No thread activity to display",
+      "series": {
+        "new_threads": "New Threads",
+        "handoffs": "Handoffs"
+      }
+    },
     "integrations": {
       "title": "Integrations Health",
       "checked": "Checked: {{0}}",

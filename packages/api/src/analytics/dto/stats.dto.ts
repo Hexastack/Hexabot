@@ -66,7 +66,7 @@ export type StatsDto = TDto<
 
 export class StatsFindDto {
   /**
-   * Start date for message retrieval.
+   * Start date for statistic retrieval.
    */
   @IsDate()
   @Type(() => Date)
@@ -77,7 +77,7 @@ export class StatsFindDto {
   from?: Date;
 
   /**
-   * End date for message retrieval.
+   * End date for statistic retrieval.
    */
   @IsDate()
   @Type(() => Date)
@@ -87,7 +87,7 @@ export class StatsFindDto {
 
 export class StatsFindDatumDto extends StatsFindDto {
   /**
-   * Type for message to retrieve.
+   * Statistic type to retrieve.
    */
   @IsEnum(StatsType)
   @IsOptional()
@@ -99,4 +99,14 @@ export type StatsSummaryDto = {
   totalRunsLast24h: number;
   successRateLast24h: number;
   totalMessagesLast24h: number;
+};
+
+export type StatsThreadSnapshotSeriesDto = {
+  type: StatsType.new_threads | StatsType.handoffs;
+  data: number[];
+};
+
+export type StatsThreadSnapshotDto = {
+  xAxis: string[];
+  series: [StatsThreadSnapshotSeriesDto, StatsThreadSnapshotSeriesDto];
 };

@@ -319,6 +319,17 @@
       "last_24h": "Dernières 24 h",
       "loading": "—"
     },
+    "thread_snapshot": {
+      "title": "Aperçu des discussions",
+      "range": "7 derniers jours",
+      "loading": "Chargement des statistiques des discussions...",
+      "error": "Impossible de charger les statistiques des discussions.",
+      "empty": "Aucune activité de discussion à afficher",
+      "series": {
+        "new_threads": "Nouvelles discussions",
+        "handoffs": "Transferts"
+      }
+    },
     "integrations": {
       "title": "Santé des intégrations",
       "checked": "Vérifié : {{0}}",

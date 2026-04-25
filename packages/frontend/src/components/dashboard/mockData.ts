@@ -105,11 +105,3 @@ export const mockRecentActivity = [
     time: "6h ago",
   },
 ];
-
-export const mockConversationData = {
-  xAxis: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  series: [
-    { data: [40, 35, 60, 75, 50, 30, 45], label: "Conversations" },
-    { data: [5, 2, 8, 12, 6, 1, 3], label: "Handoffs" },
-  ],
-};
