@@ -49,7 +49,7 @@ export type {
 
 export {
   compileWorkflow,
-  Workflow as Workflow,
+  Workflow,
   WorkflowEventEmitter,
   WorkflowRunner,
   type FlowStepPath,
