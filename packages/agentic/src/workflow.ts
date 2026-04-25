@@ -18,7 +18,7 @@ import {
   validateWorkflow,
   type FlowStep,
 } from './dsl.types';
-import { safeRenameTaskInDefinition as safeRenameTaskInDefinitionHelper } from './utils/workflow-definition';
+import { safeRenameTaskInDefinition as renameTaskInDefinition } from './utils/workflow-definition';
 import {
   compileWorkflow,
   type WorkflowCompileOptions,
@@ -327,11 +327,7 @@ export class Workflow {
     currentTaskName: string,
     nextTaskName: string,
   ): WorkflowDefinition {
-    return safeRenameTaskInDefinitionHelper(
-      definition,
-      currentTaskName,
-      nextTaskName,
-    );
+    return renameTaskInDefinition(definition, currentTaskName, nextTaskName);
   }
 
   /**

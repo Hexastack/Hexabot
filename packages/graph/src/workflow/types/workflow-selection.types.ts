@@ -21,8 +21,3 @@ export type WorkflowSelectionSnapshot = {
   nodeIds: string[];
   nodes: WorkflowSelectionNode[];
 };
-
-export const EMPTY_WORKFLOW_SELECTION_SNAPSHOT: WorkflowSelectionSnapshot = {
-  nodeIds: [],
-  nodes: [],
-};
