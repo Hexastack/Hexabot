@@ -19,6 +19,8 @@ export class ChannelInboundEventContext<
     private eventId: string | null = null,
     private senderForeignId: string | null = null,
     private recipientForeignId: string | null = null,
+    private sourceId: string | null = null,
+    private sourceSettings: Record<string, unknown> = {},
   ) {}
 
   getChannel(): N {
@@ -31,6 +33,22 @@ export class ChannelInboundEventContext<
 
   getChannelAttrs<T = S>(): T {
     return this.channelAttrs as unknown as T;
+  }
+
+  getSourceId(): string | null {
+    return this.sourceId;
+  }
+
+  setSourceId(sourceId: string | null): void {
+    this.sourceId = sourceId;
+  }
+
+  getSourceSettings<T = Record<string, unknown>>(): T {
+    return this.sourceSettings as T;
+  }
+
+  setSourceSettings(sourceSettings: Record<string, unknown>): void {
+    this.sourceSettings = sourceSettings;
   }
 
   getOccurredAt(): Date {

@@ -111,6 +111,14 @@ export class SubscriberCreateDto extends UserProfileCreateDto {
   @IsString()
   @IsUUIDv4({ message: 'Avatar Attachment ID must be a valid UUID' })
   avatar: string | null;
+
+  @ApiProperty({
+    description: 'Subscriber source',
+    type: String,
+  })
+  @IsString()
+  @IsUUIDv4({ message: 'Source ID must be a valid UUID' })
+  source: string;
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}

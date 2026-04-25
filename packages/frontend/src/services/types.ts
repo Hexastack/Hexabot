@@ -28,6 +28,7 @@ export enum EntityType {
   TRANSLATION = "Translation",
   ATTACHMENT = "Attachment",
   CHANNEL = "Channel",
+  SOURCE = "Source",
   HELPER = "Helper",
   NLU_HELPER = "NluHelper",
   LLM_HELPER = "LlmHelper",

@@ -22,7 +22,8 @@ import { SettingService } from './services/setting.service';
 const runtimeSettingProviderPatterns = [
   // Built-in core settings groups
   'dist/setting/**/*.settings.js',
-  // Built-in core extension settings groups
+  // Built-in core extension settings groups. Channel source settings are
+  // owned by channel handlers and are intentionally not discovered here.
   'dist/extensions/**/*.settings.js',
   ...(process.env.NODE_ENV === 'test'
     ? []

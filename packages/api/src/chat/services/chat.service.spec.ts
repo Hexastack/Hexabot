@@ -21,7 +21,9 @@ describe('ChatService', () => {
     Pick<LoggerService, 'debug' | 'warn' | 'error' | 'verbose'>
   >;
   let messageService: jest.Mocked<Partial<MessageService>>;
-  let subscriberService: jest.Mocked<Pick<SubscriberService, 'findOne'>>;
+  let subscriberService: jest.Mocked<
+    Pick<SubscriberService, 'findOneByForeignId'>
+  >;
   let threadService: jest.Mocked<
     Pick<
       ThreadService,
@@ -49,7 +51,7 @@ describe('ChatService', () => {
       findOneAndPopulate: jest.fn(),
     };
     subscriberService = {
-      findOne: jest.fn(),
+      findOneByForeignId: jest.fn(),
     };
     threadService = {
       resolveInactivityHours: jest.fn().mockReturnValue(24),
@@ -85,11 +87,14 @@ describe('ChatService', () => {
   it('resolves thread and forwards new message event to agentic service', async () => {
     const workflowId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
     const subscriber = { id: 'sub-1', assignedTo: null };
-    const handler = { getSettings: jest.fn().mockResolvedValue({}) };
-    subscriberService.findOne.mockResolvedValue(subscriber as any);
+    const handler = {};
+    subscriberService.findOneByForeignId.mockResolvedValue(subscriber as any);
     const event = {
       getRaw: jest.fn().mockReturnValue({ type: 'text' }),
       getSenderForeignId: jest.fn().mockReturnValue('foreign-1'),
+      getSourceId: jest
+        .fn()
+        .mockReturnValue('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
       getHandler: jest.fn().mockReturnValue(handler),
       getWorkflowId: jest.fn().mockReturnValue(workflowId),
       getThreadId: jest.fn().mockReturnValue(undefined),
@@ -106,6 +111,7 @@ describe('ChatService', () => {
       subscriberId: subscriber.id,
       explicitThreadId: undefined,
       inactivityHours: 24,
+      sourceId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
     });
     expect(event.setThreadId).toHaveBeenCalledWith('thread-1');
     expect(threadService.buildThreadTitleFromIncomingText).toHaveBeenCalledWith(
@@ -147,7 +153,7 @@ describe('ChatService', () => {
 
   it('does not override existing thread title', async () => {
     const subscriber = { id: 'sub-1', assignedTo: null };
-    const handler = { getSettings: jest.fn().mockResolvedValue({}) };
+    const handler = {};
     threadService.resolveThreadForIncoming.mockResolvedValue({
       id: 'thread-1',
       title: 'already set',
@@ -156,6 +162,9 @@ describe('ChatService', () => {
     const event = {
       getRaw: jest.fn().mockReturnValue({ type: 'text' }),
       getSenderForeignId: jest.fn().mockReturnValue('foreign-1'),
+      getSourceId: jest
+        .fn()
+        .mockReturnValue('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
       getHandler: jest.fn().mockReturnValue(handler),
       getThreadId: jest.fn().mockReturnValue(undefined),
       getText: jest.fn().mockReturnValue('first inbound message'),
@@ -163,7 +172,7 @@ describe('ChatService', () => {
       setInitiator: jest.fn(),
       preprocess: jest.fn().mockResolvedValue(undefined),
     };
-    subscriberService.findOne.mockResolvedValue(subscriber as any);
+    subscriberService.findOneByForeignId.mockResolvedValue(subscriber as any);
 
     await service.handleNewMessage(event as any);
 

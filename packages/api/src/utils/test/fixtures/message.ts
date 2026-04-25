@@ -7,6 +7,7 @@
 import { Message, OutgoingMessageType } from '@hexabot-ai/types';
 import { DataSource } from 'typeorm';
 
+import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { MessageOrmEntity } from '@/chat/entities/message.entity';
 import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
@@ -75,6 +76,34 @@ const findMessages = async (dataSource: DataSource) =>
   await dataSource.getRepository(MessageOrmEntity).find({
     relations: ['sender', 'recipient', 'sentBy'],
   });
+const resolveSubscriberSourceId = (source: unknown): string | null => {
+  if (typeof source === 'string' && source.length > 0) {
+    return source;
+  }
+
+  if (source && typeof source === 'object' && 'id' in source) {
+    const sourceId = (source as { id?: unknown }).id;
+    if (typeof sourceId === 'string' && sourceId.length > 0) {
+      return sourceId;
+    }
+  }
+
+  return null;
+};
+const resolveSubscriberChannelName = (channel: unknown): string | null => {
+  if (
+    channel &&
+    typeof channel === 'object' &&
+    'name' in channel &&
+    typeof (channel as { name?: unknown }).name === 'string'
+  ) {
+    const channelName = (channel as { name: string }).name.trim();
+
+    return channelName.length > 0 ? channelName : null;
+  }
+
+  return null;
+};
 const parseIndex = (value?: string | null) => {
   if (value == null) {
     return null;
@@ -88,6 +117,7 @@ const parseIndex = (value?: string | null) => {
 export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
   const repository = dataSource.getRepository(MessageOrmEntity);
   const threadRepository = dataSource.getRepository(ThreadOrmEntity);
+  const sourceRepository = dataSource.getRepository(SourceOrmEntity);
   const { subscribers, users } =
     await installSubscriberFixturesTypeOrm(dataSource);
 
@@ -95,6 +125,12 @@ export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
     return await findMessages(dataSource);
   }
 
+  const sourceIdByChannel = new Map<string, string>(
+    (await sourceRepository.find()).map((source) => [
+      source.channel,
+      source.id,
+    ]),
+  );
   const threads = await Promise.all(
     subscribers.map(async (subscriber) => {
       const existing = await threadRepository.findOne({
@@ -104,9 +140,37 @@ export const installMessageFixturesTypeOrm = async (dataSource: DataSource) => {
         return existing;
       }
 
+      let sourceId = resolveSubscriberSourceId(subscriber.source);
+
+      if (!sourceId) {
+        const channelName = resolveSubscriberChannelName(subscriber.channel);
+
+        if (!channelName) {
+          return null;
+        }
+
+        sourceId = sourceIdByChannel.get(channelName) ?? null;
+
+        if (!sourceId) {
+          const source = await sourceRepository.save(
+            sourceRepository.create({
+              name: `fixture-source-${channelName}`,
+              channel: channelName,
+              settings: {},
+              state: true,
+              defaultWorkflow: null,
+            }),
+          );
+
+          sourceId = source.id;
+          sourceIdByChannel.set(channelName, sourceId);
+        }
+      }
+
       return await threadRepository.save(
         threadRepository.create({
           subscriber: { id: subscriber.id },
+          source: { id: sourceId },
           status: 'open',
           lastMessageAt: new Date(),
         }),

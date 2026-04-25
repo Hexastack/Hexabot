@@ -5,8 +5,8 @@
  */
 
 import { type WorkflowEventMap } from '@hexabot-ai/agentic';
-import { Subscriber, StdEventType } from '@hexabot-ai/types';
-import { ForbiddenException } from '@nestjs/common';
+import { StdEventType, Subscriber } from '@hexabot-ai/types';
+import { ForbiddenException, Optional } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
@@ -23,9 +23,14 @@ import signature from 'cookie-signature';
 import { Request } from 'express';
 import { Session as ExpressSession, SessionData } from 'express-session';
 import { ExtendedError, Server, Socket } from 'socket.io';
+import { DataSource } from 'typeorm';
 import { sync as uid } from 'uid-safe';
+import { validate as isUuid } from 'uuid';
 
+import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { config } from '@/config';
+import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings.schema';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings.schema';
 import { LoggerService } from '@/logger/logger.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { UserService } from '@/user/services/user.service';
@@ -52,6 +57,7 @@ export class WebsocketGateway
     private readonly socketEventDispatcherService: SocketEventDispatcherService,
     private readonly userService: UserService,
     private readonly permissionService: PermissionService,
+    @Optional() private readonly dataSource?: DataSource,
   ) {}
 
   @WebSocketServer() io: Server;
@@ -172,6 +178,29 @@ export class WebsocketGateway
     });
   }
 
+  private normalizeSourceId(value: string | null): string | null {
+    if (!value || !isUuid(value)) {
+      return null;
+    }
+
+    return value;
+  }
+
+  private async findActiveSource(
+    sourceId: string,
+  ): Promise<SourceOrmEntity | null> {
+    if (!this.dataSource) {
+      return null;
+    }
+
+    return await this.dataSource.getRepository(SourceOrmEntity).findOne({
+      where: {
+        id: sourceId,
+        state: true,
+      },
+    });
+  }
+
   afterInit(): void {
     this.logger.log('Initialized websocket gateway');
 
@@ -210,14 +239,52 @@ export class WebsocketGateway
           return;
         }
         const session = client.request.session;
+        const sourceId = this.normalizeSourceId(searchParams.get('source_id'));
+
+        if (!sourceId) {
+          next(
+            new Error('Missing or invalid source_id in websocket handshake'),
+          );
+
+          return;
+        }
+
+        const source = await this.findActiveSource(sourceId);
+
+        if (!source) {
+          next(new Error('Source is not available'));
+
+          return;
+        }
+
+        const isWebCompatibleSource =
+          source.channel === WEB_CHANNEL_NAME ||
+          source.channel === CONSOLE_CHANNEL_NAME;
+
+        if (!isWebCompatibleSource) {
+          next(new Error('Source channel is not compatible with websocket'));
+
+          return;
+        }
+
+        session.web = {
+          ...session.web,
+          sourceId: source.id,
+        };
+
         if (
           // Either the WS connection is with an authenticated user
           session.passport?.user?.id
         ) {
+          session.save((err) => {
+            if (err) {
+              this.logger.error('WS : Unable to save session!', err);
+            }
+          });
           next();
         } else if (
           // Or, the WS connection is established with a chat widget using the web channel (subscriber)
-          searchParams.get('channel') === 'web'
+          source.channel === WEB_CHANNEL_NAME
         ) {
           session.anonymous =
             typeof session.anonymous === 'undefined' ? true : session.anonymous;

@@ -1,44 +1,74 @@
 /*
  * Hexabot — Fair Core License (FCL-1.0-ALv2)
- * Copyright (c) 2025 Hexastack.
+ * Copyright (c) 2026 Hexastack.
  * Full terms: see LICENSE.md.
  */
 
-import { NotFoundException } from '@nestjs/common';
+import { Source } from '@hexabot-ai/types';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/console-channel.settings';
-import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/web-channel.settings';
+import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings.schema';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings.schema';
 import { LoggerService } from '@/logger/logger.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
+import { ChannelRegistry } from './services/channel-registry.service';
+import { SourceService } from './services/source.service';
+
+const makeSource = (overrides: Partial<Source> = {}): Source => {
+  return {
+    id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    name: 'main-web',
+    channel: WEB_CHANNEL_NAME,
+    settings: {},
+    state: true,
+    defaultWorkflow: null,
+    ...overrides,
+  };
+};
 
 describe('ChannelService', () => {
   let service: ChannelService;
   let webChannelHandler: {
     handle: jest.Mock;
   };
-  let consoleChannelHandler: { handle: jest.Mock };
+  let consoleChannelHandler: {
+    handle: jest.Mock;
+  };
   let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
+  let channelRegistry: ChannelRegistry;
+  let sourceService: jest.Mocked<
+    Pick<SourceService, 'findActiveByRef' | 'ensureDefaultSources'>
+  >;
+  let subscriberService: jest.Mocked<Pick<SubscriberService, 'updateOne'>>;
 
   beforeEach(() => {
     const logger = {
       log: jest.fn(),
     } as jest.Mocked<Pick<LoggerService, 'log'>>;
-    const subscriberService = {
+    subscriberService = {
       updateOne: jest.fn(),
-    } as unknown as SubscriberService;
-
+    };
+    sourceService = {
+      findActiveByRef: jest.fn(),
+      ensureDefaultSources: jest.fn(),
+    };
     workflowService = {
       findOne: jest.fn(),
     };
+    channelRegistry = new ChannelRegistry();
 
     service = new ChannelService(
       logger as unknown as LoggerService,
-      subscriberService,
+      subscriberService as unknown as SubscriberService,
+      sourceService as unknown as SourceService,
+      channelRegistry,
       workflowService as unknown as WorkflowService,
     );
 
@@ -58,76 +88,115 @@ describe('ChannelService', () => {
   });
 
   it('forwards websocket web requests without workflow id', async () => {
+    const source = makeSource();
+    sourceService.findActiveByRef.mockResolvedValue(source);
+
     const req = {
       method: 'GET',
       query: {},
+      params: { sourceRef: source.id },
     } as unknown as SocketRequest;
     const res = {} as SocketResponse;
 
-    await service.handleWebsocketForWebChannel(req, res);
+    await service.handleWebsocketForSource(req, res);
 
     expect(workflowService.findOne).not.toHaveBeenCalled();
-    expect(webChannelHandler.handle).toHaveBeenCalledWith(req, res, undefined);
+    expect(webChannelHandler.handle).toHaveBeenCalledWith(
+      req,
+      res,
+      source,
+      undefined,
+    );
   });
 
-  it('validates and forwards workflow id for websocket web requests', async () => {
-    const workflowId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
-    const req = {
-      method: 'POST',
-      query: { workflow_id: workflowId },
-    } as unknown as SocketRequest;
-    const res = {} as SocketResponse;
+  it('validates and forwards explicit workflow id for websocket requests', async () => {
+    const workflowId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    const source = makeSource();
+    sourceService.findActiveByRef.mockResolvedValue(source);
     workflowService.findOne.mockResolvedValue({ id: workflowId } as any);
 
-    await service.handleWebsocketForWebChannel(req, res);
-
-    expect(workflowService.findOne).toHaveBeenCalledWith(workflowId);
-    expect(webChannelHandler.handle).toHaveBeenCalledWith(req, res, workflowId);
-  });
-
-  it('throws 404 for websocket web requests with unknown workflow id', async () => {
-    const workflowId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
     const req = {
       method: 'POST',
       query: { workflow_id: workflowId },
+      params: { sourceRef: source.id },
     } as unknown as SocketRequest;
     const res = {} as SocketResponse;
+
+    await service.handleWebsocketForSource(req, res);
+
+    expect(workflowService.findOne).toHaveBeenCalledWith(workflowId);
+    expect(webChannelHandler.handle).toHaveBeenCalledWith(
+      req,
+      res,
+      source,
+      workflowId,
+    );
+  });
+
+  it('falls back to source default workflow when no explicit workflow is provided', async () => {
+    const defaultWorkflowId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+    const source = makeSource({
+      defaultWorkflow: defaultWorkflowId,
+    });
+    sourceService.findActiveByRef.mockResolvedValue(source);
+
+    const req = {
+      method: 'POST',
+      query: {},
+      params: { sourceRef: source.id },
+    } as unknown as SocketRequest;
+    const res = {} as SocketResponse;
+
+    await service.handleWebsocketForSource(req, res);
+
+    expect(workflowService.findOne).not.toHaveBeenCalled();
+    expect(webChannelHandler.handle).toHaveBeenCalledWith(
+      req,
+      res,
+      source,
+      defaultWorkflowId,
+    );
+  });
+
+  it('throws 404 for websocket requests with unknown explicit workflow id', async () => {
+    const workflowId = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+    const source = makeSource();
+    sourceService.findActiveByRef.mockResolvedValue(source);
     workflowService.findOne.mockResolvedValue(null);
 
-    await expect(
-      service.handleWebsocketForWebChannel(req, res),
-    ).rejects.toThrow(
+    const req = {
+      method: 'POST',
+      query: { workflow_id: workflowId },
+      params: { sourceRef: source.id },
+    } as unknown as SocketRequest;
+    const res = {} as SocketResponse;
+
+    await expect(service.handleWebsocketForSource(req, res)).rejects.toThrow(
       new NotFoundException(`Workflow with ID ${workflowId} not found`),
     );
     expect(webChannelHandler.handle).not.toHaveBeenCalled();
   });
 
-  it('validates and forwards workflow id for websocket console requests', async () => {
-    const workflowId = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+  it('rejects console websocket usage for unauthenticated sessions', async () => {
+    const source = makeSource({
+      channel: CONSOLE_CHANNEL_NAME,
+    });
+    sourceService.findActiveByRef.mockResolvedValue(source);
+
     const req = {
       method: 'POST',
-      query: { workflow_id: workflowId },
-      session: {
-        passport: {
-          user: { id: 'user-1' },
-        },
-        web: {
-          profile: {
-            id: 'subscriber-1',
-          },
-        },
-      },
+      query: {},
+      params: { sourceRef: source.id },
+      session: {},
+      socket: { client: { conn: { close: jest.fn() } } },
     } as unknown as SocketRequest;
     const res = {} as SocketResponse;
-    workflowService.findOne.mockResolvedValue({ id: workflowId } as any);
 
-    await service.handleWebsocketForAdminChatConsole(req, res);
-
-    expect(workflowService.findOne).toHaveBeenCalledWith(workflowId);
-    expect(consoleChannelHandler.handle).toHaveBeenCalledWith(
-      req,
-      res,
-      workflowId,
+    await expect(service.handleWebsocketForSource(req, res)).rejects.toThrow(
+      new UnauthorizedException(
+        'Only authenticated users are allowed to use this channel',
+      ),
     );
+    expect(consoleChannelHandler.handle).not.toHaveBeenCalled();
   });
 });

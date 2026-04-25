@@ -6,13 +6,13 @@
 
 export * from './channels/console/index.channel';
 
-export * from './channels/console/console-channel.settings';
+export * from './channels/console/settings.schema';
 
 export * from './channels/web/base-web-channel';
 
 export * from './channels/web/index.channel';
 
-export * from './channels/web/web-channel.settings';
+export * from './channels/web/settings.schema';
 
 export * from './channels/web/types';
 

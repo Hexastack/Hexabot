@@ -87,6 +87,7 @@ export const ROUTES = {
   [EntityType.TRANSLATION]: "/translation",
   [EntityType.ATTACHMENT]: "/attachment",
   [EntityType.CHANNEL]: "/channel",
+  [EntityType.SOURCE]: "/source",
   [EntityType.HELPER]: "/helper",
   [EntityType.NLU_HELPER]: "/helper/nlu",
   [EntityType.LLM_HELPER]: "/helper/llm",

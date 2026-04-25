@@ -21,6 +21,7 @@ import { generateId } from "@/utils/generateId";
 import { WithEntityButton } from "../buttons/entities/WithEntityButton";
 import { BASE_ADD_DIALOG_MAP } from "../dialogs/dialog.constants";
 
+import { buildAutoCompleteEntityWhere } from "./auto-complete-entity-select.utils";
 import AutoCompleteSelect from "./AutoCompleteSelect";
 
 const PAGE_SIZE = 20;
@@ -57,6 +58,7 @@ export type AutoCompleteEntitySelectProps<
   enableEntityAddButton?: boolean;
   routeParams?: RouteParams;
   queryEnabled?: boolean;
+  where?: Record<string, unknown>;
 };
 
 const AutoCompleteEntitySelect = <
@@ -76,6 +78,7 @@ const AutoCompleteEntitySelect = <
     enableEntityAddButton,
     routeParams,
     queryEnabled = true,
+    where,
     ...rest
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
@@ -99,15 +102,17 @@ const AutoCompleteEntitySelect = <
     () => JSON.stringify(searchPayload),
     [searchPayload],
   );
+  const serializedWhere = useMemo(() => JSON.stringify(where || {}), [where]);
   const params = {
-    where: {
-      or: searchPayload.where?.or || [],
-    },
+    where: buildAutoCompleteEntityWhere({
+      where,
+      searchOrClauses: searchPayload.where?.or,
+    }),
   };
   const { data, isFetching, fetchNextPage } = useInfiniteFind(
     { entity, format },
     {
-      params,
+      params: params as any,
       hasCount: false,
     },
     {
@@ -155,7 +160,12 @@ const AutoCompleteEntitySelect = <
 
     fetchNextPage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryEnabled, serializedRouteParams, serializedSearchPayload]);
+  }, [
+    queryEnabled,
+    serializedRouteParams,
+    serializedSearchPayload,
+    serializedWhere,
+  ]);
 
   return (
     <WithEntityButton

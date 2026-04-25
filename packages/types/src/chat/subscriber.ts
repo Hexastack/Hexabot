@@ -7,6 +7,7 @@
 import { z } from "zod";
 
 import { attachmentSchema } from "../attachment/attachment";
+import { sourceSchema } from "../channel/source";
 import { asId, asIdArray, withAliases } from "../shared/aliases";
 import { preprocess } from "../shared/preprocess";
 import { subscriberBaseSchema } from "../shared/profile";
@@ -18,6 +19,7 @@ const subscriberAliasMap = {
   labelIds: "labels",
   assignedToId: "assignedTo",
   avatarId: "avatar",
+  sourceId: "source",
 } as const;
 const subscriberObjectSchema = subscriberBaseSchema.extend({
   labels: preprocess(
@@ -29,6 +31,10 @@ const subscriberObjectSchema = subscriberBaseSchema.extend({
     z.string().nullable(),
   ),
   avatar: preprocess(
+    (value) => (value == null ? null : asId(value)),
+    z.string().nullable(),
+  ),
+  source: preprocess(
     (value) => (value == null ? null : asId(value)),
     z.string().nullable(),
   ),
@@ -53,6 +59,10 @@ export const subscriberFullSchema = subscriberBaseSchema.extend({
   avatar: preprocess(
     (value) => (value == null ? null : value),
     attachmentSchema.nullable(),
+  ),
+  source: preprocess(
+    (value) => (value == null ? null : value),
+    sourceSchema.nullable(),
   ),
 });
 

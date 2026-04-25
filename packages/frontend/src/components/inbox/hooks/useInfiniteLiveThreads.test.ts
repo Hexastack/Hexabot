@@ -25,7 +25,7 @@ describe("buildThreadSearchPayload", () => {
     } satisfies SearchPayload<EntityType.SUBSCRIBER>;
     const result = buildThreadSearchPayload(
       {
-        channels: ["web"],
+        sources: ["source-1"],
         searchPayload: payload,
         assignedTo: AssignedTo.ME,
       },
@@ -38,7 +38,7 @@ describe("buildThreadSearchPayload", () => {
           { "subscriber.firstName": { contains: "sam" } },
           { "subscriber.lastName": { contains: "sam" } },
         ],
-        "subscriber.channel.name": { $in: ["web"] },
+        "source.id": { $in: ["source-1"] },
         "subscriber.assignedTo.id": "user-1",
       },
     });
@@ -47,7 +47,7 @@ describe("buildThreadSearchPayload", () => {
   it("maps OTHERS assignment filter to not-equal operator", () => {
     const result = buildThreadSearchPayload(
       {
-        channels: [],
+        sources: [],
         searchPayload: { where: {} },
         assignedTo: AssignedTo.OTHERS,
       },

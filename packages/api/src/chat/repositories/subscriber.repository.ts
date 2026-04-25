@@ -24,7 +24,14 @@ export class SubscriberRepository extends BaseOrmRepository<SubscriberOrmEntity>
     @InjectRepository(SubscriberOrmEntity)
     repository: Repository<SubscriberOrmEntity>,
   ) {
-    super(repository, ['labels', 'assignedTo', 'avatar']);
+    super(repository, ['labels', 'assignedTo', 'avatar', 'source']);
+  }
+
+  private buildForeignIdWhere(id: string, sourceId?: string) {
+    return {
+      foreignId: id,
+      ...(sourceId ? { source: { id: sourceId } } : {}),
+    };
   }
 
   /**
@@ -34,9 +41,12 @@ export class SubscriberRepository extends BaseOrmRepository<SubscriberOrmEntity>
    *
    * @returns The found subscriber entity, or `null` if no subscriber is found.
    */
-  async findOneByForeignId(id: string): Promise<Subscriber | null> {
+  async findOneByForeignId(
+    id: string,
+    sourceId?: string,
+  ): Promise<Subscriber | null> {
     return await this.findOne({
-      where: { foreignId: id },
+      where: this.buildForeignIdWhere(id, sourceId),
       order: { lastvisit: 'DESC' },
     });
   }
@@ -50,9 +60,10 @@ export class SubscriberRepository extends BaseOrmRepository<SubscriberOrmEntity>
    */
   async findOneByForeignIdAndPopulate(
     id: string,
+    sourceId?: string,
   ): Promise<SubscriberFull | null> {
     const result = await this.findOneAndPopulate({
-      where: { foreignId: id },
+      where: this.buildForeignIdWhere(id, sourceId),
       order: { lastvisit: 'DESC' },
     });
 
@@ -70,10 +81,11 @@ export class SubscriberRepository extends BaseOrmRepository<SubscriberOrmEntity>
   async updateOneByForeignIdQuery(
     id: string,
     updates: SubscriberUpdateDto,
+    sourceId?: string,
   ): Promise<Subscriber> {
     return await this.updateOne(
       {
-        where: { foreignId: id },
+        where: this.buildForeignIdWhere(id, sourceId),
       },
       updates,
     );
@@ -86,13 +98,14 @@ export class SubscriberRepository extends BaseOrmRepository<SubscriberOrmEntity>
    *
    * @returns The updated subscriber entity.
    */
-  async handBackByForeignIdQuery(foreignId: string): Promise<Subscriber> {
-    const previous = await this.findOneByForeignId(foreignId);
+  async handBackByForeignIdQuery(
+    foreignId: string,
+    sourceId?: string,
+  ): Promise<Subscriber> {
+    const previous = await this.findOneByForeignId(foreignId, sourceId);
     const updated = await this.updateOne(
       {
-        where: {
-          foreignId,
-        },
+        where: this.buildForeignIdWhere(foreignId, sourceId),
       },
       {
         assignedTo: null,
@@ -125,12 +138,11 @@ export class SubscriberRepository extends BaseOrmRepository<SubscriberOrmEntity>
   async handOverByForeignIdQuery(
     foreignId: string,
     userId: string,
+    sourceId?: string,
   ): Promise<Subscriber> {
     return await this.updateOne(
       {
-        where: {
-          foreignId,
-        },
+        where: this.buildForeignIdWhere(foreignId, sourceId),
       },
       {
         assignedTo: userId,

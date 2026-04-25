@@ -4,22 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  Post,
-  Query,
-  Req,
-  Res,
-} from '@nestjs/common';
-import { Request, Response } from 'express'; // Import the Express request and response types
+import { Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 
 import { LoggerService } from '@/logger/logger.service';
 import { UuidParam } from '@/utils';
 import { Roles } from '@/utils/decorators/roles.decorator';
-import { WorkflowService } from '@/workflow/services/workflow.service';
 
 import { ChannelService } from './channel.service';
 import { ChannelDownloadService } from './services/channel-download.service';
@@ -29,119 +19,86 @@ export class WebhookController {
   constructor(
     private readonly channelService: ChannelService,
     private readonly channelDownloadService: ChannelDownloadService,
-    private readonly workflowService: WorkflowService,
     private readonly logger: LoggerService,
   ) {}
 
-  /**
-   * Handles GET requests to download a file
-   *
-   * @param channel - The name of the channel for which the request is being sent.
-   * @param filename - The name of the requested file
-   * @param t - The JWT Token query param.
-   * @param req - The HTTP express request object.
-   *
-   * @returns A promise that resolves a streamable file.
-   */
   @Roles('public')
-  @Get(':channel/download/:name')
+  @Get(':sourceRef/download/:name')
   async handleDownload(
-    @Param('channel') channel: string,
+    @Param('sourceRef') sourceRef: string,
     @Param('name') name: string,
     @Query('t') token: string,
     @Req() req: Request,
   ) {
-    this.logger.log('Channel download request: ', channel, name);
+    this.logger.log('Channel download request: ', sourceRef, name);
 
-    return await this.channelDownloadService.download(channel, token, req);
+    return await this.channelDownloadService.download(sourceRef, token, req);
   }
 
-  /**
-   * Handles GET requests of a specific channel.
-   * This endpoint is accessible to public access (messaging platforms).
-   * It logs the request method and the channel name, then delegates the request
-   * to the `channelService` for further handling.
-   *
-   * @param channel - The name of the channel for which the request is being sent.
-   * @param req - The HTTP request object.
-   * @param res - The HTTP response object.
-   *
-   * @returns A promise that resolves with the result of the `channelService.handle` method.
-   */
   @Roles('public')
-  @Get(':channel')
+  @Get(':sourceRef')
   async handleGet(
-    @Param('channel') channel: string,
+    @Param('sourceRef') sourceRef: string,
     @Req() req: Request,
     @Res() res: Response,
-  ): Promise<any> {
-    return await this.handleChannelRequest(channel, req, res);
+  ): Promise<void> {
+    return await this.handleSourceRequest(sourceRef, req, res);
   }
 
   @Roles('public')
-  @Get(':channel/not-found')
-  async handleNotFound(@Res() res: Response) {
+  @Get(':sourceRef/not-found')
+  async handleNotFound(
+    @Param('sourceRef') _sourceRef: string,
+    @Res() res: Response,
+  ) {
     return res.status(404).send({ error: 'Resource not found!' });
   }
 
   @Roles('public')
-  @Get(':channel/:workflowId')
+  @Get(':sourceRef/:workflowId')
   async handleGetWithWorkflow(
-    @Param('channel') channel: string,
+    @Param('sourceRef') sourceRef: string,
     @UuidParam('workflowId') workflowId: string,
     @Req() req: Request,
     @Res() res: Response,
-  ): Promise<any> {
-    return await this.handleChannelRequest(channel, req, res, workflowId);
+  ): Promise<void> {
+    return await this.handleSourceRequest(sourceRef, req, res, workflowId);
   }
 
-  /**
-   * Handles POST requests for a specific channel.
-   * This endpoint is accessible to public access (messaging platforms).
-   * It logs the request method and the channel name, then delegates the request
-   * to the `channelService` for further handling.
-   *
-   * @param channel - The name of the channel for which the notification is being sent.
-   * @param req - The HTTP request object.
-   * @param res - The HTTP response object.
-   *
-   * @returns A promise that resolves with the result of the `channelService.handle` method.
-   */
   @Roles('public')
-  @Post(':channel')
+  @Post(':sourceRef')
   async handlePost(
-    @Param('channel') channel: string,
+    @Param('sourceRef') sourceRef: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    return await this.handleChannelRequest(channel, req, res);
+    return await this.handleSourceRequest(sourceRef, req, res);
   }
 
   @Roles('public')
-  @Post(':channel/:workflowId')
+  @Post(':sourceRef/:workflowId')
   async handlePostWithWorkflow(
-    @Param('channel') channel: string,
+    @Param('sourceRef') sourceRef: string,
     @UuidParam('workflowId') workflowId: string,
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    return await this.handleChannelRequest(channel, req, res, workflowId);
+    return await this.handleSourceRequest(sourceRef, req, res, workflowId);
   }
 
-  private async handleChannelRequest(
-    channel: string,
+  private async handleSourceRequest(
+    sourceRef: string,
     req: Request,
     res: Response,
     workflowId?: string,
   ): Promise<void> {
-    this.logger.log('Channel notification : ', req.method, channel, workflowId);
-    if (workflowId) {
-      const workflow = await this.workflowService.findOne(workflowId);
-      if (!workflow) {
-        throw new NotFoundException(`Workflow with ID ${workflowId} not found`);
-      }
-    }
+    this.logger.log(
+      'Channel notification : ',
+      req.method,
+      sourceRef,
+      workflowId,
+    );
 
-    return await this.channelService.handle(channel, req, res, workflowId);
+    return await this.channelService.handle(sourceRef, req, res, workflowId);
   }
 }

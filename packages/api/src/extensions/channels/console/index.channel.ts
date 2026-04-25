@@ -8,13 +8,16 @@ import { Injectable } from '@nestjs/common';
 
 import BaseWebChannelHandler from '../web/base-web-channel';
 
-import { CONSOLE_CHANNEL_NAME } from './console-channel.settings';
+import {
+  CONSOLE_CHANNEL_NAME,
+  CONSOLE_CHANNEL_SOURCE_SETTINGS_SCHEMA,
+} from './settings.schema';
 
 @Injectable()
 export default class ConsoleChannelHandler extends BaseWebChannelHandler<
   typeof CONSOLE_CHANNEL_NAME
 > {
   constructor() {
-    super(CONSOLE_CHANNEL_NAME);
+    super(CONSOLE_CHANNEL_NAME, CONSOLE_CHANNEL_SOURCE_SETTINGS_SCHEMA);
   }
 }

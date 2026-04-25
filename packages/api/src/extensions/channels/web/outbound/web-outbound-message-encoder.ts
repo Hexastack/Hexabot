@@ -22,7 +22,6 @@ import { Injectable, Type } from '@nestjs/common';
 
 import { ChannelOutboundMessageEncoder } from '@/channel/lib/outbound';
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
-import { ChannelName } from '@/channel/types';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { I18nService } from '@/i18n';
@@ -30,14 +29,15 @@ import { LoggerService } from '@/logger';
 
 import { Web } from '../types';
 
-export type WebOutboundEncodeOptions = ActionOptions;
+export type WebSourceScopedEncodeOptions = ActionOptions & {
+  sourceId: string;
+};
 
 export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
   Web.OutboundMessageBase,
-  WebOutboundEncodeOptions
+  WebSourceScopedEncodeOptions
 > {
   constructor(
-    private readonly channelName: ChannelName,
     private readonly i18n: I18nService,
     private readonly logger: LoggerService,
     private readonly channelAttachmentService: ChannelAttachmentService,
@@ -47,16 +47,20 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
 
   async encode(
     envelope: StdOutgoingMessageEnvelope,
-    options: WebOutboundEncodeOptions = {},
+    options: WebSourceScopedEncodeOptions,
   ): Promise<Web.OutboundMessageBase> {
+    if (!options?.sourceId) {
+      throw new Error('Missing sourceId in outbound encode options');
+    }
+
     return await this.dispatchEnvelope(envelope, options, {
       [OutgoingMessageType.text]: ({ data }) => this.encodeTextMessage(data),
       [OutgoingMessageType.quickReply]: ({ data }) =>
         this.encodeQuickRepliesMessage(data),
       [OutgoingMessageType.buttons]: ({ data }) =>
         this.encodeButtonsMessage(data),
-      [OutgoingMessageType.attachment]: ({ data }) =>
-        this.encodeAttachmentMessage(data),
+      [OutgoingMessageType.attachment]: ({ data }, sourceOptions) =>
+        this.encodeAttachmentMessage(data, sourceOptions.sourceId),
       [OutgoingMessageType.list]: ({ data }, actionOptions) =>
         this.encodeListMessage(data, actionOptions),
       [OutgoingMessageType.carousel]: ({ data }, actionOptions) =>
@@ -99,13 +103,14 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
 
   protected async encodeAttachmentMessage(
     message: StdOutgoingAttachmentMessageData,
+    sourceId: string,
   ): Promise<Web.OutboundMessageBase> {
     const payload: Web.OutboundMessageBase = {
       type: Web.OutboundMessageType.file,
       data: {
         type: message.attachment.type,
         url: await this.channelAttachmentService.getPublicUrl(
-          this.channelName,
+          sourceId,
           message.attachment.payload,
         ),
       },
@@ -125,7 +130,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
 
   protected async encodeContentElements(
     data: ContentElement[],
-    options: ActionOptions,
+    options: WebSourceScopedEncodeOptions,
   ): Promise<Web.MessageElement[]> {
     if (!options.content || !options.content.fields) {
       throw new Error('Content options are missing the fields');
@@ -151,7 +156,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
             ? { url: item[fields.image_url] }
             : (item[fields.image_url].payload as AttachmentRef);
         element.image_url = await this.channelAttachmentService.getPublicUrl(
-          this.channelName,
+          options.sourceId,
           attachmentRef,
         );
       }
@@ -201,7 +206,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
 
   protected async encodeListMessage(
     message: StdOutgoingListMessageData,
-    options: ActionOptions,
+    options: WebSourceScopedEncodeOptions,
   ): Promise<Web.OutboundMessageBase> {
     const data = message.elements || [];
     const pagination = message.pagination;
@@ -242,7 +247,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
 
   protected async encodeCarouselMessage(
     message: StdOutgoingListMessageData,
-    options: ActionOptions,
+    options: WebSourceScopedEncodeOptions,
   ): Promise<Web.OutboundMessageBase> {
     const data = message.elements || [];
     if (data.length === 0) {
@@ -264,7 +269,7 @@ export class WebOutboundMessageEncoder extends ChannelOutboundMessageEncoder<
 }
 
 export function createWebOutboundMessageEncoder(
-  channelName: ChannelName,
+  _channelName: string,
 ): Type<WebOutboundMessageEncoder> {
   @Injectable()
   class BoundWebOutboundMessageEncoder extends WebOutboundMessageEncoder {
@@ -273,7 +278,7 @@ export function createWebOutboundMessageEncoder(
       logger: LoggerService,
       channelAttachmentService: ChannelAttachmentService,
     ) {
-      super(channelName, i18n, logger, channelAttachmentService);
+      super(i18n, logger, channelAttachmentService);
     }
   }
 

@@ -47,7 +47,7 @@ const resolveGroupDefaultValues = (
 };
 
 type BuildSettingSeedsFromSchemaOptions = {
-  subgroup?: string;
+  subgroup?: 'helper';
 };
 
 export const buildSettingSeedsFromSchema = (
@@ -78,9 +78,7 @@ export const buildSettingSeedsFromRegistry = (
 ): SettingCreateDto[] => {
   return Object.entries(registry).flatMap(([group, definition]) => {
     const subgroup =
-      definition.scope === 'extension' &&
-      (definition.extensionType === 'channel' ||
-        definition.extensionType === 'helper')
+      definition.scope === 'extension' && definition.extensionType === 'helper'
         ? definition.extensionType
         : undefined;
 

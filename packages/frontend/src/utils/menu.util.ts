@@ -24,6 +24,7 @@ import {
   Tag,
   UserCircle,
   Users,
+  Webhook,
 } from "lucide-react";
 
 import { TMenu } from "@/app-components/menus/DashboardSidebar/types/sidebar.types";
@@ -194,6 +195,14 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         },
       },
     ],
+  },
+  {
+    text: "menu.channel_sources",
+    href: "/settings/sources",
+    Icon: Webhook,
+    requires: {
+      [EntityType.SOURCE]: [Action.READ],
+    },
   },
   {
     text: "menu.settings",

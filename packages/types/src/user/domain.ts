@@ -39,6 +39,7 @@ export type TModel =
   | "message"
   | "thread"
   | "subscriber"
+  | "source"
   | "language"
   | "translation"
   | "stats"
@@ -75,6 +76,7 @@ export const modelIdentitySchema = z.enum([
   "message",
   "thread",
   "subscriber",
+  "source",
   "language",
   "translation",
   "stats",

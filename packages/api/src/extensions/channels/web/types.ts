@@ -18,6 +18,7 @@ export namespace Web {
     web?: {
       profile: SubscriberFull;
       threadId?: string;
+      sourceId?: string;
     };
   };
 

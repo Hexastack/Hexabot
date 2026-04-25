@@ -19,8 +19,8 @@ import {
   TypingNotificationInboundEvent,
   WebMessageInboundEvent,
 } from '../inbound';
+import { WEB_CHANNEL_NAME } from '../settings.schema';
 import { Web } from '../types';
-import { WEB_CHANNEL_NAME } from '../web-channel.settings';
 
 const ATTACHMENT_ID = '99999999-9999-4999-9999-999999999999';
 const channelData = {

@@ -10,7 +10,6 @@ import { SettingCreateDto } from '@/setting/dto/setting.dto';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { getRandom } from '@/utils/helpers/safeRandom';
 
-const UNUSED_CHANNEL_GROUP = String(getRandom());
 const UNUSED_HELPER_GROUP = String(getRandom());
 
 export const settingFixtures: SettingCreateDto[] = [
@@ -68,12 +67,6 @@ export const settingFixtures: SettingCreateDto[] = [
     group: 'contact',
     label: 'company_country',
     value: 'US',
-  },
-  {
-    group: UNUSED_CHANNEL_GROUP,
-    subgroup: 'channel',
-    label: `${getRandom()}`,
-    value: '',
   },
   {
     group: UNUSED_HELPER_GROUP,

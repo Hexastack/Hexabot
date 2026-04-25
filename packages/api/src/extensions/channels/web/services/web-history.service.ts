@@ -31,6 +31,7 @@ export interface WebFormatContext {
   inboundEncoder: WebInboundMessageEncoder;
   outboundEncoder: WebOutboundMessageEncoder;
   generateId: () => string;
+  sourceId: string;
 }
 
 /**
@@ -107,7 +108,10 @@ export class WebHistoryService {
       const mid = msg.mid ?? ctx.generateId();
 
       if (this.isIncomingMessage(msg)) {
-        const formatted = await ctx.inboundEncoder.encode(msg.message);
+        const formatted = await ctx.inboundEncoder.encode(
+          msg.message,
+          ctx.sourceId,
+        );
         result.push({
           ...formatted,
           author: msg.sender,
@@ -116,10 +120,10 @@ export class WebHistoryService {
           createdAt: msg.createdAt,
         });
       } else {
-        const formatted = await ctx.outboundEncoder.encode(
-          msg.message,
-          this.resolveOutgoingEncodeOptions(msg),
-        );
+        const formatted = await ctx.outboundEncoder.encode(msg.message, {
+          ...this.resolveOutgoingEncodeOptions(msg),
+          sourceId: ctx.sourceId,
+        });
         result.push({
           ...formatted,
           author: 'chatbot',

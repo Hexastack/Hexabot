@@ -8,6 +8,7 @@ import type {
   ActionOptions,
   Attachment,
   AttachmentRef,
+  Source,
   StdOutgoingMessageEnvelope,
 } from '@hexabot-ai/types';
 import { StdOutgoingEnvelope } from '@hexabot-ai/types';
@@ -16,6 +17,7 @@ import { ModuleRef } from '@nestjs/core';
 import { Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
+import z from 'zod';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
@@ -26,13 +28,12 @@ import {
 } from '@/attachment/types';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
-import { ChannelService } from '../channel.service';
 import { ChannelAttachmentService } from '../services/channel-attachment.service';
+import { ChannelRegistry } from '../services/channel-registry.service';
 import { ChannelName } from '../types';
 
 import {
@@ -56,11 +57,8 @@ export default abstract class ChannelHandler<
   @Inject(ChannelAttachmentService)
   protected readonly channelAttachmentService: ChannelAttachmentService;
 
-  @Inject(SettingService)
-  protected readonly settingService: SettingService;
-
-  @Inject(ChannelService)
-  protected readonly channelService: ChannelService;
+  @Inject(ChannelRegistry)
+  protected readonly channelRegistry: ChannelRegistry;
 
   @Inject(ChannelEventBus)
   protected readonly channelEventBus: ChannelEventBus;
@@ -68,7 +66,10 @@ export default abstract class ChannelHandler<
   @Inject(ModuleRef)
   private readonly moduleRef: ModuleRef;
 
-  constructor(name: N) {
+  constructor(
+    name: N,
+    private readonly sourceSettingsSchema: z.ZodTypeAny = z.strictObject({}),
+  ) {
     super(name);
   }
 
@@ -78,7 +79,7 @@ export default abstract class ChannelHandler<
 
   async onModuleInit() {
     await super.onModuleInit();
-    this.channelService.setChannel(
+    this.channelRegistry.setChannel(
       this.getName(),
       this as unknown as ChannelHandler<N>,
     );
@@ -108,6 +109,10 @@ export default abstract class ChannelHandler<
     return DEFAULT_CHANNEL_CAPABILITIES;
   }
 
+  getSourceSettingsSchema(): z.ZodTypeAny {
+    return this.sourceSettingsSchema;
+  }
+
   /**
    * Throws when the envelope's format is not supported by this channel.
    * The `system` format always throws — it is internal and must never reach
@@ -122,17 +127,6 @@ export default abstract class ChannelHandler<
   }
 
   /**
-   * Returns the channel's settings
-   * @returns Channel's settings
-   */
-  async getSettings<S extends string = N>() {
-    const settings = await this.settingService.getSettings();
-
-    // @ts-expect-error workaround typing
-    return settings[this.getName() as keyof Settings] as Settings[S];
-  }
-
-  /**
    * Process incoming channel data via POST/GET methods
    *
    * @param {module:Controller.req} req
@@ -141,6 +135,7 @@ export default abstract class ChannelHandler<
   abstract handle(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
     workflowId?: string,
   ): any;
 
@@ -268,7 +263,7 @@ export default abstract class ChannelHandler<
    * Returns a publicly accessible URL for an attachment.
    *
    * Default: generates a signed Hexabot download URL
-   * (`/webhook/:channel/download/:name?t=<jwt>`).
+   * (`/webhook/:sourceRef/download/:name?t=<jwt>`).
    *
    * Override in HTTP-based channels (Facebook, WhatsApp, …) when the
    * messaging platform fetches the URL itself and the JWT-signed scheme
@@ -276,11 +271,9 @@ export default abstract class ChannelHandler<
    * API once and return the resulting permanent media URL instead).
    */
   public async getAttachmentPublicUrl(
+    sourceId: string,
     attachment: AttachmentRef,
   ): Promise<string> {
-    return this.channelAttachmentService.getPublicUrl(
-      this.getName(),
-      attachment,
-    );
+    return this.channelAttachmentService.getPublicUrl(sourceId, attachment);
   }
 }

@@ -188,6 +188,7 @@ export class MessageController extends BaseOrmController<MessageOrmEntity> {
 
     event.setInitiator(subscriber);
     event.setThreadId(thread.id);
+    event.setSourceContext(thread.source.id, thread.source.settings);
     try {
       const { mid } = await channelHandler.sendMessage(event, envelope, {});
       // Trigger sent message event

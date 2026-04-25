@@ -80,6 +80,7 @@ describe("ThemeProvider", () => {
     mockUseConfig.mockReturnValue({
       apiUrl: "https://example.com/api",
       channel: "console",
+      sourceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       language: "en",
       maxUploadSize: 10,
       theme: { mode: "system" },
@@ -123,6 +124,7 @@ describe("ThemeProvider", () => {
     mockUseConfig.mockReturnValue({
       apiUrl: "https://example.com/api",
       channel: "console",
+      sourceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       language: "en",
       maxUploadSize: 10,
       mode: "light",

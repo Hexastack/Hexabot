@@ -283,6 +283,20 @@ export const WorkflowEntity = new schema.Entity(
   },
 );
 
+export const SourceEntity = new schema.Entity(
+  EntityType.SOURCE,
+  {
+    defaultWorkflow: WorkflowEntity,
+  },
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+ThreadEntity.define({
+  source: SourceEntity,
+});
+
 WorkflowVersionEntity.define({
   workflow: WorkflowEntity,
   parentVersion: WorkflowVersionEntity,
@@ -343,6 +357,7 @@ export const ENTITY_MAP = {
   [EntityType.TRANSLATION]: TranslationEntity,
   [EntityType.ATTACHMENT]: AttachmentEntity,
   [EntityType.CHANNEL]: ChannelEntity,
+  [EntityType.SOURCE]: SourceEntity,
   [EntityType.HELPER]: HelperEntity,
   [EntityType.NLU_HELPER]: NluHelperEntity,
   [EntityType.LLM_HELPER]: LlmHelperEntity,

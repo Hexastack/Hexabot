@@ -5,14 +5,20 @@
  */
 
 export const buildWebhookUrl = ({
-  channel,
+  sourceId,
   workflowId,
   query,
 }: {
-  channel: string;
+  sourceId: string;
   workflowId?: string;
   query?: URLSearchParams | Record<string, string>;
 }) => {
+  const resolvedSourceId = sourceId.trim();
+
+  if (!resolvedSourceId) {
+    throw new Error("Widget config sourceId is required");
+  }
+
   const searchParams =
     query instanceof URLSearchParams
       ? new URLSearchParams(query)
@@ -24,5 +30,5 @@ export const buildWebhookUrl = ({
 
   const queryString = searchParams.toString();
 
-  return `/webhook/${channel}/${queryString ? `?${queryString}` : ""}`;
+  return `/webhook/${resolvedSourceId}/${queryString ? `?${queryString}` : ""}`;
 };

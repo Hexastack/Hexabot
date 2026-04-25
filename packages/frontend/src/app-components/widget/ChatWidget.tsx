@@ -9,6 +9,7 @@ import { Avatar, Box, useColorScheme, useTheme } from "@mui/material";
 import { memo, useCallback, useMemo } from "react";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
+import { useFind } from "@/hooks/crud/useFind";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
@@ -17,6 +18,7 @@ import { EntityType, RouterType } from "@/services/types";
 
 const HiddenLauncher = () => <span style={{ display: "none" }} />;
 const HiddenHeader = () => null;
+const CONSOLE_CHANNEL_NAME = "console";
 
 type ChatWidgetVariant = "launcher" | "embedded";
 
@@ -34,8 +36,42 @@ const ChatWidgetComponent = ({
   const { pathname, reload } = useAppRouter();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
+  const { data: sources = [] } = useFind(
+    { entity: EntityType.SOURCE },
+    {
+      hasCount: false,
+      params: {
+        where: {
+          channel: CONSOLE_CHANNEL_NAME,
+          state: true,
+        },
+      },
+    },
+    {
+      enabled: isAuthenticated,
+    },
+  );
   const isVisualEditor = pathname.startsWith(`/${RouterType.WORKFLOW_EDITOR}`);
   const isEmbedded = variant === "embedded";
+  const selectedSource = useMemo(() => {
+    if (!sources.length) {
+      return undefined;
+    }
+
+    if (workflowId) {
+      const sourceForWorkflow = sources.find(
+        (source) => source.defaultWorkflow === workflowId,
+      );
+
+      if (sourceForWorkflow) {
+        return sourceForWorkflow;
+      }
+    }
+
+    return (
+      sources.find((source) => source.defaultWorkflow == null) ?? sources[0]
+    );
+  }, [sources, workflowId]);
   const primaryColor = theme.palette.primary.main;
   const resolvedMode = mode ?? theme.palette.mode;
   const containerSx = useMemo(
@@ -62,13 +98,22 @@ const ChatWidgetComponent = ({
   const widgetConfig = useMemo(
     () => ({
       apiUrl,
-      channel: "console",
+      channel: selectedSource?.channel ?? CONSOLE_CHANNEL_NAME,
+      sourceId: selectedSource?.id,
       language: i18n.language,
       primaryColor,
       mode: resolvedMode,
       workflowId,
     }),
-    [apiUrl, i18n.language, primaryColor, resolvedMode, workflowId],
+    [
+      apiUrl,
+      i18n.language,
+      primaryColor,
+      resolvedMode,
+      selectedSource?.channel,
+      selectedSource?.id,
+      workflowId,
+    ],
   );
   const avatarSrc = useMemo(
     () =>
@@ -89,7 +134,7 @@ const ChatWidgetComponent = ({
     [handleUnauthorized],
   );
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !selectedSource?.id) {
     return null;
   }
 

@@ -5,7 +5,15 @@
  */
 
 import { Thread, ThreadFull } from '@hexabot-ai/types';
-import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { FindManyOptions } from 'typeorm';
 
 import { UuidParam } from '@/utils';
@@ -25,6 +33,7 @@ export const THREAD_ALLOWED_FILTER_FIELDS: TFilterNestedKeysOfType<ThreadOrmEnti
     'subscriber.lastName',
     'subscriber.channel.name',
     'subscriber.assignedTo.id',
+    'source.id',
     'status',
     'closeReason',
     'title',
@@ -84,6 +93,12 @@ export class ThreadController extends BaseOrmController<ThreadOrmEntity> {
     @UuidParam('id') id: string,
     @Body() threadUpdate: ThreadUpdateDto,
   ) {
+    if ('subscriber' in threadUpdate || 'source' in threadUpdate) {
+      throw new BadRequestException(
+        'Thread subscriber and source cannot be updated',
+      );
+    }
+
     return await this.threadService.updateOne(id, threadUpdate);
   }
 }

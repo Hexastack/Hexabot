@@ -5,8 +5,10 @@
  */
 
 import { Thread } from '@hexabot-ai/types';
+import { BadRequestException } from '@nestjs/common';
 
 import { ThreadRepository } from '@/chat/repositories/thread.repository';
+import { SubscriberService } from '@/chat/services/subscriber.service';
 
 import { ThreadService } from './thread.service';
 
@@ -15,6 +17,7 @@ const createThread = (overrides: Partial<Thread> = {}): Thread => ({
   createdAt: new Date('2026-03-01T00:00:00.000Z'),
   updatedAt: new Date('2026-03-01T00:00:00.000Z'),
   subscriber: 'sub-1',
+  source: 'source-1',
   status: 'open',
   lastMessageAt: new Date('2026-03-01T00:00:00.000Z'),
   closedAt: null,
@@ -25,6 +28,9 @@ const createThread = (overrides: Partial<Thread> = {}): Thread => ({
 
 describe('ThreadService', () => {
   let service: ThreadService;
+  let subscriberService: {
+    findOne: jest.Mock;
+  };
   let repository: {
     findOne: jest.Mock;
     findOneForSubscriber: jest.Mock;
@@ -45,8 +51,17 @@ describe('ThreadService', () => {
       create: jest.fn(),
       updateOne: jest.fn(),
     };
+    subscriberService = {
+      findOne: jest.fn().mockResolvedValue({
+        id: 'sub-1',
+        source: 'source-1',
+      }),
+    };
 
-    service = new ThreadService(repository as unknown as ThreadRepository);
+    service = new ThreadService(
+      repository as unknown as ThreadRepository,
+      subscriberService as unknown as SubscriberService,
+    );
   });
 
   afterEach(() => {
@@ -155,12 +170,43 @@ describe('ThreadService', () => {
 
       expect(repository.create).toHaveBeenCalledWith({
         subscriber: 'sub-1',
+        source: 'source-1',
         title: null,
         status: 'open',
         lastMessageAt: now,
         closeReason: null,
         closedAt: null,
       });
+      expect(resolved).toEqual(created);
+    });
+
+    it('uses source id from incoming context as the authoritative source', async () => {
+      const now = new Date('2026-03-01T10:00:00.000Z');
+      jest.useFakeTimers().setSystemTime(now);
+      const fallbackSourceId = 'source-fallback';
+      const created = createThread({
+        id: 'thread-new',
+        source: fallbackSourceId,
+        lastMessageAt: now,
+      });
+      repository.findLatestOpenThreadForSubscriber.mockResolvedValue(null);
+      repository.create.mockResolvedValue(created);
+
+      const resolved = await service.resolveThreadForIncoming({
+        subscriberId: 'sub-1',
+        sourceId: fallbackSourceId,
+      });
+
+      expect(repository.create).toHaveBeenCalledWith({
+        subscriber: 'sub-1',
+        source: fallbackSourceId,
+        title: null,
+        status: 'open',
+        lastMessageAt: now,
+        closeReason: null,
+        closedAt: null,
+      });
+      expect(subscriberService.findOne).not.toHaveBeenCalled();
       expect(resolved).toEqual(created);
     });
 
@@ -332,6 +378,23 @@ describe('ThreadService', () => {
         'Need help with billing...',
       );
       expect(updated?.title).toBe('Need help with billing...');
+    });
+  });
+
+  describe('updateOne', () => {
+    it('rejects subscriber/source updates on existing threads', async () => {
+      await expect(
+        service.updateOne('thread-1', {
+          subscriber: 'sub-2',
+        } as any),
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.updateOne('thread-1', {
+          source: 'source-2',
+        } as any),
+      ).rejects.toThrow(BadRequestException);
+      expect(repository.updateOne).not.toHaveBeenCalled();
     });
   });
 });

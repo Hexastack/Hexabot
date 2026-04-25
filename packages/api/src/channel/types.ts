@@ -4,14 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-import { AnySetting, ExtensionSetting } from '@/setting/types';
-
 export type ChannelName = string;
-
-export type ChannelSetting<N extends string = string> = ExtensionSetting<
-  {
-    group: N;
-  },
-  AnySetting,
-  'id' | 'createdAt' | 'updatedAt' | 'group'
->;

@@ -57,7 +57,16 @@ export class SubscriberResolver {
     const foreignId = resolution.normalizeSenderId
       ? resolution.normalizeSenderId(rawForeignId)
       : rawForeignId;
-    const existing = await this.subscriberService.findOneByForeignId(foreignId);
+    const sourceId = event.getSourceId() ?? undefined;
+    if (!sourceId) {
+      throw new Error(
+        `Cannot resolve subscriber: ${event.constructor.name} has no source ID`,
+      );
+    }
+    const existing = await this.subscriberService.findOneByForeignId(
+      foreignId,
+      sourceId,
+    );
 
     if (existing) {
       return existing;
@@ -70,6 +79,7 @@ export class SubscriberResolver {
     return this.subscriberService.create({
       ...subscriberData,
       foreignId,
+      source: sourceId,
     });
   }
 }

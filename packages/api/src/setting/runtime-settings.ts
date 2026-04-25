@@ -8,11 +8,7 @@ import { z } from 'zod';
 
 export type SettingScope = 'global' | 'extension';
 
-export type SettingExtensionType =
-  | 'action'
-  | 'channel'
-  | 'helper'
-  | (string & {});
+export type SettingExtensionType = 'action' | 'helper';
 
 export type RuntimeSettingGroupSchema = z.ZodObject<z.ZodRawShape>;
 

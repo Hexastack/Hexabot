@@ -207,12 +207,17 @@ export class ChatService {
   async handleEchoMessage(event: MessageInboundEvent) {
     this.logger.verbose('Message echo received', event.getRaw());
     const foreignId = event.getRecipientForeignId();
+    const sourceId =
+      typeof event.getSourceId === 'function'
+        ? (event.getSourceId() ?? undefined)
+        : undefined;
 
     if (foreignId) {
       try {
-        const recipient = await this.subscriberService.findOne({
-          where: { foreignId },
-        });
+        const recipient = await this.subscriberService.findOneByForeignId(
+          foreignId,
+          sourceId,
+        );
 
         if (!recipient) {
           throw new Error(`Subscriber with foreign ID ${foreignId} not found`);
@@ -225,6 +230,7 @@ export class ChatService {
             await this.threadService.resolveOrCreateThread({
               subscriberId: recipient.id,
               explicitThreadId: event.getThreadId(),
+              sourceId,
             })
           ).id,
           message: event.getMessage(),
@@ -250,16 +256,25 @@ export class ChatService {
     this.logger.debug('New message received', event.getRaw());
 
     const foreignId = event.getSenderForeignId();
+    const sourceId =
+      typeof event.getSourceId === 'function'
+        ? (event.getSourceId() ?? undefined)
+        : undefined;
+    if (!sourceId) {
+      throw new Error('Cannot handle incoming message without source id');
+    }
     const handler = event.getHandler();
 
     try {
-      let subscriber = await this.subscriberService.findOne({
-        where: { foreignId },
-      });
+      let subscriber = await this.subscriberService.findOneByForeignId(
+        foreignId,
+        sourceId,
+      );
 
       if (!subscriber) {
         const subscriberData = await handler.getSubscriberData(event);
         subscriberData.channel = event.getChannelData();
+        subscriberData.source = sourceId;
         subscriber = await this.subscriberService.create(subscriberData);
 
         if (!subscriber) {
@@ -292,13 +307,17 @@ export class ChatService {
       // Set the subscriber object
       event.setInitiator(subscriber!);
 
-      const channelSettings = await handler.getSettings();
+      const channelSettings =
+        typeof event.getSourceSettings === 'function'
+          ? event.getSourceSettings()
+          : {};
       const inactivityHours =
         this.threadService.resolveInactivityHours(channelSettings);
       const thread = await this.threadService.resolveThreadForIncoming({
         subscriberId: subscriber.id,
         explicitThreadId: event.getThreadId(),
         inactivityHours,
+        sourceId,
       });
       event.setThreadId(thread.id);
 

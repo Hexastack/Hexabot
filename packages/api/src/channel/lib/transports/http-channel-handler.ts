@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StdEventType, Subscriber } from '@hexabot-ai/types';
+import { Source, StdEventType, Subscriber } from '@hexabot-ai/types';
 import { Inject, Injectable } from '@nestjs/common';
 import { Request, Response } from 'express';
 
@@ -33,9 +33,9 @@ import type MessageInboundEvent from '../inbound-events/message-inbound-event';
  *    Hexabot SubscriberCreateDto
  *
  * Optional overrides for common HTTP webhook concerns:
- *  - `verifyWebhook(req, res)` — respond to the platform's subscription
+ *  - `verifyWebhook(req, res, source)` — respond to the platform's subscription
  *    handshake (e.g. Facebook hub.verify challenge)
- *  - `verifySignature(req, res)` — authenticate the incoming payload (e.g.
+ *  - `verifySignature(req, res, source)` — authenticate the incoming payload (e.g.
  *    HMAC-SHA256 as used by Meta, Slack, Discord)
  *  - `resolveSubscriber(event)` — find or create a Hexabot subscriber from
  *    the event's sender identity (default: SubscriberResolver.resolve())
@@ -64,14 +64,15 @@ export abstract class HttpChannelHandler<N extends ChannelName>
   async handle(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
     workflowId?: string,
   ): Promise<void> {
     if ((req as Request).method === 'GET') {
-      return this.verifyWebhook(req as Request, res as Response);
+      return this.verifyWebhook(req as Request, res as Response, source);
     }
 
     try {
-      await this.verifySignature(req as Request, res as Response);
+      await this.verifySignature(req as Request, res as Response, source);
     } catch (err) {
       this.logger.warn('Webhook signature verification failed', err);
       (res as Response).status(401).json({ error: 'Unauthorized' });
@@ -81,7 +82,7 @@ export abstract class HttpChannelHandler<N extends ChannelName>
 
     let events: ChannelInboundEvent<N>[];
     try {
-      events = await this.decode(req as Request);
+      events = await this.decode(req as Request, source);
     } catch (err) {
       this.logger.warn('Failed to decode webhook payload', err);
       (res as Response).status(400).json({ error: 'Bad Request' });
@@ -96,6 +97,7 @@ export abstract class HttpChannelHandler<N extends ChannelName>
       event.setHandler(
         this as unknown as Parameters<typeof event.setHandler>[0],
       );
+      event.setSourceContext(source.id, source.settings);
       if (workflowId) {
         event.setWorkflowId(workflowId);
       }
@@ -123,7 +125,11 @@ export abstract class HttpChannelHandler<N extends ChannelName>
    * Default implementation returns HTTP 200 OK. Override to handle
    * challenge-response flows (e.g. Facebook's `hub.challenge` parameter).
    */
-  protected async verifyWebhook(_req: Request, res: Response): Promise<void> {
+  protected async verifyWebhook(
+    _req: Request,
+    res: Response,
+    _source: Source,
+  ): Promise<void> {
     res.sendStatus(200);
   }
 
@@ -137,6 +143,7 @@ export abstract class HttpChannelHandler<N extends ChannelName>
   protected async verifySignature(
     _req: Request,
     _res: Response,
+    _source: Source,
   ): Promise<void> {}
 
   /**
@@ -145,7 +152,10 @@ export abstract class HttpChannelHandler<N extends ChannelName>
    * Return multiple events when the platform batches several interactions in
    * one webhook call (e.g. Facebook's `entry[].messaging[]` structure).
    */
-  protected abstract decode(req: Request): Promise<ChannelInboundEvent<N>[]>;
+  protected abstract decode(
+    req: Request,
+    source: Source,
+  ): Promise<ChannelInboundEvent<N>[]>;
 
   /**
    * Find the Hexabot subscriber that corresponds to the event's sender, or

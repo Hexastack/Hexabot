@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StdEventType, Subscriber } from '@hexabot-ai/types';
+import { Source, StdEventType, Subscriber } from '@hexabot-ai/types';
 import { Inject, Injectable } from '@nestjs/common';
 import { Request, Response } from 'express';
 
@@ -97,6 +97,7 @@ export abstract class WebSocketChannelHandler<
   protected abstract processSocketGet(
     req: SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
   ): Promise<void>;
 
   /**
@@ -106,6 +107,7 @@ export abstract class WebSocketChannelHandler<
   protected abstract processSocketPost(
     req: SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
     workflowId?: string,
   ): Promise<void>;
 
@@ -118,6 +120,7 @@ export abstract class WebSocketChannelHandler<
   async handle(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
+    source: Source,
     workflowId?: string,
   ): Promise<void> {
     if (!this.isSocketRequest(req)) {
@@ -131,9 +134,9 @@ export abstract class WebSocketChannelHandler<
     }
 
     if (req.method === 'GET') {
-      return this.processSocketGet(req, res);
+      return this.processSocketGet(req, res, source);
     }
 
-    return this.processSocketPost(req, res, workflowId);
+    return this.processSocketPost(req, res, source, workflowId);
   }
 }

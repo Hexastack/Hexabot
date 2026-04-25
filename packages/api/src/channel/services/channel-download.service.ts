@@ -10,16 +10,19 @@ import { Request } from 'express';
 import { ChannelService } from '../channel.service';
 
 import { ChannelAttachmentService } from './channel-attachment.service';
+import { SourceService } from './source.service';
 
 @Injectable()
 export class ChannelDownloadService {
   constructor(
     private readonly channelService: ChannelService,
+    private readonly sourceService: SourceService,
     private readonly channelAttachmentService: ChannelAttachmentService,
   ) {}
 
-  async download(channel: string, token: string, req: Request) {
-    const handler = this.channelService.getChannelHandler(channel);
+  async download(sourceRef: string, token: string, req: Request) {
+    const source = await this.sourceService.findActiveByRef(sourceRef);
+    const handler = this.channelService.getChannelHandler(source.channel);
 
     return await this.channelAttachmentService.download(
       token,

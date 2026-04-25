@@ -18,6 +18,7 @@ import { Mutex } from 'async-mutex';
 import { Socket } from 'socket.io';
 
 import { AppInstance } from '@/app.instance';
+import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 
 import { SocketEventMetadataStorage } from '../storage/socket-event-metadata.storage';
@@ -36,6 +37,8 @@ export class SocketEventDispatcherService implements OnModuleInit {
     put: new Map(),
     patch: new Map(),
     delete: new Map(),
+    options: new Map(),
+    head: new Map(),
   };
 
   constructor(
@@ -51,7 +54,7 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
   async handleEvent(
     socketMethod: SocketMethod,
-    path: string,
+    _path: string,
     req: SocketRequest,
     res: SocketResponse,
   ) {
@@ -61,12 +64,24 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
     try {
       const handlers = this.routeHandlers[socketMethod];
-      const foundHandler = Array.from(handlers.entries()).find(([key, _]) => {
-        const urlPathname = new URL(req.url, 'http://localhost').pathname;
-        const keyUrlPathName = new URL(key, 'http://localhost').pathname;
+      if (!handlers) {
+        return res.status(HttpStatus.NOT_FOUND).send({ message: 'Not Found' });
+      }
 
-        return urlPathname === keyUrlPathName;
-      });
+      const incomingPath = this.normalizeIncomingPath(req.path);
+      const foundHandler = Array.from(handlers.entries()).find(
+        ([routePath, _]) => {
+          const params = this.matchPath(routePath, incomingPath);
+
+          if (!params) {
+            return false;
+          }
+
+          req.params = params;
+
+          return true;
+        },
+      );
 
       if (!foundHandler) {
         return res.status(HttpStatus.NOT_FOUND).send({ message: 'Not Found' });
@@ -104,6 +119,75 @@ export class SocketEventDispatcherService implements OnModuleInit {
     } finally {
       release();
     }
+  }
+
+  private normalizeIncomingPath(path: string): string {
+    const normalizedPath = this.normalizePath(path);
+    const apiPrefix = this.normalizePath(new URL(config.apiBaseUrl).pathname);
+
+    if (
+      apiPrefix !== '/' &&
+      (normalizedPath === apiPrefix ||
+        normalizedPath.startsWith(`${apiPrefix}/`))
+    ) {
+      const withoutPrefix = normalizedPath.slice(apiPrefix.length) || '/';
+
+      return this.normalizePath(withoutPrefix);
+    }
+
+    return normalizedPath;
+  }
+
+  private normalizePath(path: string): string {
+    if (!path || path === '/') {
+      return '/';
+    }
+
+    const withLeadingSlash = path.startsWith('/') ? path : `/${path}`;
+    const withoutTrailingSlash =
+      withLeadingSlash.length > 1
+        ? withLeadingSlash.replace(/\/+$/, '')
+        : withLeadingSlash;
+
+    return withoutTrailingSlash;
+  }
+
+  private matchPath(
+    pattern: string,
+    path: string,
+  ): Record<string, string> | null {
+    const normalizedPattern = this.normalizePath(pattern);
+    const normalizedPath = this.normalizePath(path);
+    const patternSegments = normalizedPattern.split('/').filter(Boolean);
+    const pathSegments = normalizedPath.split('/').filter(Boolean);
+
+    if (patternSegments.length !== pathSegments.length) {
+      return null;
+    }
+
+    const params: Record<string, string> = {};
+
+    for (let i = 0; i < patternSegments.length; i += 1) {
+      const patternSegment = patternSegments[i];
+      const pathSegment = pathSegments[i];
+
+      if (patternSegment.startsWith(':')) {
+        const paramName = patternSegment.slice(1);
+
+        if (!paramName) {
+          return null;
+        }
+
+        params[paramName] = decodeURIComponent(pathSegment);
+        continue;
+      }
+
+      if (patternSegment !== pathSegment) {
+        return null;
+      }
+    }
+
+    return params;
   }
 
   onModuleInit() {

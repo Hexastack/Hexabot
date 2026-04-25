@@ -4,10 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { z } from 'zod';
+
 import {
   WEB_CHANNEL_NAME,
-  WEB_CHANNEL_SETTINGS_SCHEMA,
-} from './web-channel.settings';
+  WEB_CHANNEL_SOURCE_SETTINGS_SCHEMA,
+} from './settings.schema';
 
 declare global {
   interface SubscriberChannelDict {
@@ -23,7 +25,7 @@ declare module '@nestjs/event-emitter' {
   interface IHookExtensionsOperationMap {
     [WEB_CHANNEL_NAME]: TDefinition<
       object,
-      SettingMapByType<typeof WEB_CHANNEL_SETTINGS_SCHEMA>
+      z.infer<typeof WEB_CHANNEL_SOURCE_SETTINGS_SCHEMA>
     >;
   }
 }

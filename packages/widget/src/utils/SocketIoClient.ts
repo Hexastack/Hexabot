@@ -296,12 +296,18 @@ export const getSocketIoClient = (
   config: Config,
   handlers: SocketIoEventHandlers,
 ) => {
+  const sourceId = config.sourceId.trim();
+
+  if (!sourceId) {
+    throw new Error("Widget config sourceId is required");
+  }
+
   if (!socketIoClient) {
     socketIoClient = new SocketIoClient(
       config.apiUrl,
       {
         query: {
-          channel: config.channel,
+          source_id: sourceId,
         },
         transports: resolveSocketIoTransports(config.transport ?? "ws"),
       },
