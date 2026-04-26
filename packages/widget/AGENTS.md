@@ -119,7 +119,7 @@ Unit tests:
 ## Testing Strategy
 Current state:
 - This package includes a Vitest + jsdom setup for widget-level unit tests.
-- CI on `dev` branch runs workspace checks (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` via Turbo). For widget-specific quality, treat `typecheck + lint + test + build` as the effective gate.
+- CI on `main` runs workspace checks (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` via Turbo). For widget-specific quality, treat `typecheck + lint + test + build` as the effective gate.
 - Git hooks (`.husky/pre-commit`) run widget checks when widget files are staged: `pnpm typecheck` + `npx lint-staged` from `packages/widget`.
 
 Recommended local validation:
@@ -170,9 +170,9 @@ pnpm --filter @hexabot-ai/widget run lint
 pnpm --filter @hexabot-ai/widget run build
 ```
 
-Release (v3 alpha train, `dev` branch):
+Release (v3 alpha train, `main` branch):
 ```bash
-./bump-version-v3.sh preminor
+./bump-version.sh preminor
 ```
 > TODO: Confirm with maintainers whether a given release should use `prepatch`, `preminor`, or `prerelease`.
 
@@ -191,7 +191,5 @@ Release (v3 alpha train, `dev` branch):
 - Any protocol-level changes (socket payloads, webhook behavior) must stay compatible with the backend expectations used in `src/providers/ChatProvider.tsx` and `src/utils/SocketIoClient.ts`.
 - Preserve license headers and do not remove licensing notices.
 - Avoid unrelated monorepo edits when the task is widget-scoped.
-- Some CI workflows still reference legacy scope `@hexabot/widget` while this package is `@hexabot-ai/widget`.
-  > TODO: Align workflow scopes in a dedicated maintenance change.
 - Code ownership:
   > TODO: No `CODEOWNERS` file found in this repository; confirm reviewer/approver group with maintainers.

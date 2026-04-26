@@ -1,4 +1,4 @@
-name: Publish Hexabot V3 Alpha Packages
+name: Publish Hexabot Alpha Packages
 
 on:
   push:
