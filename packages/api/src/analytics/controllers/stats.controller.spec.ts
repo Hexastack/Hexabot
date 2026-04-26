@@ -29,7 +29,8 @@ describe('StatsController', () => {
   } as jest.Mocked<Pick<WorkflowService, 'count'>>;
   const workflowRunService = {
     count: jest.fn(),
-  } as jest.Mocked<Pick<WorkflowRunService, 'count'>>;
+    findAndPopulate: jest.fn(),
+  } as jest.Mocked<Pick<WorkflowRunService, 'count' | 'findAndPopulate'>>;
   const messageService = {
     count: jest.fn(),
   } as jest.Mocked<Pick<MessageService, 'count'>>;
@@ -208,6 +209,32 @@ describe('StatsController', () => {
         successRateLast24h: 0.6363636363636364,
         totalMessagesLast24h: 42,
       });
+    });
+  });
+
+  describe('failedWorkflowRuns', () => {
+    it('should pass the provided limit to failed workflow run stats', async () => {
+      workflowRunService.count.mockResolvedValue(4);
+      workflowRunService.findAndPopulate.mockResolvedValue([]);
+
+      const result = await statsController.failedWorkflowRuns(5);
+
+      expect(result).toEqual({ total: 4, runs: [] });
+      expect(workflowRunService.findAndPopulate).toHaveBeenCalledWith(
+        expect.objectContaining({ take: 5 }),
+      );
+    });
+
+    it('should default failed workflow run stats to three rows', async () => {
+      workflowRunService.count.mockResolvedValue(0);
+      workflowRunService.findAndPopulate.mockResolvedValue([]);
+
+      const result = await statsController.failedWorkflowRuns();
+
+      expect(result).toEqual({ total: 0, runs: [] });
+      expect(workflowRunService.findAndPopulate).toHaveBeenCalledWith(
+        expect.objectContaining({ take: 3 }),
+      );
     });
   });
 

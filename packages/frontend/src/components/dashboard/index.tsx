@@ -66,7 +66,6 @@ export const Dashboard = () => {
           flexDirection="column"
         >
           <Grid size={12}>
-            {/* TODO replace mock data by an API integration */}
             <AttentionRequired />
           </Grid>
           <Grid size={12}>
