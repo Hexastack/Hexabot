@@ -9,7 +9,7 @@ Not yet familiar with [Hexabot](https://hexabot.ai/)? It's a open-source chatbot
 
 ### Prerequisites
 
-- Node.js >= 20.18.1
+- Node.js >= 20.19.0
 - One package manager (`npm`, `pnpm`, `yarn`, or `bun`)
 - Docker Desktop/Engine (only required when you pass `--docker` or use `hexabot docker ...`)
 
