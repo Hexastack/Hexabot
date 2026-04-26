@@ -6,58 +6,61 @@
 
 import type { User } from '@hexabot-ai/types';
 import { JwtModule } from '@nestjs/jwt';
-import { TestingModule } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 
+import { LanguageService } from '@/i18n/services/language.service';
+import { LoggerService } from '@/logger/logger.service';
 import { MailerService } from '@/mailer/mailer.service';
-import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
-import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
-import { users } from '@/utils/test/fixtures/user';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { MailerServiceProvider } from '@/utils/test/providers/mailer-service.provider';
-import { closeTypeOrmConnections } from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
 
 import { UserService } from './user.service';
 import { ValidateAccountService } from './validate-account.service';
 
-describe('ValidateAccountService (TypeORM)', () => {
+describe('ValidateAccountService', () => {
   let module: TestingModule;
   let validateAccountService: ValidateAccountService;
   let mailerService: MailerService;
-  let adminUser: User;
+  let logger: LoggerService;
+  const adminUser = {
+    email: 'admin@admin.admin',
+    firstName: 'admin',
+  } satisfies Pick<User, 'email' | 'firstName'>;
+  const languageServiceMock = {
+    getDefaultLanguage: jest.fn().mockResolvedValue({ code: 'en' }),
+  };
+  const userServiceMock = {
+    updateOne: jest.fn(),
+  };
+  const loggerMock = {
+    warn: jest.fn(),
+  };
 
   beforeAll(async () => {
-    const testing = await buildTestingMocks({
-      autoInjectFrom: ['providers'],
+    module = await Test.createTestingModule({
       imports: [JwtModule.register({})],
       providers: [
         ValidateAccountService,
         MailerServiceProvider,
         I18nServiceProvider,
+        {
+          provide: LanguageService,
+          useValue: languageServiceMock,
+        },
+        {
+          provide: UserService,
+          useValue: userServiceMock,
+        },
+        {
+          provide: LoggerService,
+          useValue: loggerMock,
+        },
       ],
-      typeorm: {
-        fixtures: [
-          installLanguageFixturesTypeOrm,
-          installPermissionFixturesTypeOrm,
-        ],
-      },
-    });
+    }).compile();
 
-    module = testing.module;
-
-    [validateAccountService, mailerService] = await testing.getMocks([
-      ValidateAccountService,
-      MailerService,
-    ]);
-
-    const userService = await testing.getMocks([UserService]);
-    const foundUser = await (userService[0] as UserService).findOne({
-      where: { email: users[0].email },
-    });
-    if (!foundUser) {
-      throw new Error('Expected admin user fixture to be available');
-    }
-    adminUser = foundUser;
+    validateAccountService = module.get(ValidateAccountService);
+    mailerService = module.get(MailerService);
+    logger = module.get(LoggerService);
   });
 
   afterEach(jest.clearAllMocks);
@@ -66,7 +69,6 @@ describe('ValidateAccountService (TypeORM)', () => {
     if (module) {
       await module.close();
     }
-    await closeTypeOrmConnections();
   });
 
   describe('sendConfirmationEmail', () => {
@@ -87,10 +89,7 @@ describe('ValidateAccountService (TypeORM)', () => {
       jest
         .spyOn(mailerService, 'sendMail')
         .mockRejectedValueOnce(new Error('Email Service is not enabled'));
-      const warnSpy = jest.spyOn(
-        (validateAccountService as any).logger,
-        'warn',
-      );
+      const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(
         validateAccountService.sendConfirmationEmail({
