@@ -674,9 +674,7 @@
     "read_only": "Read only",
     "view": "View",
     "unknown": "Unknown",
-    "global_fallback": "Enable global fallback message?",
-    "latest_run": "Latest run",
-    "run_at": "Run {{0}}"
+    "global_fallback": "Enable global fallback message?"
   },
   "placeholder": {
     "username": "Username",
