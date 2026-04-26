@@ -28,14 +28,14 @@ Hexabot v3 is an automation platform with first-class AI capabilities, combining
 
 ### Prerequisites
 
-- Node.js `^20.18.1`
+- Node.js `^20.19.0`
 - One package manager (`npm`, `pnpm`, `yarn`, or `bun`)
 - Docker (optional, for Docker-based services)
 
 This Quick Start targets projects generated with the CLI.  
 If you are contributing to the Hexabot monorepo itself, use **PNPM** (see [CONTRIBUTING.md](./CONTRIBUTING.md)).
 
-### 1) Install the CLI (optional)
+### 1) Install the CLI
 
 ```bash
 npm install -g @hexabot-ai/cli

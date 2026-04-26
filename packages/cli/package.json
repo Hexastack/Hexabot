@@ -8,7 +8,7 @@
     "hexabot": "dist/index.js"
   },
   "engines": {
-    "node": ">=20.18.1"
+    "node": ">=20.19.0"
   },
   "scripts": {
     "build": "tsc",

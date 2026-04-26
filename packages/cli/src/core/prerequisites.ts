@@ -8,7 +8,7 @@ import { execSync } from 'child_process';
 
 import chalk from 'chalk';
 
-const REQUIRED_NODE_VERSION = '20.18.1';
+const REQUIRED_NODE_VERSION = '20.19.0';
 
 export interface PrerequisiteOptions {
   docker?: boolean;
@@ -51,7 +51,7 @@ export const checkNodeVersion = (
     return { ok: false, message };
   } catch (error) {
     const message =
-      "Node.js is not accessible or installed correctly. Install Node.js v20.18.1+ and ensure it's in your PATH.";
+      "Node.js is not accessible or installed correctly. Install Node.js v20.19.0+ and ensure it's in your PATH.";
 
     handleFailure(message, options, error);
 
