@@ -1,5 +1,7 @@
 name: running unit tests on pull request (v2)
 run-name: workflow ${{github.run_number}} of branch ${{github.head_ref}}
+permissions:
+  contents: read
 
 on:
   pull_request:
