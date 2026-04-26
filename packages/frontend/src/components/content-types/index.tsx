@@ -7,7 +7,7 @@
 import { Action } from "@hexabot-ai/types";
 import type { ContentType } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
-import { AlignLeft } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -104,7 +104,7 @@ export const ContentTypes = () => {
         },
       ]}
       columns={columns}
-      headerIcon={AlignLeft}
+      headerIcon={BookOpen}
       searchParams={{ $iLike: ["name"], syncUrl: true }}
       headerI18nTitle="title.entities"
     />

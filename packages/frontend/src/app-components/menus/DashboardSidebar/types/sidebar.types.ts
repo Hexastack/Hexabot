@@ -64,6 +64,7 @@ export interface DashboardSidebarPageItemProps {
   icon?: React.ReactNode;
   href?: string;
   action?: React.ReactNode;
+  tooltip?: Partial<TooltipProps>;
   defaultExpanded?: boolean;
   expanded?: boolean;
   selected?: boolean;

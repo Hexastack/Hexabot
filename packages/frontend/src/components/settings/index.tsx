@@ -39,7 +39,12 @@ import {
   resolveSettingsGroupTitle,
 } from "./settings.utils";
 
-const StyledFormContainer = styled("div")();
+const SETTINGS_NAV_WIDTH = 160;
+const StyledFormContainer = styled("div")(({ theme }) => ({
+  flex: "1 1 0",
+  minWidth: 0,
+  padding: theme.spacing(2, 3),
+}));
 const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
 const toGroupedSettings = (settings: Setting[]) => {
   return settings.reduce(
@@ -218,9 +223,12 @@ export const Settings = () => {
           <Grid sx={{ display: "flex", maxWidth: "md" }}>
             <Tabs
               orientation="vertical"
-              variant="scrollable"
               value={activeTab}
               onChange={handleChange}
+              sx={{
+                flex: `0 0 ${SETTINGS_NAV_WIDTH}px`,
+                width: SETTINGS_NAV_WIDTH,
+              }}
             >
               {groups.map((group, index) => (
                 <Tab
@@ -231,7 +239,7 @@ export const Settings = () => {
                 />
               ))}
             </Tabs>
-            <StyledFormContainer sx={{ width: "100%", px: 3, paddingY: 2 }}>
+            <StyledFormContainer>
               {groups.map((groupName) => {
                 const definition = schemas[groupName];
                 const schema = definition?.schema as RJSFSchema | undefined;

@@ -8,7 +8,7 @@ import { Action } from "@hexabot-ai/types";
 import type { Content } from "@hexabot-ai/types";
 import { Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { AlignLeft } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 import { BackButton } from "@/app-components/buttons/BackButton";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -193,7 +193,7 @@ export const Contents = () => {
         },
       ]}
       columns={columns}
-      headerIcon={AlignLeft}
+      headerIcon={BookOpen}
       searchParams={{
         $eq: [{ "contentType.id": query.id?.toString() }],
         $iLike: ["title"],

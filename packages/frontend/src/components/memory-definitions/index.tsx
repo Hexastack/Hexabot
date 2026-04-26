@@ -7,7 +7,7 @@
 import { Action } from "@hexabot-ai/types";
 import type { MemoryDefinition } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
-import { MemoryStick, Plus } from "lucide-react";
+import { BrainCircuit, Plus } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -139,7 +139,7 @@ export const MemoryDefinitions = () => {
         },
       ]}
       columns={columns}
-      headerIcon={MemoryStick}
+      headerIcon={BrainCircuit}
       searchParams={{ $or: ["name", "slug"], syncUrl: true }}
       headerI18nTitle="title.memory_definitions"
     />

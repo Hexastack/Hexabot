@@ -78,7 +78,7 @@ export const DASHBOARD_QUICK_ACTIONS = [
   },
   {
     id: "connect",
-    label: "menu.channel_sources",
+    label: "menu.channels",
     icon: Webhook,
     url: "/settings/sources",
     requires: [

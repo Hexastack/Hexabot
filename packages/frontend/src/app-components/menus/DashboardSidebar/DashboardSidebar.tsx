@@ -107,28 +107,54 @@ export const DashboardSidebar = ({
         .map((m) => m.href),
     [menu],
   );
-  const isSelected = (href: string) => {
-    if (href === location.pathname) {
-      return true;
-    } else if (
-      !links.includes(location.pathname) &&
-      location.pathname.startsWith(href) &&
-      href !== "/"
-    ) {
-      return true;
+  const isSelected = React.useCallback(
+    (href: string) => {
+      if (href === location.pathname) {
+        return true;
+      } else if (
+        !links.includes(location.pathname) &&
+        location.pathname.startsWith(href) &&
+        href !== "/"
+      ) {
+        return true;
+      }
+
+      return false;
+    },
+    [links, location.pathname],
+  );
+
+  React.useEffect(() => {
+    const activeParentItemIds = menu
+      .filter((item) =>
+        item.submenuItems?.some((sub) => sub.href && isSelected(sub.href)),
+      )
+      .map((item) => item.text);
+
+    if (activeParentItemIds.length === 0) {
+      return;
     }
 
-    return false;
-  };
+    setExpandedItemIds((prev) =>
+      activeParentItemIds.every((itemId) => prev.includes(itemId))
+        ? prev
+        : [...new Set([...prev, ...activeParentItemIds])],
+    );
+  }, [isSelected, menu]);
+
   const renderMenuItems = menu.map((item) => {
     if (item.submenuItems?.length && item.Icon) {
       return (
         <DashboardSidebarPageItem
           key={item.text}
           id={item.text}
-          title={expanded ? t(item.text) : ""}
+          title={t(item.text)}
           icon={<item.Icon />}
+          tooltip={item.tooltip}
           expanded={expandedItemIds.includes(item.text)}
+          selected={item.submenuItems.some(
+            (sub) => !!sub.href && isSelected(sub.href),
+          )}
           nestedNavigation={
             <List
               dense
@@ -147,6 +173,7 @@ export const DashboardSidebar = ({
                   title={t(sub.text)}
                   icon={sub.Icon && <sub.Icon />}
                   href={sub.href}
+                  tooltip={sub.tooltip}
                   selected={sub.href ? isSelected(sub.href) : false}
                 />
               ))}
@@ -162,6 +189,7 @@ export const DashboardSidebar = ({
           title={t(item.text)}
           icon={<item.Icon />}
           href={item.href}
+          tooltip={item.tooltip}
           selected={isSelected(item.href)}
         />
       );
