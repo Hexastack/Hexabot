@@ -36,9 +36,6 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     text: "menu.dashboard",
     href: "/",
     Icon: Home,
-    requires: {
-      [EntityType.STATS]: [Action.READ],
-    },
   },
   {
     text: "menu.visual_editor",

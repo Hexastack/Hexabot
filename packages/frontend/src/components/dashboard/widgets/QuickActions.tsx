@@ -7,14 +7,21 @@
 import { Box, Button, Stack, Typography, useTheme } from "@mui/material";
 
 import { useAppRouter } from "@/hooks/useAppRouter";
+import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
 
-import { mockQuickActions } from "../mockData";
+import { getVisibleQuickActions } from "../utils/permissions.util";
 
 export const QuickActions = () => {
   const router = useAppRouter();
   const theme = useTheme();
   const { t } = useTranslate();
+  const hasPermission = useHasPermission();
+  const visibleActions = getVisibleQuickActions(hasPermission);
+
+  if (!visibleActions.length) {
+    return null;
+  }
 
   return (
     <Box>
@@ -22,7 +29,7 @@ export const QuickActions = () => {
         {t("title.quick_actions")}
       </Typography>
       <Stack direction="row" gap={2} flexWrap="wrap">
-        {mockQuickActions.map(({ icon: Icon, id, url, label }) => (
+        {visibleActions.map(({ icon: Icon, id, url, label }) => (
           <Button
             key={id}
             variant="outlined"

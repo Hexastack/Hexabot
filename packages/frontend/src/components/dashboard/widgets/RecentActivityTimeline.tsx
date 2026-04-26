@@ -6,7 +6,7 @@
 
 import type { AuditLog } from "@hexabot-ai/types";
 import { Timeline } from "@mui/lab";
-import { Alert, Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { ScrollText } from "lucide-react";
 
@@ -21,6 +21,7 @@ import { EntityType } from "@/services/types";
 import { formatSmartDate } from "@/utils/date";
 
 import { DashboardTimelineItem } from "../components/DashboardTimelineItem";
+import { DashboardWidgetState } from "../components/DashboardWidgetState";
 import { IconContainer } from "../components/IconContainer";
 import { TitleWithActions } from "../components/TitleWithActions";
 
@@ -93,6 +94,7 @@ export const RecentActivityTimeline = () => {
     },
   );
   const locale = i18n.resolvedLanguage || i18n.language;
+  const isInitialLoading = isLoading && auditLogs.length === 0;
 
   return (
     <Timeline>
@@ -111,15 +113,29 @@ export const RecentActivityTimeline = () => {
       />
       <Box>
         {error ? (
-          <Alert severity="error">{t("dashboard.activity.error")}</Alert>
+          <DashboardWidgetState
+            tone="error"
+            title={t("dashboard.activity.error")}
+            description={t("dashboard.activity.error_description")}
+          />
         ) : null}
-        {isLoading || isFetching ? (
-          <Alert severity="info">{t("dashboard.activity.loading")}</Alert>
+        {isInitialLoading ? (
+          <DashboardWidgetState
+            loading
+            title={t("dashboard.activity.loading")}
+            description={t("dashboard.activity.loading_description")}
+          />
         ) : null}
-        {!error && !isLoading && !isFetching && auditLogs.length === 0 ? (
-          <Alert severity="info">{t("dashboard.activity.empty")}</Alert>
+        {!error &&
+        !isInitialLoading &&
+        !isFetching &&
+        auditLogs.length === 0 ? (
+          <DashboardWidgetState
+            title={t("dashboard.activity.empty")}
+            description={t("dashboard.activity.empty_description")}
+          />
         ) : null}
-        {!error && !isLoading && !isFetching
+        {!error && !isInitialLoading
           ? auditLogs.map((event) => {
               const statusMeta = getAuditStatusMeta(event.operationStatus);
               const IconType = statusMeta.icon;

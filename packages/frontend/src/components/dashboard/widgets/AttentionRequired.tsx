@@ -5,16 +5,7 @@
  */
 
 import type { WorkflowRunFull } from "@hexabot-ai/types";
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  Paper,
-  Skeleton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { CheckCircle, XCircle } from "lucide-react";
 
@@ -23,6 +14,7 @@ import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
 import { formatSmartDate } from "@/utils/date";
 
+import { DashboardWidgetState } from "../components/DashboardWidgetState";
 import { IconContainer } from "../components/IconContainer";
 import { TitleWithActions } from "../components/TitleWithActions";
 
@@ -34,32 +26,6 @@ const resolveEntityId = (
 
   return typeof value === "string" ? value : value.id;
 };
-const AttentionSkeleton = () => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 2,
-      borderRadius: 3,
-      border: "1px solid",
-      borderColor: "divider",
-      display: "flex",
-      alignItems: "center",
-      gap: 2,
-    }}
-  >
-    <Skeleton
-      variant="rounded"
-      width={44}
-      height={44}
-      sx={{ borderRadius: "16px", flexShrink: 0 }}
-    />
-    <Box flex={1}>
-      <Skeleton variant="text" width="70%" height={22} />
-      <Skeleton variant="text" width="45%" height={18} />
-    </Box>
-    <Skeleton variant="rounded" width={52} height={30} />
-  </Paper>
-);
 
 export const AttentionRequired = () => {
   const theme = useTheme();
@@ -117,11 +83,17 @@ export const AttentionRequired = () => {
       />
       <Stack gap={1.5} mt={1}>
         {isLoading ? (
-          Array.from({ length: FAILED_RUN_LIMIT }).map((_, index) => (
-            <AttentionSkeleton key={index} />
-          ))
+          <DashboardWidgetState
+            loading
+            title={t("dashboard.attention.loading")}
+            description={t("dashboard.attention.loading_description")}
+          />
         ) : isError ? (
-          <Alert severity="error">{t("dashboard.attention.error")}</Alert>
+          <DashboardWidgetState
+            tone="error"
+            title={t("dashboard.attention.error")}
+            description={t("dashboard.attention.error_description")}
+          />
         ) : failedRuns.length > 0 ? (
           failedRuns.map((run) => {
             const workflowName =
@@ -197,24 +169,12 @@ export const AttentionRequired = () => {
             );
           })
         ) : (
-          <Paper
-            elevation={0}
-            variant="spaced"
-            sx={{
-              border: `1px dashed ${alpha(theme.palette.success.main, 0.3)}`,
-              textAlign: "center",
-            }}
-          >
-            <Box color="success.main">
-              <CheckCircle size={32} />
-            </Box>
-            <Typography variant="subtitle1" fontWeight="bold">
-              {t("dashboard.attention.empty_title")}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t("dashboard.attention.empty_description")}
-            </Typography>
-          </Paper>
+          <DashboardWidgetState
+            tone="success"
+            icon={CheckCircle}
+            title={t("dashboard.attention.empty_title")}
+            description={t("dashboard.attention.empty_description")}
+          />
         )}
       </Stack>
     </Box>
