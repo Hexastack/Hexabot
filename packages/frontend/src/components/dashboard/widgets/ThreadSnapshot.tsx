@@ -5,14 +5,7 @@
  */
 
 import { StatsType } from "@hexabot-ai/types";
-import {
-  Alert,
-  Card,
-  CardContent,
-  CircularProgress,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Card, CardContent, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import {
   axisClasses,
@@ -28,6 +21,7 @@ import { useApiClientQuery } from "@/hooks/useApiClient";
 import { useTranslate } from "@/hooks/useTranslate";
 import type { TTranslationKeys } from "@/i18n/i18n.types";
 
+import { DashboardWidgetState } from "../components/DashboardWidgetState";
 import { TitleWithActions } from "../components/TitleWithActions";
 
 const SERIES_LABEL_KEYS = {
@@ -64,19 +58,17 @@ export const ThreadSnapshot = () => {
           }
         />
         {isLoading ? (
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            minHeight={320}
-            gap={2}
-          >
-            <CircularProgress size={24} />
-            <Typography variant="body2" color="text.secondary">
-              {t("dashboard.thread_snapshot.loading")}
-            </Typography>
-          </Stack>
+          <DashboardWidgetState
+            loading
+            title={t("dashboard.thread_snapshot.loading")}
+            description={t("dashboard.thread_snapshot.loading_description")}
+          />
         ) : isError ? (
-          <Alert severity="error">{t("dashboard.thread_snapshot.error")}</Alert>
+          <DashboardWidgetState
+            tone="error"
+            title={t("dashboard.thread_snapshot.error")}
+            description={t("dashboard.thread_snapshot.error_description")}
+          />
         ) : data && hasData ? (
           <BarChart
             title={t("dashboard.thread_snapshot.title")}
@@ -184,7 +176,10 @@ export const ThreadSnapshot = () => {
             }}
           />
         ) : (
-          <Alert severity="info">{t("dashboard.thread_snapshot.empty")}</Alert>
+          <DashboardWidgetState
+            title={t("dashboard.thread_snapshot.empty")}
+            description={t("dashboard.thread_snapshot.empty_description")}
+          />
         )}
       </CardContent>
     </Card>

@@ -328,7 +328,9 @@
       "title": "Attention Required",
       "range": "Last 24h",
       "loading": "Loading failed runs...",
+      "loading_description": "Checking recent workflow failures.",
       "error": "Unable to load failed workflow runs.",
+      "error_description": "Try opening workflow runs for more detail.",
       "empty_title": "All Systems Operational",
       "empty_description": "No failed workflow runs in the last 24 hours.",
       "failed_run_title": "Failed run: {{0}}",
@@ -341,8 +343,11 @@
       "range": "Last 7 days",
       "chart_description": "Bar chart of new threads and handoffs over the last 7 days.",
       "loading": "Loading thread stats...",
+      "loading_description": "Preparing the last seven days of conversation activity.",
       "error": "Unable to load thread stats.",
+      "error_description": "Conversation activity is temporarily unavailable.",
       "empty": "No thread activity to display",
+      "empty_description": "New conversations and handoffs will appear here once traffic starts.",
       "series": {
         "new_threads": "New Threads",
         "handoffs": "Handoffs"
@@ -352,8 +357,11 @@
       "title": "Integrations Health",
       "checked": "Checked: {{0}}",
       "loading": "Checking integrations...",
+      "loading_description": "Reading channel source health.",
       "error": "Unable to load integration health.",
+      "error_description": "Integration status is temporarily unavailable.",
       "empty": "No integrations to display",
+      "empty_description": "Connect a channel source to start monitoring integrations.",
       "status": {
         "healthy": "Healthy",
         "warning": "Action Required",
@@ -367,7 +375,33 @@
       "target": "Target",
       "loading": "Loading activity...",
       "error": "Unable to load activity.",
-      "empty": "No activity to display"
+      "empty": "No activity to display",
+      "loading_description": "Reading the latest audit events.",
+      "error_description": "Audit activity is temporarily unavailable.",
+      "empty_description": "Recent admin activity will appear here."
+    },
+    "empty": {
+      "title": "No dashboard widgets available",
+      "description": "Your current permissions do not include dashboard data yet."
+    },
+    "latest_workflows_state": {
+      "empty_title": "No workflows yet",
+      "empty_description": "Create a workflow to start seeing recent work here.",
+      "error_title": "Unable to load workflows",
+      "error_description": "Open the workflow editor to review available workflows."
+    },
+    "recent_runs_state": {
+      "loading_description": "Checking the latest workflow runs.",
+      "empty_description": "Workflow runs will appear here after a manual, scheduled, or conversational trigger.",
+      "error_title": "Unable to load recent runs",
+      "error_description": "Open workflow runs for the full execution history."
+    },
+    "schedules_state": {
+      "loading_title": "Loading scheduled workflows...",
+      "loading_description": "Checking workflows with schedules.",
+      "empty_description": "Scheduled workflows will appear here once they are configured.",
+      "error_title": "Unable to load scheduled workflows",
+      "error_description": "Open the workflow editor to review schedules."
     }
   },
   "label": {
