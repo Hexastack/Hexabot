@@ -12,7 +12,7 @@ run_checks() {
         echo "${BLUE}Running ${path} checks and tests...${NC}"
         cd ./${path} 
         pnpm typecheck
-        npx lint-staged
+        pnpm exec lint-staged
         if [ "$path" = "packages/api" ]; then
             pnpm test:half # Run API specific tests
         fi

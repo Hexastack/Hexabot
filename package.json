@@ -15,10 +15,9 @@
     "format": "turbo run format",
     "clean": "turbo run clean",
     "prepare": "husky",
-    "release:api:patch": "pnpm --filter @hexabot-ai/api version patch --git-tag-version false --commit-hooks false",
-    "release:api:minor": "pnpm --filter @hexabot-ai/api version minor --git-tag-version false --commit-hooks false",
-    "release:patch": "pnpm run release:api:patch && pnpm --filter \"@hexabot-ai/frontend\" version patch --git-tag-version false --commit-hooks false && pnpm --filter \"@hexabot-ai/widget\" version patch --git-tag-version false --commit-hooks false && pnpm --filter \"@hexabot-ai/cli\" version patch --git-tag-version false --commit-hooks false",
-    "release:minor": "pnpm run release:api:minor && pnpm --filter \"@hexabot-ai/frontend\" version minor --git-tag-version false --commit-hooks false && pnpm --filter \"@hexabot-ai/widget\" version minor --git-tag-version false --commit-hooks false && pnpm --filter \"@hexabot-ai/cli\" version minor --git-tag-version false --commit-hooks false",
+    "release:prepatch": "./bump-version.sh prepatch",
+    "release:preminor": "./bump-version.sh preminor",
+    "release:prerelease": "./bump-version.sh prerelease",
     "dev:api": "turbo run dev --filter=@hexabot-ai/api --filter=@hexabot-ai/agentic --filter=@hexabot-ai/types --parallel"
   },
   "devDependencies": {

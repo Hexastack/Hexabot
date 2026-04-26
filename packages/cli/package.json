@@ -17,8 +17,6 @@
     "dev": "tsx watch src/index.ts",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "prepare": "npm run build",
-    "release:patch": "npm version patch && git push origin main --tags",
-    "release:minor": "npm version minor && git push origin main --tags",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix"
   },

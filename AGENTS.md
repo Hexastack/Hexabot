@@ -64,5 +64,5 @@ Use workspace filters for package-scoped work:
   - `pnpm build`
 
 ## Release/versioning notes
-- Root release helpers include `bump-version.sh` and `bump-version-v3.sh`.
+- Root release helper: `bump-version.sh`.
 - Do not run release/version bump scripts unless the task explicitly requests a release operation.

@@ -6,9 +6,8 @@ This guide is for the current v3 development line.
 
 ## Branch and CI model
 
-- `dev` is the active v3 branch. Open v3 pull requests against `dev`.
-- `main` tracks the v2 stable/maintenance line.
-- v3 pull requests targeting `dev` trigger `.github/workflows/v3-dev-ci.yml`.
+- `main` is the active v3 branch. Open pull requests against `main`.
+- Pull requests targeting `main` trigger `.github/workflows/main-ci.yml`.
 - The CI gate runs: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`.
 
 ## Security vulnerabilities
@@ -61,10 +60,10 @@ Hexabot uses a PNPM workspace monorepo orchestrated by Turborepo.
 
 ## Contribution workflow
 
-1. Sync and branch from `dev`.
+1. Sync and branch from `main`.
 
 ```bash
-git checkout dev
+git checkout main
 git pull
 git checkout -b feat/short-description
 ```
@@ -101,7 +100,7 @@ Examples:
 - `feat(frontend): add workflow run timeline widget`
 - `docs: update v3 contribution guide`
 
-5. Open a pull request to `dev`.
+5. Open a pull request to `main`.
 - Fill the PR template.
 - Link related issues (for example: `Fixes #123`).
 - Include test evidence and screenshots/logs when relevant.
@@ -143,7 +142,7 @@ Read this section as an operational checklist.
 
 This section is a contributor summary, not legal advice. Always consult license files directly.
 
-### License map in this monorepo (v3/dev)
+### License map in this monorepo (v3/main)
 
 Root workspace and all current workspace packages (`api`, `frontend`, `widget`, `graph`, `agentic`, `types`, `cli`) declare `FCL-1.0-ALv2`.
 

@@ -1,67 +1,76 @@
 #!/bin/bash
 
-# Ensure script exits on any command failure
-set -e
+set -euo pipefail
 
-# Check if a release type argument is provided
-if [ -z "$1" ]; then
+if [ $# -ne 1 ]; then
   echo "Usage: $0 <release-type>"
-  echo "release-type: patch | minor"
+  echo "release-type: prepatch | preminor | prerelease"
   exit 1
 fi
 
 RELEASE_TYPE=$1
 ROOT_DIR=$(pwd)
 TARGET_BRANCH="main"
+PUBLISH_PACKAGES=("@hexabot-ai/agentic" "@hexabot-ai/types" "@hexabot-ai/api" "@hexabot-ai/cli" "@hexabot-ai/widget")
+BUMP_ONLY_PACKAGES=("@hexabot-ai/frontend")
+VERSION_PACKAGES=("${PUBLISH_PACKAGES[@]}" "${BUMP_ONLY_PACKAGES[@]}")
+ALLOWED_RELEASE_TYPES=("prepatch" "preminor" "prerelease")
 
-if [[ "$RELEASE_TYPE" != "patch" && "$RELEASE_TYPE" != "minor" ]]; then
-  echo "Invalid release type. Use 'patch' or 'minor'."
+if [[ ! " ${ALLOWED_RELEASE_TYPES[*]} " =~ " ${RELEASE_TYPE} " ]]; then
+  echo "Invalid release type. Use one of: ${ALLOWED_RELEASE_TYPES[*]}"
   exit 1
 fi
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]]; then
-  echo "This script must be executed from the '$TARGET_BRANCH' branch (current: $CURRENT_BRANCH)."
+  echo "This script must be executed from the '$TARGET_BRANCH' branch."
   exit 1
 fi
 
-echo "Executing release: $RELEASE_TYPE"
-
-# Execute the appropriate PNPM release command
-if [[ "$RELEASE_TYPE" == "patch" ]]; then
-  pnpm run release:patch
-elif [[ "$RELEASE_TYPE" == "minor" ]]; then
-  pnpm run release:minor
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "Working tree is dirty. Commit or stash your changes before releasing."
+  exit 1
 fi
 
-# Retrieve the new version from package.json
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "pnpm is required but not found on PATH."
+  exit 1
+fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "jq is required but not found on PATH."
+  exit 1
+fi
+
+echo "Executing v3 alpha release: $RELEASE_TYPE"
+
+for pkg in "${VERSION_PACKAGES[@]}"; do
+  echo "Bumping $pkg to next $RELEASE_TYPE (alpha)..."
+  pnpm --filter "$pkg" exec npm version "$RELEASE_TYPE" --preid alpha --git-tag-version false --commit-hooks false >/dev/null
+done
+
 NEW_VERSION=$(jq -r '.version' "$ROOT_DIR/packages/api/package.json")
 
-if [ -z "$NEW_VERSION" ]; then
-  echo "Failed to retrieve the version from packages/api/package.json."
+if [[ -z "$NEW_VERSION" ]]; then
+  echo "Failed to retrieve the new version from packages/api/package.json."
   exit 1
 fi
 
-# Function to update version in a package.json
 update_version() {
   local file=$1
   echo "Updating version in $file to $NEW_VERSION"
   jq --arg newVersion "$NEW_VERSION" '.version = $newVersion' "$file" > tmp.$$.json && mv tmp.$$.json "$file"
 }
 
-# Update root package.json
 if [[ -f "$ROOT_DIR/package.json" ]]; then
   update_version "$ROOT_DIR/package.json"
 fi
 
-# Commit and push changes
-echo "Committing and pushing changes..."
+echo "Committing and tagging release..."
 git add .
-git commit -m "build: v$NEW_VERSION"
-
-# Add git tag
-echo "Tagging version v$NEW_VERSION"
+git commit -m "build(v3): v$NEW_VERSION"
 git tag "v$NEW_VERSION"
-git push --no-verify origin main --tags
+git push --no-verify origin "$TARGET_BRANCH" --tags
 
-echo "Release ($RELEASE_TYPE) completed successfully."
+echo "Version bump completed for v3 alpha ($NEW_VERSION)."
+echo "GitHub Actions will publish the packages once the tag is pushed."
