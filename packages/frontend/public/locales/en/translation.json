@@ -324,6 +324,18 @@
     },
     "latest_workflows": "Latest",
     "upcoming_schedules": "Upcoming",
+    "attention": {
+      "title": "Attention Required",
+      "range": "Last 24h",
+      "loading": "Loading failed runs...",
+      "error": "Unable to load failed workflow runs.",
+      "empty_title": "All Systems Operational",
+      "empty_description": "No failed workflow runs in the last 24 hours.",
+      "failed_run_title": "Failed run: {{0}}",
+      "no_error_details": "No error details available",
+      "failed_at_unknown": "Failure time unavailable",
+      "view_more": "View {{0}} more"
+    },
     "thread_snapshot": {
       "title": "Thread Snapshot",
       "range": "Last 7 days",

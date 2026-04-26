@@ -324,6 +324,18 @@
     },
     "latest_workflows": "Récents",
     "upcoming_schedules": "À venir",
+    "attention": {
+      "title": "Attention requise",
+      "range": "Dernières 24 h",
+      "loading": "Chargement des exécutions en échec...",
+      "error": "Impossible de charger les exécutions de workflow en échec.",
+      "empty_title": "Tous les systèmes sont opérationnels",
+      "empty_description": "Aucune exécution de workflow en échec au cours des dernières 24 heures.",
+      "failed_run_title": "Exécution échouée : {{0}}",
+      "no_error_details": "Aucun détail d'erreur disponible",
+      "failed_at_unknown": "Heure d'échec indisponible",
+      "view_more": "Voir {{0}} de plus"
+    },
     "thread_snapshot": {
       "title": "Aperçu des discussions",
       "range": "7 derniers jours",

@@ -37,30 +37,3 @@ export const mockQuickActions: TQuickAction[] = [
     url: "/workflow/runs?status=failed",
   },
 ];
-
-export const mockAttentionItems = [
-  {
-    id: 1,
-    type: "failed_run",
-    title: "Failed run: Onboarding Flow",
-    time: "10m ago",
-    severity: "error",
-    action: "View run",
-  },
-  {
-    id: 2,
-    type: "disconnected",
-    title: "WhatsApp disconnected",
-    time: "2h ago",
-    severity: "critical",
-    action: "Reconnect",
-  },
-  {
-    id: 3,
-    type: "schedule_missed",
-    title: "Daily Report missed",
-    time: "5h ago",
-    severity: "warning",
-    action: "Check schedule",
-  },
-];

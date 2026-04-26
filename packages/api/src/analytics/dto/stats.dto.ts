@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { statsFullSchema, statsSchema } from '@hexabot-ai/types';
+import {
+  statsFullSchema,
+  statsSchema,
+  type WorkflowRunFull,
+} from '@hexabot-ai/types';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -109,4 +113,9 @@ export type StatsThreadSnapshotSeriesDto = {
 export type StatsThreadSnapshotDto = {
   xAxis: string[];
   series: [StatsThreadSnapshotSeriesDto, StatsThreadSnapshotSeriesDto];
+};
+
+export type StatsFailedWorkflowRunsDto = {
+  total: number;
+  runs: WorkflowRunFull[];
 };

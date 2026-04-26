@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { StatsType } from "@hexabot-ai/types";
+import { StatsType, type WorkflowRunFull } from "@hexabot-ai/types";
 
 export type StatsSummary = {
   totalWorkflows: number;
@@ -26,4 +26,9 @@ export type ThreadSnapshot = {
 export type ThreadSnapshotQuery = {
   from?: Date | string;
   to?: Date | string;
+};
+
+export type FailedWorkflowRunsLast24h = {
+  total: number;
+  runs: WorkflowRunFull[];
 };

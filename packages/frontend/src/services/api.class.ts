@@ -24,6 +24,7 @@ import {
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
 import { ISettingSchemasMap } from "@/types/setting.types";
 import {
+  FailedWorkflowRunsLast24h,
   StatsSummary,
   ThreadSnapshot,
   ThreadSnapshotQuery,
@@ -68,6 +69,7 @@ export const ROUTES = {
   CONTENT_IMPORT: "/content/import",
   STATS_SUMMARY: "/stats/summary",
   STATS_THREAD_SNAPSHOT: "/stats/thread-snapshot",
+  STATS_FAILED_WORKFLOW_RUNS: "/stats/failed-workflow-runs",
   WORKFLOW_PUBLISH: "/workflow/:id/publish",
   WORKFLOW_UNPUBLISH: "/workflow/:id/unpublish",
   WORKFLOW_BINDINGS: "/workflow/bindings",
@@ -235,6 +237,15 @@ export class ApiClient extends TranslatableMethods {
     const { data } = await this.request.get<ThreadSnapshot>(
       ROUTES.STATS_THREAD_SNAPSHOT,
       { params },
+    );
+
+    return data;
+  }
+
+  async getFailedWorkflowRunsLast24h(limit = 3) {
+    const { data } = await this.request.get<FailedWorkflowRunsLast24h>(
+      ROUTES.STATS_FAILED_WORKFLOW_RUNS,
+      { params: { limit } },
     );
 
     return data;

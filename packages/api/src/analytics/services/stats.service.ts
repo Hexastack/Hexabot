@@ -18,7 +18,11 @@ import { InsertEntityEvent } from '@/utils/types/entity-event.types';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 
-import { StatsSummaryDto, StatsThreadSnapshotDto } from '../dto/stats.dto';
+import {
+  StatsFailedWorkflowRunsDto,
+  StatsSummaryDto,
+  StatsThreadSnapshotDto,
+} from '../dto/stats.dto';
 import { StatsOrmEntity, StatsType } from '../entities/stats.entity';
 import { StatsRepository } from '../repositories/stats.repository';
 
@@ -47,6 +51,12 @@ const formatDayKey = (date: Date): string => {
   const day = `${date.getDate()}`.padStart(2, '0');
 
   return `${year}-${month}-${day}`;
+};
+const getLast24hRange = (): { since: Date; now: Date } => {
+  const now = new Date();
+  const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  return { since, now };
 };
 
 @Injectable()
@@ -135,8 +145,7 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
   }
 
   async getSummary(): Promise<StatsSummaryDto> {
-    const now = new Date();
-    const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const { since, now } = getLast24hRange();
     const [
       totalWorkflows,
       totalRunsLast24h,
@@ -168,6 +177,24 @@ export class StatsService extends BaseOrmService<StatsOrmEntity> {
       successRateLast24h,
       totalMessagesLast24h,
     };
+  }
+
+  async getFailedWorkflowRunsLast24h(
+    limit = 3,
+  ): Promise<StatsFailedWorkflowRunsDto> {
+    const { since, now } = getLast24hRange();
+    const take = Math.max(1, limit);
+    const where = { status: 'failed' as const, failedAt: Between(since, now) };
+    const [total, runs] = await Promise.all([
+      this.workflowRunService.count({ where }),
+      this.workflowRunService.findAndPopulate({
+        where,
+        order: { failedAt: 'DESC', createdAt: 'DESC' },
+        take,
+      }),
+    ]);
+
+    return { total, runs };
   }
 
   /**

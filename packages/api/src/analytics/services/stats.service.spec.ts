@@ -32,7 +32,8 @@ describe('StatsService', () => {
   } as jest.Mocked<Pick<WorkflowService, 'count'>>;
   const workflowRunService = {
     count: jest.fn(),
-  } as jest.Mocked<Pick<WorkflowRunService, 'count'>>;
+    findAndPopulate: jest.fn(),
+  } as jest.Mocked<Pick<WorkflowRunService, 'count' | 'findAndPopulate'>>;
   const messageService = {
     count: jest.fn(),
   } as jest.Mocked<Pick<MessageService, 'count'>>;
@@ -288,6 +289,45 @@ describe('StatsService', () => {
       expect(workflowService.count).toHaveBeenCalledTimes(1);
       expect(workflowRunService.count).toHaveBeenCalledTimes(3);
       expect(messageService.count).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('getFailedWorkflowRunsLast24h', () => {
+    it('should return total and latest failed workflow runs from the last 24 hours', async () => {
+      const now = new Date('2026-01-02T12:00:00.000Z');
+      const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const runs = [{ id: 'run-1' }, { id: 'run-2' }] as any;
+
+      jest.useFakeTimers();
+      jest.setSystemTime(now);
+      workflowRunService.count.mockResolvedValue(5);
+      workflowRunService.findAndPopulate.mockResolvedValue(runs);
+
+      try {
+        const result = await statsService.getFailedWorkflowRunsLast24h(3);
+
+        expect(result).toEqual({ total: 5, runs });
+        expect(workflowRunService.count).toHaveBeenCalledTimes(1);
+        expect(workflowRunService.findAndPopulate).toHaveBeenCalledTimes(1);
+
+        const countOptions = workflowRunService.count.mock.calls[0][0] as any;
+        const findOptions = workflowRunService.findAndPopulate.mock
+          .calls[0][0] as any;
+
+        expect(countOptions.where.status).toBe('failed');
+        expect(countOptions.where.failedAt.type).toBe('between');
+        expect(countOptions.where.failedAt.value).toEqual([since, now]);
+        expect(findOptions.where.status).toBe('failed');
+        expect(findOptions.where.failedAt.type).toBe('between');
+        expect(findOptions.where.failedAt.value).toEqual([since, now]);
+        expect(findOptions.order).toEqual({
+          failedAt: 'DESC',
+          createdAt: 'DESC',
+        });
+        expect(findOptions.take).toBe(3);
+      } finally {
+        jest.useRealTimers();
+      }
     });
   });
 });

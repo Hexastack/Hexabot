@@ -4,13 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Controller, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  DefaultValuePipe,
+  Get,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 
 import {
   StatsFindDatumDto,
   StatsFindDto,
+  StatsFailedWorkflowRunsDto,
   StatsSummaryDto,
   StatsThreadSnapshotDto,
 } from '../dto/stats.dto';
@@ -113,5 +120,18 @@ export class StatsController extends BaseOrmController<StatsOrmEntity> {
   @Get('summary')
   async summary(): Promise<StatsSummaryDto> {
     return await this.statsService.getSummary();
+  }
+
+  /**
+   * Retrieves failed workflow runs from the last 24 hours.
+   *
+   * @param limit - Maximum number of recent failed runs to return.
+   * @returns A promise that resolves to total failed runs and latest records.
+   */
+  @Get('failed-workflow-runs')
+  async failedWorkflowRuns(
+    @Query('limit', new DefaultValuePipe(3), ParseIntPipe) limit = 3,
+  ): Promise<StatsFailedWorkflowRunsDto> {
+    return await this.statsService.getFailedWorkflowRunsLast24h(limit);
   }
 }
