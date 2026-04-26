@@ -7,7 +7,7 @@
 import { Action } from "@hexabot-ai/types";
 import type { Role } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
-import { Accessibility } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import {
@@ -117,7 +117,7 @@ export const Roles = () => {
         },
       ]}
       columns={columns}
-      headerIcon={Accessibility}
+      headerIcon={ShieldCheck}
       searchParams={{
         $iLike: ["name"],
         syncUrl: true,

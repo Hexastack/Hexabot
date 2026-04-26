@@ -6,7 +6,7 @@
 
 import { Action } from "@hexabot-ai/types";
 import { GridColDef } from "@mui/x-data-grid";
-import { UserCircle } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { useMemo } from "react";
 
 import { Avatar } from "@/app-components/displays/Avatar";
@@ -150,7 +150,7 @@ export const Subscribers = () => {
     <GenericDataGrid
       entity={EntityType.SUBSCRIBER}
       columns={columns}
-      headerIcon={UserCircle}
+      headerIcon={UserRound}
       searchParams={{
         $eq: id ? [{ labels: [{ id }] }] : [],
         $or: ["firstName", "lastName"],

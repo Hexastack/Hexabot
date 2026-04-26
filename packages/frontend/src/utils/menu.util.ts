@@ -7,25 +7,27 @@
 import { Action } from "@hexabot-ai/types";
 import {
   Activity,
-  AlignLeft,
-  Database,
+  BookOpen,
+  BrainCircuit,
   Flag,
-  FolderUp,
+  GitBranch,
   Home,
+  Images,
   KeyRound,
   Languages,
-  LayoutGrid,
-  MemoryStick,
+  Library,
   Menu,
   MessagesSquare,
   Plug,
+  PlugZap,
   ScrollText,
   Settings,
-  Shield,
+  ShieldCheck,
   Tag,
-  UserCircle,
+  UserRound,
   Users,
   Webhook,
+  Workflow,
 } from "lucide-react";
 
 import { TMenu } from "@/app-components/menus/DashboardSidebar/types/sidebar.types";
@@ -38,38 +40,6 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     Icon: Home,
   },
   {
-    text: "menu.visual_editor",
-    href: "/workflow-editor",
-    Icon: LayoutGrid,
-    requires: {
-      [EntityType.WORKFLOW]: [Action.READ],
-    },
-  },
-  {
-    text: "menu.memory_definitions",
-    href: "/workflow/memory-definitions",
-    Icon: MemoryStick,
-    requires: {
-      [EntityType.MEMORY_DEFINITION]: [Action.READ],
-    },
-  },
-  {
-    text: "menu.workflow_runs",
-    href: "/workflow/runs",
-    Icon: Activity,
-    requires: {
-      [EntityType.WORKFLOW_RUN]: [Action.READ],
-    },
-  },
-  {
-    text: "menu.mcp_servers",
-    href: "/workflow/mcp-servers",
-    Icon: Plug,
-    requires: {
-      [EntityType.MCP_SERVER]: [Action.READ],
-    },
-  },
-  {
     text: "menu.inbox",
     href: "/inbox/threads",
     Icon: MessagesSquare,
@@ -78,9 +48,47 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     },
   },
   {
-    text: "menu.manage_content",
-    Icon: Database,
+    text: "menu.workflows",
+    Icon: GitBranch,
     submenuItems: [
+      {
+        text: "menu.workflow_builder",
+        href: "/workflow-editor",
+        Icon: Workflow,
+        requires: {
+          [EntityType.WORKFLOW]: [Action.READ],
+        },
+      },
+      {
+        text: "menu.runs",
+        href: "/workflow/runs",
+        Icon: Activity,
+        requires: {
+          [EntityType.WORKFLOW_RUN]: [Action.READ],
+        },
+      },
+      {
+        text: "menu.memory",
+        href: "/workflow/memory-definitions",
+        Icon: BrainCircuit,
+        requires: {
+          [EntityType.MEMORY_DEFINITION]: [Action.READ],
+        },
+      },
+    ],
+  },
+  {
+    text: "menu.content",
+    Icon: Library,
+    submenuItems: [
+      {
+        text: "menu.content_types",
+        href: "/content-types",
+        Icon: BookOpen,
+        requires: {
+          [EntityType.CONTENT_TYPE]: [Action.READ],
+        },
+      },
       {
         text: "menu.persistent_menu",
         href: "/content/persistent-menu",
@@ -90,17 +98,9 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
         },
       },
       {
-        text: "menu.cms",
-        href: "/content-types",
-        Icon: AlignLeft,
-        requires: {
-          [EntityType.CONTENT_TYPE]: [Action.READ],
-        },
-      },
-      {
         text: "menu.media_library",
         href: "/content/media-library",
-        Icon: FolderUp,
+        Icon: Images,
         requires: {
           [EntityType.ATTACHMENT]: [Action.READ],
         },
@@ -108,13 +108,13 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     ],
   },
   {
-    text: "menu.manage_subscribers",
-    Icon: UserCircle,
+    text: "menu.audience",
+    Icon: UserRound,
     submenuItems: [
       {
         text: "menu.subscribers",
         href: "/subscribers",
-        Icon: UserCircle,
+        Icon: UserRound,
         requires: {
           [EntityType.SUBSCRIBER]: [Action.READ],
         },
@@ -136,11 +136,38 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
     ],
   },
   {
-    text: "menu.admin",
+    text: "menu.integrations",
+    Icon: Plug,
+    submenuItems: [
+      {
+        text: "menu.channels",
+        href: "/settings/sources",
+        Icon: Webhook,
+        requires: {
+          [EntityType.SOURCE]: [Action.READ],
+        },
+      },
+      {
+        text: "menu.mcp_servers",
+        href: "/workflow/mcp-servers",
+        Icon: PlugZap,
+        requires: {
+          [EntityType.MCP_SERVER]: [Action.READ],
+        },
+      },
+      {
+        text: "menu.credentials",
+        href: "/credentials",
+        Icon: KeyRound,
+        requires: {
+          [EntityType.CREDENTIAL]: [Action.READ],
+        },
+      },
+    ],
   },
   {
-    text: "menu.manage_users",
-    Icon: Users,
+    text: "menu.administration",
+    Icon: ShieldCheck,
     submenuItems: [
       {
         text: "menu.users",
@@ -155,35 +182,13 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
             {
               text: "menu.roles",
               href: "/roles",
-              Icon: Shield,
+              Icon: ShieldCheck,
               requires: {
                 [EntityType.ROLE]: [Action.READ],
               },
             } satisfies TMenu,
           ]
         : []),
-      {
-        text: "menu.credentials",
-        href: "/credentials",
-        Icon: KeyRound,
-        requires: {
-          [EntityType.CREDENTIAL]: [Action.READ],
-        },
-      },
-      {
-        text: "menu.audit_trail",
-        href: "/audit",
-        Icon: ScrollText,
-        requires: {
-          [EntityType.AUDIT_LOG]: [Action.READ],
-        },
-      },
-    ],
-  },
-  {
-    text: "menu.manage_localization",
-    Icon: Languages,
-    submenuItems: [
       {
         text: "menu.languages",
         href: "/localization/languages",
@@ -200,22 +205,22 @@ export const getMenuItems = (ssoEnabled: boolean): TMenu[] => [
           [EntityType.TRANSLATION]: [Action.READ],
         },
       },
+      {
+        text: "menu.audit_trail",
+        href: "/audit",
+        Icon: ScrollText,
+        requires: {
+          [EntityType.AUDIT_LOG]: [Action.READ],
+        },
+      },
+      {
+        text: "menu.settings",
+        href: "/settings",
+        Icon: Settings,
+        requires: {
+          [EntityType.SETTING]: [Action.READ, Action.UPDATE],
+        },
+      },
     ],
-  },
-  {
-    text: "menu.channel_sources",
-    href: "/settings/sources",
-    Icon: Webhook,
-    requires: {
-      [EntityType.SOURCE]: [Action.READ],
-    },
-  },
-  {
-    text: "menu.settings",
-    href: "/settings",
-    Icon: Settings,
-    requires: {
-      [EntityType.SETTING]: [Action.READ, Action.UPDATE],
-    },
   },
 ];

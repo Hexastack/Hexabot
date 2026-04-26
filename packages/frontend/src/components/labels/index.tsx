@@ -6,7 +6,7 @@
 
 import { Action, Label } from "@hexabot-ai/types";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { Tags } from "lucide-react";
+import { Tag } from "lucide-react";
 import { useState } from "react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -161,7 +161,7 @@ export const Labels = () => {
         },
       ]}
       columns={columns}
-      headerIcon={Tags}
+      headerIcon={Tag}
       searchParams={{ $or: ["name", "title"], syncUrl: true }}
       headerI18nTitle="title.labels"
       selectionChangeHandler={handleSelectionChange}

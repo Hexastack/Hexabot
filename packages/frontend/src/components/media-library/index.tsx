@@ -7,7 +7,7 @@
 import { AttachmentResourceRef, type Attachment } from "@hexabot-ai/types";
 import { Box } from "@mui/material";
 import { GridColDef, GridEventListener } from "@mui/x-data-grid";
-import { FolderUp } from "lucide-react";
+import { Images } from "lucide-react";
 
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
 import { GenericDataGrid } from "@/app-components/tables/GenericDataGrid";
@@ -99,7 +99,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
     <GenericDataGrid
       entity={EntityType.ATTACHMENT}
       columns={columns}
-      headerIcon={FolderUp}
+      headerIcon={Images}
       searchParams={{
         $iLike: ["name"],
         syncUrl: !onSelect, // Sync URL only in the media library page (not the modal)

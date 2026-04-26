@@ -13,9 +13,9 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Paper from "@mui/material/Paper";
-import { type Theme, SxProps } from "@mui/material/styles";
+import { type Theme, SxProps, useTheme } from "@mui/material/styles";
 import type {} from "@mui/material/themeCssVarsAugmentation";
-import Typography from "@mui/material/Typography";
+import Tooltip from "@mui/material/Tooltip";
 import * as React from "react";
 import { Link } from "react-router-dom";
 
@@ -30,12 +30,14 @@ export const DashboardSidebarPageItem = ({
   icon,
   href,
   action,
+  tooltip,
   defaultExpanded = false,
   expanded = defaultExpanded,
   selected = false,
   disabled = false,
   nestedNavigation,
 }: DashboardSidebarPageItemProps) => {
+  const theme = useTheme();
   const { onPageItemClick, mini, fullyExpanded, fullyCollapsed } =
     useDashboardSidebar();
   const [isHovered, setIsHovered] = React.useState(false);
@@ -45,8 +47,22 @@ export const DashboardSidebarPageItem = ({
     "",
   )}`;
   const isExternal = href?.startsWith("http");
-  const LinkComp = isExternal ? "a" : Link;
   const handleClick = () => onPageItemClick?.(id, hasSub);
+  const linkProps = !hasSub
+    ? isExternal
+      ? {
+          component: "a" as const,
+          href,
+          target: "_blank",
+          rel: "noopener",
+        }
+      : {
+          component: Link,
+          to: href,
+        }
+    : {};
+  const tooltipTitle = mini && title ? title : "";
+  const selectedColor = selected ? theme.palette.primary.main : "currentColor";
   const arrowSx: SxProps<Theme> =
     mini && fullyCollapsed
       ? {
@@ -55,6 +71,9 @@ export const DashboardSidebarPageItem = ({
           right: 0,
           transform: "translateY(-25%) rotate(-90deg)",
           fontSize: 18,
+          color: selectedColor,
+          fill: "currentColor",
+          "&&": { color: selectedColor },
         }
       : !mini && fullyExpanded
         ? {
@@ -62,8 +81,70 @@ export const DashboardSidebarPageItem = ({
             fontSize: 20,
             transform: `rotate(${expanded ? 0 : -90}deg)`,
             transition: "transform 0.1s",
+            color: selectedColor,
+            fill: "currentColor",
+            "&&": { color: selectedColor },
           }
         : { display: "none" };
+  const itemButton = (
+    <ListItemButton
+      selected={selected}
+      disabled={disabled}
+      onClick={handleClick}
+      aria-label={title}
+      aria-current={selected && !hasSub ? "page" : undefined}
+      aria-expanded={hasSub ? expanded : undefined}
+      {...linkProps}
+      sx={{
+        height: mini ? 50 : "auto",
+        justifyContent: "center",
+        color: selectedColor,
+        "&.Mui-selected .DashboardSidebarPageItem-chevron": {
+          color: selectedColor,
+        },
+      }}
+    >
+      {(icon || mini) && (
+        <Box
+          sx={{
+            position: mini ? "relative" : "initial",
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              width: ICON_WIDTH,
+              color: selectedColor,
+            }}
+          >
+            {icon}
+          </ListItemIcon>
+        </Box>
+      )}
+
+      {!mini && (
+        <ListItemText
+          primary={title}
+          sx={{
+            whiteSpace: "nowrap",
+            zIndex: 1,
+            color: selectedColor,
+          }}
+        />
+      )}
+
+      {action && !mini && fullyExpanded && action}
+      {hasSub && (
+        <ExpandMoreIcon
+          className="DashboardSidebarPageItem-chevron"
+          htmlColor={selected ? selectedColor : undefined}
+          style={selected ? { color: selectedColor } : undefined}
+          sx={arrowSx}
+        />
+      )}
+    </ListItemButton>
+  );
 
   return (
     <>
@@ -75,69 +156,32 @@ export const DashboardSidebarPageItem = ({
         disablePadding
         onMouseEnter={() => hasSub && mini && setIsHovered(true)}
         onMouseLeave={() => hasSub && mini && setIsHovered(false)}
+        onFocus={() => hasSub && mini && setIsHovered(true)}
+        onBlur={(event) => {
+          if (
+            hasSub &&
+            mini &&
+            !event.currentTarget.contains(event.relatedTarget as Node | null)
+          ) {
+            setIsHovered(false);
+          }
+        }}
       >
-        <ListItemButton
-          selected={selected}
-          disabled={disabled}
-          onClick={handleClick}
-          {...(!hasSub && {
-            component: LinkComp,
-            to: href,
-            ...(isExternal && { target: "_blank", rel: "noopener" }),
-          })}
-          sx={{
-            height: mini ? 50 : "auto",
-            justifyContent: "center",
-          }}
-        >
-          {(icon || mini) && (
-            <Box
-              sx={{
-                position: mini ? "relative" : "initial",
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  width: ICON_WIDTH,
-                  color: selected ? "primary.main" : "currentColor",
-                }}
-              >
-                {icon}
-              </ListItemIcon>
-              {mini && expanded && (
-                <Typography
-                  variant="caption"
-                  sx={{
-                    position: "absolute",
-                    bottom: -18,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    fontSize: 10,
-                    fontWeight: 500,
-                  }}
-                >
-                  {title}
-                </Typography>
-              )}
+        {tooltipTitle ? (
+          <Tooltip
+            title={tooltipTitle}
+            placement="right"
+            enterDelay={700}
+            disableInteractive
+            {...tooltip}
+          >
+            <Box component="span" sx={{ display: "block", width: "100%" }}>
+              {itemButton}
             </Box>
-          )}
-
-          {!mini && (
-            <ListItemText
-              primary={title}
-              sx={{
-                whiteSpace: "nowrap",
-                zIndex: 1,
-                color: selected ? "primary.main" : "currentColor",
-              }}
-            />
-          )}
-
-          {action && !mini && fullyExpanded && action}
-          {hasSub && <ExpandMoreIcon sx={arrowSx} />}
-        </ListItemButton>
+          </Tooltip>
+        ) : (
+          itemButton
+        )}
 
         {hasSub && mini && (
           <Grow in={isHovered}>
