@@ -6,17 +6,17 @@ icon: bolt
 
 Actions, tasks, and steps are related, but they are not the same thing.
 
-| Concept | Where you see it                          | What it means                                                                                                                                           |
-| ------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Action  | Action drawer and `defs.<task_id>.action` | A registered operation Hexabot can run, such as sending a message, calling an AI model, reading memory, updating a subscriber, or making a web request. |
-| Task    | `defs.<task_id>`                          | A named configuration of one action. It supplies inputs, settings, and optional bindings for that action.                                               |
-| Step    | `flow`                                    | An item in the execution plan. A step can run a task with `do`, or it can control execution with a conditional, parallel block, or loop.                |
+<table><thead><tr><th width="128.27203369140625">Concept</th><th width="234.94818115234375">Where you see it</th><th>What it means</th></tr></thead><tbody><tr><td>Action</td><td>Action drawer and <code>defs.&#x3C;task_id>.action</code></td><td>A registered operation Hexabot can run, such as sending a message, calling an AI model, reading memory, updating a subscriber, or making a web request.</td></tr><tr><td>Task</td><td><code>defs.&#x3C;task_id></code></td><td>A named configuration of one action. It supplies inputs, settings, and optional bindings for that action.</td></tr><tr><td>Step</td><td><code>flow</code></td><td>An item in the execution plan. A step can run a task with <code>do</code>, or it can control execution with a conditional, parallel block, or loop.</td></tr></tbody></table>
 
 In normal editor use, you select an action from the drawer. Hexabot creates a task definition for that action, then inserts a step that runs the task.
+
+<figure><img src="../.gitbook/assets/image (43).png" alt=""><figcaption></figcaption></figure>
 
 ### The Basic Pattern
 
 A simple workflow has one task in `defs` and one matching step in `flow`:
+
+<figure><img src="../.gitbook/assets/image (45).png" alt=""><figcaption></figcaption></figure>
 
 ```yaml
 defs:
