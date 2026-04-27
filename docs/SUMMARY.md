@@ -28,6 +28,7 @@
 * [Memory](memory.md)
 * [Content](content/README.md)
   * [Content Types](content/content-types.md)
+  * [Contents](content/contents.md)
   * [Manage Persistent Menu](content/manage-persistent-menu.md)
   * [Media Library](content/media-library.md)
 * [Subscribers](subscribers.md)
