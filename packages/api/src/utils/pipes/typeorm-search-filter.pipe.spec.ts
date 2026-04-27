@@ -89,6 +89,36 @@ describe('TypeOrmSearchFilterPipe', () => {
     },
   );
 
+  it.each(['__proto__', 'constructor', 'prototype'])(
+    'should block prototype-polluting key "%s" in parseSort',
+    async (forbidden) => {
+      const result = await pipe.transform(
+        {
+          where: {},
+          sort: `${forbidden}.polluted asc`,
+        } as any,
+        {} as any,
+      );
+
+      expect(result.order).toEqual({ createdAt: 'DESC' });
+      expect(({} as any).polluted).toBeUndefined();
+    },
+  );
+
+  it.each(['__proto__', 'constructor', 'prototype'])(
+    'should block prototype-polluting key "%s" in mergeWhereObjects',
+    (forbidden) => {
+      const left = {} as any;
+      const right = { [forbidden]: 'malicious' } as any;
+      (pipe as any).mergeWhereObjects(left, right);
+
+      expect(Object.prototype.hasOwnProperty.call(left, forbidden)).toBe(
+        false,
+      );
+      expect(({} as any).malicious).toBeUndefined();
+    },
+  );
+
   it('should parse sort parameter and fallback to default sort', async () => {
     const withSort = await pipe.transform(
       {

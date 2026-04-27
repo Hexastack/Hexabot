@@ -9,6 +9,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import camelCase from 'lodash/camelCase';
 import set from 'lodash/set';
+
+import { hasForbiddenSegment } from '../helpers/safe-property-path';
 import {
   DataSource,
   DeepPartial,
@@ -330,7 +332,9 @@ export abstract class BaseOrmRepository<
         ) as Record<string, unknown>;
         const target = entity as Record<string, unknown>;
         for (const [path, value] of Object.entries(flattenedUpdates)) {
-          set(target, path, value);
+          if (!hasForbiddenSegment(path)) {
+            set(target, path, value);
+          }
         }
       } else {
         Object.assign(entity, updates);

@@ -10,7 +10,6 @@ import {
   Logger,
   PipeTransform,
 } from '@nestjs/common';
-import set from 'lodash/set';
 import {
   FindManyOptions,
   FindOptionsOrder,
@@ -22,6 +21,7 @@ import {
   Not,
 } from 'typeorm';
 
+import { hasForbiddenSegment } from '../helpers/safe-property-path';
 import {
   TFilterNestedKeysOfType,
   TSearchFilterValue,
@@ -200,13 +200,23 @@ export class TypeOrmSearchFilterPipe<T>
     }
 
     const [field = '', direction = 'desc'] = sort.trim().split(/\s+/);
-    if (!field) {
+    if (!field || hasForbiddenSegment(field)) {
       return undefined;
     }
 
     const normalized = direction.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    const segments = field.split('.');
+    const result: Record<string, unknown> = {};
+    let cursor = result;
 
-    return set({}, field, normalized) as FindOptionsOrder<T>;
+    for (let i = 0; i < segments.length - 1; i++) {
+      cursor[segments[i]] = {};
+      cursor = cursor[segments[i]] as Record<string, unknown>;
+    }
+
+    cursor[segments[segments.length - 1]] = normalized;
+
+    return result as FindOptionsOrder<T>;
   }
 
   private parseDefaultSort(): FindOptionsOrder<T> | undefined {
@@ -391,23 +401,13 @@ export class TypeOrmSearchFilterPipe<T>
     }
   }
 
-  private static readonly FORBIDDEN_KEYS = new Set([
-    '__proto__',
-    'constructor',
-    'prototype',
-  ]);
-
   private assignNestedWhereValue(
     target: Record<string, unknown>,
     path: string,
     value: unknown,
   ): void {
-    if (value === undefined) return;
+    if (value === undefined || hasForbiddenSegment(path)) return;
     const segments = path.split('.');
-
-    if (segments.some((s) => TypeOrmSearchFilterPipe.FORBIDDEN_KEYS.has(s))) {
-      return;
-    }
 
     let cursor = target;
 
@@ -427,7 +427,7 @@ export class TypeOrmSearchFilterPipe<T>
     right: FindOptionsWhere<T>,
   ): FindOptionsWhere<T> {
     for (const [key, value] of Object.entries(right)) {
-      if (value === undefined) {
+      if (value === undefined || hasForbiddenSegment(key)) {
         continue;
       }
 
