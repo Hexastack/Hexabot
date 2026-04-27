@@ -1,5 +1,5 @@
 ---
-icon: brackets-curly
+icon: chart-diagram
 ---
 
 # Graph View and YAML Editor
