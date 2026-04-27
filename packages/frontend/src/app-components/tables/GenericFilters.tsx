@@ -80,17 +80,17 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
       sortKey,
       labelKey = "",
       typeInfo,
-      defaultOption = {},
+      defaultOption,
       onChange,
       ...rest
     }) => {
       const {
         defaultValue,
-        width,
-        height,
-        padding = "0px",
+        width = "22px",
+        height = "22px",
+        padding = "2px",
         ...defaultOptionRest
-      } = defaultOption;
+      } = defaultOption || {};
 
       if (rest.type === "enumFilter") {
         return (
@@ -101,6 +101,7 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
               onChange={(e) => {
                 onChange?.(e.target.value as never);
               }}
+              slotProps={{ input: { sx: { height: "2.25rem" } } }}
               {...rest}
             >
               {defaultValue ? (
@@ -131,8 +132,9 @@ export const GenericFilters = ({ filters }: { filters?: Filter[] }) =>
         const RenderedItem = ({ entity }: { entity: any }) =>
           typeInfo ? (
             <BadgeWithTitle
-              {...typeInfo?.[entity["type"]]}
-              title={entity["name"]}
+              {...typeInfo?.[entity[labelKey]]}
+              title={entity[field]}
+              labelKey={undefined}
               {...{ width, height, padding }}
             />
           ) : (
