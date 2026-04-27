@@ -8,7 +8,7 @@ Hexabot's Global Fallback settings allow you to define a default response that y
 *   Select the "Chatbot" view.\
     <br>
 
-    <figure><img src="../../.gitbook/assets/image (34).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../.gitbook/assets/image (34).png" alt=""><figcaption></figcaption></figure>
 
 **2. Configure the Global Fallback Message:**
 

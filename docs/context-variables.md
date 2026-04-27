@@ -4,7 +4,7 @@ icon: brackets-curly
 
 # Context Variables
 
-<figure><img src="../.gitbook/assets/image (21).png" alt=""><figcaption><p>Manage Context Variables</p></figcaption></figure>
+<figure><img src=".gitbook/assets/image (21).png" alt=""><figcaption><p>Manage Context Variables</p></figcaption></figure>
 
 Context variables are powerful tools in Hexabot that allow you to store and manage information gathered during a conversation with a user. This information can then be used to personalize the chatbot's responses, make decisions within the conversation flow, or trigger specific actions.
 
@@ -53,11 +53,11 @@ Navigate to the "Context Vars" or "Context Variables" section. This is typically
 
 Once a context variable is defined, you can edit a given block's options and add that context variable to capture the user input message. In the following example, we will collect the phone number entered by the user.
 
-<figure><img src="../.gitbook/assets/image (18).png" alt=""><figcaption><p>Capture Context Variables</p></figcaption></figure>
+<figure><img src=".gitbook/assets/image (18).png" alt=""><figcaption><p>Capture Context Variables</p></figcaption></figure>
 
 Once the block gets triggered, the value will be stored within the context variable and you would be able to access it through the context. For example, you can use it in a text message by injecting `{phone_number}` and it will be replace automatically by the value that has been captured:&#x20;
 
-<figure><img src="../.gitbook/assets/image (19).png" alt=""><figcaption><p>Using Context Variables</p></figcaption></figure>
+<figure><img src=".gitbook/assets/image (19).png" alt=""><figcaption><p>Using Context Variables</p></figcaption></figure>
 
 {% hint style="info" %}
 **Additional Notes**

@@ -121,5 +121,5 @@ You do not need to write YAML to get started. It becomes useful as workflows gro
 ### What’s next
 
 * Review the platform overview in [Overview](../introduction/overview.md)
-* Learn the editor basics in [Using the Workflow Editor](../user-guide/workflow-editor/using-the-visual-editor.md)
+* Learn the editor basics in [Using the Workflow Editor](/broken/spaces/12ok30OlFEEb6WoWfH8l/pages/lrcnUbkv9Q09N7z2cmEg)
 * Explore workflows across channels, actions, bindings, and memory

@@ -35,7 +35,7 @@ The Knowledge Base allows you to organize your chatbot's content into different 
     * **HTML:** For adding content with HTML formatting.
   * **Save Field Changes:** After configuring the field, click the "Submit" button to confirm your changes.
 
-{% include "../../.gitbook/includes/add-new-content-type-form.md" %}
+{% include "../.gitbook/includes/add-new-content-type-form.md" %}
 
 **4. Manage Existing Fields:**
 

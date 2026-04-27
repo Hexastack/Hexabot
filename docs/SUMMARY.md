@@ -14,44 +14,37 @@
 
 ## USER GUIDE
 
-* [Workflow Editor](user-guide/workflow-editor/README.md)
-  * [Using the Visual Editor](user-guide/workflow-editor/using-the-visual-editor.md)
-  * [Regular Blocks](user-guide/workflow-editor/regular-blocks/README.md)
-    * [Using Simple Text Block](user-guide/workflow-editor/regular-blocks/using-simple-text-block.md)
-    * [Using Quick Replies Block](user-guide/workflow-editor/regular-blocks/using-quick-replies-block.md)
-    * [Using Buttons Block](user-guide/workflow-editor/regular-blocks/using-buttons-block.md)
-    * [Using Attachment Block](user-guide/workflow-editor/regular-blocks/using-attachment-block.md)
-  * [Using Advanced Blocks](user-guide/workflow-editor/using-advanced-blocks.md)
-* [Flows](user-guide/flows.md)
-* [NLU](user-guide/nlu/README.md)
-  * [NLU Engines](user-guide/nlu/nlu-engines/README.md)
-    * [LLM NLU Engine](user-guide/nlu/nlu-engines/llm-nlu-engine.md)
-    * [Ludwig NLU Engine](user-guide/nlu/nlu-engines/ludwig-nlu-engine.md)
-    * [Tensorflow NLU Engine](user-guide/nlu/nlu-engines/tensorflow-nlu-engine.md)
-  * [Manage NLU Entities](user-guide/nlu/manage-nlu-entities.md)
-  * [NLU Match Scoring](user-guide/nlu/nlu-match-scoring.md)
-* [NLU Training](user-guide/nlu-training.md)
-* [Knowledge Base](user-guide/knowledge-base/README.md)
-  * [Content Types](user-guide/knowledge-base/content-types.md)
-  * [Manage Persistent Menu](user-guide/knowledge-base/manage-persistent-menu.md)
-  * [Media Library](user-guide/knowledge-base/media-library.md)
-* [Localization](user-guide/localization/README.md)
-  * [Languages](user-guide/localization/languages.md)
-  * [Translations](user-guide/localization/translations.md)
-* [Users and Roles](user-guide/users-and-roles/README.md)
-  * [Manage users](user-guide/users-and-roles/manage-users.md)
-  * [Manage roles](user-guide/users-and-roles/manage-roles.md)
-* [Manage Settings](user-guide/manage-settings/README.md)
-  * [Email](user-guide/manage-settings/email.md)
-  * [Chatbot Global Fallback](user-guide/manage-settings/chatbot-global-fallback.md)
-  * [NLU Provider](user-guide/manage-settings/nlu-provider.md)
-  * [Web Channel](user-guide/manage-settings/web-channel.md)
-  * [Live chat widget](user-guide/manage-settings/live-chat-widget.md)
-  * [Facebook Messenger](user-guide/manage-settings/facebook-messenger.md)
-* [Context Variables](user-guide/context-variables.md)
-* [Chat Inbox](user-guide/chat-inbox.md)
-* [Subscribers](user-guide/subscribers.md)
-* [Analytics Dashboard](user-guide/analytics-dashboard.md)
+***
+
+* [Analytics Dashboard](analytics-dashboard.md)
+
+## Workflows
+
+* [Workflow Editor](workflows/workflow-editor.md)
+* [Workflow Types](workflows/workflow-types.md)
+
+***
+
+* [Context Variables](context-variables.md)
+* [Chat Inbox](chat-inbox.md)
+* [Knowledge Base](knowledge-base/README.md)
+  * [Content Types](knowledge-base/content-types.md)
+  * [Manage Persistent Menu](knowledge-base/manage-persistent-menu.md)
+  * [Media Library](knowledge-base/media-library.md)
+* [Subscribers](subscribers.md)
+* [Localization](localization/README.md)
+  * [Languages](localization/languages.md)
+  * [Translations](localization/translations.md)
+* [Users and Roles](users-and-roles/README.md)
+  * [Manage users](users-and-roles/manage-users.md)
+  * [Manage roles](users-and-roles/manage-roles.md)
+* [Manage Settings](manage-settings/README.md)
+  * [Email](manage-settings/email.md)
+  * [Chatbot Global Fallback](manage-settings/chatbot-global-fallback.md)
+  * [NLU Provider](manage-settings/nlu-provider.md)
+  * [Web Channel](manage-settings/web-channel.md)
+  * [Live chat widget](manage-settings/live-chat-widget.md)
+  * [Facebook Messenger](manage-settings/facebook-messenger.md)
 
 ## FAQ
 

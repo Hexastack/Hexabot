@@ -6,7 +6,7 @@ icon: language
 
 Expanding your audience and reaching global users is essential for chatbot success. Hexabot's built-in translation feature simplifies the process of creating multilingual chatbots, allowing you to offer personalized experiences in multiple languages.
 
-<figure><img src="../../.gitbook/assets/image (23).png" alt=""><figcaption><p>Manage Translations</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (23).png" alt=""><figcaption><p>Manage Translations</p></figcaption></figure>
 
 **Step-by-Step Guide to Translating Content:**
 
@@ -16,7 +16,7 @@ Expanding your audience and reaching global users is essential for chatbot succe
 2. **Hit the "Refresh" button :** This will scan the database for all the strings that are being used in blocks (text messages, buttons, quick replies, ...). This action will also remove strings that are not present anymore.
 3.  **Choose the Content to Translate:** Click on the "Edit" button of a specific content entry you want to translate.<br>
 
-    <figure><img src="../../.gitbook/assets/Screenshot 2025-09-15 at 16-55-40 Hexabot.png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../.gitbook/assets/Screenshot 2025-09-15 at 16-55-40 Hexabot.png" alt=""><figcaption></figcaption></figure>
 
 
 4. **Translate:**

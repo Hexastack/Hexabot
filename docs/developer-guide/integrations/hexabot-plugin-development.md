@@ -2,7 +2,7 @@
 
 Hexabot is designed to be a versatile and extensible chatbot platform. One of its core strengths lies in its plugin system, which allows developers to drastically expand its capabilities beyond the built-in features. Plugins in Hexabot are essentially self-contained modules that integrate seamlessly into the platform, providing a way to introduce custom logic, connect to external services.
 
-At its core, the plugin helps create custom blocks that can be added to the Hexabot’s block library (the blocks library is explained more deeply in the[ Visual Editor](../../user-guide/workflow-editor/) section). These new custom blocks allow you to extend the functionality of the conversation flows, meaning your chatbot can handle a wide variety of tasks, like text-to-action response or even complex third-party system integrations.
+At its core, the plugin helps create custom blocks that can be added to the Hexabot’s block library (the blocks library is explained more deeply in the[ Visual Editor](../../workflows/workflow-editor.md) section). These new custom blocks allow you to extend the functionality of the conversation flows, meaning your chatbot can handle a wide variety of tasks, like text-to-action response or even complex third-party system integrations.
 
 ## Why Develop Hexabot Plugins?
 
