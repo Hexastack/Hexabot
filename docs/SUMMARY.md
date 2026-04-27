@@ -16,7 +16,7 @@
 
 ***
 
-* [Analytics Dashboard](analytics-dashboard.md)
+* [Dashboard](dashboard.md)
 
 ## Workflows
 
