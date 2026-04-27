@@ -25,7 +25,7 @@ For example, a `Product` content type might define `title`, `status`, `summary`,
 
 The search box filters content types by name and keeps the search in the URL.
 
-<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 Available operations are:
 

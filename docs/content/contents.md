@@ -36,7 +36,7 @@ The entries page is scoped to one selected content type. A chip in the page head
 4. Set **Status** to active when the entry should be available to workflows.
 5. Click **Save**.
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The form is generated from the content type schema. If the content type has a File field, that field lets you upload a file or choose an existing file from the media library.
 

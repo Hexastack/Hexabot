@@ -127,7 +127,7 @@ Actions are disabled while a save, publish, unpublish, restore, or note update i
 
 The version history drawer can publish a saved version directly.
 
-<figure><img src="../.gitbook/assets/image (1) (1) (1) (1).png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt="" width="375"><figcaption></figcaption></figure>
 
 Publishing a historical version changes what is active for execution. It does not have to restore that version as the current editor version first. This is useful when you need to roll live execution back to a known good version quickly.
 
