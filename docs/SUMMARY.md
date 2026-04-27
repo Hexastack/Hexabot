@@ -28,6 +28,7 @@
 * [Workflow Runs](workflow-runs/README.md)
   * [Run Statuses and Filters](workflow-runs/run-statuses-and-filters.md)
   * [Run Debugger](workflow-runs/run-debugger.md)
+  * [Step Trace and Inspector](workflow-runs/step-trace-and-inspector.md)
 * [Memory](memory.md)
 * [Content](content/README.md)
   * [Content Types](content/content-types.md)
