@@ -1,15 +1,31 @@
 ---
+description: >-
+  Manage supported languages, fallback behavior, and translations for
+  multilingual workflows.
 icon: language
 ---
 
 # Localization
 
-Hexabot allows you to handle multilingual contraints by managing languages within the platform. This feature enables you to define the languages your workflows will support and handle translations for messages, quick replies, buttons, and more.
+Hexabot helps you run multilingual workflows from one workspace.
 
-### Key Features
+You can define supported languages, set a default language, and manage translations in one place. This lets the same workflow serve users across channels in the language that fits them best.
 
-* **Add, update, and delete languages**: You can easily manage the languages your workflows supports.
-* **Multilingual conversations**: Automatically use the language of the end-user (subscriber).
-* **Translation capabilities**: Each language defined in the system allows you to translate blocks, messages, quick replies, buttons, etc.
-* **Default language**: You can set a default language for your chatbot. This will be the fallback language if no specific language is detected or set for the end-user.
-* **RTL support**: For languages that are written from right to left (RTL), such as Arabic or Hebrew, you can specify whether a language is RTL or not.
+### What localization includes
+
+* **Languages** — add the languages your workspace supports.
+* **Default language** — choose the fallback language for your workflows.
+* **Translations** — translate user-facing content such as messages, labels, and buttons.
+* **Automatic language handling** — use the user’s language when it is available.
+* **RTL support** — support right-to-left languages such as Arabic and Hebrew.
+
+### Why it matters
+
+* Reuse the same workflow across multiple languages.
+* Keep translated content organized in one place.
+* Deliver a more consistent experience across channels.
+
+### In this section
+
+* [Languages](languages.md)
+* [Translations](translations.md)

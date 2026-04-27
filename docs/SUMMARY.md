@@ -68,8 +68,6 @@
 * [Plugins](developer-guide/integrations/README.md)
   * [Hexabot Plugin Development](developer-guide/integrations/hexabot-plugin-development.md)
   * [Build your First Plugin](developer-guide/integrations/build-your-first-plugin.md)
-* [Hexabot NLU Engine](developer-guide/hexabot-nlu-engine.md)
-* [Training custom NLU Models with Ludwig AI](developer-guide/training-custom-nlu-models-with-ludwig-ai.md)
 
 ## Key Concepts
 
