@@ -84,7 +84,13 @@
     "file_error": "Fichier introuvable",
     "audio_error": "Audio introuvable",
     "video_error": "Vidéo introuvable",
+    "start": "Début",
+    "stop": "Fin",
     "wait_message": "Veuillez patienter",
+    "conditional_operator": "Condition",
+    "parallel_indicator": "Parallèle",
+    "loop_indicator": "Boucle",
+    "conditional_indicator": "Conditionnel",
     "license_activated_modal_title": "Licence activée avec succès",
     "license_activated_modal_description": "Votre clé de licence a été validée et les fonctionnalités payantes sont maintenant disponibles.",
     "license_activated_modal_cta_hint": "Cliquez sur Continuer pour rafraîchir votre session et débloquer les fonctionnalités éligibles.",
@@ -956,6 +962,11 @@
         },
         "empty_state": "Aucune option de stratégie disponible."
       }
+    },
+    "port_label": {
+      "memory": "Mémoire",
+      "model": "Modèle",
+      "tools": "Outils"
     },
     "yaml_editor": {
       "show": "Afficher l'éditeur YAML",
