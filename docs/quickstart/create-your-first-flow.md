@@ -42,11 +42,11 @@ Open `http://localhost:3000`.
 
 Sign in with the email and password you created with the Hexabot CLI.
 
-<figure><img src="../.gitbook/assets/image (1).png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt="" width="375"><figcaption></figcaption></figure>
 
 Open **Workflow Builder**.
 
-<figure><img src="../.gitbook/assets/image.png" alt="" width="320"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1).png" alt="" width="320"><figcaption></figcaption></figure>
 
 Click **Create Workflow**.
 
@@ -114,31 +114,7 @@ You can add:
 
 Open the YAML editor to see the workflow definition.
 
-```yaml
-defaults:
-  settings:
-    timeout_ms: 0
-    retries:
-      enabled: false
-      max_attempts: 3
-      backoff_ms: 25
-      max_delay_ms: 10000
-      jitter: 0
-      multiplier: 1
-defs:
-  hello_world:
-    kind: task
-    description: Sends a hello world message to the subscriber.
-    action: send_text_message
-    inputs:
-      text: Hello World!
-    settings:
-      typing: 0
-flow:
-  - do: hello_world
-outputs:
-  result: =$output.hello_world
-```
+<figure><img src="../.gitbook/assets/image.png" alt="" width="375"><figcaption></figcaption></figure>
 
 You do not need to write YAML to get started. It becomes useful as workflows grow.
 
