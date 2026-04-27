@@ -1,6 +1,6 @@
 ---
 description: Build workflows visually and manage them in one place.
-icon: table-columns
+icon: diagram-project
 ---
 
 # Workflow Editor
