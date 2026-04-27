@@ -101,7 +101,7 @@ This helps teams keep business knowledge accurate and reusable without changing 
 * Reuse content across workflows and channels.
 * Manage languages and translations centrally.
 
-Learn more in [Content](../content/) and [Localization](../localization/).
+Learn more in [Content](../knowledge-base/) and [Localization](../localization/).
 
 ### Users and roles
 

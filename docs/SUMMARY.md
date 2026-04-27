@@ -17,7 +17,6 @@
 ***
 
 * [Dashboard](analytics-dashboard.md)
-* [Inbox](inbox.md)
 * [Workflow Editor](workflow-editor/README.md)
   * [Workflow Types](workflow-editor/workflow-types.md)
   * [Graph View and YAML Editor](workflow-editor/graph-view-and-yaml-editor.md)
@@ -30,12 +29,17 @@
   * [Run Debugger](workflow-runs/run-debugger.md)
   * [Step Trace and Inspector](workflow-runs/step-trace-and-inspector.md)
 * [Memory](memory.md)
-* [Content](content/README.md)
-  * [Content Types](content/content-types.md)
-  * [Contents](content/contents.md)
-  * [Manage Persistent Menu](content/manage-persistent-menu.md)
-  * [Media Library](content/media-library.md)
+* [Inbox](inbox.md)
+* [Integrations](integrations/README.md)
+  * [Channels and Sources](integrations/channels-and-sources.md)
+  * [MCP Servers](integrations/mcp-servers.md)
+* [Knowledge Base](knowledge-base/README.md)
+  * [Content Types](knowledge-base/content-types.md)
+  * [Content Entries](knowledge-base/content-entries.md)
+  * [Persistent Menu](knowledge-base/persistent-menu.md)
+  * [Media Library](knowledge-base/media-library.md)
 * [Audience](audience/README.md)
+  * [Subscribers](audience/subscribers.md)
   * [Labels](audience/labels.md)
   * [Label Groups](audience/label-groups.md)
 * [Localization](localization/README.md)
@@ -52,11 +56,6 @@
   * [Live chat widget](manage-settings/live-chat-widget.md)
   * [Facebook Messenger](manage-settings/facebook-messenger.md)
 
-## FAQ
-
-* [How can I deploy my Hexabot using NGINX ?](faq/how-can-i-deploy-my-hexabot-using-nginx.md)
-* [How can I add the Chatbot Widget to my Website?](faq/how-can-i-add-the-chatbot-widget-to-my-website.md)
-
 ## Developer Guide
 
 * [CLI Command Reference](developer-guide/cli-command-reference.md)
@@ -68,7 +67,7 @@
   * [Hexabot Plugin Development](developer-guide/integrations/hexabot-plugin-development.md)
   * [Build your First Plugin](developer-guide/integrations/build-your-first-plugin.md)
 
-## Key Concepts
+## FAQ
 
-* [NLU](key-concepts/nlu.md)
-* [Intent](key-concepts/intent.md)
+* [How can I deploy my Hexabot using NGINX ?](faq/how-can-i-deploy-my-hexabot-using-nginx.md)
+* [How can I add the Chatbot Widget to my Website?](faq/how-can-i-add-the-chatbot-widget-to-my-website.md)

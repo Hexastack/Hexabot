@@ -1,8 +1,9 @@
 ---
+description: Create, edit, and manage content entries for each content type.
 icon: book-open-lines
 ---
 
-# Contents
+# Content Entries
 
 Content entries are the records stored under a content type. Each entry has a title, status, timestamps, and the custom fields defined by its content type.
 
