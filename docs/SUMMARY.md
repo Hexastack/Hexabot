@@ -24,7 +24,7 @@
 * [Workflow Types](workflows/workflow-types.md)
 * [Graph View and YAML Editor](workflows/graph-view-and-yaml-editor.md)
 * [Actions, Tasks, and Steps](workflows/actions-tasks-and-steps.md)
-* [Conditionals, Parallel Blocks, and Loops](workflows/conditionals-parallel-blocks-and-loops.md)
+* [Conditionals, Parallels, and Loops](workflows/conditionals-parallels-and-loops.md)
 
 ***
 

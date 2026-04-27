@@ -2,7 +2,7 @@
 icon: diagram-sankey
 ---
 
-# Conditionals, Parallel Blocks, and Loops
+# Conditionals, Parallels, and Loops
 
 Conditionals, parallel blocks, and loops let a workflow do more than run tasks from top to bottom. They are inserted from the graph add menu alongside normal task steps, and each one appears as an operator node on the canvas.
 
