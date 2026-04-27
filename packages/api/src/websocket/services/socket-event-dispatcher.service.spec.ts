@@ -76,6 +76,22 @@ describe('SocketEventDispatcherService', () => {
     expect((res.status as jest.Mock).mock.calls).toEqual([]);
   });
 
+  it.each([
+    ['/', '/'],
+    ['', '/'],
+    ['/foo/', '/foo'],
+    ['/foo////', '/foo'],
+    ['/foo/bar/', '/foo/bar'],
+    ['foo', '/foo'],
+    ['/' + '/'.repeat(5000), '/'],
+  ])(
+    'normalizePath(%j) === %j — strips trailing slashes without regex',
+    (input, expected) => {
+      const result = (service as any).normalizePath(input);
+      expect(result).toBe(expected);
+    },
+  );
+
   it('returns 404 when no socket route matches', async () => {
     const req = createSocketRequest('/api/unknown/route');
     const res = createSocketResponse();

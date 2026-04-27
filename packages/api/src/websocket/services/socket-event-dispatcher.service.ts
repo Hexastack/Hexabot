@@ -144,12 +144,14 @@ export class SocketEventDispatcherService implements OnModuleInit {
     }
 
     const withLeadingSlash = path.startsWith('/') ? path : `/${path}`;
-    const withoutTrailingSlash =
-      withLeadingSlash.length > 1
-        ? withLeadingSlash.replace(/\/+$/, '')
-        : withLeadingSlash;
+    let end = withLeadingSlash.length;
+    while (end > 1 && withLeadingSlash.charCodeAt(end - 1) === 0x2f) {
+      end--;
+    }
 
-    return withoutTrailingSlash;
+    return end < withLeadingSlash.length
+      ? withLeadingSlash.slice(0, end)
+      : withLeadingSlash;
   }
 
   private matchPath(
