@@ -1,4 +1,5 @@
 ---
+description: Build and run agentic workflows across channels with Hexabot.
 icon: house-window
 ---
 
@@ -6,36 +7,35 @@ icon: house-window
 
 Hexabot is an open AI automation platform for building and running agentic workflows across channels.
 
-Use it to automate conversations, run tasks on demand, and schedule actions. Start simple, then expand with memory, integrations, and reusable building blocks.
+Use it to automate conversations, tasks, and recurring operations in one place. Start with a simple workflow, then expand with actions, bindings, memory, and AI features.
 
 ### Why teams choose Hexabot
 
-* **AI sovereignty** — run Hexabot on your own infrastructure. Keep models, workflows, memory, and customer data under your control.
-* **Self-hosted** — integrate fully with your internal systems and apps. No extra fees apply based on workflow execution volume.
-* **Data privacy and compliance** — support GDPR and internal requirements with self-managed storage, audit trails, and clear deployment choices.
-* **Cost control** — license keys define activation limits, user quotas, workflow quotas, and plan capacity. Hexabot does not meter message volume or workflow executions.
+* **Open and self-hosted** — keep control of your infrastructure and data.
+* **Workflow-first** — build automations for conversations, manual tasks, and schedules.
+* **Extensible** — add actions, bindings, channels, and integrations as needs grow.
+* **Cost control** — manage limits by plan without usage-based workflow metering.
 
 <figure><img src=".gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="A preview of Hexabot workflow editor"><figcaption></figcaption></figure>
 
 ### What you can do with Hexabot
 
-* Build agentic workflows with clear, reusable definitions.
-* Run automations from conversations, manual triggers, or schedules.
-* Extend workflows with actions, bindings, channels, and helpers.
-* Add memory and AI capabilities to keep context across interactions.
-* Deploy locally or in production with flexible runtime options.
+* Build conversational, manual, and scheduled workflows.
+* Run automations across channels and connected systems.
+* Extend workflows with actions, bindings, memory, and AI features.
+* Review runs, inspect behavior, and improve workflows over time.
 
 ### What you'll find in these docs
 
 * **Getting started** — install Hexabot and run your first workflow.
-* **User guides** — learn the workspace, channels, analytics, and settings.
-* **Developer guides** — work in the monorepo, use the CLI, and build extensions.
-* **Key concepts** — understand workflows, actions, memory, and AI features.
+* **User guides** — learn the workspace, workflows, content, and settings.
+* **Developer guides** — set up local development and build extensions.
+* **Key concepts** — understand the core building blocks behind Hexabot.
 
 ### Who this is for
 
 * **Teams** building AI automations across channels.
-* **Operators** managing workflows, settings, and day-to-day runs.
+* **Operators** managing workflows, settings, and daily operations.
 * **Developers** extending Hexabot with custom actions and integrations.
 
 ### Jump right in
