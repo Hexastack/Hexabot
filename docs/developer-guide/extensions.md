@@ -61,7 +61,7 @@ Extensions published on [hexabot.ai/extensions](https://hexabot.ai/extensions) a
 
 ### Types of Extensions
 
-#### ![](<../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png>)Channels&#x20;
+#### ![](<../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png>)Channels&#x20;
 
 A **channel** enables your AI bot to be accessible through various mediums, making it available to interact with users via different platforms or devices. Channels extend the reach of your bot to:
 
@@ -73,7 +73,7 @@ A **channel** enables your AI bot to be accessible through various mediums, maki
 
 Essentially, channels allow your agent to communicate in diverse environments, ensuring seamless accessibility for end-users.
 
-#### ![](<../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png>)Plugins
+#### ![](<../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)Plugins
 
 **Plugins** add new features and capabilities directly to the conversational AI system. The primary type of plugin currently available is the "**Block Plugin**", which allows you to introduce custom blocks in the visual editor. These blocks:
 
@@ -83,7 +83,7 @@ Essentially, channels allow your agent to communicate in diverse environments, e
 
 For example, you can create a custom plugin to integrate your chatbot with an external API or trigger specific workflows.
 
-#### ![](<../.gitbook/assets/image (2) (1) (1) (1).png>)Helpers
+#### ![](<../.gitbook/assets/image (2) (1) (1) (1) (1).png>)Helpers
 
 **Helpers** are essential services or utilities that operate in the background to support the functionality of plugins. While they are not exposed to end-users building conversation flows, they play a critical role in ensuring plugins work as intended.
 
