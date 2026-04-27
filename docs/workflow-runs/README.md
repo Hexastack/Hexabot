@@ -6,7 +6,7 @@ icon: wave-pulse
 
 The workflow runs page is the execution history for workflows. Open it from **Workflows > Runs** in the sidebar or by going to `/workflow/runs`.
 
-<figure><img src=".gitbook/assets/image (56).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (56).png" alt=""><figcaption></figcaption></figure>
 
 Use it when you need to confirm that a workflow ran, investigate a failure, compare recent executions, or jump into the run debugger.
 
