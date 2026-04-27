@@ -13,7 +13,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useCronFormatter } from "@/hooks/useCronFormatter";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 import { getRemainingTime } from "@/utils/date";
 
 import { DashboardTimelineItem } from "../components/DashboardTimelineItem";
@@ -50,7 +50,9 @@ export const UpcomingScheduleTimeline = () => {
           <Button
             size="small"
             variant="text"
-            onClick={() => router.push("/workflow-editor")}
+            onClick={() =>
+              router.push({ pathname: `/${RouterType.WORKFLOW_EDITOR}` })
+            }
           >
             {t("button.view_all")}
           </Button>
@@ -81,7 +83,7 @@ export const UpcomingScheduleTimeline = () => {
                 time={getRemainingTime(runAfterMs, i18n.language)}
                 onClick={() => {
                   router.push({
-                    pathname: `/workflow-editor/${id}`,
+                    pathname: `/${RouterType.WORKFLOW_EDITOR}/${id}`,
                   });
                 }}
                 renderTitle={() => {
@@ -112,7 +114,7 @@ export const UpcomingScheduleTimeline = () => {
             <Button
               size="small"
               variant="outlined"
-              onClick={() => router.push("/workflow-editor")}
+              onClick={() => router.push(`/${RouterType.WORKFLOW_EDITOR}`)}
             >
               {t("button.view_all")}
             </Button>
