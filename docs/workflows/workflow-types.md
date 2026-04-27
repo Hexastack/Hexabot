@@ -1,5 +1,5 @@
 ---
-icon: diagram-nested
+icon: rocket-launch
 ---
 
 # Workflow Types

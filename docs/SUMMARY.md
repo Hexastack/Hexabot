@@ -17,8 +17,7 @@
 ***
 
 * [Dashboard](analytics-dashboard.md)
-* [Chat Inbox](chat-inbox.md)
-* [Context Variables](context-variables.md)
+* [Inbox](inbox.md)
 
 ## Workflows
 
@@ -28,9 +27,11 @@
 * [Actions, Tasks, and Steps](workflows/actions-tasks-and-steps.md)
 * [Conditionals, Parallels, and Loops](workflows/conditionals-parallels-and-loops.md)
 * [Expressions and JSONata Scopes](workflows/expressions-and-jsonata-scopes.md)
+* [Versions, Drafts, and Publishing](workflows/versions-drafts-and-publishing.md)
 
 ***
 
+* [Memory](memory.md)
 * [Knowledge Base](knowledge-base/README.md)
   * [Content Types](knowledge-base/content-types.md)
   * [Manage Persistent Menu](knowledge-base/manage-persistent-menu.md)

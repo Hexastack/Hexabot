@@ -1,5 +1,5 @@
 ---
-icon: diagram-sankey
+icon: merge
 ---
 
 # Conditionals, Parallels, and Loops

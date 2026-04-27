@@ -6,7 +6,7 @@ icon: function
 
 Expressions let a workflow compute values from the trigger input, runtime context, previous task output, and loop state. Hexabot uses [JSONata](https://jsonata.org/) for these expressions.
 
-Any string that starts with `=` is evaluated as a JSONata expression. A string that does not start with `=` is treated as a literal value.
+Any string that starts with `=` is evaluated as a **JSONata** expression. A string that does not start with `=` is treated as a literal value.
 
 ```yaml
 defs:
@@ -25,7 +25,7 @@ defs:
 
 In this example, `send_literal.inputs.text` is the literal string `Hello`, while `send_dynamic.inputs.text` is evaluated before the task runs.
 
-For the JSONata language itself, use the [official JSONata documentation](https://docs.jsonata.org/overview.html). This page focuses on how JSONata is used inside Hexabot workflows.
+For the **JSONata** language itself, use the [official JSONata documentation](https://docs.jsonata.org/overview.html). This page focuses on how **JSONata** is used inside Hexabot workflows.
 
 ### Where Expressions Are Used
 
@@ -40,7 +40,7 @@ Expressions are commonly used in:
 | Loop accumulators    | `merge: "=$append($accumulator, [$output.send_message])"` | Collect values across iterations.                 |
 | Final outputs        | `result: "=$output.lookup_customer"`                      | Shape the workflow result.                        |
 
-The editor's expression fields switch into JSONata mode when the value starts with `=`. In JSONata mode, the field highlights syntax problems and can suggest known workflow scopes such as `$input`, `$output`, and `$context`.
+The editor's expression fields switch into **JSONata** mode when the value starts with `=`. In **JSONata** mode, the field highlights syntax problems and can suggest known workflow scopes such as `$input`, `$output`, and `$context`.
 
 ### Literal Values vs Expressions
 
@@ -348,10 +348,3 @@ outputs:
 | Expression works in one branch but fails in another | A referenced output is branch-specific.                     | Guard with `$exists(...)` or move the dependent step into the same branch.    |
 | Loop expression cannot read `$iteration`            | The expression is outside the loop.                         | Use `$iteration` only inside loop steps, `until`, or accumulator expressions. |
 
-### Related Pages
-
-* Actions, Tasks, and Steps
-* Conditionals, Parallel Blocks, and Loops
-* Workflow Types
-* JSONata Expression Reference
-* [Official JSONata Documentation](https://docs.jsonata.org/overview.html)
