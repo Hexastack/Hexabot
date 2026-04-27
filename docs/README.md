@@ -15,7 +15,7 @@ Use it to automate conversations, run tasks on demand, and schedule actions. Sta
 * **Data privacy and compliance** — support GDPR and internal requirements with self-managed storage, audit trails, and clear deployment choices.
 * **Cost control** — license keys define activation limits, user quotas, workflow quotas, and plan capacity. Hexabot does not meter message volume or workflow executions.
 
-<figure><img src=".gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt="A preview of Hexabot workflow editor"><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="A preview of Hexabot workflow editor"><figcaption></figcaption></figure>
 
 ### What you can do with Hexabot
 

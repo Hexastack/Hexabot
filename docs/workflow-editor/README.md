@@ -5,7 +5,7 @@ icon: diagram-subtask
 
 # Workflow Editor
 
-<figure><img src="../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The Workflow Editor is where you build, test, and publish workflows in Hexabot.
 
@@ -61,7 +61,7 @@ The Workflow Editor uses a few core concepts:
 
 The visual canvas and YAML editor represent the same workflow.
 
-<figure><img src="../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Use the canvas for fast editing. Use YAML when you want to review the exact definition or make precise updates.
 
@@ -73,7 +73,7 @@ You do not need to write YAML to build workflows. The visual editor is enough fo
 
 Build the workflow, test it, then publish it when ready.
 
-<figure><img src="../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Draft changes stay separate until you publish them. This lets you iterate safely before a workflow goes live.
 

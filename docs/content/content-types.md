@@ -25,7 +25,7 @@ For example, a `Product` content type might define `title`, `status`, `summary`,
 
 The search box filters content types by name and keeps the search in the URL.
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
 
 Available operations are:
 
@@ -43,7 +43,7 @@ Available operations are:
 4. Define the fields in the **Schema** builder.
 5. Click **Save**.
 
-<figure><img src="../.gitbook/assets/image (2).png" alt="" width="465"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1).png" alt="" width="465"><figcaption></figcaption></figure>
 
 New content types start with two default fields:
 
