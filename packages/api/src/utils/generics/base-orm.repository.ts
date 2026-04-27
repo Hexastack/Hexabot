@@ -9,8 +9,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import camelCase from 'lodash/camelCase';
 import set from 'lodash/set';
-
-import { hasForbiddenSegment } from '../helpers/safe-property-path';
 import {
   DataSource,
   DeepPartial,
@@ -34,6 +32,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
 import { flatten } from '@/utils/helpers/flatten';
 
+import { hasForbiddenSegment } from '../helpers/safe-property-path';
 import {
   DtoAction,
   InferCreateDto,

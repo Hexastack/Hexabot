@@ -112,9 +112,7 @@ describe('TypeOrmSearchFilterPipe', () => {
       const right = { [forbidden]: 'malicious' } as any;
       (pipe as any).mergeWhereObjects(left, right);
 
-      expect(Object.prototype.hasOwnProperty.call(left, forbidden)).toBe(
-        false,
-      );
+      expect(Object.prototype.hasOwnProperty.call(left, forbidden)).toBe(false);
       expect(({} as any).malicious).toBeUndefined();
     },
   );
