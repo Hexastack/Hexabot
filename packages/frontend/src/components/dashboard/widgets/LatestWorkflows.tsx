@@ -14,7 +14,7 @@ import { useAppRouter } from "@/hooks/useAppRouter";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 
 import { DashboardWidgetState } from "../components/DashboardWidgetState";
 import { LatestWorkflowsCard } from "../components/LatestWorkflowsCard";
@@ -73,7 +73,7 @@ export const LatestWorkflows = () => {
   const workflowCardSize = getWorkflowCardSize(latestWorkflows.length);
   const openWorkflows = () => {
     setLocalStorage(drawerIsOpenStorage, "true");
-    router.push({ pathname: "/workflow-editor" });
+    router.push({ pathname: `/${RouterType.WORKFLOW_EDITOR}` });
   };
 
   return (

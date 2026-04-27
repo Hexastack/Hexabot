@@ -19,6 +19,7 @@ import { Eye } from "lucide-react";
 import { WORKFLOW_TYPES } from "@/constants/workflow.constants";
 import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
+import { RouterType } from "@/services/types";
 
 import { IconContainer } from "./IconContainer";
 
@@ -30,7 +31,7 @@ export const LatestWorkflowsCard = ({ workflow }: { workflow: Workflow }) => {
   const Icon = workflowTypeInfo.icon;
   const openWorkflow = () => {
     router.push({
-      pathname: `/workflow-editor/${workflow.id}`,
+      pathname: `/${RouterType.WORKFLOW_EDITOR}/${workflow.id}`,
     });
   };
 
