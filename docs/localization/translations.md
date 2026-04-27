@@ -1,34 +1,64 @@
 ---
+description: >-
+  Translate user-facing workflow text, refresh detected strings, and manage
+  localized values for supported languages.
 icon: language
 ---
 
 # Translations
 
-Expanding your audience and reaching global users is essential for chatbot success. Hexabot's built-in translation feature simplifies the process of creating multilingual chatbots, allowing you to offer personalized experiences in multiple languages.
+Use **Translations** to localize user-facing text in your workflows.
 
-<figure><img src="../.gitbook/assets/image (23).png" alt=""><figcaption><p>Manage Translations</p></figcaption></figure>
+Hexabot translates strings that you explicitly mark in workflow definitions.
 
-**Step-by-Step Guide to Translating Content:**
+<figure><img src="../.gitbook/assets/image (58).png" alt="" width="563"><figcaption></figcaption></figure>
 
-1. **Access the Translations Section:**
-   * Log in to your Hexabot account.
-   * Click on the "Localization" section in the sidebar and navigate to "Translations" page.
-2. **Hit the "Refresh" button :** This will scan the database for all the strings that are being used in blocks (text messages, buttons, quick replies, ...). This action will also remove strings that are not present anymore.
-3.  **Choose the Content to Translate:** Click on the "Edit" button of a specific content entry you want to translate.<br>
+### How translations work
 
-    <figure><img src="../.gitbook/assets/Screenshot 2025-09-15 at 16-55-40 Hexabot.png" alt=""><figcaption></figcaption></figure>
+Translations follow this flow:
 
+* Add your supported languages in [Languages](languages.md)
+* Mark strings with `=$t("...")` in task inputs or settings
+* Refresh the translation list
+* Add translated values for each language
 
-4. **Translate:**
-   * You'll see the original text in the source language, alongside fields for entering the translated text for each target language.
-   * Enter the accurate translations for each field in your chosen languages.
-5. **Save Your Translations:**
-   * Click "Submit" to save your translations.
-   * Your translated content will now be used when a user interacts with your chatbot in their selected language.
+### Mark a string for translation
+
+Use the `$t()` helper when you want a string to be translated.
+
+Start the value with `=` so Hexabot evaluates it as an expression.
+
+```yaml
+defs:
+  greet_user:
+    kind: task
+    action: send_text_message
+    inputs:
+      text: =$t("Hello World!")
+```
+
+You can use the same pattern in task settings and other workflow fields that accept expressions.
 
 {% hint style="info" %}
-**Tips**
+Only strings wrapped with `$t()` are collected in **Translations**.
+{% endhint %}
 
-* **Review and Test:** Carefully review your translations and test your chatbot in each target language to ensure the language switching works as expected and that the translations flow naturally within the conversation.
-* **Regular Updates:** If your chatbot's content changes frequently, keep your translations updated as well to provide a consistent experience for your multilingual users.
+### Add translations
+
+<figure><img src="../.gitbook/assets/image (59).png" alt="" width="479"><figcaption></figcaption></figure>
+
+1. Open **Localization** → **Translations**.
+2. Click **Refresh**.
+3. Select the string you want to translate.
+4. Enter the translated value for each language.
+5. Click **Submit**.
+
+**Refresh** scans your workflow definitions for translatable strings. It also removes entries that are no longer used.
+
+### Good practices
+
+{% hint style="info" %}
+* Use the same source string when the meaning is the same.
+* Click **Refresh** after changing workflow text.
+* Test each language in a real workflow run.
 {% endhint %}
