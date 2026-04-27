@@ -1,5 +1,4 @@
 ---
-hidden: true
 noIndex: true
 icon: chart-line
 ---
