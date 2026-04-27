@@ -135,4 +135,4 @@ For quick setup and testing, you can use our published small talk dataset availa
 
 **Dataset:** [Hexastack/hexabot-smalltalk](https://huggingface.co/datasets/Hexastack/hexabot-smalltalk)
 
-The dataset includes common conversational intents such as greetings, farewells, expressions of gratitude, and general inquiries. You can download the CSV files directly from HuggingFace and import them using the bulk import feature described above.\
+The dataset includes common conversational intents such as greetings, farewells, expressions of gratitude, and general inquiries. You can download the CSV files directly from HuggingFace and import them using the bulk import feature described above.<br>

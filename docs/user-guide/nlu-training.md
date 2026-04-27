@@ -10,7 +10,7 @@ noIndex: true
 Hexabot leverages Natural Language Understanding (NLU) to understand what your users are saying and respond appropriately. To make sure Hexabot accurately interprets user intent, you need to train its NLU engine to learn from your user's interactions.&#x20;
 
 {% hint style="info" %}
-**Note:** If you are new to Natural Language Understanding (NLU), it's highly recommended that you read the [Broken link](broken-reference "mention") section of the documentation first. This will provide you with a foundational understanding of these important concepts before you begin training your chatbot.
+**Note:** If you are new to Natural Language Understanding (NLU), it's highly recommended that you read the [Broken link](/broken/pages/ACumie283oQUrKvlfodQ "mention") section of the documentation first. This will provide you with a foundational understanding of these important concepts before you begin training your chatbot.
 {% endhint %}
 
 This guide provides a step-by-step approach to NLU training:

@@ -2,4 +2,4 @@
 title: Setup Node.js with NVM
 ---
 
-<figure><img src="../assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (35).png" alt=""><figcaption></figcaption></figure>
