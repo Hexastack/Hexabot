@@ -13,8 +13,8 @@ If you want to add your own building block, this guide will walk you through the
 
 * **Docker :** Ensure you have Docker installed.
 
-{% content-ref url="../setting-up-docker-for-development-and-production.md" %}
-[setting-up-docker-for-development-and-production.md](../setting-up-docker-for-development-and-production.md)
+{% content-ref url="../setting-up-docker.md" %}
+[setting-up-docker.md](../setting-up-docker.md)
 {% endcontent-ref %}
 
 * **Create a new Hexabot project:** Download the Hexabot CLI and run the `hexabot create my-project` command.

@@ -24,8 +24,8 @@ Before starting, ensure you have the following:
 
 * #### Install Docker
 
-{% content-ref url="../developer-guide/setting-up-docker-for-development-and-production.md" %}
-[setting-up-docker-for-development-and-production.md](../developer-guide/setting-up-docker-for-development-and-production.md)
+{% content-ref url="../developer-guide/setting-up-docker.md" %}
+[setting-up-docker.md](../developer-guide/setting-up-docker.md)
 {% endcontent-ref %}
 
 * #### Install NPM
@@ -73,7 +73,7 @@ This command will copy the `.env.example` file to `.env` in the `./docker` direc
 Note that you can also adjust the default token expirations durations as needed.
 
 {% hint style="info" %}
-To be able to send email you will need to configure SMTP. Learn how to configure SMTP environment variables by following our detailed [SMTP setup guide](../developer-guide/smtp-configuration-and-emails.md)[.](../developer-guide/smtp-configuration-and-emails.md)
+To be able to send email you will need to configure SMTP. Learn how to configure SMTP environment variables by following our detailed [SMTP setup guide](../developer-guide/smtp-configuration.md)[.](../developer-guide/smtp-configuration.md)
 {% endhint %}
 
 ### **Method 1 : Using Nginx as a service and Certbot for SSL**

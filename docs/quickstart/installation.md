@@ -17,7 +17,7 @@ You need:
 
 If you manage Node.js with `nvm`, see [Setup Node.js with NVM](../developer-guide/setup-node.js-with-nvm.md).
 
-If you use Docker for development, see [Setting Up Docker for Development and Production](../developer-guide/setting-up-docker-for-development-and-production.md).
+If you use Docker for development, see [Setting Up Docker for Development and Production](../developer-guide/setting-up-docker.md).
 
 {% hint style="info" %}
 `hexabot create` prompts for your initial admin credentials. Run it from an interactive terminal.
@@ -84,6 +84,6 @@ Use the admin credentials you created during project setup.
 
 * SQLite is the default local database.
 * Postgres is recommended for production.
-* If you work on the Hexabot monorepo, use PNPM and follow the [Contributors Installation Guide](../developer-guide/contributors-installation-guide.md).
+* If you work on the Hexabot monorepo, use PNPM and follow the [Contributors Installation Guide](/broken/spaces/12ok30OlFEEb6WoWfH8l/pages/GiKubNuo8tQcnF25GthU).
 
 For the full command list, see [CLI Command Reference](../developer-guide/cli-command-reference.md).

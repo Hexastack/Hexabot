@@ -115,7 +115,7 @@ Use Docker Compose helpers from the project's `docker/` folder.
 
 The CLI combines `docker-compose.yml` with matching service overlays like `docker-compose.<service>.yml`. It can also copy `.env.docker.example` on first run.
 
-For Docker setup details, see [Setting Up Docker for Development and Production](setting-up-docker-for-development-and-production.md).
+For Docker setup details, see [Setting Up Docker for Development and Production](setting-up-docker.md).
 
 #### `start`
 
@@ -196,7 +196,7 @@ That is the happy path: `create → cd → dev`.
 ### Related pages
 
 * [Installation](../quickstart/installation.md)
-* [Contributors Installation Guide](contributors-installation-guide.md)
-*   [Setting Up Docker for Development and Production](setting-up-docker-for-development-and-production.md)
+* [Contributors Installation Guide](/broken/spaces/12ok30OlFEEb6WoWfH8l/pages/GiKubNuo8tQcnF25GthU)
+*   [Setting Up Docker for Development and Production](setting-up-docker.md)
 
     This starts the required services in development mode.
