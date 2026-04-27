@@ -145,7 +145,7 @@ Refer to this example of Gemini Plugin to better understand how to define your i
 
 **Implement Block Logic (index.plugin.ts):**
 
-This plugin example returns the current time when sending 'time' keyword in the chat to trigger the conversation flow. You can learn more about creating your flow and managing blocks [here](../../quickstart/create-your-first-flow.md).
+This plugin example returns the current time when sending 'time' keyword in the chat to trigger the conversation flow. You can learn more about creating your flow and managing blocks [here](../../quickstart/create-your-1st-workflow.md).
 
 Inside the same directory hexabot-plugin-time create the `index.plugin.ts` with the following code:
 
