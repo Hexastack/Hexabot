@@ -1,4 +1,7 @@
 ---
+description: >-
+  Monitor system activity, recent workflow runs, and operational health from one
+  page.
 icon: chart-line
 ---
 

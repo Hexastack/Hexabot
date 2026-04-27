@@ -1,4 +1,5 @@
 ---
+description: Create a simple Hexabot workflow, add your first action, and test it locally.
 icon: arrow-progress
 ---
 
