@@ -44,6 +44,25 @@
   gap: 6px;
 }
 
+.workflow-node-card--animated-execution-border {
+  border-color: transparent;
+  background:
+    linear-gradient(
+        var(--workflow-node-bg-color, #ffffff),
+        var(--workflow-node-bg-color, #ffffff)
+      )
+      padding-box,
+    conic-gradient(
+        from var(--workflow-node-execution-border-angle),
+        #d8e830 0deg,
+        #6cc96d 120deg,
+        #4cc4e5 240deg,
+        #d8e830 360deg
+      )
+      border-box;
+  animation: workflow-node-execution-border-spin 0.8s linear infinite;
+}
+
 .workflow-node-title-row {
   display: flex;
   flex-direction: row;
@@ -196,8 +215,28 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .workflow-node-card--animated-execution-border {
+    animation: none;
+  }
+
   .workflow-icon-spin {
     animation: none;
+  }
+}
+
+@property --workflow-node-execution-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes workflow-node-execution-border-spin {
+  from {
+    --workflow-node-execution-border-angle: 0deg;
+  }
+
+  to {
+    --workflow-node-execution-border-angle: 360deg;
   }
 }
 

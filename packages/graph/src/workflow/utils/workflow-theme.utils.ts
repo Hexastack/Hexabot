@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ActionStatus } from "@hexabot-ai/agentic";
+import type { ActionStatus } from "@hexabot-ai/agentic";
 import * as Icons from "lucide-react";
 import { createElement, type ComponentProps } from "react";
 
@@ -16,7 +16,7 @@ import type {
 
 type WorkflowStateConfig = {
   icon: WorkflowIcon;
-  color: string;
+  color?: string;
 };
 
 type WorkflowThemeInput = {
@@ -44,22 +44,31 @@ const WorkflowRunningIcon: WorkflowIcon = ({
     className: appendClassName(className, "workflow-icon-spin"),
   });
 };
+const WORKFLOW_STATE_ICONS: Partial<Record<ActionStatus, WorkflowIcon>> = {
+  running: WorkflowRunningIcon,
+  failed: Icons.TriangleAlert,
+  suspended: Icons.SquarePause,
+};
+const WORKFLOW_STATE_COLOR_OVERRIDES: Partial<Record<ActionStatus, string>> = {
+  failed: "#FF0000",
+};
 
 export const getWorkflowStateConfig = (
   status?: ActionStatus,
 ): WorkflowStateConfig | undefined => {
-  switch (status) {
-    case "running":
-      return { icon: WorkflowRunningIcon, color: "#4dc4e6" };
-    case "completed":
-      return undefined;
-    case "failed":
-      return { icon: Icons.TriangleAlert, color: "#FF0000" };
-    case "suspended":
-      return { icon: Icons.SquarePause, color: "#4dc4e6" };
-    default:
-      return undefined;
+  if (!status) {
+    return undefined;
   }
+
+  const icon = WORKFLOW_STATE_ICONS[status];
+
+  if (!icon) {
+    return undefined;
+  }
+
+  const color = WORKFLOW_STATE_COLOR_OVERRIDES[status];
+
+  return color ? { icon, color } : { icon };
 };
 
 export const resolveWorkflowStepTheme = ({
@@ -70,8 +79,11 @@ export const resolveWorkflowStepTheme = ({
 }: WorkflowThemeInput): ResolvedWorkflowTheme => {
   const isDarkMode = mode === "dark";
   const stateConfig = getWorkflowStateConfig(status);
+  const stateColorOverride = status
+    ? WORKFLOW_STATE_COLOR_OVERRIDES[status]
+    : undefined;
   const borderColor =
-    stateConfig?.color ?? baseTheme?.borderColor ?? action?.color;
+    stateColorOverride ?? baseTheme?.borderColor ?? action?.color;
   const iconName = baseTheme?.icon ?? action?.icon;
   const namedIcon =
     iconName && iconName in Icons
@@ -91,7 +103,7 @@ export const resolveWorkflowStepTheme = ({
             isDarkMode ? DEFAULT_DARK_MIX_TARGET : DEFAULT_LIGHT_MIX_TARGET
           } ${isDarkMode ? "85%" : "95%"})`
         : undefined),
-    iconColor: stateConfig?.color ?? baseTheme?.iconColor ?? borderColor,
+    iconColor: stateColorOverride ?? baseTheme?.iconColor ?? borderColor,
     borderColor,
   };
 };

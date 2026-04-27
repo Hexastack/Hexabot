@@ -6,29 +6,47 @@
 
 import { type CSSProperties, type PropsWithChildren } from "react";
 
+import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import {
   ENodeType,
-  TNodeCardContentVariant,
+  type NodeExecutionState,
+  type TNodeCardContentVariant,
 } from "../../types/workflow-node.types";
 
 import { GenericNodeDeleteButton } from "./GenericNodeDeleteButton";
+
+const ANIMATED_EXECUTION_BORDER_STATES = new Set<NodeExecutionState>([
+  "running",
+  "start",
+  "suspended",
+]);
 
 export const GenericNodeRightContent = <T extends ENodeType = ENodeType>({
   children,
   variant = "title-only",
 }: PropsWithChildren<{ variant?: TNodeCardContentVariant }>) => {
   const { bgColor, borderColor } = useWorkflowNodeTheme<T>();
+  const { executionState } = useWorkflowNode<T>();
+  const hasAnimatedExecutionBorder =
+    executionState !== undefined &&
+    ANIMATED_EXECUTION_BORDER_STATES.has(executionState);
   const style = {
     "--workflow-node-bg-color": bgColor,
     "--workflow-node-border-color": borderColor,
   } as CSSProperties;
+  const className = [
+    "workflow-node-card",
+    `workflow-node-card--${variant}`,
+    hasAnimatedExecutionBorder
+      ? "workflow-node-card--animated-execution-border"
+      : undefined,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div
-      className={`workflow-node-card workflow-node-card--${variant}`}
-      style={style}
-    >
+    <div className={className} style={style}>
       <GenericNodeDeleteButton />
       {children}
     </div>
