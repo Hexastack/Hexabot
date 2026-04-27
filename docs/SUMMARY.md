@@ -25,6 +25,7 @@
   * [Conditionals, Parallels, and Loops](workflow-editor/conditionals-parallels-and-loops.md)
   * [Expressions and JSONata Scopes](workflow-editor/expressions-and-jsonata-scopes.md)
   * [Versions, Drafts, and Publishing](workflow-editor/versions-drafts-and-publishing.md)
+* [Workflow Runs](workflow-runs.md)
 * [Memory](memory.md)
 * [Content](content/README.md)
   * [Content Types](content/content-types.md)
