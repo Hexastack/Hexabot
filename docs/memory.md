@@ -28,12 +28,7 @@ The schema builder creates object schemas with named properties. For each proper
 
 All scopes are still tied to the current memory owner, usually the subscriber or user profile that triggered the workflow. **Global** does not mean one shared value for all subscribers.
 
-| Scope    | Record identity                                 | Use it for                                                                                                                         |
-| -------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Global   | Owner + memory definition                       | Long-lived facts that should follow the same subscriber across workflows, such as language, preferred name, or stable preferences. |
-| Workflow | Owner + workflow + memory definition            | State that should be shared across runs of one workflow but not reused by other workflows.                                         |
-| Thread   | Owner + conversation thread + memory definition | Conversation-specific context that should remain available across workflow runs in the same thread.                                |
-| Run      | Owner + workflow run + memory definition        | Temporary scratch data that should disappear after the current run.                                                                |
+<table><thead><tr><th width="107.68609619140625">Scope</th><th>Record identity</th><th>Use it for</th></tr></thead><tbody><tr><td>Global</td><td>Owner + memory definition</td><td>Long-lived facts that should follow the same subscriber across workflows, such as language, preferred name, or stable preferences.</td></tr><tr><td>Workflow</td><td>Owner + workflow + memory definition</td><td>State that should be shared across runs of one workflow but not reused by other workflows.</td></tr><tr><td>Thread</td><td>Owner + conversation thread + memory definition</td><td>Conversation-specific context that should remain available across workflow runs in the same thread.</td></tr><tr><td>Run</td><td>Owner + workflow run + memory definition</td><td>Temporary scratch data that should disappear after the current run.</td></tr></tbody></table>
 
 TTL is applied when a record is created or updated. Updating a record refreshes its expiry. Expired records are no longer loaded into workflow memory and can be cleaned up by backend maintenance.
 
