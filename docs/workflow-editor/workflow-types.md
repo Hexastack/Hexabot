@@ -1,5 +1,5 @@
 ---
-icon: rocket-launch
+icon: list-radio
 ---
 
 # Workflow Types

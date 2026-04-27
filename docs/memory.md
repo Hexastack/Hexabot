@@ -20,13 +20,7 @@ The list shows each definition's name, slug, scope, TTL, creation date, and last
 
 ### Definition Fields
 
-| Field         | Purpose                                                                                                                                                                                            |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Name          | Human-readable label shown in the admin panel and used as the heading when AI actions receive memory context. Names must be unique.                                                                |
-| Slug          | Stable technical key used in workflow YAML, `$context.memory`, and `update_memory` inputs. Use lowercase letters, numbers, and underscores only, such as `customer_profile`. Slugs must be unique. |
-| Scope         | Controls how records are separated for the current owner, workflow, thread, or run.                                                                                                                |
-| TTL (seconds) | Optional lifetime for records created from this definition. Leave blank for permanent memory. Use a positive integer to expire records after that many seconds.                                    |
-| Schema        | JSON object schema that validates every value saved for this memory.                                                                                                                               |
+<table><thead><tr><th width="147.249267578125">Field</th><th>Purpose</th></tr></thead><tbody><tr><td>Name</td><td>Human-readable label shown in the admin panel and used as the heading when AI actions receive memory context. Names must be unique.</td></tr><tr><td>Slug</td><td>Stable technical key used in workflow YAML, <code>$context.memory</code>, and <code>update_memory</code> inputs. Use lowercase letters, numbers, and underscores only, such as <code>customer_profile</code>. Slugs must be unique.</td></tr><tr><td>Scope</td><td>Controls how records are separated for the current owner, workflow, thread, or run.</td></tr><tr><td>TTL (seconds)</td><td>Optional lifetime for records created from this definition. Leave blank for permanent memory. Use a positive integer to expire records after that many seconds.</td></tr><tr><td>Schema</td><td>JSON object schema that validates every value saved for this memory.</td></tr></tbody></table>
 
 The schema builder creates object schemas with named properties. For each property, choose a type, add a description, and mark it required only when every update can reliably provide that field. Object schemas are strict: unexpected properties are rejected when memory is written.
 
