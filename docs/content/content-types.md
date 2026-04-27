@@ -1,5 +1,5 @@
 ---
-icon: folder-grid
+icon: book-open
 ---
 
 # Content Types

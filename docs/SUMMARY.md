@@ -18,24 +18,18 @@
 
 * [Dashboard](analytics-dashboard.md)
 * [Inbox](inbox.md)
-
-## Workflows
-
-* [Workflow Editor](workflows/workflow-editor.md)
-* [Workflow Types](workflows/workflow-types.md)
-* [Graph View and YAML Editor](workflows/graph-view-and-yaml-editor.md)
-* [Actions, Tasks, and Steps](workflows/actions-tasks-and-steps.md)
-* [Conditionals, Parallels, and Loops](workflows/conditionals-parallels-and-loops.md)
-* [Expressions and JSONata Scopes](workflows/expressions-and-jsonata-scopes.md)
-* [Versions, Drafts, and Publishing](workflows/versions-drafts-and-publishing.md)
-
-***
-
+* [Workflow Editor](workflow-editor/README.md)
+  * [Workflow Types](workflow-editor/workflow-types.md)
+  * [Graph View and YAML Editor](workflow-editor/graph-view-and-yaml-editor.md)
+  * [Actions, Tasks, and Steps](workflow-editor/actions-tasks-and-steps.md)
+  * [Conditionals, Parallels, and Loops](workflow-editor/conditionals-parallels-and-loops.md)
+  * [Expressions and JSONata Scopes](workflow-editor/expressions-and-jsonata-scopes.md)
+  * [Versions, Drafts, and Publishing](workflow-editor/versions-drafts-and-publishing.md)
 * [Memory](memory.md)
-* [Knowledge Base](knowledge-base/README.md)
-  * [Content Types](knowledge-base/content-types.md)
-  * [Manage Persistent Menu](knowledge-base/manage-persistent-menu.md)
-  * [Media Library](knowledge-base/media-library.md)
+* [Content](content/README.md)
+  * [Content Types](content/content-types.md)
+  * [Manage Persistent Menu](content/manage-persistent-menu.md)
+  * [Media Library](content/media-library.md)
 * [Subscribers](subscribers.md)
 * [Localization](localization/README.md)
   * [Languages](localization/languages.md)

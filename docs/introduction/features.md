@@ -69,7 +69,7 @@ Teams can update content without rewriting workflow logic. This makes maintenanc
 * Reuse content across different workflows.
 * Manage translations for multilingual experiences.
 
-Learn more in [Knowledge Base](../knowledge-base/).
+Learn more in [Knowledge Base](../content/).
 
 ### Channels and inbox
 
@@ -104,5 +104,5 @@ Invite team members, assign roles, and limit access based on responsibilities.
 ### Explore next
 
 * [Overview](overview.md)
-* [Visual Editor](../workflows/workflow-editor.md)
+* [Visual Editor](../workflow-editor/)
 * [Users and Roles](../users-and-roles/)
