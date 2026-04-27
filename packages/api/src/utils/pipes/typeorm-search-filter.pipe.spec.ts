@@ -74,6 +74,21 @@ describe('TypeOrmSearchFilterPipe', () => {
     expect(result.take).toBe(10);
   });
 
+  it.each(['__proto__', 'constructor', 'prototype'])(
+    'should block prototype-polluting key "%s" in assignNestedWhereValue',
+    (forbidden) => {
+      const target: Record<string, unknown> = {};
+      (pipe as any).assignNestedWhereValue(
+        target,
+        `${forbidden}.polluted`,
+        'yes',
+      );
+
+      expect(target).toEqual({});
+      expect(({} as any).polluted).toBeUndefined();
+    },
+  );
+
   it('should parse sort parameter and fallback to default sort', async () => {
     const withSort = await pipe.transform(
       {

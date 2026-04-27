@@ -391,6 +391,12 @@ export class TypeOrmSearchFilterPipe<T>
     }
   }
 
+  private static readonly FORBIDDEN_KEYS = new Set([
+    '__proto__',
+    'constructor',
+    'prototype',
+  ]);
+
   private assignNestedWhereValue(
     target: Record<string, unknown>,
     path: string,
@@ -398,6 +404,11 @@ export class TypeOrmSearchFilterPipe<T>
   ): void {
     if (value === undefined) return;
     const segments = path.split('.');
+
+    if (segments.some((s) => TypeOrmSearchFilterPipe.FORBIDDEN_KEYS.has(s))) {
+      return;
+    }
+
     let cursor = target;
 
     for (let index = 0; index < segments.length - 1; index++) {
