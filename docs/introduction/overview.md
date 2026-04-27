@@ -1,4 +1,7 @@
 ---
+description: >-
+  Explore Hexabot’s core capabilities for building and running agentic workflows
+  across channels.
 icon: globe
 ---
 
@@ -6,53 +9,40 @@ icon: globe
 
 Hexabot is an open AI automation platform for building and running agentic workflows across channels.
 
-It helps teams automate conversations, tasks, and business processes in one place. You can start with a simple workflow, then expand with actions, bindings, memory, and AI features.
+It helps teams automate conversations, tasks, and recurring operations in one place. Start with a simple workflow, then expand with actions, bindings, memory, and AI features.
 
-### What you can build
+### What Hexabot is built for
 
-Hexabot supports different automation styles.
+Hexabot is workflow-first.
 
-* **Conversational workflows** for assistants, support, and guided interactions.
-* **Manual workflows** for on-demand tasks started by a user or operator.
-* **Scheduled workflows** for recurring jobs, checks, and background automations.
+You define how an automation starts, what steps it runs, and how it responds. This makes it useful for customer experiences, internal tools, and background jobs.
+
+Hexabot supports three workflow types:
+
+* **Conversational** — for assistants, support flows, and guided interactions
+* **Manual** — for tasks started on demand by a user or operator
+* **Scheduled** — for recurring jobs, checks, and background automations
 
 ### Core capabilities
 
-#### Workflow-first automation
+Hexabot brings workflow design, execution, and operations into one workspace.
 
-Hexabot centers on workflows instead of fixed chatbot scripts. Workflows define how your automations start, what steps they run, and how they respond across different channels.
-
-#### Actions and bindings
-
-Actions let workflows do useful work such as calling services, processing data, or triggering follow-up steps. Bindings make shared capabilities reusable across workflows.
-
-#### Memory and AI
-
-Hexabot can keep context over time with memory. It also supports AI-powered features such as intent understanding, language models, and retrieval from external knowledge.
-
-#### Channels and helpers
-
-Channels remain a core part of the platform. You can run workflows where your users already are, then extend behavior with helpers and custom integrations.
-
-#### Visual editing and operations
-
-Hexabot includes a modern admin experience for designing workflows, managing settings, and monitoring activity. Teams can review runs, track usage, and improve automations over time.
+* **Visual workflow editing** — build and update workflows in a clear editor
+* **Actions and bindings** — connect tools, services, and reusable capabilities
+* **Memory and AI** — keep context and add AI where it improves results
+* **Channels and inbox** — run workflows across channels and manage interactions
+* **Runs and monitoring** — review activity, inspect behavior, and improve workflows
+* **Content and localization** — manage knowledge and multilingual experiences
+* **Users and roles** — control access for operators, admins, and teams
 
 ### Why teams use Hexabot
 
-* **Open and self-hosted** — keep control of your infrastructure and data.
-* **Flexible** — support conversations, internal tools, and scheduled automations.
-* **Extensible** — add actions, channels, helpers, and integrations as your needs grow.
+* **Open and self-hosted** — keep control of your infrastructure and data
+* **Flexible** — support conversations, internal workflows, and scheduled automations
+* **Extensible** — add actions, channels, helpers, and integrations as needs grow
 
-### Key features
+### Explore next
 
-* **Agentic workflows**
-* **Actions and reusable bindings**
-* **Memory and AI capabilities**
-* **Knowledge Base**
-* **Multi-channel support**
-* **Visual workflow editing**
-* **Analytics and monitoring**
-* **Inbox and live chat**
-* **Multi-language support**
-* **User and role management**
+* [Features](features.md)
+* [Workflow Editor](../workflow-editor/)
+* [Create your 1st workflow](../quickstart/create-your-first-flow.md)
