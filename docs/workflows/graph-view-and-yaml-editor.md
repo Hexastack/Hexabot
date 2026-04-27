@@ -1,5 +1,5 @@
 ---
-icon: chart-diagram
+icon: brackets-curly
 ---
 
 # Graph View and YAML Editor
@@ -226,11 +226,3 @@ outputs:
 ```
 
 In the graph, this appears as a single task node between the start and end indicators. In YAML, the same workflow is represented by one task definition in `defs`, one task step in `flow`, and one value in `outputs`.
-
-### Related Pages
-
-* Workflow Editor
-* Actions, Tasks, and Steps
-* Conditionals, Parallel Blocks, and Loops
-* Workflow YAML Reference
-* JSONata Expression Reference

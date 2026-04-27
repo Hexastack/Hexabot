@@ -17,6 +17,8 @@
 ***
 
 * [Dashboard](analytics-dashboard.md)
+* [Chat Inbox](chat-inbox.md)
+* [Context Variables](context-variables.md)
 
 ## Workflows
 
@@ -25,11 +27,10 @@
 * [Graph View and YAML Editor](workflows/graph-view-and-yaml-editor.md)
 * [Actions, Tasks, and Steps](workflows/actions-tasks-and-steps.md)
 * [Conditionals, Parallels, and Loops](workflows/conditionals-parallels-and-loops.md)
+* [Expressions and JSONata Scopes](workflows/expressions-and-jsonata-scopes.md)
 
 ***
 
-* [Context Variables](context-variables.md)
-* [Chat Inbox](chat-inbox.md)
 * [Knowledge Base](knowledge-base/README.md)
   * [Content Types](knowledge-base/content-types.md)
   * [Manage Persistent Menu](knowledge-base/manage-persistent-menu.md)
