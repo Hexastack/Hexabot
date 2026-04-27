@@ -655,8 +655,6 @@
       "logs_errors": "Journaux / Erreurs"
     },
     "inspector": "Inspecteur",
-    "latest_run": "Dernière exécution",
-    "run_at": "Exécution {{0}}",
     "unknown": "Inconnu",
     "upgrade_required": "Mise à niveau requise",
     "plan_badge_starter": "STARTER",
