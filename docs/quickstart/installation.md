@@ -1,4 +1,5 @@
 ---
+description: Install Hexabot locally, create a project, and run it with the CLI.
 icon: laptop-arrow-down
 ---
 
