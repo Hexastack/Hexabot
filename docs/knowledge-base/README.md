@@ -26,9 +26,9 @@ Instead of hard-coding this data in workflow steps, store it once and let workfl
 The knowledge base has four main parts:
 
 * [Content Types](content-types.md) define the schema for a category of records.
-* [Contents](content-entries.md) store the actual entries for each content type.
+* [Contents Entries](content-entries.md) store the actual entries for each content type.
 * [Media Library](media-library.md) stores files uploaded from content fields.
-* [Manage Persistent Menu](persistent-menu.md) controls always-available menu options for end-users.
+* [Persistent Menu](persistent-menu.md) controls always-available menu options for end-users.
 
 In most setups, you create a content type first, then add entries that match its fields.
 

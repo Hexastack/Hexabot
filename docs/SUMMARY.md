@@ -33,6 +33,7 @@
 * [Integrations](integrations/README.md)
   * [Channels and Sources](integrations/channels-and-sources.md)
   * [MCP Servers](integrations/mcp-servers.md)
+  * [Credentials](integrations/credentials.md)
 * [Knowledge Base](knowledge-base/README.md)
   * [Content Types](knowledge-base/content-types.md)
   * [Content Entries](knowledge-base/content-entries.md)

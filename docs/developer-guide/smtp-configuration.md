@@ -35,7 +35,7 @@ EMAIL_SMTP_PASS=your-smtp-password
 EMAIL_SMTP_FROM="Hexabot <noreply@example.com>"
 ```
 
-<table><thead><tr><th>Variable</th><th width="120.149169921875">Required for sending</th><th>Default</th><th>Notes</th></tr></thead><tbody><tr><td><code>EMAIL_SMTP_ENABLED</code></td><td>Yes</td><td><code>false</code></td><td>Must be exactly <code>true</code> to enable the real mailer module.</td></tr><tr><td><code>EMAIL_SMTP_HOST</code></td><td>Yes</td><td><code>localhost</code></td><td>Hostname reachable from the API process or API container.</td></tr><tr><td><code>EMAIL_SMTP_PORT</code></td><td>Yes</td><td><code>25</code></td><td>Common values are <code>25</code>, <code>587</code>, and <code>465</code>, depending on the provider.</td></tr><tr><td><code>EMAIL_SMTP_SECURE</code></td><td>Yes</td><td><code>false</code></td><td>Use <code>true</code> for implicit TLS from connection start, usually port <code>465</code>. Use <code>false</code> for plain SMTP or STARTTLS, commonly ports <code>25</code> or <code>587</code>.</td></tr><tr><td><code>EMAIL_SMTP_USER</code></td><td>Usually</td><td>empty</td><td>SMTP username, API key username, or provider-specific login.</td></tr><tr><td><code>EMAIL_SMTP_PASS</code></td><td>Usually</td><td>empty</td><td>SMTP password, app password, or provider API key.</td></tr><tr><td><code>EMAIL_SMTP_FROM</code></td><td>Yes</td><td><code>noreply@example.com</code></td><td>Default sender used by <code>MailerModule</code> for outgoing email. Many providers require this address or domain to be verified.</td></tr></tbody></table>
+<table><thead><tr><th width="189.26995849609375">Variable</th><th width="120.149169921875">Required for sending</th><th width="142.11224365234375">Default</th><th>Notes</th></tr></thead><tbody><tr><td><code>EMAIL_SMTP_ENABLED</code></td><td>Yes</td><td><code>false</code></td><td>Must be exactly <code>true</code> to enable the real mailer module.</td></tr><tr><td><code>EMAIL_SMTP_HOST</code></td><td>Yes</td><td><code>localhost</code></td><td>Hostname reachable from the API process or API container.</td></tr><tr><td><code>EMAIL_SMTP_PORT</code></td><td>Yes</td><td><code>25</code></td><td>Common values are <code>25</code>, <code>587</code>, and <code>465</code>, depending on the provider.</td></tr><tr><td><code>EMAIL_SMTP_SECURE</code></td><td>Yes</td><td><code>false</code></td><td>Use <code>true</code> for implicit TLS from connection start, usually port <code>465</code>. Use <code>false</code> for plain SMTP or STARTTLS, commonly ports <code>25</code> or <code>587</code>.</td></tr><tr><td><code>EMAIL_SMTP_USER</code></td><td>Usually</td><td>empty</td><td>SMTP username, API key username, or provider-specific login.</td></tr><tr><td><code>EMAIL_SMTP_PASS</code></td><td>Usually</td><td>empty</td><td>SMTP password, app password, or provider API key.</td></tr><tr><td><code>EMAIL_SMTP_FROM</code></td><td>Yes</td><td><code>noreply@example.com</code></td><td>Default sender used by <code>MailerModule</code> for outgoing email. Many providers require this address or domain to be verified.</td></tr></tbody></table>
 
 Hexabot sets Nodemailer `ignoreTLS` to `false`, so STARTTLS can be used when the SMTP server advertises it and `EMAIL_SMTP_SECURE=false`.
 
@@ -49,10 +49,7 @@ FRONTEND_BASE_URL=https://app.example.com
 
 The current templates use this value for:
 
-| Email                | Link shape                        |
-| -------------------- | --------------------------------- |
-| Account confirmation | `FRONTEND_BASE_URL/login/<token>` |
-| Password reset       | `FRONTEND_BASE_URL/reset/<token>` |
+<table><thead><tr><th width="197.5980224609375">Email</th><th>Link shape</th></tr></thead><tbody><tr><td>Account confirmation</td><td><code>FRONTEND_BASE_URL/login/&#x3C;token></code></td></tr><tr><td>Password reset</td><td><code>FRONTEND_BASE_URL/reset/&#x3C;token></code></td></tr></tbody></table>
 
 Set production-grade secrets and expiration values for the email tokens:
 
