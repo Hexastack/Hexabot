@@ -18,7 +18,7 @@ describe("workflow-theme.utils", () => {
   it("returns running state config with an animated icon", () => {
     const runningConfig = getWorkflowStateConfig("running");
 
-    expect(runningConfig?.color).toBe("#4dc4e6");
+    expect(runningConfig?.color).toBeUndefined();
     const runningIcon = runningConfig?.icon as
       | ((props: { className?: string; size?: number }) => IconProbeResult)
       | undefined;
@@ -29,6 +29,30 @@ describe("workflow-theme.utils", () => {
 
     expect(iconElement?.props.className).toContain("workflow-icon-spin");
     expect(iconElement?.props.className).toContain("existing");
+  });
+
+  it("preserves node colors while running", () => {
+    const resolved = resolveWorkflowStepTheme({
+      action: { name: "send_message", color: "#336699" },
+      status: "running",
+      mode: "light",
+    });
+
+    expect(resolved.iconColor).toBe("#336699");
+    expect(resolved.borderColor).toBe("#336699");
+    expect(resolved.bgColor).toContain("#ffffff 95%");
+  });
+
+  it("preserves node colors while suspended", () => {
+    const resolved = resolveWorkflowStepTheme({
+      action: { name: "send_message", color: "#336699" },
+      status: "suspended",
+      mode: "light",
+    });
+
+    expect(resolved.iconColor).toBe("#336699");
+    expect(resolved.borderColor).toBe("#336699");
+    expect(resolved.bgColor).toContain("#ffffff 95%");
   });
 
   it("uses action accent colors when no state override is present", () => {
