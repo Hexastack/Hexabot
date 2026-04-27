@@ -10,7 +10,7 @@
 ## Quickstart
 
 * [Installation](quickstart/installation.md)
-* [Create your 1st workflow](quickstart/create-your-1st-workflow.md)
+* [Create your 1st workflow](quickstart/create-your-first-flow.md)
 
 ## USER GUIDE
 

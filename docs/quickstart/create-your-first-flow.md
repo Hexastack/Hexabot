@@ -72,7 +72,7 @@ Set the **Text** to:
 Hello World!
 ```
 
-<div align="center"><img src="../.gitbook/assets/image (7).png" alt=""></div>
+<div align="center"><img src="../.gitbook/assets/image (7).png" alt="" width="375"></div>
 
 Click **Save**.
 
