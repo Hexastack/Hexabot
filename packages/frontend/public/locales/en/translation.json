@@ -84,7 +84,13 @@
     "file_error": "File not found",
     "audio_error": "Audio not found",
     "video_error": "Video not found",
+    "start": "Start",
+    "stop": "Stop",
     "wait_message": "Please wait",
+    "conditional_operator": "Condition",
+    "parallel_indicator": "Parallel",
+    "loop_indicator": "Loop",
+    "conditional_indicator": "Conditional",
     "license_activated_modal_title": "License activated successfully",
     "license_activated_modal_description": "Your license key has been validated and paid features are now available.",
     "license_activated_modal_cta_hint": "Click Continue to refresh your session and unlock eligible features.",
@@ -954,6 +960,11 @@
         },
         "empty_state": "No strategy options available."
       }
+    },
+    "port_label": {
+      "memory": "Memory",
+      "model": "Model",
+      "tools": "Tools"
     },
     "yaml_editor": {
       "show": "Show YAML editor",
