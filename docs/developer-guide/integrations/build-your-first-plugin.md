@@ -47,7 +47,7 @@ A Hexabot plugins resides in the following directory  `/extensions/plugins/` wit
 
 ## Step-by-Step Guide
 
-Creating a new plugin will help you create a new custom block in the [Visual editor](../../user-guide/visual-editor/). This guide will walk you through creating a custom plugin, using a basic example: "**A block that retrieves and displays the current time**". This approach can be expanded further to create all kinds of custom blocks, allowing you to add new functionality that aligns perfectly with your project needs.
+Creating a new plugin will help you create a new custom block in the [Visual editor](../../user-guide/workflow-editor/). This guide will walk you through creating a custom plugin, using a basic example: "**A block that retrieves and displays the current time**". This approach can be expanded further to create all kinds of custom blocks, allowing you to add new functionality that aligns perfectly with your project needs.
 
 ### Create Your Plugin Directory
 

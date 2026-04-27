@@ -92,6 +92,6 @@ Use the **NLU training tool** to test out some text against the NLU intent you j
 
 <figure><img src="../../../.gitbook/assets/Screenshot from 2024-12-20 19-32-23.png" alt=""><figcaption></figcaption></figure>
 
-Finally, you can use NLU Entities when configuring triggers in the blocks within the [Visual Editor](../../visual-editor/). You can check the [regular-blocks](../../visual-editor/regular-blocks/ "mention") section in the documentation to help understand how to trigger blocks using NLU intents.
+Finally, you can use NLU Entities when configuring triggers in the blocks within the [Visual Editor](../../workflow-editor/). You can check the [regular-blocks](../../workflow-editor/regular-blocks/ "mention") section in the documentation to help understand how to trigger blocks using NLU intents.
 
 The Ludwig NLU Engine offers a balance between easy configuration and powerful customization. By using pre-trained models from the default setup or training custom models, you have all the tools to build the required NLU logic for your use case. Remember to test and adjust your settings to leverage its capabilities to the fullest.

@@ -63,10 +63,10 @@ Prompts use [Handlebars](https://handlebarsjs.com/guide/) for dynamic templates:
 
 <figure><img src="../../../.gitbook/assets/image (33).png" alt=""><figcaption></figcaption></figure>
 
-3. Finally, you can use NLU Entities when configuring triggers in the blocks within the [Visual Editor](../../visual-editor/)
+3. Finally, you can use NLU Entities when configuring triggers in the blocks within the [Visual Editor](../../workflow-editor/)
 
-{% content-ref url="../../visual-editor/regular-blocks/" %}
-[regular-blocks](../../visual-editor/regular-blocks/)
+{% content-ref url="../../workflow-editor/regular-blocks/" %}
+[regular-blocks](../../workflow-editor/regular-blocks/)
 {% endcontent-ref %}
 
 ### Key Considerations

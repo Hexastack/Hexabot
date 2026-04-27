@@ -36,7 +36,7 @@ The Quick Replies block in Hexabot allows you to present users with a predefined
 * **Gathering Basic Information:** Use Quick Replies to collect simple user information like language preferences, contact methods, or preferences.
 * **Guiding the Conversation:** Subtly steer the direction of the dialog by suggesting actions or providing prompts as Quick Reply options.
 
-<table data-view="cards"><thead><tr><th></th><th></th><th></th><th data-hidden data-card-cover data-type="files"></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td></td><td>Using Quick Replies Block Guide</td><td></td><td><a href="../../../.gitbook/assets/image (2) (1) (1) (1) (1).png">image (2) (1) (1) (1) (1).png</a></td><td><a href="using-quick-replies-block.md">using-quick-replies-block.md</a></td></tr></tbody></table>
+<table data-view="cards"><thead><tr><th></th><th></th><th></th><th data-hidden data-card-cover data-type="files"></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td></td><td>Using Quick Replies Block Guide</td><td></td><td><a href="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1).png">image (2) (1) (1) (1) (1) (1).png</a></td><td><a href="using-quick-replies-block.md">using-quick-replies-block.md</a></td></tr></tbody></table>
 {% endtab %}
 
 {% tab title="Buttons" %}

@@ -17,7 +17,7 @@ Hexabot's Media Library serves as a centralized repository for all the media fil
 
 **3. Using Media in Chatbot Content:**
 
-* **Referencing Files:** Once a file is uploaded to the Media Library, you'll get an identifier that you can use to reference the file in your chatbot flow. The [Attachment block](../visual-editor/regular-blocks/using-attachment-block.md), allow you to select files directly from your Media Library.
+* **Referencing Files:** Once a file is uploaded to the Media Library, you'll get an identifier that you can use to reference the file in your chatbot flow. The [Attachment block](../workflow-editor/regular-blocks/using-attachment-block.md), allow you to select files directly from your Media Library.
 
 {% hint style="info" %}
 **Tips for Media Management:**

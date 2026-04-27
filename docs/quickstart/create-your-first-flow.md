@@ -42,15 +42,15 @@ Open `http://localhost:3000`.
 
 Sign in with the email and password you created with the Hexabot CLI.
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt="" width="375"><figcaption></figcaption></figure>
 
 Open **Workflow Builder**.
 
-<figure><img src="../.gitbook/assets/image (1).png" alt="" width="320"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt="" width="320"><figcaption></figcaption></figure>
 
 Click **Create Workflow**.
 
-<figure><img src="../.gitbook/assets/image (2).png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1).png" alt="" width="375"><figcaption></figcaption></figure>
 
 Name the workflow `Hello World`.
 {% endstep %}
@@ -60,7 +60,7 @@ Name the workflow `Hello World`.
 
 Click the **plus** icon button and select **Step**.
 
-<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 From the action list, select **Send text message**.
 
@@ -114,12 +114,12 @@ You can add:
 
 Open the YAML editor to see the workflow definition.
 
-<figure><img src="../.gitbook/assets/image.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (3).png" alt="" width="375"><figcaption></figcaption></figure>
 
 You do not need to write YAML to get started. It becomes useful as workflows grow.
 
 ### What’s next
 
 * Review the platform overview in [Overview](../introduction/overview.md)
-* Learn the editor basics in [Using the Workflow Editor](../user-guide/visual-editor/using-the-visual-editor.md)
+* Learn the editor basics in [Using the Workflow Editor](../user-guide/workflow-editor/using-the-visual-editor.md)
 * Explore workflows across channels, actions, bindings, and memory

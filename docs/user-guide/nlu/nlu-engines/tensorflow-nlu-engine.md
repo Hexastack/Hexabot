@@ -68,7 +68,7 @@ Use the **NLU training tool** to test out some text against the NLU intent you j
 
 <figure><img src="../../../.gitbook/assets/Screenshot from 2025-01-03 15-22-35.png" alt=""><figcaption></figcaption></figure>
 
-Finally, you can use NLU Entities when configuring triggers in the blocks within the [Visual Editor](../../visual-editor/). You can check the [regular-blocks](../../visual-editor/regular-blocks/ "mention") section in the documentation to help understand how to trigger blocks using NLU intents.
+Finally, you can use NLU Entities when configuring triggers in the blocks within the [Visual Editor](../../workflow-editor/). You can check the [regular-blocks](../../workflow-editor/regular-blocks/ "mention") section in the documentation to help understand how to trigger blocks using NLU intents.
 
 ### Key Considerations
 

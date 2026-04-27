@@ -14,14 +14,14 @@
 
 ## USER GUIDE
 
-* [Visual Editor](user-guide/visual-editor/README.md)
-  * [Using the Visual Editor](user-guide/visual-editor/using-the-visual-editor.md)
-  * [Regular Blocks](user-guide/visual-editor/regular-blocks/README.md)
-    * [Using Simple Text Block](user-guide/visual-editor/regular-blocks/using-simple-text-block.md)
-    * [Using Quick Replies Block](user-guide/visual-editor/regular-blocks/using-quick-replies-block.md)
-    * [Using Buttons Block](user-guide/visual-editor/regular-blocks/using-buttons-block.md)
-    * [Using Attachment Block](user-guide/visual-editor/regular-blocks/using-attachment-block.md)
-  * [Using Advanced Blocks](user-guide/visual-editor/using-advanced-blocks.md)
+* [Workflow Editor](user-guide/workflow-editor/README.md)
+  * [Using the Visual Editor](user-guide/workflow-editor/using-the-visual-editor.md)
+  * [Regular Blocks](user-guide/workflow-editor/regular-blocks/README.md)
+    * [Using Simple Text Block](user-guide/workflow-editor/regular-blocks/using-simple-text-block.md)
+    * [Using Quick Replies Block](user-guide/workflow-editor/regular-blocks/using-quick-replies-block.md)
+    * [Using Buttons Block](user-guide/workflow-editor/regular-blocks/using-buttons-block.md)
+    * [Using Attachment Block](user-guide/workflow-editor/regular-blocks/using-attachment-block.md)
+  * [Using Advanced Blocks](user-guide/workflow-editor/using-advanced-blocks.md)
 * [Flows](user-guide/flows.md)
 * [NLU](user-guide/nlu/README.md)
   * [NLU Engines](user-guide/nlu/nlu-engines/README.md)

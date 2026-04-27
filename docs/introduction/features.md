@@ -104,5 +104,5 @@ Invite team members, assign roles, and limit access based on responsibilities.
 ### Explore next
 
 * [Overview](overview.md)
-* [Visual Editor](../user-guide/visual-editor/)
+* [Visual Editor](../user-guide/workflow-editor/)
 * [Users and Roles](../user-guide/users-and-roles/)
