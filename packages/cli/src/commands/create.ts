@@ -213,7 +213,7 @@ const validateAdminPassword = (value: string) => {
   }
 
   // Keep the rule simple and explicit for CLI UX. Complexity policies vary by org.
-  const minLength = 12;
+  const minLength = 8;
   if (trimmed.length < minLength) {
     return `Password must be at least ${minLength} characters.`;
   }
