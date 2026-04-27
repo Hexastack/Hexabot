@@ -23,6 +23,7 @@
 * [Workflow Editor](workflows/workflow-editor.md)
 * [Workflow Types](workflows/workflow-types.md)
 * [Graph View and YAML Editor](workflows/graph-view-and-yaml-editor.md)
+* [Actions, Tasks, and Steps](workflows/actions-tasks-and-steps.md)
 
 ***
 

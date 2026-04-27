@@ -39,6 +39,8 @@ The graph can show:
 
 Use the graph when you want to understand or change the workflow structure without editing YAML by hand.
 
+<figure><img src="../.gitbook/assets/image (42).png" alt=""><figcaption></figcaption></figure>
+
 Common graph actions include:
 
 * inserting an action step from the action drawer;
