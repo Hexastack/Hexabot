@@ -58,9 +58,9 @@
 ## Developer Guide
 
 * [CLI Command Reference](developer-guide/cli-command-reference.md)
+* [SMTP Configuration](developer-guide/smtp-configuration.md)
 * [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)
 * [Setting Up Docker](developer-guide/setting-up-docker.md)
-* [SMTP Configuration](developer-guide/smtp-configuration.md)
 * [Extensions](developer-guide/extensions.md)
 * [Plugins](developer-guide/integrations/README.md)
   * [Hexabot Plugin Development](developer-guide/integrations/hexabot-plugin-development.md)

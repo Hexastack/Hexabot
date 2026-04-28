@@ -1,14 +1,23 @@
 ---
+description: >-
+  Install and manage Node.js 20.19.0 or later with NVM for local Hexabot
+  development.
 icon: node
 ---
 
 # Setup Node.js with NVM
 
-Node.js is a pre-requisite to run both the Hexabot CLI and a Hexabot project since the API is built on NestJS. Using [NVM](https://github.com/nvm-sh/nvm) (Node Version Manager) simplifies managing the required Node.js version. When creating a new Hexabot project, the structure includes source folders like **extensions** to add custom plugins, helpers and channels, making Node.js essential tool for smooth development and customization.
+Hexabot v3 requires Node.js `>= 20.19.0`.
 
-If you are new to NVM, please follow these steps to install:
+Use [NVM](https://github.com/nvm-sh/nvm) to install and switch Node.js versions cleanly. This is the easiest setup for local Hexabot development.
 
-1. Update the system:
+If you want the full local setup flow, see [Installation](../quickstart/installation.md).
+
+### Install NVM
+
+The steps below use Ubuntu. For other operating systems, use the official NVM install guide.
+
+1. Update your package index:
 
 ```bash
 sudo apt update
@@ -17,31 +26,49 @@ sudo apt update
 2. Install NVM:
 
 ```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 ```
 
-Close and reopen your terminal to start using nvm or run the following to use it now:
+3. Restart your terminal.
+
+Or load NVM in the current shell:
 
 ```bash
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 ```
 
-3. Verify the NVM installation:
+4. Verify the installation:
 
 ```bash
 nvm --version
 ```
 
-4. Install Node.js version 18.17.0 or higher :
+### Install Node.js 20.19.0 or later
+
+Install the current minimum supported version:
 
 ```bash
-nvm install 18.17.0
+nvm install 20.19.0
 ```
 
-5. Check default Node.js version:
+Set it as your default version:
+
+```bash
+nvm alias default 20.19.0
+```
+
+Use it in the current shell:
+
+```bash
+nvm use 20.19.0
+```
+
+Verify the active Node.js version:
 
 ```bash
 node --version
 ```
+
+The output should be `v20.19.0` or later.
