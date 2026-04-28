@@ -57,7 +57,8 @@
 
 ## Developer Guide
 
-* [Workflow Definition YAML Syntax](developer-guide/workflow-definition-yaml-syntax.md)
+* [Workflow YAML Syntax](developer-guide/workflow-yaml-syntax.md)
+* [Custom Actions](developer-guide/custom-actions.md)
 * [CLI Command Reference](developer-guide/cli-command-reference.md)
 * [SMTP Configuration](developer-guide/smtp-configuration.md)
 * [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)

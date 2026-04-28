@@ -1,8 +1,11 @@
 ---
+description: >-
+  Understand Hexabot workflow YAML structure, execution rules, and authoring
+  patterns for tasks, flow, and outputs.
 icon: terminal
 ---
 
-# Workflow Definition YAML Syntax
+# Workflow YAML Syntax
 
 Workflow logic is stored as YAML on workflow versions and derives a compiled runtime graph when a workflow run starts or resumes.
 
@@ -13,15 +16,6 @@ Use this page when you are writing editor code, debugging validation, generating
 A workflow definition is a YAML object with optional input/context/default sections and required `defs`, `flow`, and `outputs` sections:
 
 ```yaml
-inputs:
-  schema:
-    text:
-      type: string
-      description: Incoming text to process.
-
-context:
-  channel: web
-
 defaults:
   settings:
     timeout_ms: 0
@@ -48,7 +42,7 @@ outputs:
   sent: "=$output.send_reply.sent"
 ```
 
-<table><thead><tr><th width="117.52490234375">Section</th><th width="107.52978515625">Required</th><th>Purpose</th></tr></thead><tbody><tr><td><code>inputs</code></td><td>No</td><td>Agentic runtime input metadata. <code>inputs.schema</code> is a limited field schema, not the API workflow <code>inputSchema</code> stored on the workflow entity.</td></tr><tr><td><code>context</code></td><td>No</td><td>Literal initial context values merged into runtime context before trigger-specific context and memory are attached.</td></tr><tr><td><code>defaults</code></td><td>No</td><td>Workflow-level execution settings merged into every task's settings.</td></tr><tr><td><code>defs</code></td><td>Yes</td><td>Registry of task definitions and binding definitions. It may be <code>{}</code> in a blank draft.</td></tr><tr><td><code>flow</code></td><td>Yes</td><td>Ordered array of executable steps and operators. It may be <code>[]</code> in a blank draft.</td></tr><tr><td><code>outputs</code></td><td>Yes</td><td>Final output mapping evaluated after the flow finishes. It may be <code>{}</code> when the workflow does not expose a result.</td></tr></tbody></table>
+<table><thead><tr><th width="117.52490234375">Section</th><th width="107.52978515625">Required</th><th>Purpose</th></tr></thead><tbody><tr><td><code>defaults</code></td><td>No</td><td>Workflow-level execution settings merged into every task's settings.</td></tr><tr><td><code>defs</code></td><td>Yes</td><td>Registry of task definitions and binding definitions. It may be <code>{}</code> in a blank draft.</td></tr><tr><td><code>flow</code></td><td>Yes</td><td>Ordered array of executable steps and operators. It may be <code>[]</code> in a blank draft.</td></tr><tr><td><code>outputs</code></td><td>Yes</td><td>Final output mapping evaluated after the flow finishes. It may be <code>{}</code> when the workflow does not expose a result.</td></tr></tbody></table>
 
 ### Values and Expressions
 
@@ -70,7 +64,7 @@ Expression scopes are exposed as **JSONata** variables:
 | `$iteration`   | Loop body expressions and loop accumulator expressions               | Current loop item and zero-based index.                                                                        |
 | `$accumulator` | Loop body expressions and loop accumulator expressions               | Current accumulator value when `accumulate` is configured.                                                     |
 
-Hexabot registers the API helper function `$t(key, args?)` for localized JSONata strings during workflow execution.
+Hexabot registers the API helper function `$t(string)` for localized JSONata strings during workflow execution.
 
 ```yaml
 defs:
@@ -78,7 +72,7 @@ defs:
     kind: task
     action: send_text_message
     inputs:
-      text: "=$t('workflow.reply.received', { 'name': $context.initiator.first_name })"
+      text: "=$t('Hello World!')"
 ```
 
 Expression-aware fields are not recursively compiled. For task `inputs`, only each top-level input value is compiled. If an action input needs a dynamic object, make the whole top-level field an expression that returns the object.
