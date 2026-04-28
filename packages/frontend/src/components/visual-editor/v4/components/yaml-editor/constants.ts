@@ -12,8 +12,6 @@ export const YAML_LANGUAGE_ID = "yaml";
 export const YAML_VALIDATION_OWNER = "yaml-validation";
 export const YAML_WORKFLOW_VALIDATION_OWNER = "yaml-workflow-validation";
 export const YAML_VALIDATION_DEBOUNCE_MS = 300;
-export const DEFAULT_YAML_MARKER_MESSAGE = "YAML parsing error on this line.";
-export const DEFAULT_YAML_STATUS_MESSAGE = "Fix YAML syntax.";
 
 export const YAML_COMPLETION_TRIGGER_CHARACTERS = [
   "-",

@@ -19,14 +19,10 @@ import {
 } from "./constants";
 import { ensureYamlLanguageService } from "./language";
 import { applyYamlMarkers } from "./markers";
-import type { YamlEditorProps } from "./types";
 import { useDebouncedEffect } from "./useDebouncedEffect";
 import { applyWorkflowValidationMarkers } from "./validation/validation";
 
-export function useYamlEditorController({
-  errorLine,
-  errorMessage,
-}: Pick<YamlEditorProps, "errorLine" | "errorMessage">) {
+export function useYamlEditorController() {
   const { yaml, updateDefinitionState, taskIds } = useWorkflow();
   const {
     actions = [],
@@ -48,8 +44,6 @@ export function useYamlEditorController({
     applyYamlMarkers({
       editorInstance: editorRef.current,
       monacoInstance: monacoRef.current,
-      errorLine,
-      errorMessage,
     });
 
     applyWorkflowValidationMarkers({
@@ -58,7 +52,7 @@ export function useYamlEditorController({
       yaml,
       actions: availableActions,
     });
-  }, [errorLine, errorMessage, yaml, availableActions]);
+  }, [yaml, availableActions]);
   const beforeMount = useCallback((monacoInstance: Monaco) => {
     ensureYamlLanguageService(monacoInstance);
   }, []);

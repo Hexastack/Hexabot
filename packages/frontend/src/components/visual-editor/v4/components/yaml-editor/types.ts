@@ -4,11 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-export type YamlEditorProps = {
-  errorLine?: number;
-  errorMessage?: string;
-};
-
 export type YamlCompletionSuggestion = {
   label: string;
   insertText: string;
