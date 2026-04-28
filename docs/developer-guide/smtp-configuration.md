@@ -83,7 +83,6 @@ EMAIL_SMTP_SECURE=false
 EMAIL_SMTP_USER=dev_only
 EMAIL_SMTP_PASS=dev_only
 EMAIL_SMTP_FROM=noreply@example.com
-FRONTEND_BASE_URL=http://localhost:8080
 ```
 
 Then start Docker with the smtp4dev compose file. With the CLI:

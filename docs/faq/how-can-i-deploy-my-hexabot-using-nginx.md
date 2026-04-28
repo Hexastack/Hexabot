@@ -145,12 +145,12 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $http_host;
         proxy_redirect off;
-        proxy_pass http://localhost:8080; # Make sure to use the port configured in .env file
+        proxy_pass http://localhost:3000; # Make sure to use the port configured in .env file
     }
 
     location /api/ {
         rewrite ^/api/?(.*)$ /$1 break;
-        proxy_pass http://localhost:4000; # Make sure to use the port configured in .env file
+        proxy_pass http://localhost:3000/api; # Make sure to use the port configured in .env file
         proxy_http_version 1.1;
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Server $host;
@@ -171,7 +171,7 @@ server {
         proxy_set_header Host $http_host;
         proxy_set_header X-NginX-Proxy false;
 
-        proxy_pass http://localhost:4000; # Make sure to use the port configured in .env file
+        proxy_pass http://localhost:3000; # Make sure to use the port configured in .env file
         proxy_redirect off;
 
         proxy_http_version 1.1;
