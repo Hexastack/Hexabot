@@ -63,7 +63,7 @@ hexabot create my-project --pm npm
 
 After the app starts, these endpoints are available by default:
 
-* Admin UI: `http://localhost:8080`
+* Admin UI: `http://localhost:3000`
 * API: `http://localhost:3000/api`
 * API docs: `http://localhost:3000/docs`
 
