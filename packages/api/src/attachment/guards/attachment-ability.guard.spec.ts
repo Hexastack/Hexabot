@@ -10,12 +10,14 @@ import {
   ExecutionContext,
   NotFoundException,
 } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { attachment } from '../mocks/attachment.mock';
@@ -25,6 +27,7 @@ import { AttachmentResourceRef } from '../types';
 import { AttachmentGuard } from './attachment-ability.guard';
 
 describe('AttachmentGuard', () => {
+  let module: TestingModule;
   let guard: AttachmentGuard;
   let permissionService: PermissionService;
   let modelService: ModelService;
@@ -63,7 +66,7 @@ describe('AttachmentGuard', () => {
     });
 
   beforeEach(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       providers: [
         AttachmentGuard,
         {
@@ -81,13 +84,22 @@ describe('AttachmentGuard', () => {
       ],
     });
 
+    module = testing.module;
+
     [guard, permissionService, modelService, attachmentService] =
-      await getMocks([
+      await testing.getMocks([
         AttachmentGuard,
         PermissionService,
         ModelService,
         AttachmentService,
       ]);
+  });
+
+  afterEach(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
   });
 
   describe('canActivate', () => {
