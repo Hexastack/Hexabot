@@ -5,7 +5,7 @@ description: >-
 icon: bolt
 ---
 
-# Custom Actions
+# Develop Custom Actions
 
 A custom action is a reusable workflow step.
 
@@ -14,6 +14,8 @@ It defines:
 * Metadata shown in the workflow builder
 * Zod schemas for runtime input, step settings, and returned output
 * An `execute()` function that performs the work
+
+See the [Zod documentation](https://zod.dev/) for the full schema API.
 
 The starter action is `src/extensions/actions/dummy.action.ts`.
 
