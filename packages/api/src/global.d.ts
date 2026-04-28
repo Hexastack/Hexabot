@@ -8,6 +8,4 @@ import '../types/event-emitter';
 import '../types/express-session';
 import './types/ai-sdk-mcp-stdio';
 
-declare global {}
-
 export {};
