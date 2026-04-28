@@ -48,12 +48,7 @@ Click the pencil action on a source row.
 
 Editable fields:
 
-| Field            | Notes                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------- |
-| Name             | Required and stored without leading or trailing spaces.                               |
-| Default workflow | Optional. Leave empty when the client or channel should decide which workflow to run. |
-| Enabled          | Turn off to reject new inbound events for this source.                                |
-| Settings         | Rendered from the selected channel's settings schema.                                 |
+<table><thead><tr><th width="180.26776123046875">Field</th><th>Notes</th></tr></thead><tbody><tr><td>Name</td><td>Required and stored without leading or trailing spaces.</td></tr><tr><td>Default workflow</td><td>Optional. Leave empty when the client or channel should decide which workflow to run.</td></tr><tr><td>Enabled</td><td>Turn off to reject new inbound events for this source.</td></tr><tr><td>Settings</td><td>Rendered from the selected channel's settings schema.</td></tr></tbody></table>
 
 The channel field is read-only in the form. If you need the same settings on another channel, create a new source for that channel.
 
