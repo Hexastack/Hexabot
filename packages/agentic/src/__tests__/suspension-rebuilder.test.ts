@@ -220,6 +220,54 @@ describe('rebuildSuspension', () => {
     expect(deps.executeFlow).toHaveBeenCalledWith(compiled.flow, state, [], 1);
   });
 
+  it('continues outer flow after resuming a suspension inside a conditional branch', async () => {
+    const branchTask = createTask('branch_task');
+    const afterTask = createTask('after_task');
+    const branchStep: CompiledStep = {
+      type: StepType.Task,
+      id: '0.branch.0.0:branch_task',
+      label: 'branch_task',
+      taskName: 'branch_task',
+    };
+    const conditionalStep: CompiledStep = {
+      type: StepType.Conditional,
+      id: '0:conditional',
+      label: 'conditional',
+      branches: [{ id: '0:branch_0', steps: [branchStep] }],
+    };
+    const outerStep: CompiledStep = {
+      type: StepType.Task,
+      id: '1:after_task',
+      label: 'after_task',
+      taskName: 'after_task',
+    };
+    const compiled = createCompiledWorkflow([conditionalStep, outerStep], {
+      branch_task: branchTask,
+      after_task: afterTask,
+    });
+    const state: ExecutionState = {
+      input: {},
+      output: {},
+      iterationStack: [],
+    };
+    const deps = createDeps(compiled);
+    deps.executeFlow = jest
+      .fn()
+      .mockResolvedValue(undefined) as SuspensionRebuilderDeps['executeFlow'];
+
+    const suspension = rebuildSuspension(deps, {
+      state,
+      stepId: '0.branch.0.0:branch_task',
+    });
+
+    await suspension?.continue({ reply: 'ok' });
+
+    expect(deps.captureTaskOutput).toHaveBeenCalledWith(branchTask, state, {
+      reply: 'ok',
+    });
+    expect(deps.executeFlow).toHaveBeenCalledWith(compiled.flow, state, [], 1);
+  });
+
   it('rebuilds a parallel suspension and continues remaining siblings when needed', async () => {
     const firstTask = createTask('child_a');
     const secondTask = createTask('child_b');

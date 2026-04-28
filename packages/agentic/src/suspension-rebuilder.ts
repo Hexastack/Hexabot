@@ -390,7 +390,7 @@ export function buildSuspensionForPath(
           return next;
         }
 
-        return undefined;
+        return deps.executeFlow(steps, state, pathPrefix, current + 1);
       },
     };
   }
