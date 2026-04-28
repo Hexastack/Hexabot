@@ -16,18 +16,17 @@ export class HelperController {
   constructor(private readonly helperService: HelperService) {}
 
   private normalizeHelperType(type: string): HelperType {
-    const normalizedType = type === 'nlu' ? HelperType.LLM : type;
-    if (!Object.values(HelperType).includes(normalizedType as HelperType)) {
+    if (!Object.values(HelperType).includes(type as HelperType)) {
       throw new BadRequestException(`Unknown helper type "${type}"`);
     }
 
-    return normalizedType as HelperType;
+    return type as HelperType;
   }
 
   /**
    * Retrieves a list of helpers.
    *
-   * @returns An array of objects containing the name of each NLP helper.
+   * @returns An array of objects containing the name of each helper.
    */
   @Roles('public')
   @Get(':type')

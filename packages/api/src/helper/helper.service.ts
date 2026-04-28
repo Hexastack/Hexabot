@@ -109,29 +109,9 @@ export class HelperService {
   }
 
   /**
-   * Get default LLM helper.
-   *
-   * @deprecated Use getDefaultHelper() instead
-   * @returns - The helper
-   */
-  async getDefaultLlmHelper() {
-    const settings = await this.settingService.getSettings();
-    const defaultHelper = this.get(
-      HelperType.LLM,
-      settings.global_settings.default_llm_helper as HelperName,
-    );
-
-    if (!defaultHelper) {
-      throw new Error(`Unable to find default LLM helper`);
-    }
-
-    return defaultHelper;
-  }
-
-  /**
    * Get default helper for a specific type.
    *
-   * @param type - The type of the helper (e.g., NLU, LLM, STORAGE).
+   * @param type - The type of the helper.
    * @returns - The helper
    */
   async getDefaultHelper<T extends HelperType>(type: T) {

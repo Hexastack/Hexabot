@@ -1,17 +1,7 @@
 {
   "Global settings": "Global settings",
-  "Default NLU helper": "Default NLU helper",
-  "Helper used by default to run NLU tasks.": "Helper used by default to run NLU tasks.",
-  "Default NLU penalty factor": "Default NLU penalty factor",
-  "Penalty factor applied to NLU confidence scoring.": "Penalty factor applied to NLU confidence scoring.",
-  "Default LLM helper": "Default LLM helper",
-  "Helper used by default for LLM generation tasks.": "Helper used by default for LLM generation tasks.",
   "Default storage helper": "Default storage helper",
   "Helper used to persist workflow data by default.": "Helper used to persist workflow data by default.",
   "License key": "License key",
-  "Provide the license key associated with your subscription. Learn more about available plans at https://hexabot.ai/pricing#pricing.": "Provide the license key associated with your subscription. Learn more about available plans at https://hexabot.ai/pricing#pricing.",
-  "Enable global fallback": "Enable global fallback",
-  "Enable fallback handling when no intent or flow matches.": "Enable fallback handling when no intent or flow matches.",
-  "Fallback messages": "Fallback messages",
-  "Messages shown when fallback handling is triggered.": "Messages shown when fallback handling is triggered."
+  "Provide the license key associated with your subscription. Learn more about available plans at https://hexabot.ai/pricing#pricing.": "Provide the license key associated with your subscription. Learn more about available plans at https://hexabot.ai/pricing#pricing."
 }

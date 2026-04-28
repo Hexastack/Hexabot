@@ -23,45 +23,6 @@ export const globalSettingsSchema = z
         'Provide the license key associated with your subscription. Learn more about available plans at https://hexabot.ai/pricing#pricing.',
       'ui:widget': 'password',
     }),
-    default_nlu_helper: z
-      .string()
-      .default('llm-nlu')
-      .meta({
-        title: 'Default NLU helper',
-        description: 'Helper used by default to run NLU tasks.',
-        'ui:widget': 'AutoCompleteWidget',
-        'ui:options': {
-          entity: 'NluHelper',
-          valueKey: 'name',
-          labelKey: 'name',
-        },
-      }),
-    default_nlu_penalty_factor: z
-      .number()
-      .min(0)
-      .max(1)
-      .multipleOf(0.01)
-      .default(0.95)
-      .meta({
-        title: 'Default NLU penalty factor',
-        description: 'Penalty factor applied to NLU confidence scoring.',
-        'ui:options': {
-          step: 0.01,
-        },
-      }),
-    default_llm_helper: z
-      .string()
-      .default('ollama')
-      .meta({
-        title: 'Default LLM helper',
-        description: 'Helper used by default for LLM generation tasks.',
-        'ui:widget': 'AutoCompleteWidget',
-        'ui:options': {
-          entity: 'LlmHelper',
-          valueKey: 'name',
-          labelKey: 'name',
-        },
-      }),
     default_storage_helper: z
       .string()
       .default('local-storage')
@@ -74,20 +35,6 @@ export const globalSettingsSchema = z
           valueKey: 'name',
           labelKey: 'name',
         },
-      }),
-    global_fallback: z.boolean().default(true).meta({
-      title: 'Enable global fallback',
-      description: 'Enable fallback handling when no intent or flow matches.',
-    }),
-    fallback_message: z
-      .array(z.string())
-      .default([
-        "Sorry but i didn't understand your request. Maybe you can check the menu",
-        "I'm really sorry but i don't quite understand what you are saying :(",
-      ])
-      .meta({
-        title: 'Fallback messages',
-        description: 'Messages shown when fallback handling is triggered.',
       }),
   })
   .meta({
