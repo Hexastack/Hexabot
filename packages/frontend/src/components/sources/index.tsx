@@ -5,9 +5,18 @@
  */
 
 import { Action, type SourceFull } from "@hexabot-ai/types";
-import { Button, Menu, MenuItem, Switch } from "@mui/material";
+import {
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Stack,
+  Switch,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { ChevronDown, Plus, Webhook } from "lucide-react";
+import { ChevronDown, Copy, Plus, Webhook } from "lucide-react";
 import { MouseEvent, useMemo, useState } from "react";
 
 import {
@@ -26,6 +35,43 @@ import { IChannel } from "@/types/channel.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { SourceFormDialog } from "./SourceFormDialog";
+
+const SOURCE_REF_ICON_SIZE = 18;
+const copyWithTextArea = (text: string) => {
+  const textArea = document.createElement("textarea");
+
+  textArea.value = text;
+  textArea.setAttribute("readonly", "");
+  textArea.style.left = "-9999px";
+  textArea.style.position = "fixed";
+  document.body.appendChild(textArea);
+  textArea.select();
+
+  try {
+    const wasCopied = document.execCommand("copy");
+
+    if (!wasCopied) {
+      throw new Error("Unable to copy text");
+    }
+  } finally {
+    document.body.removeChild(textArea);
+  }
+};
+const writeToClipboard = async (text: string) => {
+  if (!navigator.clipboard?.writeText) {
+    copyWithTextArea(text);
+
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+
+    return;
+  } catch {
+    copyWithTextArea(text);
+  }
+};
 
 export const Sources = () => {
   const { t } = useTranslate();
@@ -76,6 +122,14 @@ export const Sources = () => {
   const handleCloseAddMenu = () => {
     setAddMenuAnchorEl(null);
   };
+  const copySourceRef = async (sourceRef: string) => {
+    try {
+      await writeToClipboard(sourceRef);
+      toast.success(t("message.source_ref_copied"));
+    } catch {
+      toast.error(t("message.source_ref_copy_failed"));
+    }
+  };
   const actionColumns = useActionColumns<SourceFull>(
     EntityType.SOURCE,
     [
@@ -95,7 +149,42 @@ export const Sources = () => {
     t("label.operations"),
   );
   const columns: GridColDef<SourceFull>[] = [
-    { field: "id", headerName: "ID" },
+    {
+      minWidth: 280,
+      field: "sourceRef",
+      headerName: t("label.source_ref"),
+      disableColumnMenu: true,
+      headerAlign: "left",
+      sortable: false,
+      renderCell: ({ row }) => (
+        <Stack alignItems="center" direction="row" spacing={1} width="100%">
+          <Typography
+            noWrap
+            title={row.id}
+            variant="body2"
+            sx={{
+              flex: 1,
+              fontFamily: "monospace",
+              minWidth: 0,
+            }}
+          >
+            {row.id}
+          </Typography>
+          <Tooltip title={t("button.copy_source_ref")}>
+            <IconButton
+              aria-label={t("button.copy_source_ref")}
+              onClick={(event) => {
+                event.stopPropagation();
+                void copySourceRef(row.id);
+              }}
+              size="small"
+            >
+              <Copy size={SOURCE_REF_ICON_SIZE} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+      ),
+    },
     {
       flex: 1,
       field: "name",
