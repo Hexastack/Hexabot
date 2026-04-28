@@ -9,17 +9,13 @@ import { useColorScheme } from "@mui/material";
 
 import { handleEditorWillMount } from "@/app-components/inputs/JsonataFormulaField/monaco";
 
-import { DEFAULT_YAML_STATUS_MESSAGE, YAML_EDITOR_OPTIONS } from "./constants";
-import type { YamlEditorProps } from "./types";
+import { YAML_EDITOR_OPTIONS } from "./constants";
 import { useYamlEditorController } from "./useYamlEditorController";
 
 import "./yaml.worker";
 
-export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
-  const { value, onChange, beforeMount, onMount } = useYamlEditorController({
-    errorLine,
-    errorMessage,
-  });
+export function YamlEditor() {
+  const { value, onChange, beforeMount, onMount } = useYamlEditorController();
   const { mode } = useColorScheme();
 
   return (
@@ -39,13 +35,6 @@ export function YamlEditor({ errorLine, errorMessage }: YamlEditorProps) {
           onMount={onMount}
           options={YAML_EDITOR_OPTIONS}
         />
-      </div>
-      <div className="yaml-editor__header">
-        {errorLine && (
-          <div className="yaml-editor__error-indicator">
-            Line {errorLine}: {errorMessage ?? DEFAULT_YAML_STATUS_MESSAGE}
-          </div>
-        )}
       </div>
     </div>
   );

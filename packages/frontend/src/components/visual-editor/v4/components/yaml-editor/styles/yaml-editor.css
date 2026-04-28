@@ -10,39 +10,6 @@
   overflow: hidden;
 }
 
-.yaml-editor__header {
-  padding: 1.25rem 1.5rem;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.yaml-editor__eyebrow {
-  margin: 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #7bb0ff;
-}
-
-.yaml-editor__header h2 {
-  margin: 0.2rem 0 0;
-  font-size: 1.15rem;
-  color: #eef3ff;
-}
-
-.yaml-editor__error-indicator {
-  background: rgba(255, 180, 194, 0.1);
-  border: 1px solid rgba(255, 180, 194, 0.35);
-  color: #ffb4c2;
-  padding: 0.5rem 0.75rem;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  line-height: 1.3;
-}
-
 .yaml-editor__body {
   flex: 1;
   min-height: 0;

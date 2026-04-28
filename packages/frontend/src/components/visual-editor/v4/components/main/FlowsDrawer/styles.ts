@@ -49,12 +49,11 @@ export const DrawerBody = styled(Box)(() => ({
   minHeight: 0,
 }));
 
-export const YamlEditorContainer = styled(Box)(({ theme }) => ({
+export const YamlEditorContainer = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
   flex: 1,
   minHeight: 0,
-  padding: theme.spacing(1.5),
 }));
 
 export const FlowDrawerResizer = styled(Box, {
