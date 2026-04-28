@@ -73,7 +73,7 @@ hexabot create my-project --pm npm
 
 Default local endpoints:
 
-- Admin UI: `http://localhost:8080`
+- Admin UI: `http://localhost:3000`
 - API: `http://localhost:3000/api`
 - API docs (non-production): `http://localhost:3000/docs`
 
