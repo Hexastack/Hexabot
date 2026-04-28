@@ -1,3 +1,7 @@
+---
+hidden: true
+---
+
 # Chatbot Global Fallback
 
 Hexabot's Global Fallback settings allow you to define a default response that your chatbot will use when it cannot understand or respond to a user's query. This ensures a more consistent and user-friendly experience, even in situations where the chatbot might struggle to interpret the user's input.

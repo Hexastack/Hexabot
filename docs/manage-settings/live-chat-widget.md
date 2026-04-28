@@ -1,3 +1,7 @@
+---
+hidden: true
+---
+
 # Live chat widget
 
 The Live Chat Widget settings in Hexabot allow you to configure the appearance and functionality of the live chat widget that is used within the Visual Editor for testing purposes.&#x20;
