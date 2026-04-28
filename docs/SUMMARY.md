@@ -48,7 +48,7 @@
   * [Translations](localization/translations.md)
 * [Users and Roles](users-and-roles/README.md)
   * [Manage users](users-and-roles/manage-users.md)
-  * [Manage roles](users-and-roles/manage-roles.md)
+  * [Roles and Permissions](users-and-roles/roles-and-permissions.md)
 * [Manage Settings](manage-settings/README.md)
   * [Email](manage-settings/email.md)
   * [Chatbot Global Fallback](manage-settings/chatbot-global-fallback.md)
