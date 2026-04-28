@@ -118,7 +118,7 @@ export class HelperService {
     const settings = await this.settingService.getSettings();
     const defaultHelper = this.get(
       HelperType.LLM,
-      settings.chatbot_settings.default_llm_helper as HelperName,
+      settings.global_settings.default_llm_helper as HelperName,
     );
 
     if (!defaultHelper) {
@@ -143,11 +143,11 @@ export class HelperService {
 
     const settings = await this.settingService.getSettings();
     const defaultHelperKey = `default_${type}_helper`;
-    if (!(defaultHelperKey in settings.chatbot_settings)) {
+    if (!(defaultHelperKey in settings.global_settings)) {
       throw new Error(`Default ${type.toUpperCase()} helper setting not found`);
     }
 
-    const defaultHelperName = settings.chatbot_settings[
+    const defaultHelperName = settings.global_settings[
       defaultHelperKey
     ] as HelperName;
     const defaultHelper = this.get<T>(type, defaultHelperName);

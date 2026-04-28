@@ -49,7 +49,7 @@ describe('runtime-settings.seed', () => {
         extensionType: 'action',
         extensionName: 'ai_generate_text',
       },
-      chatbot_settings: {
+      global_settings: {
         schema: z.strictObject({
           global_fallback: z.boolean().default(true),
         }),
@@ -65,7 +65,7 @@ describe('runtime-settings.seed', () => {
     );
     const globalSeed = seeds.find(
       (seed) =>
-        seed.group === 'chatbot_settings' && seed.label === 'global_fallback',
+        seed.group === 'global_settings' && seed.label === 'global_fallback',
     );
 
     expect(ollamaSeed).toEqual({
@@ -80,7 +80,7 @@ describe('runtime-settings.seed', () => {
       value: 'gpt-4.1-mini',
     });
     expect(globalSeed).toEqual({
-      group: 'chatbot_settings',
+      group: 'global_settings',
       label: 'global_fallback',
       value: true,
     });

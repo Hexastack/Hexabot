@@ -91,10 +91,10 @@ describe('SettingRepository (TypeORM)', () => {
   describe('count', () => {
     it('counts settings that match a filter', async () => {
       const total = await settingRepository.count({
-        where: { group: 'chatbot_settings' },
+        where: { group: 'global_settings' },
       });
       const expected = settingFixtures.filter(
-        (fixture) => fixture.group === 'chatbot_settings',
+        (fixture) => fixture.group === 'global_settings',
       );
 
       expect(total).toBe(expected.length);

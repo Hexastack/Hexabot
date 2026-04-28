@@ -14,7 +14,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
-import { CHATBOT_SETTINGS_GROUP } from '@/setting/default.settings';
+import { GLOBAL_SETTINGS_GROUP } from '@/setting/default.settings';
 import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { MetadataService } from '@/setting/services/metadata.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -256,7 +256,7 @@ export class LicenseService implements OnApplicationBootstrap {
     const group = next?.group ?? previous?.group;
     const label = next?.label ?? previous?.label;
 
-    if (group !== CHATBOT_SETTINGS_GROUP || label !== 'license_key') {
+    if (group !== GLOBAL_SETTINGS_GROUP || label !== 'license_key') {
       return;
     }
 
@@ -474,7 +474,7 @@ export class LicenseService implements OnApplicationBootstrap {
     await this.settingService.clearCache();
     const settings = await this.settingService.getSettings();
 
-    return this.normalizeLicenseKey(settings.chatbot_settings?.license_key);
+    return this.normalizeLicenseKey(settings.global_settings?.license_key);
   }
 
   private async getInstanceId(): Promise<string | undefined> {

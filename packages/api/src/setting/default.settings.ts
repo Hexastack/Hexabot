@@ -9,13 +9,13 @@ import z from 'zod';
 import { createSettingGroup } from '@/setting/create-setting-group';
 import { RuntimeSettingGroupSchema } from '@/setting/runtime-settings';
 
-export const CHATBOT_SETTINGS_GROUP = 'chatbot_settings' as const;
+export const GLOBAL_SETTINGS_GROUP = 'global_settings' as const;
 
 export const RAG_SETTINGS_GROUP = 'rag_settings' as const;
 
 export const CONTACT_SETTINGS_GROUP = 'contact' as const;
 
-export const chatbotSettingsSchema = z
+export const globalSettingsSchema = z
   .strictObject({
     license_key: z.string().default('').meta({
       title: 'License key',
@@ -67,7 +67,7 @@ export const chatbotSettingsSchema = z
       .default('local-storage')
       .meta({
         title: 'Default storage helper',
-        description: 'Helper used to persist chatbot data by default.',
+        description: 'Helper used to persist workflow data by default.',
         'ui:widget': 'AutoCompleteWidget',
         'ui:options': {
           entity: 'StorageHelper',
@@ -91,7 +91,7 @@ export const chatbotSettingsSchema = z
       }),
   })
   .meta({
-    title: 'Chatbot',
+    title: 'Global settings',
   });
 
 export const ragSettingsSchema = z
@@ -207,15 +207,15 @@ export const contactSettingsSchema = z
 
 declare global {
   interface RuntimeSettingRegistry {
-    [CHATBOT_SETTINGS_GROUP]: typeof chatbotSettingsSchema;
+    [GLOBAL_SETTINGS_GROUP]: typeof globalSettingsSchema;
     [RAG_SETTINGS_GROUP]: typeof ragSettingsSchema;
     [CONTACT_SETTINGS_GROUP]: typeof contactSettingsSchema;
   }
 }
 
-export const ChatbotSettingsGroup = createSettingGroup({
-  group: CHATBOT_SETTINGS_GROUP,
-  schema: chatbotSettingsSchema,
+export const GlobalSettingsGroup = createSettingGroup({
+  group: GLOBAL_SETTINGS_GROUP,
+  schema: globalSettingsSchema,
   scope: 'global',
 });
 
@@ -233,8 +233,8 @@ export const ContactSettingsGroup = createSettingGroup({
 
 export const DEFAULT_GLOBAL_SETTING_SCHEMAS = [
   {
-    group: CHATBOT_SETTINGS_GROUP,
-    schema: chatbotSettingsSchema,
+    group: GLOBAL_SETTINGS_GROUP,
+    schema: globalSettingsSchema,
   },
   {
     group: RAG_SETTINGS_GROUP,

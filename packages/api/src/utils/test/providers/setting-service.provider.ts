@@ -11,7 +11,7 @@ export const SettingServiceProvider = {
   useValue: {
     default_nlu_helper: 'llm-nlu',
     getSettings: jest.fn().mockResolvedValue({
-      chatbot_settings: {
+      global_settings: {
         default_nlu_helper: 'llm-nlu',
         global_fallback: true,
         fallback_message: ['Global fallback message'],

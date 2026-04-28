@@ -83,7 +83,7 @@ const UsersLockedView = () => {
             </LicenseGate>
             <Button
               variant="outlined"
-              onClick={() => router.push("/settings/groups/chatbot_settings")}
+              onClick={() => router.push("/settings/groups/global_settings")}
             >
               {t("button.enter_license_key")}
             </Button>

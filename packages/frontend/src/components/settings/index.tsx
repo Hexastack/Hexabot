@@ -45,7 +45,7 @@ const StyledFormContainer = styled("div")(({ theme }) => ({
   minWidth: 0,
   padding: theme.spacing(2, 3),
 }));
-const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
+const DEFAULT_SETTINGS_GROUP = "global_settings" as const;
 const toGroupedSettings = (settings: Setting[]) => {
   return settings.reduce(
     (acc, curr) => {
@@ -115,7 +115,7 @@ export const Settings = () => {
   const { mutate: updateSetting } = useUpdate(EntityType.SETTING, {
     onError: (error) => toast.error(error),
     onSuccess: async (data) => {
-      if (data.group === "chatbot_settings" && data.label === "license_key") {
+      if (data.group === "global_settings" && data.label === "license_key") {
         const hasLicenseValue =
           typeof data.value === "string"
             ? data.value.trim().length > 0

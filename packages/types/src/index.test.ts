@@ -631,7 +631,7 @@ describe("@hexabot-ai/types schemas", () => {
       id: "st_1",
       createdAt: now,
       updatedAt: now,
-      group: "chatbot_settings",
+      group: "global_settings",
       subgroup: null,
       label: "title",
       value: "Hexabot",
