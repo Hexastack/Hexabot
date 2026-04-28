@@ -94,4 +94,40 @@ describe('TypeOrmSearchFilterPipe', () => {
 
     expect(defaultSort.order).toEqual({ createdAt: 'DESC' });
   });
+
+  describe('prototype pollution prevention', () => {
+    it.each(['__proto__', 'constructor', 'prototype'])(
+      'should reject sort field containing %s',
+      async (forbidden) => {
+        const result = await pipe.transform(
+          {
+            where: {},
+            sort: `${forbidden}.polluted asc`,
+          } as any,
+          {} as any,
+        );
+
+        expect(result.order).toEqual({ createdAt: 'DESC' });
+        expect(({} as any).polluted).toBeUndefined();
+      },
+    );
+
+    it.each(['__proto__', 'constructor', 'prototype'])(
+      'should ignore where clause with %s in path',
+      async (forbidden) => {
+        const pipeWithAllowed = new TypeOrmSearchFilterPipe<TestEntity>({
+          allowedFields: [forbidden] as any,
+        });
+        const result = await pipeWithAllowed.transform(
+          {
+            where: { [forbidden]: 'polluted' },
+          } as any,
+          {} as any,
+        );
+
+        expect(result.where).toBeUndefined();
+        expect(({} as any).polluted).toBeUndefined();
+      },
+    );
+  });
 });

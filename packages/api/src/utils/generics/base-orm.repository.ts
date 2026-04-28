@@ -31,6 +31,7 @@ import {
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { LoggerService } from '@/logger/logger.service';
 import { flatten } from '@/utils/helpers/flatten';
+import { hasForbiddenSegment } from '@/utils/helpers/safe-property-path';
 
 import {
   DtoAction,
@@ -330,7 +331,9 @@ export abstract class BaseOrmRepository<
         ) as Record<string, unknown>;
         const target = entity as Record<string, unknown>;
         for (const [path, value] of Object.entries(flattenedUpdates)) {
-          set(target, path, value);
+          if (!hasForbiddenSegment(path)) {
+            set(target, path, value);
+          }
         }
       } else {
         Object.assign(entity, updates);
