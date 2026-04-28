@@ -2,12 +2,14 @@
 icon: docker
 ---
 
-# Setting Up Docker for Development and Production
+# Setting Up Docker
 
-Hexabot uses Docker for development purposes as well as streamline deployment, running essential services like the API, frontend, and MongoDB in containers. The provided Docker Compose setup ensures quick and consistent startup, eliminating manual configuration complexities.
+Hexabot does not require Docker to run. You can run Hexabot directly with Node.js and the CLI.
+
+Docker is still the recommended setup, especially for production deployments. The provided Docker Compose setup helps you start and manage containerized services consistently.
 
 {% hint style="info" %}
-The following is an example on how to install Docker on a Ubuntu machine. If you have a different OS, please check the official guide on how to install Docker on your system [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)&#x20;
+The following is an example on how to install Docker on a Ubuntu machine. If you have a different OS, please check the official guide on how to install Docker on your system [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
 {% endhint %}
 
 1. Set up Docker's apt repository:
