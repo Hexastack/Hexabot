@@ -12,8 +12,6 @@ export * from './helper.service';
 
 export * from './lib/base-helper';
 
-export * from './lib/base-llm-helper';
-
 export * from './lib/base-storage-helper';
 
 export * from './types';

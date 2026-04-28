@@ -109,29 +109,9 @@ export class HelperService {
   }
 
   /**
-   * Get default LLM helper.
-   *
-   * @deprecated Use getDefaultHelper() instead
-   * @returns - The helper
-   */
-  async getDefaultLlmHelper() {
-    const settings = await this.settingService.getSettings();
-    const defaultHelper = this.get(
-      HelperType.LLM,
-      settings.chatbot_settings.default_llm_helper as HelperName,
-    );
-
-    if (!defaultHelper) {
-      throw new Error(`Unable to find default LLM helper`);
-    }
-
-    return defaultHelper;
-  }
-
-  /**
    * Get default helper for a specific type.
    *
-   * @param type - The type of the helper (e.g., NLU, LLM, STORAGE).
+   * @param type - The type of the helper.
    * @returns - The helper
    */
   async getDefaultHelper<T extends HelperType>(type: T) {
@@ -143,11 +123,11 @@ export class HelperService {
 
     const settings = await this.settingService.getSettings();
     const defaultHelperKey = `default_${type}_helper`;
-    if (!(defaultHelperKey in settings.chatbot_settings)) {
+    if (!(defaultHelperKey in settings.global_settings)) {
       throw new Error(`Default ${type.toUpperCase()} helper setting not found`);
     }
 
-    const defaultHelperName = settings.chatbot_settings[
+    const defaultHelperName = settings.global_settings[
       defaultHelperKey
     ] as HelperName;
     const defaultHelper = this.get<T>(type, defaultHelperName);

@@ -168,7 +168,7 @@ const createActivationResponse = (
 const createSettingUpdateEvent = ({
   oldValue,
   newValue,
-  group = 'chatbot_settings',
+  group = 'global_settings',
   label = 'license_key',
 }: {
   oldValue?: unknown;
@@ -203,7 +203,7 @@ const createEnv = (overrides: CreateEnvOptions = {}): ServiceEnv => {
     ...overrides.apiService,
   };
   const settingService: MockSettingService = {
-    getSettings: jest.fn().mockResolvedValue({ chatbot_settings: {} }),
+    getSettings: jest.fn().mockResolvedValue({ global_settings: {} }),
     clearCache: jest.fn().mockResolvedValue(undefined),
     ...overrides.settingService,
   };
@@ -295,7 +295,7 @@ describe('LicenseService', () => {
     it('marks state invalid when validation fails', async () => {
       const { service, settingService, apiService } = createEnv();
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'invalid-key' },
+        global_settings: { license_key: 'invalid-key' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({ valid: false, license_key: null }),
@@ -316,7 +316,7 @@ describe('LicenseService', () => {
     it('marks state expired when the license has expired', async () => {
       const { service, settingService, apiService } = createEnv();
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'expired-key' },
+        global_settings: { license_key: 'expired-key' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({
@@ -352,7 +352,7 @@ describe('LicenseService', () => {
     it('marks state disabled when the license has been disabled', async () => {
       const { service, settingService, apiService } = createEnv();
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'disabled-key' },
+        global_settings: { license_key: 'disabled-key' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({
@@ -385,7 +385,7 @@ describe('LicenseService', () => {
       const { service, settingService, apiService, metadataService } =
         createEnv();
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'active-key' },
+        global_settings: { license_key: 'active-key' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({
@@ -410,7 +410,7 @@ describe('LicenseService', () => {
     it('keeps user management disabled for starter plan', async () => {
       const { service, settingService, apiService } = createEnv();
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'starter-key' },
+        global_settings: { license_key: 'starter-key' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({
@@ -434,7 +434,7 @@ describe('LicenseService', () => {
         workflowCount: 150,
       });
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'active-pro' },
+        global_settings: { license_key: 'active-pro' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({
@@ -463,7 +463,7 @@ describe('LicenseService', () => {
         workflowCount: 2,
       });
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'active-unknown' },
+        global_settings: { license_key: 'active-unknown' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({
@@ -495,7 +495,7 @@ describe('LicenseService', () => {
         workflowCount: 600,
       });
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'active-unlimited' },
+        global_settings: { license_key: 'active-unlimited' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({
@@ -525,7 +525,7 @@ describe('LicenseService', () => {
       const { service, settingService, apiService, metadataService } =
         createEnv();
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'to-activate' },
+        global_settings: { license_key: 'to-activate' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({
@@ -578,7 +578,7 @@ describe('LicenseService', () => {
     it('stores an error when activation slots are exhausted', async () => {
       const { service, settingService, apiService } = createEnv();
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'full' },
+        global_settings: { license_key: 'full' },
       });
       apiService.validate.mockResolvedValue(
         createValidationResponse({
@@ -611,7 +611,7 @@ describe('LicenseService', () => {
     it('uses Axios extractor when refresh throws', async () => {
       const { service, settingService, apiService } = createEnv();
       settingService.getSettings.mockResolvedValueOnce({
-        chatbot_settings: { license_key: 'network' },
+        global_settings: { license_key: 'network' },
       });
       apiService.extractAxiosError.mockReturnValue('Detailed');
       apiService.validate.mockRejectedValue(new Error('fail'));

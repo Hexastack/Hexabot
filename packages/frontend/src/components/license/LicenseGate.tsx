@@ -313,7 +313,7 @@ export const LicenseGate = ({
               variant="outlined"
               onClick={() => {
                 setOpen(false);
-                router.push("/settings/groups/chatbot_settings");
+                router.push("/settings/groups/global_settings");
               }}
             >
               {t("button.enter_license_key")}

@@ -14,7 +14,7 @@ const UNUSED_HELPER_GROUP = String(getRandom());
 
 export const settingFixtures: SettingCreateDto[] = [
   {
-    group: 'chatbot_settings',
+    group: 'global_settings',
     label: 'default_storage_helper',
     value: 'local-storage',
   },

@@ -24,21 +24,24 @@ describe('HelperController', () => {
     );
   });
 
-  it('maps legacy nlu type to llm', () => {
+  it('returns helpers for a known helper type', () => {
     helperService.getAllByType.mockReturnValue([
       {
-        getName: () => 'llm',
+        getName: () => 'local-storage',
       } as any,
     ]);
 
-    const result = controller.getHelpers('nlu');
+    const result = controller.getHelpers('storage');
 
-    expect(helperService.getAllByType).toHaveBeenCalledWith(HelperType.LLM);
-    expect(result).toEqual([{ name: 'llm' }]);
+    expect(helperService.getAllByType).toHaveBeenCalledWith(HelperType.STORAGE);
+    expect(result).toEqual([{ name: 'local-storage' }]);
   });
 
-  it('throws for unknown helper type', () => {
-    expect(() => controller.getHelpers('unknown')).toThrow(BadRequestException);
-    expect(helperService.getAllByType).not.toHaveBeenCalled();
-  });
+  it.each(['unknown', 'nlu', 'llm'])(
+    'throws for unsupported helper type "%s"',
+    (type) => {
+      expect(() => controller.getHelpers(type)).toThrow(BadRequestException);
+      expect(helperService.getAllByType).not.toHaveBeenCalled();
+    },
+  );
 });

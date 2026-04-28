@@ -230,7 +230,7 @@ describe('SettingService', () => {
 
       const emitSpy = jest.spyOn(eventEmitter!, 'emit');
       const setting = makeSetting({
-        group: 'chatbot_settings',
+        group: 'global_settings',
         label: 'locale',
         value: 'en',
       });
@@ -244,7 +244,7 @@ describe('SettingService', () => {
 
       expect(emitSpy).toHaveBeenCalledTimes(1);
       expect(emitSpy).toHaveBeenCalledWith(
-        'hook:chatbot_settings:locale',
+        'hook:global_settings:locale',
         setting,
       );
     });
