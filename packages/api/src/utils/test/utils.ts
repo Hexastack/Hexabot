@@ -33,7 +33,7 @@ import { SettingModule } from '@/setting/setting.module';
 
 import { I18nTestingModule } from './modules/i18n-testing.module';
 import { I18nServiceProvider } from './providers/i18n-service.provider';
-import { registerTypeOrmDataSource } from './test';
+import { registerTestingModule, registerTypeOrmDataSource } from './test';
 
 type TTypeOrToken = [
   new (...args: any[]) => any,
@@ -507,6 +507,7 @@ export const buildTestingMocks = async ({
     ...rest,
   });
   const module = await testingModuleBuilder.compile();
+  registerTestingModule(module);
 
   return {
     module,
