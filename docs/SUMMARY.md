@@ -50,7 +50,6 @@
   * [Manage users](users-and-roles/manage-users.md)
   * [Roles and Permissions](users-and-roles/roles-and-permissions.md)
 * [Manage Settings](manage-settings/README.md)
-  * [Chatbot Global Fallback](manage-settings/chatbot-global-fallback.md)
   * [Web Channel](manage-settings/web-channel.md)
   * [Live chat widget](manage-settings/live-chat-widget.md)
   * [Facebook Messenger](manage-settings/facebook-messenger.md)

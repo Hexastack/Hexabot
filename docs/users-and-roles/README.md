@@ -1,25 +1,67 @@
 ---
+description: >-
+  Manage admin users, assign roles, and control access across the Hexabot admin
+  panel.
 icon: users-gear
 ---
 
 # Users and Roles
 
-Hexabot offers robust user and role management features to streamline collaboration and ensure security within your chatbot projects. Whether you're working with a team of developers, content creators, or marketing professionals, Hexabot makes it easy to grant the right access levels to the right people.
+Users and roles control access to the Hexabot admin panel.
 
-**Why Manage Users and Roles?**
+Users are the people who can sign in. Roles group permissions. Assign one or more roles to each user to control what they can view and change.
 
-* **Security:** Control who has access to your chatbot project and which parts of the platform they can access.
-* **Collaboration:** Enable multiple individuals to work together on your chatbot project efficiently without disrupting each other's work.
-* **Clear Responsibilities:** Assign specific roles to team members based on their expertise and responsibilities, ensuring that everyone is focused on the right tasks.
+This area is separate from subscribers and audience records. It only covers internal admin access.
 
-**Key Concepts:**
+### How access control works
 
-* **Users:** Individuals with accounts in Hexabot. Each user has a unique profile and set of permissions.
-* **Roles:** Predefined sets of permissions that determine what actions a user can take within the platform.
+Hexabot uses role-based access control for admin users:
 
-**Example Scenarios:**
+1. A user has one or more roles.
+2. A role has zero or more permissions.
+3. Each permission combines a model, an action, and a relation.
 
-* **Developer:** A developer might have full access to all areas of the platform, including the Visual Editor, NLP training, and the CMS.
-* **Content Creator:** A content creator may have access to the CMS to update chatbot responses and manage knowledge base entries, but might not have access to code or NLP training settings.
+These permissions control which pages appear in the sidebar and which actions are available in lists, dialogs, and forms.
 
-<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th><th data-hidden data-card-cover data-type="files"></th></tr></thead><tbody><tr><td>Manage Users</td><td></td><td><a href="manage-users.md">manage-users.md</a></td><td><a href="../.gitbook/assets/1.png">1.png</a></td></tr><tr><td>Manage roles</td><td></td><td><a href="roles-and-permissions.md">roles-and-permissions.md</a></td><td><a href="../.gitbook/assets/2.png">2.png</a></td></tr></tbody></table>
+The four permission actions are:
+
+<table><thead><tr><th width="126.6917724609375">Action</th><th>Meaning</th></tr></thead><tbody><tr><td><code>create</code></td><td>Allows creating records for the model.</td></tr><tr><td><code>read</code></td><td>Allows listing or viewing records.</td></tr><tr><td><code>update</code></td><td>Allows editing records.</td></tr><tr><td><code>delete</code></td><td>Allows deleting records.</td></tr></tbody></table>
+
+### Manage users
+
+Use the **Users** page to manage admin accounts.
+
+Common tasks:
+
+* create a local admin user;
+* assign or change one or more roles;
+* activate or deactivate an account.
+
+User management depends on your permissions, your plan, and whether SSO is enabled.
+
+When SSO is enabled, the user list is still visible, but local role-management controls and status switches are limited. In that setup, treat your identity provider as the source of truth for access.
+
+### Manage roles
+
+Use the **Roles** page to define access levels for admin users.
+
+Common tasks:
+
+* create a new role;
+* rename an existing role;
+* add or remove permissions for that role.
+
+Fresh installations include seeded roles such as `admin`, `manager`, and `public`. You can extend or replace them to match your organization.
+
+Before changing default roles, make sure at least one active account keeps full access to users, roles, and permissions.
+
+### Recommended workflow
+
+For most teams, access setup follows a simple order:
+
+1. Create or review the roles you need.
+2. Add users or identify existing users.
+3. Assign the right roles to each user.
+4. Test access with the affected account.
+
+Use the smallest permission set that still lets each person do their work.
