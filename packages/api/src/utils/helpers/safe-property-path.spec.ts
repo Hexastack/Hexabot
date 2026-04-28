@@ -32,10 +32,7 @@ describe('hasForbiddenSegment', () => {
     'nested.field.value',
     'constructorName',
     'meta[constructorName]',
-  ])(
-    'should allow safe path: %s',
-    (path) => {
-      expect(hasForbiddenSegment(path)).toBe(false);
-    },
-  );
+  ])('should allow safe path: %s', (path) => {
+    expect(hasForbiddenSegment(path)).toBe(false);
+  });
 });
