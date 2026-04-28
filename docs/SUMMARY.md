@@ -58,6 +58,7 @@
 
 * [Workflow YAML Syntax](developer-guide/workflow-yaml-syntax.md)
 * [Develop Custom Actions](developer-guide/develop-custom-actions.md)
+* [Develop Custom Channels](developer-guide/develop-custom-channels.md)
 * [CLI Command Reference](developer-guide/cli-command-reference.md)
 * [SMTP Configuration](developer-guide/smtp-configuration.md)
 * [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)
