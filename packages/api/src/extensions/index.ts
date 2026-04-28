@@ -41,3 +41,5 @@ export * from './actions/messaging/buttons.action';
 export * from './actions/messaging/attachment.action';
 
 export * from './actions/messaging/list.action';
+
+export * from './actions/web/send-mail.action';

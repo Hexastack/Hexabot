@@ -25,5 +25,14 @@
     "URL": "URL",
     "Whether the HTTP response status indicates success.": "Indique si le statut de la réponse HTTP signale un succès.",
     "Whether the response body was truncated.": "Indique si le corps de la réponse a été tronqué."
+  },
+  "send_mail": {
+    "Sends an email using HTML content.": "Envoie un e-mail en utilisant du contenu HTML.",
+    "To": "À",
+    "Recipient email address.": "Adresse e-mail du destinataire.",
+    "Title": "Titre",
+    "Email subject.": "Objet de l'e-mail.",
+    "Content (HTML)": "Contenu (HTML)",
+    "HTML email content.": "Contenu de l'e-mail en HTML."
   }
 }
