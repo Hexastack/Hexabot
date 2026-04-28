@@ -7,7 +7,7 @@ icon: book-open-lines
 
 Content entries are the records stored under a content type. Each entry has a title, status, timestamps, and the custom fields defined by its content type.
 
-<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 Open entries from **Content > Content Types**, then click the **Content** operation on the content type you want to manage. The entries URL is `/content-types/content/<content_type_id>`.
 
@@ -37,7 +37,7 @@ The entries page is scoped to one selected content type. A chip in the page head
 4. Set **Status** to active when the entry should be available to workflows.
 5. Click **Save**.
 
-<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The form is generated from the content type schema. If the content type has a File field, that field lets you upload a file or choose an existing file from the media library.
 

@@ -2,13 +2,11 @@
 icon: bars
 ---
 
-# Manage Persistent Menu
-
-
+# Persistent Menu
 
 The persistent menu defines menu items that are available from supported chat interfaces, including the web widget. It is useful for common actions such as contacting support, opening account pages, starting key workflows, or grouping self-service options.
 
-<figure><img src="../.gitbook/assets/image (1).png" alt="" width="443"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt="" width="443"><figcaption></figcaption></figure>
 
 Open it from **Content > Persistent Menu** or go to `/content/persistent-menu`.
 
@@ -26,7 +24,7 @@ Use postback menu items when a workflow should react to the selection. Use web U
 
 The page shows root menu items and their nested children. Nested menu items can be expanded and collapsed.
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt="" width="427"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt="" width="427"><figcaption></figcaption></figure>
 
 Available controls depend on permissions:
 

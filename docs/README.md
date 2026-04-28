@@ -16,7 +16,7 @@ Use it to automate conversations, tasks, and recurring operations in one place. 
 * **Extensible** — add actions, bindings, channels, and integrations as needs grow.
 * **Cost control** — manage limits by plan without usage-based workflow metering.
 
-<figure><img src=".gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="A preview of Hexabot workflow editor"><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt="A preview of Hexabot workflow editor"><figcaption></figcaption></figure>
 
 ### What you can do with Hexabot
 

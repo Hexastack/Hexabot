@@ -11,7 +11,7 @@ Use **Languages** to define which languages your workspace supports.
 
 Hexabot can serve users in their preferred language when it is available. If no language is detected, Hexabot uses the default language.
 
-<figure><img src="../.gitbook/assets/image.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2).png" alt="" width="563"><figcaption></figcaption></figure>
 
 ### What you manage here
 

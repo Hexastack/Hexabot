@@ -1,39 +1,98 @@
+---
+description: >-
+  Create admin users, assign roles, and control access to the Hexabot admin
+  panel.
+icon: circle-user
+---
+
 # Manage users
 
-Hexabot's user management system allows you to control access to your chatbot project, ensuring that the right people have the right permissions. This guide walks you through the steps of adding, editing, and managing users in your Hexabot workspace.
+The Users page manages people who can sign in to the Hexabot admin panel. It is separate from the audience and subscriber lists, which track end users who interact with your bot.
 
-### **1. Access User Management:**
+<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 
-* Log in to your Hexabot account.
-* Locate the "Users" or "User Management" section. This is typically found in the main menu under Admin section.
+Open it from **Administration > Users** or go directly to `/users`.
 
-### **2. Adding New Users:**
+### Access requirements
 
-* **Click the "+ INVITE"** butto&#x6E;**.**  This opens a form where you can create a new user account.
-* **Provide User Details:** Fill in the required fields, which typically include:
-  * **Email Address:** The user's primary email address.
-  * **Role :** Assign a role during user creation, choose the most appropriate role based on the user's responsibilities. By default, Hexabot present you with 3 key roles that you can choose from : manager, public and admin.
-* **Send Invitation :** Click on "SEND" button to invite the new user to join. If your Hexabot is configured properly to send emails, he will receive an email with a link to register and activate their account. If you're unable to send the invitation, please contact your system administrator to verify the email settings.
+The Users page is available when all of the following are true:
 
-### **3. Editing Role:**
+* Your account has the `read` permission on the `User` model.
+* The workspace has an active plan that includes user management. The frontend currently gates user management behind the Pro plan or higher.
+* User-management quota has not blocked the action you are trying to take.
 
-* **View User List:** Find the user you want to edit in the list of users within the User Management section.
-* **Click on "Manage Roles" :** This will open a dialog window, where you can make adjustments to the user roles. Change the user's role to grant them different permissions.
+If your plan does not include user management, the page shows a locked-state view with options to review pricing or enter a license key from the settings area.
 
-### 4. Managing User Account Status
+When SSO is enabled, the page still lists users, but local role-management controls are hidden and status switches are disabled. In that mode, treat your identity provider as the source of truth for user access.
 
-In Hexabot's User Management section, you can control the status of each user account. This allows you to activate or deactivate a given user's access to the platform. While you cannot permanently delete user accounts, you can effectively disable them to prevent them from accessing the system.
+### User list
 
-* **Enabled:** A user with an "**Enabled**" status has full access to Hexabot, based on their assigned role and permissions.
-* **Disabled:** A user with a "**Disabled**" status cannot access Hexabot. They will not be able to log in or perform any actions.
+The table shows each admin user with:
 
-**Managing Account Status:**
+* ID
+* Avatar
+* Full name
+* Email
+* Assigned roles
+* Status
+* Creation date
+* Last update date
 
-* **Locate the User:** Find the user whose account status you want to modify in the list of users within the User Management section.
-* **Change Status:** Look for an option to "**Enable**" or "**Disable**" the user's account.
-  * **Disabling an Account:** To prevent a user from accessing Hexabot, set their account status to "**Disabled**."
-  * **Reactivating an Account:** To restore access to a user, set their account status to "**Enabled**."
+The page header includes a user quota chip in the format `Users: used/limit`. If the plan has no user limit, the limit is shown as unlimited. When the quota is reached, the Add action is blocked or wrapped in an upgrade prompt.
 
-{% hint style="warning" %}
-**Important Note:** Disabling an account does not permanently delete the account data. The user profile and all associated information are still stored in the Hexabot system. If you need to remove a user's data completely, you'll need to contact your Hexabot administrator or our support team for assistance.
-{% endhint %}
+Use the search box to filter the list by first name or last name. The search value is synced to the URL, so you can refresh or share the filtered view.
+
+### Add a user
+
+<figure><img src="../.gitbook/assets/image (1).png" alt="" width="311"><figcaption></figcaption></figure>
+
+Click **Add** to create a local admin user. The form requires:
+
+* First name
+* Last name
+* Username
+* Email
+* Password
+* Password confirmation
+* At least one role
+
+The email must be valid, the password must be at least 8 characters, and the confirmation must match the password.
+
+The role selector supports multiple roles. Use **Manage** beside the selector to open the Roles page when you need to create or adjust a role before finishing the user record.
+
+New users are created with an inactive status. Hexabot sends an account confirmation email to the new user; confirming the account activates it. If email delivery is not configured or the confirmation email cannot be sent, an administrator can activate the account manually from the Status switch.
+
+### Manage roles for a user
+
+Use the **Manage Roles** action in the Operations column to change which roles are assigned to a user. The dialog shows the user's full name and a multi-select role picker.
+
+Role changes replace the user's assigned role list with the selected roles, so keep every role the user should retain selected before saving.
+
+The current user cannot remove their own `admin` role through this endpoint. This protects the workspace from accidental loss of administrative access.
+
+### Enable or disable a user
+
+Use the Status switch to activate or deactivate a user account.
+
+The switch is disabled when:
+
+* You are looking at your own row.
+* SSO is enabled.
+* Your account does not have the `update` permission on `User`.
+
+The backend also protects the signed-in user from disabling their own account.
+
+### Permission reference
+
+The Users page relies on these permissions:
+
+<table><thead><tr><th width="153.01983642578125">Permission</th><th>What it controls</th></tr></thead><tbody><tr><td><code>User: read</code></td><td>Shows the Users page in the Administration menu and loads the user list.</td></tr><tr><td><code>User: create</code></td><td>Shows the Add button and allows creating users.</td></tr><tr><td><code>User: update</code></td><td>Allows changing user status and saving role assignments.</td></tr><tr><td><code>Role: read</code></td><td>Allows role names to be loaded and displayed in selectors and role chips.</td></tr></tbody></table>
+
+Accounts that can create or update users should also understand the role model, because assigning a broader role immediately grants that user the permissions contained in the role.
+
+### Operational notes
+
+* Prefer disabling an account when you need to block access temporarily. The frontend does not expose a user-delete action on this page.
+* Assign at least one role to every admin user. Users without roles cannot receive model permissions.
+* Keep at least one confirmed, active administrator with full role-management access.
+* After changing your own roles, refresh the page or sign out and back in if the sidebar does not immediately reflect the new permissions.

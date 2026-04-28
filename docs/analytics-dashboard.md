@@ -9,7 +9,7 @@ icon: chart-line
 
 The dashboard summarizes system activity and operational health. Depending on permissions, it can show KPI cards, quick actions, latest workflows, recent runs, upcoming schedules, thread activity, failed runs, integration health, and recent audit activity.
 
-<figure><img src=".gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (2) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 It is the first page in the admin panel and is designed as an operational starting point: authors can jump back into workflow building, operators can investigate failed runs, and administrators can check whether channels and recent activity look healthy.
 
