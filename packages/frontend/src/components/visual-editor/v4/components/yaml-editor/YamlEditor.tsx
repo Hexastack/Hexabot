@@ -23,18 +23,6 @@ export function YamlEditor() {
 
   return (
     <div className="yaml-editor nokey">
-      {definitionErrors.length > 0 ? (
-        <Alert severity="error" className="yaml-editor__alert">
-          <AlertTitle>
-            {t("visual_editor.yaml_editor.validation_title")}
-          </AlertTitle>
-          <ul className="yaml-editor__error-list">
-            {definitionErrors.map((errorMessage) => (
-              <li key={errorMessage}>{errorMessage}</li>
-            ))}
-          </ul>
-        </Alert>
-      ) : null}
       <div className="yaml-editor__body">
         <Editor
           value={value}
@@ -51,6 +39,18 @@ export function YamlEditor() {
           options={YAML_EDITOR_OPTIONS}
         />
       </div>
+      {definitionErrors.length > 0 ? (
+        <Alert severity="error" className="yaml-editor__alert">
+          <AlertTitle>
+            {t("visual_editor.yaml_editor.validation_title")}
+          </AlertTitle>
+          <ul className="yaml-editor__error-list">
+            {definitionErrors.map((errorMessage) => (
+              <li key={errorMessage}>{errorMessage}</li>
+            ))}
+          </ul>
+        </Alert>
+      ) : null}
     </div>
   );
 }
