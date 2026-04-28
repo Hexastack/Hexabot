@@ -39,6 +39,8 @@ import type {
   Setting,
   Source,
   SourceFull,
+  StdIncomingMessage,
+  StdOutgoingMessage,
   Subscriber,
   SubscriberFull,
   Thread,
@@ -52,8 +54,6 @@ import type {
   WorkflowRunFull,
   WorkflowVersion,
   WorkflowVersionFull,
-  StdIncomingMessage,
-  StdOutgoingMessage,
 } from "@hexabot-ai/types";
 import type { ResizeControlDirection } from "@xyflow/system";
 import type { JSONSchema7 as JsonSchema } from "json-schema";
@@ -409,14 +409,6 @@ export interface IEntityMapTypes {
   >;
   [EntityType.CHANNEL]: IEntityTypes<IChannel, EntityPayload<IChannel, "name">>;
   [EntityType.HELPER]: IEntityTypes<IHelper, EntityPayload<IHelper, "name">>;
-  [EntityType.NLU_HELPER]: IEntityTypes<
-    IHelper,
-    EntityPayload<IHelper, "name">
-  >;
-  [EntityType.LLM_HELPER]: IEntityTypes<
-    IHelper,
-    EntityPayload<IHelper, "name">
-  >;
   [EntityType.STORAGE_HELPER]: IEntityTypes<
     IHelper,
     EntityPayload<IHelper, "name">

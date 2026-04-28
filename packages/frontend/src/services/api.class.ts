@@ -29,7 +29,7 @@ import {
   ThreadSnapshot,
   ThreadSnapshotQuery,
 } from "@/types/stat.types";
-import { UserStub, User, IProfileAttributes } from "@/types/user.types";
+import { IProfileAttributes, User, UserStub } from "@/types/user.types";
 import { applyFullNameDerivedFields } from "@/utils/full-name.utils";
 
 import { EntityType, Format, TCount, TypeByFormat } from "./types";
@@ -100,8 +100,6 @@ export const ROUTES = {
   [EntityType.CHANNEL]: "/channel",
   [EntityType.SOURCE]: "/source",
   [EntityType.HELPER]: "/helper",
-  [EntityType.NLU_HELPER]: "/helper/nlu",
-  [EntityType.LLM_HELPER]: "/helper/llm",
   [EntityType.STORAGE_HELPER]: "/helper/storage",
   [EntityType.WORKFLOW]: "/workflow",
   [EntityType.WORKFLOW_VERSION]: "/workflow/:id/versions",

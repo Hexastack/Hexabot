@@ -229,22 +229,6 @@ export const HelperEntity = new schema.Entity(EntityType.HELPER, undefined, {
   idAttribute: ({ name }) => name,
 });
 
-export const NluHelperEntity = new schema.Entity(
-  EntityType.NLU_HELPER,
-  undefined,
-  {
-    idAttribute: ({ name }) => name,
-  },
-);
-
-export const LlmHelperEntity = new schema.Entity(
-  EntityType.LLM_HELPER,
-  undefined,
-  {
-    idAttribute: ({ name }) => name,
-  },
-);
-
 export const StorageHelperEntity = new schema.Entity(
   EntityType.STORAGE_HELPER,
   undefined,
@@ -369,7 +353,5 @@ export const ENTITY_MAP = {
   [EntityType.CHANNEL]: ChannelEntity,
   [EntityType.SOURCE]: SourceEntity,
   [EntityType.HELPER]: HelperEntity,
-  [EntityType.NLU_HELPER]: NluHelperEntity,
-  [EntityType.LLM_HELPER]: LlmHelperEntity,
   [EntityType.STORAGE_HELPER]: StorageHelperEntity,
 } as const;

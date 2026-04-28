@@ -39,8 +39,6 @@ export const POPULATE_BY_TYPE = {
   [EntityType.CHANNEL]: [],
   [EntityType.SOURCE]: ["defaultWorkflow"],
   [EntityType.HELPER]: [],
-  [EntityType.NLU_HELPER]: [],
-  [EntityType.LLM_HELPER]: [],
   [EntityType.STORAGE_HELPER]: [],
   [EntityType.STATS]: [],
 } as const;

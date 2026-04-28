@@ -30,8 +30,6 @@ export enum EntityType {
   CHANNEL = "Channel",
   SOURCE = "Source",
   HELPER = "Helper",
-  NLU_HELPER = "NluHelper",
-  LLM_HELPER = "LlmHelper",
   STORAGE_HELPER = "StorageHelper",
   WORKFLOW = "Workflow",
   WORKFLOW_VERSION = "WorkflowVersion",
