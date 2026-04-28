@@ -35,7 +35,7 @@ export function useYamlEditorController() {
   const completionDisposableRef = useRef<IDisposable | null>(null);
   const onChange = useCallback(
     (nextValue?: string) => {
-      updateDefinitionState(nextValue || "");
+      updateDefinitionState(nextValue || "", { persist: "debounced" });
     },
     [updateDefinitionState],
   );
