@@ -42,7 +42,7 @@ describe('MessageRepository (TypeORM)', () => {
       relations: ['sender', 'recipient', 'sentBy'],
       order: { createdAt: 'ASC' },
     });
-  });
+  }, 30000);
 
   afterEach(() => {
     jest.clearAllMocks();

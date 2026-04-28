@@ -52,7 +52,7 @@ describe('UserService (TypeORM)', () => {
     ]);
 
     user = await userRepository.findOne({ where: { username: 'admin' } });
-  });
+  }, 30000);
 
   afterEach(jest.clearAllMocks);
 

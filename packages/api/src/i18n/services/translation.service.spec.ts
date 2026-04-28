@@ -5,8 +5,10 @@
  */
 
 import { Workflow } from '@hexabot-ai/types';
+import { TestingModule } from '@nestjs/testing';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 import { WorkflowType } from '@/workflow/types';
@@ -15,6 +17,7 @@ import { TranslationRepository } from '../repositories/translation.repository';
 import { TranslationService } from '../services/translation.service';
 
 describe('TranslationService', () => {
+  let module: TestingModule;
   let service: TranslationService;
   let i18nService: I18nService<unknown>;
   let workflowService: jest.Mocked<WorkflowService>;
@@ -81,7 +84,7 @@ describe('TranslationService', () => {
       findAndPopulate: jest.fn().mockResolvedValue(workflowFixtures),
     } as unknown as jest.Mocked<WorkflowService>;
 
-    const { getMocks } = await buildTestingMocks({
+    const testing = await buildTestingMocks({
       providers: [
         TranslationService,
         {
@@ -101,7 +104,19 @@ describe('TranslationService', () => {
         { provide: WorkflowService, useValue: workflowService },
       ],
     });
-    [service, i18nService] = await getMocks([TranslationService, I18nService]);
+
+    module = testing.module;
+    [service, i18nService] = await testing.getMocks([
+      TranslationService,
+      I18nService,
+    ]);
+  });
+
+  afterEach(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
   });
 
   it('should call refreshDynamicTranslations with translations from findAll', async () => {
