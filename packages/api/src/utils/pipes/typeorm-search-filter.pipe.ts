@@ -22,6 +22,7 @@ import {
   Not,
 } from 'typeorm';
 
+import { hasForbiddenSegment } from '../helpers/safe-property-path';
 import {
   TFilterNestedKeysOfType,
   TSearchFilterValue,
@@ -200,7 +201,7 @@ export class TypeOrmSearchFilterPipe<T>
     }
 
     const [field = '', direction = 'desc'] = sort.trim().split(/\s+/);
-    if (!field) {
+    if (!field || hasForbiddenSegment(field)) {
       return undefined;
     }
 
@@ -396,7 +397,7 @@ export class TypeOrmSearchFilterPipe<T>
     path: string,
     value: unknown,
   ): void {
-    if (value === undefined) return;
+    if (value === undefined || hasForbiddenSegment(path)) return;
     const segments = path.split('.');
     let cursor = target;
 
@@ -416,7 +417,7 @@ export class TypeOrmSearchFilterPipe<T>
     right: FindOptionsWhere<T>,
   ): FindOptionsWhere<T> {
     for (const [key, value] of Object.entries(right)) {
-      if (value === undefined) {
+      if (value === undefined || hasForbiddenSegment(key)) {
         continue;
       }
 

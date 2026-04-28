@@ -24,7 +24,13 @@ import { EntityType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
 import type { EntityAttributes } from "@/types/base.types";
 
+import type { UpdateWorkflowDefinitionStateOptions } from "../utils/workflow-definition-state.utils";
+
 type WorkflowAttributes = EntityAttributes<EntityType.WORKFLOW>;
+type UpdateWorkflowDefinitionState = (
+  nextDefinition: string | WorkflowDefinition,
+  options?: UpdateWorkflowDefinitionStateOptions,
+) => void;
 
 export interface IWorkflowContext {
   getWorkflowFromCache: (id: string) => Workflow | undefined;
@@ -40,7 +46,7 @@ export interface IWorkflowContext {
   removeWorkflowParams: () => Promise<void>;
   updateWorkflowURL: (workflowIid: string, nodeIds?: string[]) => Promise<void>;
   yaml: string;
-  updateDefinitionState: (nextDefinition: string | WorkflowDefinition) => void;
+  updateDefinitionState: UpdateWorkflowDefinitionState;
   workflow?: Workflow;
   workflows?: Workflow[];
   debouncedWorkflowUpdate: ((params: Partial<WorkflowAttributes>) => void) &
@@ -54,7 +60,6 @@ export interface IWorkflowContext {
     },
     Workflow
   >;
-  updateDefinition: (definition: WorkflowDefinition) => void;
   persistDefinition: () => void;
   publishVersion: (versionId?: string) => void;
   unpublishVersion: () => void;

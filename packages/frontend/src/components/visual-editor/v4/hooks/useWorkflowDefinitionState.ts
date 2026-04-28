@@ -5,13 +5,12 @@
  */
 
 import {
-  Workflow as WorkflowHelper,
+  validateWorkflow,
   type WorkflowCompileOptions,
   type WorkflowDefinition,
-  validateWorkflow,
 } from "@hexabot-ai/agentic";
-import { WorkflowVersionAction } from "@hexabot-ai/types";
 import type { Workflow } from "@hexabot-ai/types";
+import { WorkflowVersionAction } from "@hexabot-ai/types";
 import debounce from "@mui/utils/debounce";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -28,6 +27,12 @@ import { useApiClient } from "@/hooks/useApiClient";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
 import { EntityType, QueryType } from "@/services/types";
 
+import {
+  applyWorkflowDefinitionStateUpdate,
+  commitWorkflowDefinitionUpdate,
+  stringifyWorkflowDefinitionUpdate,
+  type UpdateWorkflowDefinitionStateOptions,
+} from "../utils/workflow-definition-state.utils";
 import { getDefinition } from "../utils/workflow-definition.utils";
 
 type UseWorkflowDefinitionStateArgs = {
@@ -215,50 +220,50 @@ export const useWorkflowDefinitionState = ({
 
     return baseline !== yaml;
   }, [currentVersion?.definitionYml, workflow?.currentVersion, yaml]);
-  // Commit new definition version
+  const commitDefinitionUpdate = useCallback(
+    (nextDefinitionYml: string) =>
+      commitWorkflowDefinitionUpdate({
+        actions: actionValidationMetadata,
+        bindingKinds,
+        commitVersion,
+        definitionYml: nextDefinitionYml,
+        workflowId: workflow?.id,
+      }),
+    [actionValidationMetadata, bindingKinds, commitVersion, workflow?.id],
+  );
   const debouncedDefinitionUpdate = useSafeCallback(
     debounce((nextDefinitionYml: string) => {
-      if (!workflow?.id) {
-        return;
-      }
-
-      const validation = validateWorkflow(nextDefinitionYml, {
-        bindingKinds,
-        actions: actionValidationMetadata,
-      });
-
-      if (!validation.success) {
-        return;
-      }
-
-      commitVersion({
-        action: WorkflowVersionAction.update,
-        definitionYml: nextDefinitionYml,
-      });
+      commitDefinitionUpdate(nextDefinitionYml);
     }, 4000),
-    [actionValidationMetadata, bindingKinds, workflow?.id, commitVersion],
+    [commitDefinitionUpdate],
     (memoizedFn) => {
       memoizedFn.clear();
     },
   );
-  // Update local YML stae
   const updateDefinitionState = useCallback(
-    (nextDefinition: string | WorkflowDefinition) => {
-      const nextSignature =
-        typeof nextDefinition === "string"
-          ? nextDefinition
-          : WorkflowHelper.stringifyDefinition(nextDefinition);
-
-      if (definitionSignatureRef.current === nextSignature) {
-        return;
-      }
-
-      definitionSignatureRef.current = nextSignature;
-
-      setYaml(nextSignature);
-      debouncedDefinitionUpdate(nextSignature);
+    (
+      nextDefinition: string | WorkflowDefinition,
+      options?: UpdateWorkflowDefinitionStateOptions,
+    ) => {
+      applyWorkflowDefinitionStateUpdate({
+        clearDebouncedCommit: debouncedDefinitionUpdate.clear,
+        commitImmediately: commitDefinitionUpdate,
+        currentSignature: definitionSignatureRef.current,
+        nextDefinition,
+        options,
+        savedDefinitionYml: currentVersion?.definitionYml ?? "",
+        scheduleDebouncedCommit: debouncedDefinitionUpdate,
+        setSignature: (nextDefinitionYml) => {
+          definitionSignatureRef.current = nextDefinitionYml;
+        },
+        setYaml,
+      });
     },
-    [debouncedDefinitionUpdate],
+    [
+      commitDefinitionUpdate,
+      currentVersion?.definitionYml,
+      debouncedDefinitionUpdate,
+    ],
   );
   // Immediate commit of the definition version
   const persistDefinition = useCallback(() => {
@@ -273,20 +278,17 @@ export const useWorkflowDefinitionState = ({
     }
 
     definitionSignatureRef.current =
-      WorkflowHelper.stringifyDefinition(definition);
+      stringifyWorkflowDefinitionUpdate(definition);
     debouncedDefinitionUpdate.clear();
-    commitVersion({
-      action: WorkflowVersionAction.update,
-      definitionYml: definitionSignatureRef.current,
-    });
+    commitDefinitionUpdate(definitionSignatureRef.current);
   }, [
+    commitDefinitionUpdate,
     debouncedDefinitionUpdate,
     definition,
     definitionError,
     workflow?.id,
     isDefinitionDirty,
     hasDefinitionErrors,
-    commitVersion,
   ]);
   const publishVersion = useCallback(
     (versionId?: string) => {

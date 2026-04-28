@@ -317,7 +317,6 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         workflows,
         updateWorkflow,
         debouncedWorkflowUpdate,
-        updateDefinition: updateDefinitionState,
         persistDefinition,
         publishVersion,
         unpublishVersion,
