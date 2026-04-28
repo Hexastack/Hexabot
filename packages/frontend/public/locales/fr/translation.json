@@ -875,7 +875,8 @@
     },
     "yaml_editor": {
       "show": "Afficher l'éditeur YAML",
-      "hide": "Masquer l'éditeur YAML"
+      "hide": "Masquer l'éditeur YAML",
+      "validation_title": "La définition du workflow contient des erreurs"
     },
     "workflow_versions": {
       "show": "Afficher les versions du workflow",

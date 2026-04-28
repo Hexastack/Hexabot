@@ -5,9 +5,10 @@
  */
 
 import Editor, { Monaco } from "@monaco-editor/react";
-import { useColorScheme } from "@mui/material";
+import { Alert, AlertTitle, useColorScheme } from "@mui/material";
 
 import { handleEditorWillMount } from "@/app-components/inputs/JsonataFormulaField/monaco";
+import { useTranslate } from "@/hooks/useTranslate";
 
 import { YAML_EDITOR_OPTIONS } from "./constants";
 import { useYamlEditorController } from "./useYamlEditorController";
@@ -15,8 +16,10 @@ import { useYamlEditorController } from "./useYamlEditorController";
 import "./yaml.worker";
 
 export function YamlEditor() {
-  const { value, onChange, beforeMount, onMount } = useYamlEditorController();
+  const { value, definitionErrors, onChange, beforeMount, onMount } =
+    useYamlEditorController();
   const { mode } = useColorScheme();
+  const { t } = useTranslate();
 
   return (
     <div className="yaml-editor nokey">
@@ -36,6 +39,18 @@ export function YamlEditor() {
           options={YAML_EDITOR_OPTIONS}
         />
       </div>
+      {definitionErrors.length > 0 ? (
+        <Alert severity="error" className="yaml-editor__alert">
+          <AlertTitle>
+            {t("visual_editor.yaml_editor.validation_title")}
+          </AlertTitle>
+          <ul className="yaml-editor__error-list">
+            {definitionErrors.map((errorMessage) => (
+              <li key={errorMessage}>{errorMessage}</li>
+            ))}
+          </ul>
+        </Alert>
+      ) : null}
     </div>
   );
 }

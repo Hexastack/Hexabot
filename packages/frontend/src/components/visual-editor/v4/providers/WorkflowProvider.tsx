@@ -74,6 +74,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     yaml,
     definition,
     flow,
+    definitionErrors,
     updateDefinitionState,
     persistDefinition,
     publishVersion,
@@ -330,6 +331,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         removeStepAtPath,
         definition,
         flow,
+        definitionErrors,
         taskDefinitions,
         taskIds,
       }}

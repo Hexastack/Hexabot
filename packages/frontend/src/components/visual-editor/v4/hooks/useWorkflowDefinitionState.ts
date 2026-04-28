@@ -5,11 +5,12 @@
  */
 
 import {
+  validateWorkflow,
   type WorkflowCompileOptions,
   type WorkflowDefinition,
 } from "@hexabot-ai/agentic";
-import { WorkflowVersionAction } from "@hexabot-ai/types";
 import type { Workflow } from "@hexabot-ai/types";
+import { WorkflowVersionAction } from "@hexabot-ai/types";
 import debounce from "@mui/utils/debounce";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -167,6 +168,23 @@ export const useWorkflowDefinitionState = ({
       ),
     [compileActionsByName],
   );
+  const definitionErrors = useMemo(() => {
+    if (!yaml) {
+      return [];
+    }
+
+    const validation = validateWorkflow(yaml, {
+      bindingKinds,
+      actions: actionValidationMetadata,
+    });
+
+    if (validation.success) {
+      return [];
+    }
+
+    return validation.errors;
+  }, [actionValidationMetadata, bindingKinds, yaml]);
+  const hasDefinitionErrors = definitionErrors.length > 0;
   const definitionSignatureRef = useRef("");
   const {
     definition,
@@ -249,7 +267,13 @@ export const useWorkflowDefinitionState = ({
   );
   // Immediate commit of the definition version
   const persistDefinition = useCallback(() => {
-    if (!workflow?.id || !definition || definitionError || !isDefinitionDirty) {
+    if (
+      !workflow?.id ||
+      !definition ||
+      definitionError ||
+      hasDefinitionErrors ||
+      !isDefinitionDirty
+    ) {
       return;
     }
 
@@ -264,6 +288,7 @@ export const useWorkflowDefinitionState = ({
     definitionError,
     workflow?.id,
     isDefinitionDirty,
+    hasDefinitionErrors,
   ]);
   const publishVersion = useCallback(
     (versionId?: string) => {
@@ -343,19 +368,11 @@ export const useWorkflowDefinitionState = ({
     setYaml(nextYaml);
   }, [currentVersion, workflow?.id]);
 
-  useEffect(() => {
-    if (!definitionError) {
-      return;
-    }
-
-    // eslint-disable-next-line no-console
-    console.error("Failed to parse workflow definition:", definitionError);
-  }, [definitionError]);
-
   return {
     yaml,
     definition,
     flow,
+    definitionErrors,
     updateDefinitionState,
     persistDefinition,
     publishVersion,

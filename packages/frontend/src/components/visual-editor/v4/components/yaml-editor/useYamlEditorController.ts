@@ -23,7 +23,8 @@ import { useDebouncedEffect } from "./useDebouncedEffect";
 import { applyWorkflowValidationMarkers } from "./validation/validation";
 
 export function useYamlEditorController() {
-  const { yaml, updateDefinitionState, taskIds } = useWorkflow();
+  const { yaml, definitionErrors, updateDefinitionState, taskIds } =
+    useWorkflow();
   const {
     actions = [],
     isLoading: actionsLoading,
@@ -114,6 +115,7 @@ export function useYamlEditorController() {
 
   return {
     value: yaml,
+    definitionErrors,
     onChange,
     beforeMount,
     onMount,
