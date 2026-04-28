@@ -113,6 +113,22 @@ describe('TypeOrmSearchFilterPipe', () => {
     );
 
     it.each(['__proto__', 'constructor', 'prototype'])(
+      'should reject bracket-notation sort field containing %s',
+      async (forbidden) => {
+        const result = await pipe.transform(
+          {
+            where: {},
+            sort: `${forbidden}[polluted] asc`,
+          } as any,
+          {} as any,
+        );
+
+        expect(result.order).toEqual({ createdAt: 'DESC' });
+        expect(({} as any).polluted).toBeUndefined();
+      },
+    );
+
+    it.each(['__proto__', 'constructor', 'prototype'])(
       'should ignore where clause with %s in path',
       async (forbidden) => {
         const pipeWithAllowed = new TypeOrmSearchFilterPipe<TestEntity>({

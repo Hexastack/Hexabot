@@ -19,11 +19,20 @@ describe('hasForbiddenSegment', () => {
     'nested.__proto__.key',
     'a.constructor.b',
     'a.b.prototype',
-  ])('should detect forbidden segment in dotted path: %s', (path) => {
+    '__proto__[polluted]',
+    'a[constructor][prototype]',
+    'a[__proto__].b',
+  ])('should detect forbidden segment in nested path: %s', (path) => {
     expect(hasForbiddenSegment(path)).toBe(true);
   });
 
-  it.each(['name', 'user.email', 'nested.field.value', 'constructorName'])(
+  it.each([
+    'name',
+    'user.email',
+    'nested.field.value',
+    'constructorName',
+    'meta[constructorName]',
+  ])(
     'should allow safe path: %s',
     (path) => {
       expect(hasForbiddenSegment(path)).toBe(false);

@@ -4,8 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
+import toPath from 'lodash/toPath';
+
 const FORBIDDEN_SEGMENTS = new Set(['__proto__', 'constructor', 'prototype']);
 
 export function hasForbiddenSegment(path: string): boolean {
-  return path.split('.').some((segment) => FORBIDDEN_SEGMENTS.has(segment));
+  return toPath(path).some((segment) => FORBIDDEN_SEGMENTS.has(segment));
 }
