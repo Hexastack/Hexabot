@@ -3,15 +3,15 @@ description: Store structured content, media, and menu items that workflows can 
 icon: books
 ---
 
-# Knowledge Base
+# Content
 
-The knowledge base is the content layer for Hexabot. Use it to store structured records, upload reusable files, and manage persistent navigation that workflows can reference.
+This is the content layer for Hexabot. Use it to store structured records, upload reusable files, and manage persistent navigation that workflows can reference.
 
 Open the section from **Content** in the admin panel.
 
-### What the knowledge base is for
+### What the content base is for
 
-Use the knowledge base when business content changes more often than workflow logic.
+Use the content when business content changes more often than workflow logic.
 
 Common examples include:
 
@@ -40,9 +40,9 @@ In most setups, you create a content type first, then add entries that match its
 4. Upload or reuse files through File fields when needed.
 5. Reference that content from workflow actions.
 
-### How workflows use knowledge base content
+### How workflows use content
 
-Workflows can use knowledge base content in several ways:
+Workflows can use content in several ways:
 
 * list or carousel actions can send active entries as structured results;
 * retrieval steps can search indexed content for relevant answers;
