@@ -23,7 +23,13 @@ export const Header: FC = () => {
         <Grid maxWidth={0}>
           <Toolbar />
         </Grid>
-        <Grid ml={2} alignItems="center" gap={1} direction="row" display="flex">
+        <Grid
+          ml={2}
+          alignItems="center"
+          gap={1}
+          display="flex"
+          flexDirection="row"
+        >
           <HexabotLogo />
         </Grid>
       </Grid>
