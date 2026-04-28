@@ -1,0 +1,160 @@
+name: Promote npm Dist Tag
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      dist_tag:
+        description: "npm dist-tag to move. Use latest, beta, alpha, or next."
+        required: true
+        default: "latest"
+      version:
+        description: "Version to promote for every selected package, or current to use package.json versions from this ref."
+        required: true
+        default: "current"
+      packages:
+        description: "Optional space-separated package names. Defaults to all public packages."
+        required: false
+        default: ""
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19"
+          registry-url: "https://registry.npmjs.org/"
+
+      - name: Resolve promotion targets
+        shell: bash
+        env:
+          DIST_TAG_INPUT: ${{ inputs.dist_tag }}
+          VERSION_INPUT: ${{ inputs.version }}
+          PACKAGES_INPUT: ${{ inputs.packages }}
+        run: |
+          set -euo pipefail
+
+          publish_packages=("@hexabot-ai/agentic" "@hexabot-ai/types" "@hexabot-ai/api" "@hexabot-ai/cli" "@hexabot-ai/widget")
+
+          package_dir() {
+            case "$1" in
+              @hexabot-ai/agentic)
+                echo "packages/agentic"
+                ;;
+              @hexabot-ai/types)
+                echo "packages/types"
+                ;;
+              @hexabot-ai/api)
+                echo "packages/api"
+                ;;
+              @hexabot-ai/cli)
+                echo "packages/cli"
+                ;;
+              @hexabot-ai/widget)
+                echo "packages/widget"
+                ;;
+              *)
+                echo "Unsupported package '$1'." >&2
+                exit 1
+                ;;
+            esac
+          }
+
+          case "$DIST_TAG_INPUT" in
+            alpha | beta | next)
+              dist_tag="$DIST_TAG_INPUT"
+              ;;
+            stable | final | latest)
+              dist_tag="latest"
+              ;;
+            *)
+              echo "Invalid dist-tag '$DIST_TAG_INPUT'. Use alpha, beta, next, or latest."
+              exit 1
+              ;;
+          esac
+
+          if [[ -n "$PACKAGES_INPUT" ]]; then
+            read -r -a selected_packages <<< "$PACKAGES_INPUT"
+          else
+            selected_packages=("${publish_packages[@]}")
+          fi
+
+          targets_file="$RUNNER_TEMP/npm-promote-targets.txt"
+          : > "$targets_file"
+
+          for pkg in "${selected_packages[@]}"; do
+            dir=$(package_dir "$pkg")
+
+            if [[ "$VERSION_INPUT" == "current" ]]; then
+              version=$(node -p "require('./$dir/package.json').version")
+            else
+              version="$VERSION_INPUT"
+            fi
+
+            printf '%s %s\n' "$pkg" "$version" >> "$targets_file"
+          done
+
+          echo "NPM_DIST_TAG=$dist_tag" >> "$GITHUB_ENV"
+          echo "NPM_PROMOTE_TARGETS=$targets_file" >> "$GITHUB_ENV"
+
+      - name: Validate package versions
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          while read -r pkg version; do
+            echo "Checking $pkg@$version"
+            npm view "$pkg@$version" version >/dev/null
+          done < "$NPM_PROMOTE_TARGETS"
+
+      - name: Show current dist-tags
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          while read -r pkg version; do
+            echo "$pkg@$version"
+            npm dist-tag ls "$pkg"
+          done < "$NPM_PROMOTE_TARGETS"
+
+      - name: Promote dist-tag
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          while read -r pkg version; do
+            npm dist-tag add "$pkg@$version" "$NPM_DIST_TAG"
+          done < "$NPM_PROMOTE_TARGETS"
+
+      - name: Show updated dist-tags
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          {
+            echo "### npm dist-tag promotion"
+            echo
+            echo "| Package | Version | Dist tag |"
+            echo "| --- | --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          while read -r pkg version; do
+            echo "$pkg"
+            npm dist-tag ls "$pkg"
+            echo "| \`$pkg\` | \`$version\` | \`$NPM_DIST_TAG\` |" >> "$GITHUB_STEP_SUMMARY"
+          done < "$NPM_PROMOTE_TARGETS"

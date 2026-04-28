@@ -1,12 +1,45 @@
-name: Publish Hexabot Alpha Packages
+name: Publish Hexabot Packages
+
+permissions:
+  contents: read
 
 on:
   push:
     tags:
-      - "v3.*-alpha.*"
+      - "v3.*"
 
 jobs:
+  release-metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      npm_tag: ${{ steps.release.outputs.npm_tag }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Resolve npm dist-tag
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${GITHUB_REF_NAME#v}"
+
+          if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$ ]]; then
+            npm_tag="alpha"
+          elif [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]]; then
+            npm_tag="beta"
+          elif [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            npm_tag="latest"
+          else
+            echo "Unsupported release tag '$GITHUB_REF_NAME'. Expected vX.Y.Z, vX.Y.Z-alpha.N, or vX.Y.Z-beta.N."
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "npm_tag=$npm_tag" >> "$GITHUB_OUTPUT"
+          echo "Publishing version $version with npm dist-tag '$npm_tag'."
+
   publish-agentic:
+    needs: release-metadata
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -36,12 +69,15 @@ jobs:
 
       - name: Publish to npm
         working-directory: packages/agentic
-        run: pnpm publish --tag alpha --access public --no-git-checks
+        run: pnpm publish --tag "$NPM_DIST_TAG" --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
+          NPM_DIST_TAG: ${{ needs.release-metadata.outputs.npm_tag }}
 
   publish-types:
-    needs: publish-agentic
+    needs:
+      - release-metadata
+      - publish-agentic
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -71,12 +107,15 @@ jobs:
 
       - name: Publish to npm
         working-directory: packages/types
-        run: pnpm publish --tag alpha --access public --no-git-checks
+        run: pnpm publish --tag "$NPM_DIST_TAG" --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
+          NPM_DIST_TAG: ${{ needs.release-metadata.outputs.npm_tag }}
 
   publish-package:
-    needs: publish-types
+    needs:
+      - release-metadata
+      - publish-types
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -118,6 +157,7 @@ jobs:
 
       - name: Publish to npm
         working-directory: ${{ matrix.working-directory }}
-        run: pnpm publish --tag alpha --access public --no-git-checks
+        run: pnpm publish --tag "$NPM_DIST_TAG" --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.V3_NPM_TOKEN }}
+          NPM_DIST_TAG: ${{ needs.release-metadata.outputs.npm_tag }}
