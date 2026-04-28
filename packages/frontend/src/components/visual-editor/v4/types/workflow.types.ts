@@ -69,6 +69,7 @@ export interface IWorkflowContext {
   removeStepAtPath: (stepPath: FlowStepPath, nodeId?: string) => void;
   definition?: WorkflowDefinition;
   flow?: CompiledStep[];
+  definitionErrors: string[];
   taskDefinitions: Record<string, TaskDefinition>;
   taskIds: string[];
 }

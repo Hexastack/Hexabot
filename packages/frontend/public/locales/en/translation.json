@@ -871,7 +871,8 @@
     },
     "yaml_editor": {
       "show": "Show YAML editor",
-      "hide": "Hide YAML editor"
+      "hide": "Hide YAML editor",
+      "validation_title": "Workflow definition has errors"
     },
     "workflow_versions": {
       "show": "Show workflow versions",
