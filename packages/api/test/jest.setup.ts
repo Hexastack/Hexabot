@@ -7,6 +7,9 @@
 import { diff } from 'jest-diff';
 
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { closeTestingResources } from '@/utils/test/test';
+
+afterAll(closeTestingResources);
 
 function recursivelyOmitKeys(obj: any, keysToIgnore: string[]): any {
   if (typeof obj !== 'object' || obj === null) {
