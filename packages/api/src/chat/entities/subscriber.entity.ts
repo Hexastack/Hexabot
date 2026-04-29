@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { createRequire } from 'node:module';
+
 import { subscriberSchema, subscriberFullSchema } from '@hexabot-ai/types';
 import {
   Check,
@@ -29,6 +31,8 @@ import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 import { SubscriberDto } from '../dto/subscriber.dto';
 
 import { LabelOrmEntity } from './label.entity';
+
+const requireEntity = createRequire(__filename);
 
 export class SubscriberChannel {
   @Column()
@@ -65,13 +69,16 @@ export class SubscriberOrmEntity<
   @Column({ type: 'varchar', length: 64 })
   foreignId: string;
 
-  @ManyToOne('SourceOrmEntity', {
-    // STI (`users` table) stores both subscribers and operators.
-    // Keep the column nullable at the DB level, and enforce non-null for
-    // Subscriber rows via `CHK_SUBSCRIBER_SOURCE_REQUIRED`.
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => requireEntity('../../channel/entities/source.entity').SourceOrmEntity,
+    {
+      // STI (`users` table) stores both subscribers and operators.
+      // Keep the column nullable at the DB level, and enforce non-null for
+      // Subscriber rows via `CHK_SUBSCRIBER_SOURCE_REQUIRED`.
+      nullable: true,
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'source_id' })
   @AsRelation()
   source: SourceOrmEntity;

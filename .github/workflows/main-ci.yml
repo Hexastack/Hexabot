@@ -26,11 +26,21 @@ jobs:
       - name: ⏳ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.19"
+          node-version: "20.19.6"
           cache: pnpm
 
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          npm_config_build_from_source: sqlite3
+
+      - name: 🧱 Rebuild SQLite native dependency
+        run: pnpm rebuild -r sqlite3
+        env:
+          npm_config_build_from_source: sqlite3
+
+      - name: 🔎 Verify API SQLite driver
+        run: pnpm --filter @hexabot-ai/api exec node -e "require('sqlite3'); require('typeorm/platform/PlatformTools').PlatformTools.load('sqlite3')"
 
       - name: 🧪 Typecheck (all packages via Turbo)
         run: pnpm typecheck

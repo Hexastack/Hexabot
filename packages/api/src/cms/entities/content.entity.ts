@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { createRequire } from 'node:module';
+
 import {
   contentSchema,
   contentFullSchema,
@@ -31,7 +33,9 @@ import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { ContentDto } from '../dto/content.dto';
 
-import { ContentTypeOrmEntity } from './content-type.entity';
+import type { ContentTypeOrmEntity } from './content-type.entity';
+
+const requireEntity = createRequire(__filename);
 
 @Entity({ name: 'contents' })
 @Index(['title'])
@@ -44,10 +48,14 @@ export class ContentOrmEntity extends BaseOrmEntity<ContentDto> {
   /**
    * The content type of this content.
    */
-  @ManyToOne(() => ContentTypeOrmEntity, (entity) => entity.contents, {
-    nullable: false,
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => requireEntity('./content-type.entity').ContentTypeOrmEntity,
+    (entity: ContentTypeOrmEntity) => entity.contents,
+    {
+      nullable: false,
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'content_type_id' })
   @AsRelation()
   contentType!: ContentTypeOrmEntity;

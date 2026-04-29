@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
 import { createReadStream, existsSync } from 'fs';
 import { extname } from 'path';
 import { Readable } from 'stream';
 
 import { Logger, StreamableFile } from '@nestjs/common';
 import { StreamableFileOptions } from '@nestjs/common/file-stream/interfaces/streamable-options.interface';
-import { v4 as uuidv4 } from 'uuid';
 
 import { config } from '@/config';
 
@@ -80,7 +80,7 @@ export const generateUniqueFilename = (originalname: string) => {
   const extension = extname(originalname);
   const name = originalname.slice(0, -extension.length);
 
-  return `${name}-${uuidv4()}${extension}`;
+  return `${name}-${randomUUID()}${extension}`;
 };
 
 /**

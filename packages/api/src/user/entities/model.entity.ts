@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { createRequire } from 'node:module';
+
 import { modelSchema, modelFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 
@@ -14,7 +16,9 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 import { ModelDto } from '../dto/model.dto';
 import { TRelation } from '../types/index.type';
 
-import { PermissionOrmEntity } from './permission.entity';
+import type { PermissionOrmEntity } from './permission.entity';
+
+const requireEntity = createRequire(__filename);
 
 @Entity({ name: 'models' })
 @Index(['name'], { unique: true })
@@ -34,11 +38,15 @@ export class ModelOrmEntity extends BaseOrmEntity<ModelDto> {
   @JsonColumn({ default: '{}' })
   attributes: Record<string, unknown>;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   relation?: TRelation;
 
-  @OneToMany(() => PermissionOrmEntity, (permission) => permission.model, {
-    cascade: ['remove'],
-  })
+  @OneToMany(
+    () => requireEntity('./permission.entity').PermissionOrmEntity,
+    (permission: PermissionOrmEntity) => permission.model,
+    {
+      cascade: ['remove'],
+    },
+  )
   permissions?: PermissionOrmEntity[];
 }

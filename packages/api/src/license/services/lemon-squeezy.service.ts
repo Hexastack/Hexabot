@@ -4,10 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
+
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { AxiosError } from 'axios';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
   LemonSqueezyActivationResponse,
@@ -52,7 +53,7 @@ export class LemonSqueezyService {
         `${LEMON_SQUEEZY_API_BASE_URL}/v1/licenses/activate`,
         {
           license_key: licenseKey,
-          instance_name: uuidv4(),
+          instance_name: randomUUID(),
         },
         {
           headers: {

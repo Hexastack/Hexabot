@@ -110,6 +110,26 @@ function isJsonContentType(contentType?: string) {
   );
 }
 
+function normalizeHeaderValue(value: unknown): string | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(String).join(', ');
+  }
+
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return String(value);
+  }
+
+  return undefined;
+}
+
 function resolveFinalUrl(response: {
   request?: { res?: { responseUrl?: string }; responseUrl?: string };
 }) {
@@ -175,10 +195,9 @@ export const HttpRequestAction = createAction<
         validateStatus: () => true,
         ...(requestData !== undefined ? { data: requestData } : {}),
       });
-      const contentTypeHeader = response.headers?.['content-type'];
-      const contentType = Array.isArray(contentTypeHeader)
-        ? contentTypeHeader.join(', ')
-        : contentTypeHeader;
+      const contentType = normalizeHeaderValue(
+        response.headers?.['content-type'],
+      );
       const responseData = response.data;
       let body: HttpRequestOutput['body'] = '';
 

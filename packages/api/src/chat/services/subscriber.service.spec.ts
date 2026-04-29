@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
+
 import type { User, Subscriber } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -35,8 +37,16 @@ import { SubscriberRepository } from '../repositories/subscriber.repository';
 import { LabelService } from './label.service';
 import { SubscriberService } from './subscriber.service';
 
-jest.mock('uuid', () => ({ v4: jest.fn(() => 'test-uuid') }));
+jest.mock('crypto', () => {
+  const actual = jest.requireActual('crypto');
 
+  return {
+    ...actual,
+    randomUUID: jest.fn(() => actual.randomUUID()),
+  };
+});
+
+const randomUUIDMock = randomUUID as jest.MockedFunction<typeof randomUUID>;
 const normalizeSourcePayload = (source: unknown) => {
   if (!source || typeof source !== 'object') {
     return source ?? null;
@@ -252,6 +262,9 @@ describe('SubscriberService (TypeORM)', () => {
         size: 8_192,
       };
       jest.spyOn(mime, 'extension').mockReturnValue('png');
+      randomUUIDMock.mockReturnValueOnce(
+        'test-uuid' as ReturnType<typeof randomUUID>,
+      );
 
       const fakeAttachment = Object.assign(new AttachmentOrmEntity(), {
         id: STORED_ATTACHMENT_ID,
@@ -331,6 +344,9 @@ describe('SubscriberService (TypeORM)', () => {
         size: 1_024,
       };
       jest.spyOn(mime, 'extension').mockReturnValue('png');
+      randomUUIDMock.mockReturnValueOnce(
+        'test-uuid' as ReturnType<typeof randomUUID>,
+      );
 
       attachmentServiceMock.store.mockResolvedValue({
         id: EXISTING_ATTACHMENT_ID,

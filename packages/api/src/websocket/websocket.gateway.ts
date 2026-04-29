@@ -18,6 +18,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { isUUID } from 'class-validator';
 import Cookie from 'cookie';
 import signature from 'cookie-signature';
 import { Request } from 'express';
@@ -25,7 +26,6 @@ import { Session as ExpressSession, SessionData } from 'express-session';
 import { ExtendedError, Server, Socket } from 'socket.io';
 import { DataSource } from 'typeorm';
 import { sync as uid } from 'uid-safe';
-import { validate as isUuid } from 'uuid';
 
 import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { config } from '@/config';
@@ -179,7 +179,7 @@ export class WebsocketGateway
   }
 
   private normalizeSourceId(value: string | null): string | null {
-    if (!value || !isUuid(value)) {
+    if (!value || !isUUID(value)) {
       return null;
     }
 

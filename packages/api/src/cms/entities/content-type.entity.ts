@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { createRequire } from 'node:module';
+
 import { contentTypeSchema, contentTypeFullSchema } from '@hexabot-ai/types';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
@@ -14,7 +16,9 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { ContentTypeDto } from '../dto/contentType.dto';
 
-import { ContentOrmEntity } from './content.entity';
+import type { ContentOrmEntity } from './content.entity';
+
+const requireEntity = createRequire(__filename);
 
 @Entity({ name: 'content_types' })
 @Index(['name'], { unique: true })
@@ -31,8 +35,12 @@ export class ContentTypeOrmEntity extends BaseOrmEntity<ContentTypeDto> {
   @JsonColumn({ nullable: true })
   schema!: JsonSchema;
 
-  @OneToMany(() => ContentOrmEntity, (content) => content.contentType, {
-    cascade: ['remove'],
-  })
+  @OneToMany(
+    () => requireEntity('./content.entity').ContentOrmEntity,
+    (content: ContentOrmEntity) => content.contentType,
+    {
+      cascade: ['remove'],
+    },
+  )
   contents?: ContentOrmEntity[];
 }

@@ -1,9 +1,9 @@
 # Hexabot CLI
 
-Hexabot CLI is a powerful command-line tool to help manage your Hexabot project instance. With it, you can create new projects, initialize environments, start services in various modes, run database migrations, and more. The CLI aims to make managing your chatbot seamless and intuitive.
+Hexabot CLI is the command-line entry point for creating, configuring, and operating Hexabot v3 projects. With it, you can scaffold new automation workspaces, initialize environments, start services in local or Docker modes, run database migrations, and manage the project lifecycle.
 
 
-Not yet familiar with [Hexabot](https://hexabot.ai/)? It's a open-source chatbot / agent solution that allows users to create and manage AI-powered, multi-channel, and multilingual chatbots with ease. If you would like to learn more, please visit the [official github repo](https://github.com/Hexastack/Hexabot/).
+Not yet familiar with [Hexabot](https://hexabot.ai/)? Hexabot v3 is an agentic AI automation platform for building and running workflows across channels with actions, bindings, memory, tools, MCP, and RAG. If you would like to learn more, please visit the [official GitHub repo](https://github.com/Hexastack/Hexabot/).
 
 ## Getting Started
 
@@ -23,16 +23,16 @@ npm install -g @hexabot-ai/cli
 
 ### Usage
 
-Once installed, you can use the `hexabot` command anywhere. The CLI focuses on a “zero to bot” flow: create a project, `cd` into it, and run `hexabot dev`. Docker is optional and available via `--docker` or the `hexabot docker ...` helpers.
+Once installed, you can use the `hexabot` command anywhere. The CLI focuses on a “zero to running workflow automation” path: create a project, `cd` into it, and run `hexabot dev`. Docker is optional and available via `--docker` or the `hexabot docker ...` helpers.
 
 ### Commands
 
 #### `create <project-name>`
 
-Scaffold a new Hexabot project from the official NestJS starter template.
+Scaffold a new Hexabot automation project from the official NestJS starter template.
 
 ```sh
-hexabot create support-bot
+hexabot create support-automation
 ```
 
 Common options:
@@ -129,13 +129,13 @@ Run database migrations inside the Docker `api` container. Any extra args are fo
 1. **Create a new project** (installs dependencies automatically unless `--no-install`):
 
    ```sh
-   npx @hexabot-ai/cli create support-bot
+   npx @hexabot-ai/cli create support-automation
    ```
 
 2. **Enter the project and start local dev (SQLite, no Docker required)**:
 
    ```sh
-   cd support-bot
+   cd support-automation
    hexabot dev
    ```
 
@@ -147,7 +147,7 @@ Run database migrations inside the Docker `api` container. Any extra args are fo
    hexabot docker up --services postgres
    ```
 
-That’s it—`create → cd → dev` is the happy path, while Docker and env helpers remain available on demand.
+That’s it—`create → cd → dev` is the happy path for a new Hexabot v3 automation project, while Docker and env helpers remain available on demand.
 
 ## Documentation
 
@@ -177,7 +177,7 @@ Feel free to join us on [Discord](https://discord.gg/rNb9t2MFkG)
 
 Copyright (c) 2025 Hexastack.
 
-This project is licensed under the **Fair Core License, Version 1.0**, with **Apache License 2.0** as the future license (abbrev. **FCL-1.0-ALv2**).
+Hexabot is no longer distributed under GNU GPL v2. This project is licensed under the **Fair Core License, Version 1.0**, with **Apache License 2.0** as the future license (abbrev. **FCL-1.0-ALv2**).
 
 **Change date.** For each version of the software, the Fair Core License converts to Apache-2.0 on the **second anniversary** of the date that version is made available.
 

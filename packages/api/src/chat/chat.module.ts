@@ -45,7 +45,7 @@ import { ThreadService } from './services/thread.service';
       SubscriberOrmEntity,
       ThreadOrmEntity,
     ]),
-    CmsModule,
+    forwardRef(() => CmsModule),
     AttachmentModule,
     UserModule,
 
