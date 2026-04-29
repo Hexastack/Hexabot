@@ -15,15 +15,7 @@ describe('UpdateMemoryAction', () => {
   let action: UpdateMemoryAction;
 
   const buildContext = (update: jest.Mock) =>
-    ({
-      memoryStore: {
-        update,
-        raw: {
-          profile: { name: 'Grace', role: 'admin' },
-          run_state: { step: 2 },
-        },
-      },
-    }) as unknown as WorkflowRuntimeContext;
+    ({ memoryStore: { update } }) as unknown as WorkflowRuntimeContext;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -51,9 +43,7 @@ describe('UpdateMemoryAction', () => {
     });
 
     expect(update).toHaveBeenCalledTimes(1);
-    expect(update).toHaveBeenCalledWith({
-      profile: PROFILE,
-    });
+    expect(update).toHaveBeenCalledWith(input.memory);
     expect(result).toEqual({
       memory: {
         profile: PROFILE,

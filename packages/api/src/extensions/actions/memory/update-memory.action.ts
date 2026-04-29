@@ -10,7 +10,6 @@ import { z } from 'zod';
 import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { BaseAction } from '@/actions/base-action';
-import { deepMerge, isPlainObject } from '@/utils/helpers/object';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
 
 const slugSchema = z
@@ -50,17 +49,7 @@ export class UpdateMemoryAction extends BaseAction<
     input,
     context,
   }: ExecArgs<UpdateMemoryInput, WorkflowRuntimeContext>) {
-    const values = Object.fromEntries(
-      Object.entries(input.memory).map(([slug, value]) => {
-        const currentValue = context.memoryStore.raw[slug];
-        if (!isPlainObject(currentValue) || !isPlainObject(value)) {
-          return [slug, value];
-        }
-
-        return [slug, deepMerge({ ...currentValue }, value)];
-      }),
-    );
-    const memory = await context.memoryStore.update(values);
+    const memory = await context.memoryStore.update(input.memory);
 
     return { memory };
   }

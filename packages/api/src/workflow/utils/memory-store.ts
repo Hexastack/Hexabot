@@ -9,6 +9,7 @@ import { ZodSchema, z } from 'zod';
 
 import { cloneObject } from '@/utils/helpers/clone';
 import { deepFreeze } from '@/utils/helpers/freeze';
+import { deepMerge } from '@/utils/helpers/object';
 
 import { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
 import {
@@ -377,9 +378,10 @@ export class MemoryStore {
 
     const updates = await Promise.all(
       entries.map(async ([slug, value]) => {
+        const currentValue = this.raw[slug] || {};
         const parsedValue = await this.updateStoreEntry(
           slug,
-          value,
+          deepMerge({ ...currentValue }, value),
           persistRecord,
         );
 
