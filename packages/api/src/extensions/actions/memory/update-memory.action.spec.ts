@@ -9,12 +9,21 @@ import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.con
 
 import { UpdateMemoryAction } from './update-memory.action';
 
+const PROFILE = { name: 'Ada', role: 'admin' } as const;
 describe('UpdateMemoryAction', () => {
   let actionService: ActionService;
   let action: UpdateMemoryAction;
 
   const buildContext = (update: jest.Mock) =>
-    ({ memoryStore: { update } }) as unknown as WorkflowRuntimeContext;
+    ({
+      memoryStore: {
+        update,
+        raw: {
+          profile: { name: 'Grace', role: 'admin' },
+          run_state: { step: 2 },
+        },
+      },
+    }) as unknown as WorkflowRuntimeContext;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -29,7 +38,7 @@ describe('UpdateMemoryAction', () => {
 
   it('delegates to memoryStore.update and returns the updated memory', async () => {
     const update = jest.fn().mockResolvedValue({
-      profile: { name: 'Ada', role: 'admin' },
+      profile: PROFILE,
       run_state: { step: 2 },
     });
     const context = buildContext(update);
@@ -42,10 +51,12 @@ describe('UpdateMemoryAction', () => {
     });
 
     expect(update).toHaveBeenCalledTimes(1);
-    expect(update).toHaveBeenCalledWith(input.memory);
+    expect(update).toHaveBeenCalledWith({
+      profile: PROFILE,
+    });
     expect(result).toEqual({
       memory: {
-        profile: { name: 'Ada', role: 'admin' },
+        profile: PROFILE,
         run_state: { step: 2 },
       },
     });
