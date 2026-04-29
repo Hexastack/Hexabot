@@ -38,16 +38,16 @@ import {
 import {
   ChannelCapabilities,
   DEFAULT_CHANNEL_CAPABILITIES,
-  ExtensionInject,
-  WebSocketChannelHandler,
-} from '@/channel';
+} from '@/channel/lib/channel-capabilities';
+import { ExtensionInject } from '@/channel/lib/extension-inject.decorator';
 import { MessageInboundEvent } from '@/channel/lib/inbound-events';
+import { WebSocketChannelHandler } from '@/channel/lib/transports/websocket-channel-handler';
 import { SourceService } from '@/channel/services/source.service';
 import { ChannelName } from '@/channel/types';
-import { SubscriberChannelData } from '@/chat';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { MessageService } from '@/chat/services/message.service';
+import type { SubscriberChannelData } from '@/chat/types/channel';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
 import { SocketRequest } from '@/websocket/utils/socket-request';

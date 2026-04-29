@@ -24,8 +24,8 @@ import { ChannelOutboundMessageEncoder } from '@/channel/lib/outbound';
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { ContentOrmEntity } from '@/cms/entities/content.entity';
-import { I18nService } from '@/i18n';
-import { LoggerService } from '@/logger';
+import { I18nService } from '@/i18n/services/i18n.service';
+import { LoggerService } from '@/logger/logger.service';
 
 import { Web } from '../types';
 

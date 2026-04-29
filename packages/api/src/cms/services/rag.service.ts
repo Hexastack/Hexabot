@@ -9,7 +9,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { UserOrmEntity } from '@/user';
+import type { UserOrmEntity } from '@/user/entities/user.entity';
 import {
   DeleteEntityEvent,
   InsertEntityEvent,

@@ -13,7 +13,7 @@ import { RemoveEvent } from 'typeorm';
 import { AppInstance } from '@/app.instance';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
-import { UserService } from '@/user';
+import { UserService } from '@/user/services/user.service';
 import {
   InsertEntityEvent,
   UpdateEntityEvent,

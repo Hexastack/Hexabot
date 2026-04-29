@@ -11,11 +11,11 @@ import { Request } from 'express';
 import { DataSource } from 'typeorm';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ChannelService } from '@/channel/channel.service';
 import { SourceOrmEntity } from '@/channel/entities/source.entity';
 import { ChannelEventBus } from '@/channel/lib/channel-event-bus';
 import { UnsupportedOutgoingFormatError } from '@/channel/lib/outbound';
 import { ChannelAttachmentService } from '@/channel/services/channel-attachment.service';
+import { ChannelRegistry } from '@/channel/services/channel-registry.service';
 import { SourceService } from '@/channel/services/source.service';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
@@ -80,8 +80,8 @@ describe('WebChannelHandler', () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
       providers: [
-        ChannelService,
         ChannelEventBus,
+        ChannelRegistry,
         MessageService,
         ThreadService,
         JwtService,
