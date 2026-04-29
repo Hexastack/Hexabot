@@ -51,12 +51,16 @@ type TypeOrmTestingConfig = {
   fixtures?: TypeOrmFixture | TypeOrmFixture[];
   dataSourceOptions?: Partial<DataSourceOptions>;
 };
+type TypeOrmTestingInput =
+  | TypeOrmTestingConfig
+  | TypeOrmTestingConfig[]
+  | false;
 
 type buildTestingMocksProps<
   P extends ModuleMetadata['providers'] = ModuleMetadata['providers'],
   C extends ModuleMetadata['controllers'] = ModuleMetadata['controllers'],
 > = ModuleMetadata & {
-  typeorm?: TypeOrmTestingConfig | TypeOrmTestingConfig[];
+  typeorm?: TypeOrmTestingInput;
 } & (
     | {
         providers: NonNullable<P>;
@@ -108,7 +112,10 @@ const getParamTypes = (provider: Provider) =>
  * @param parentClass - The root provider class whose dependency graph is resolved.
  * @returns A complete array of unique provider dependencies.
  */
-const getClassDependencies = (parentClass: Provider): Provider[] => {
+const getClassDependencies = (
+  parentClass: Provider,
+  providedTokens = new Set<Provider>(),
+): Provider[] => {
   const dependencies: Provider[] = [];
   const seenClasses = new Set<Provider>();
   const classQueue: Provider[] = [parentClass];
@@ -124,7 +131,11 @@ const getClassDependencies = (parentClass: Provider): Provider[] => {
 
     if (currentClass) {
       getParamTypes(currentClass).forEach((paramType: Provider) => {
-        if (paramType && !seenClasses.has(paramType)) {
+        if (
+          paramType &&
+          !seenClasses.has(paramType) &&
+          !providedTokens.has(paramType)
+        ) {
           classQueue.push(paramType);
           dependencies.push(paramType);
         }
@@ -136,6 +147,17 @@ const getClassDependencies = (parentClass: Provider): Provider[] => {
 };
 const filterNestedDependencies = (dependency: Provider) =>
   dependency.valueOf().toString().slice(0, 6) === 'class ';
+const resolveProviderToken = (provider: Provider): Provider | undefined => {
+  if (
+    typeof provider === 'object' &&
+    provider !== null &&
+    'provide' in provider
+  ) {
+    return provider.provide as Provider;
+  }
+
+  return provider;
+};
 /**
  * Identifies nested class-based dependencies to be automatically injected into test modules.
  *
@@ -145,9 +167,14 @@ const filterNestedDependencies = (dependency: Provider) =>
 const autoInjectExclusions = new Set<Provider>([DataSource]);
 const getNestedDependencies = (providers: Provider[]): Provider[] => {
   const nestedDependencies = new Set<Provider>();
+  const providedTokens = new Set<Provider>(
+    providers
+      .map(resolveProviderToken)
+      .filter((provider): provider is Provider => provider !== undefined),
+  );
 
   providers.filter(filterNestedDependencies).forEach((provider) => {
-    getClassDependencies(provider)
+    getClassDependencies(provider, providedTokens)
       .filter(filterNestedDependencies)
       .forEach((dependency) => {
         if (autoInjectExclusions.has(dependency)) {
@@ -212,6 +239,24 @@ const buildEntityLookup = () => {
   });
 
   return lookup;
+};
+const addEntityToLookup = (
+  lookup: Map<string, EntityTarget<any>>,
+  entity: EntityTarget<any> | undefined,
+): EntityTarget<any> | undefined => {
+  if (!entity) {
+    return undefined;
+  }
+
+  const key = resolveEntityTargetName(entity);
+  if (key) {
+    lookup.set(key, entity);
+  }
+
+  return entity;
+};
+const refreshEntityLookup = (lookup: Map<string, EntityTarget<any>>): void => {
+  buildEntityLookup().forEach((entity, key) => lookup.set(key, entity));
 };
 const registeredSubscribers = new Set<unknown>();
 const registerAllRepositorySubscribers = (
@@ -314,22 +359,41 @@ const extractInjectTokensFromProvider = (provider: ProviderLike): unknown[] => {
 
   return [];
 };
-const registerMetadataEntities = (
-  currentEntities: Set<EntityTarget<any>>,
-  lookup: Map<string, EntityTarget<any>>,
-): void => {
-  lookup.forEach((entity) => currentEntities.add(entity));
+const dependsOnDataSource = (provider: ProviderLike): boolean => {
+  if (!provider) {
+    return false;
+  }
+
+  if (typeof provider === 'function') {
+    return (
+      getParamTypes(provider).includes(DataSource) ||
+      extractCustomInjectTokens(provider).includes(DataSource)
+    );
+  }
+
+  if (typeof provider === 'object') {
+    if ('useClass' in provider && typeof provider.useClass === 'function') {
+      return dependsOnDataSource(provider.useClass);
+    }
+
+    if ('inject' in provider && Array.isArray(provider.inject)) {
+      return provider.inject.includes(DataSource);
+    }
+  }
+
+  return false;
 };
 const registerAutoDetectedTypeOrmEntities = (
   currentEntities: Set<EntityTarget<any>>,
   providers: Provider[],
   controllers: ModuleMetadata['controllers'],
   lookup: Map<string, EntityTarget<any>>,
-) => {
+): boolean => {
   if (!lookup.size) {
-    return;
+    return false;
   }
 
+  let detected = false;
   const controllerList = Array.isArray(controllers) ? controllers : [];
   const tokens = [
     ...providers.flatMap(extractInjectTokensFromProvider),
@@ -340,8 +404,147 @@ const registerAutoDetectedTypeOrmEntities = (
     const entity = resolveEntityFromToken(token, lookup);
     if (entity) {
       currentEntities.add(entity);
+      detected = true;
     }
   });
+
+  return detected;
+};
+const addEntityToSet = (
+  entities: Set<EntityTarget<any>>,
+  entity: EntityTarget<any> | undefined,
+  queue: EntityTarget<any>[],
+): void => {
+  if (!entity || entities.has(entity)) {
+    return;
+  }
+
+  entities.add(entity);
+  queue.push(entity);
+};
+const isSameEntityTarget = (
+  left: EntityTarget<any> | undefined,
+  right: EntityTarget<any>,
+): boolean => {
+  if (!left) {
+    return false;
+  }
+
+  if (left === right) {
+    return true;
+  }
+
+  const leftName = resolveEntityTargetName(left);
+  const rightName = resolveEntityTargetName(right);
+
+  return !!leftName && leftName === rightName;
+};
+const resolveRelationTarget = async (
+  relationType: unknown,
+  lookup: Map<string, EntityTarget<any>>,
+): Promise<EntityTarget<any> | undefined> => {
+  if (typeof relationType === 'string') {
+    return lookup.get(relationType);
+  }
+
+  if (typeof relationType === 'function') {
+    try {
+      const resolved = relationType();
+
+      if (typeof resolved === 'string') {
+        return resolveRelationTarget(resolved, lookup);
+      }
+
+      return addEntityToLookup(lookup, resolved as EntityTarget<any>);
+    } catch {
+      return addEntityToLookup(lookup, relationType as EntityTarget<any>);
+    }
+  }
+
+  return undefined;
+};
+const registerInheritedTypeOrmEntities = (
+  currentEntities: Set<EntityTarget<any>>,
+  entity: EntityTarget<any>,
+  lookup: Map<string, EntityTarget<any>>,
+  queue: EntityTarget<any>[],
+): void => {
+  if (typeof entity !== 'function') {
+    return;
+  }
+
+  let prototype = Object.getPrototypeOf(entity.prototype);
+
+  while (prototype?.constructor && prototype.constructor !== Object) {
+    const parent = lookup.get(prototype.constructor.name);
+    if (parent) {
+      addEntityToSet(currentEntities, parent, queue);
+    }
+
+    prototype = Object.getPrototypeOf(prototype);
+  }
+};
+const registerChildTypeOrmEntities = (
+  currentEntities: Set<EntityTarget<any>>,
+  entity: EntityTarget<any>,
+  lookup: Map<string, EntityTarget<any>>,
+  queue: EntityTarget<any>[],
+): void => {
+  if (typeof entity !== 'function') {
+    return;
+  }
+
+  getMetadataArgsStorage().tables.forEach((table) => {
+    if (
+      table.type !== 'entity-child' ||
+      typeof table.target !== 'function' ||
+      !entity.prototype.isPrototypeOf(table.target.prototype)
+    ) {
+      return;
+    }
+
+    addEntityToSet(
+      currentEntities,
+      addEntityToLookup(lookup, table.target as EntityTarget<any>),
+      queue,
+    );
+  });
+};
+const registerRelatedTypeOrmEntities = async (
+  currentEntities: Set<EntityTarget<any>>,
+  lookup: Map<string, EntityTarget<any>>,
+): Promise<void> => {
+  const queue = Array.from(currentEntities);
+
+  while (queue.length > 0) {
+    const entity = queue.shift()!;
+    const storage = getMetadataArgsStorage();
+
+    refreshEntityLookup(lookup);
+    registerInheritedTypeOrmEntities(currentEntities, entity, lookup, queue);
+    registerChildTypeOrmEntities(currentEntities, entity, lookup, queue);
+
+    const relations = storage.relations.filter((relation) =>
+      isSameEntityTarget(relation.target as EntityTarget<any>, entity),
+    );
+
+    for (const relation of relations) {
+      const relationEntity = await resolveRelationTarget(relation.type, lookup);
+      addEntityToSet(currentEntities, relationEntity, queue);
+    }
+
+    for (const relation of storage.relations) {
+      const relationEntity = await resolveRelationTarget(relation.type, lookup);
+
+      if (isSameEntityTarget(relationEntity, entity)) {
+        addEntityToSet(
+          currentEntities,
+          addEntityToLookup(lookup, relation.target as EntityTarget<any>),
+          queue,
+        );
+      }
+    }
+  }
 };
 
 /**
@@ -421,27 +624,33 @@ export const buildTestingMocks = async ({
         overrideTokens.has(provider as unknown as Provider)
       ),
   );
-  const defaultTypeOrmEntities: EntityTarget<any>[] = [
-    SettingOrmEntity,
-    MetadataOrmEntity,
-    LanguageOrmEntity,
-  ];
-  const typeOrmEntities = new Set<EntityTarget<any>>(defaultTypeOrmEntities);
+  const typeOrmDisabled = typeorm === false;
+  let typeOrmOptions: Partial<DataSourceOptions> | undefined;
+  const typeOrmFixtures: TypeOrmFixture[] = [];
+  const typeOrmConfigs =
+    !typeOrmDisabled && Array.isArray(typeorm)
+      ? typeorm.filter(Boolean)
+      : !typeOrmDisabled && typeorm
+        ? [typeorm]
+        : [];
+  const hasExplicitTypeOrmConfig = typeOrmConfigs.length > 0;
+  const typeOrmEntities = new Set<EntityTarget<any>>();
   const entityLookup = buildEntityLookup();
-  registerMetadataEntities(typeOrmEntities, entityLookup);
-  registerAutoDetectedTypeOrmEntities(
+  const hasTypeOrmEntityDependencies = registerAutoDetectedTypeOrmEntities(
     typeOrmEntities,
     providersList,
     controllers,
     entityLookup,
   );
-  let typeOrmOptions: Partial<DataSourceOptions> | undefined;
-  const typeOrmFixtures: TypeOrmFixture[] = [];
-  const typeOrmConfigs = Array.isArray(typeorm)
-    ? typeorm.filter(Boolean)
-    : typeorm
-      ? [typeorm]
-      : [];
+  const controllerList = Array.isArray(controllers) ? controllers : [];
+  const hasDataSourceDependencies = [...providersList, ...controllerList].some(
+    dependsOnDataSource,
+  );
+  const shouldUseTypeOrm =
+    !typeOrmDisabled &&
+    (hasExplicitTypeOrmConfig ||
+      hasTypeOrmEntityDependencies ||
+      hasDataSourceDependencies);
 
   typeOrmConfigs.forEach((config) => {
     config.entities?.forEach((entity) => typeOrmEntities.add(entity));
@@ -459,43 +668,59 @@ export const buildTestingMocks = async ({
     }
   });
 
+  if (shouldUseTypeOrm && typeOrmEntities.size === 0) {
+    entityLookup.forEach((entity) => typeOrmEntities.add(entity));
+  }
+
+  if (shouldUseTypeOrm) {
+    [SettingOrmEntity, MetadataOrmEntity, LanguageOrmEntity].forEach((entity) =>
+      typeOrmEntities.add(entity),
+    );
+    await registerRelatedTypeOrmEntities(typeOrmEntities, entityLookup);
+  }
+
   const runTypeOrmFixtures = async (dataSource: DataSource) => {
     for (const fixture of typeOrmFixtures) {
       await fixture(dataSource);
     }
   };
   const entitiesArray = Array.from(typeOrmEntities);
-  const baseOptions: DataSourceOptions = {
-    type: 'sqlite',
-    database: ':memory:',
-    synchronize: true,
-    dropSchema: true,
-    logging: false,
-    entities: entitiesArray,
-    ...(typeOrmOptions ?? {}),
-  } as DataSourceOptions;
-  const dataSource = new DataSource(baseOptions);
-  await dataSource.initialize();
-  registerAllRepositorySubscribers(dataSource, entitiesArray as any[]);
-  await runTypeOrmFixtures(dataSource);
-  registerTypeOrmDataSource(dataSource);
+  let typeOrmRootModule: DynamicModule | undefined;
+  let typeOrmProviders: Provider[] = [];
 
-  const typeOrmRootModule: DynamicModule = TypeOrmModule.forRootAsync({
-    useFactory: async () => baseOptions as DataSourceOptions,
-    dataSourceFactory: async () => dataSource,
-  });
-  const typeOrmProviders = entitiesArray.map((entity) => ({
-    provide: getRepositoryToken(entity as any),
-    useValue: dataSource.getRepository(entity),
-  }));
+  if (shouldUseTypeOrm) {
+    const baseOptions: DataSourceOptions = {
+      type: 'sqlite',
+      database: ':memory:',
+      synchronize: true,
+      dropSchema: true,
+      logging: false,
+      entities: entitiesArray,
+      ...(typeOrmOptions ?? {}),
+    } as DataSourceOptions;
+    const dataSource = new DataSource(baseOptions);
+    await dataSource.initialize();
+    registerAllRepositorySubscribers(dataSource, entitiesArray as any[]);
+    await runTypeOrmFixtures(dataSource);
+    registerTypeOrmDataSource(dataSource);
+
+    typeOrmRootModule = TypeOrmModule.forRootAsync({
+      useFactory: async () => baseOptions as DataSourceOptions,
+      dataSourceFactory: async () => dataSource,
+    });
+    typeOrmProviders = entitiesArray.map((entity) => ({
+      provide: getRepositoryToken(entity as any),
+      useValue: dataSource.getRepository(entity),
+    }));
+  }
+
   const testingModuleBuilder = Test.createTestingModule({
     imports: [
       LoggerModule,
       EventEmitterModule.forRoot({ global: true }),
       CacheModule.register({ isGlobal: true }),
-      typeOrmRootModule,
       I18nTestingModule,
-      SettingModule,
+      ...(typeOrmRootModule ? [typeOrmRootModule, SettingModule] : []),
       ...imports,
     ],
     providers: [

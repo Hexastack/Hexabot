@@ -7,9 +7,9 @@
 import { ContentType } from '@hexabot-ai/types';
 import { DataSource, DeepPartial } from 'typeorm';
 
-import { DEFAULT_CONTENT_TYPE_SCHEMA } from '@/cms';
 import { ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
+import { DEFAULT_CONTENT_TYPE_SCHEMA } from '@/cms/services/content-type.service';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

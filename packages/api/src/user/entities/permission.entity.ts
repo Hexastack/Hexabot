@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { createRequire } from 'node:module';
+
 import { permissionSchema, permissionFullSchema } from '@hexabot-ai/types';
 import {
   Column,
@@ -22,8 +24,10 @@ import { PermissionDto } from '../dto/permission.dto';
 import { Action } from '../types/action.type';
 import { TRelation } from '../types/index.type';
 
-import { ModelOrmEntity } from './model.entity';
-import { RoleOrmEntity } from './role.entity';
+import type { ModelOrmEntity } from './model.entity';
+import type { RoleOrmEntity } from './role.entity';
+
+const requireEntity = createRequire(__filename);
 
 @Entity({ name: 'permissions' })
 @Index(['model', 'action', 'role', 'relation'], { unique: true })
@@ -32,9 +36,13 @@ export class PermissionOrmEntity extends BaseOrmEntity<PermissionDto> {
 
   fullCls = permissionFullSchema;
 
-  @ManyToOne(() => ModelOrmEntity, (model) => model.permissions, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => requireEntity('./model.entity').ModelOrmEntity,
+    (model: ModelOrmEntity) => model.permissions,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'model_id' })
   @AsRelation()
   model!: ModelOrmEntity;
@@ -45,9 +53,13 @@ export class PermissionOrmEntity extends BaseOrmEntity<PermissionDto> {
   @EnumColumn({ enum: Action })
   action!: Action;
 
-  @ManyToOne(() => RoleOrmEntity, (role) => role.permissions, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => requireEntity('./role.entity').RoleOrmEntity,
+    (role: RoleOrmEntity) => role.permissions,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'role_id' })
   @AsRelation()
   role!: RoleOrmEntity;
@@ -55,6 +67,6 @@ export class PermissionOrmEntity extends BaseOrmEntity<PermissionDto> {
   @RelationId((permission: PermissionOrmEntity) => permission.role)
   private readonly roleId!: string;
 
-  @Column({ default: 'role' })
+  @Column({ type: 'varchar', default: 'role' })
   relation!: TRelation;
 }

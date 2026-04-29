@@ -10,6 +10,7 @@ import { Dummy } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 import { In } from 'typeorm';
 
+import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
 import { DummyService } from '@/utils/test/dummy/services/dummy.service';
 import {
@@ -31,6 +32,7 @@ describe('BaseOrmService', () => {
       autoInjectFrom: ['providers'],
       providers: [DummyService],
       typeorm: {
+        entities: [DummyOrmEntity],
         fixtures: installDummyFixturesTypeOrm,
       },
     });

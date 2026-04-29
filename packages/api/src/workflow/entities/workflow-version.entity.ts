@@ -5,6 +5,7 @@
  */
 
 import { createHash } from 'crypto';
+import { createRequire } from 'node:module';
 
 import {
   workflowVersionSchema,
@@ -32,7 +33,9 @@ import { AsRelation } from '@/utils';
 import { WorkflowVersionDto } from '../dto/workflow-version.dto';
 import { WorkflowVersionAction } from '../types';
 
-import { WorkflowOrmEntity } from './workflow.entity';
+import type { WorkflowOrmEntity } from './workflow.entity';
+
+const requireEntity = createRequire(__filename);
 
 @Entity({ name: 'workflow_versions' })
 @Index(['workflow', 'version'], { unique: true })
@@ -42,7 +45,7 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionDto> 
   fullCls = workflowVersionFullSchema;
 
   /** Workflow that owns this version snapshot. */
-  @ManyToOne(() => WorkflowOrmEntity, {
+  @ManyToOne(() => requireEntity('./workflow.entity').WorkflowOrmEntity, {
     nullable: false,
     onDelete: 'CASCADE',
   })
@@ -130,7 +133,9 @@ export class WorkflowVersionOrmEntity extends BaseOrmEntity<WorkflowVersionDto> 
       return;
     }
 
-    const workflowRepository = event.manager.getRepository(WorkflowOrmEntity);
+    const WorkflowEntity = requireEntity('./workflow.entity').WorkflowOrmEntity;
+    const workflowRepository =
+      event.manager.getRepository<WorkflowOrmEntity>(WorkflowEntity);
     const workflow = await workflowRepository.findOne({
       where: { id: workflowId },
     });

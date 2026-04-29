@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { createRequire } from 'node:module';
+
 import { roleSchema, roleFullSchema } from '@hexabot-ai/types';
 import { Column, Entity, Index, ManyToMany, OneToMany } from 'typeorm';
 
@@ -12,8 +14,10 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { RoleDto } from '../dto/role.dto';
 
-import { PermissionOrmEntity } from './permission.entity';
+import type { PermissionOrmEntity } from './permission.entity';
 import { UserOrmEntity } from './user.entity';
+
+const requireEntity = createRequire(__filename);
 
 export type TRole = 'admin' | 'public';
 
@@ -31,9 +35,13 @@ export class RoleOrmEntity extends BaseOrmEntity<RoleDto> {
   @Column({ default: true })
   active!: boolean;
 
-  @OneToMany(() => PermissionOrmEntity, (permission) => permission.role, {
-    cascade: ['remove'],
-  })
+  @OneToMany(
+    () => requireEntity('./permission.entity').PermissionOrmEntity,
+    (permission: PermissionOrmEntity) => permission.role,
+    {
+      cascade: ['remove'],
+    },
+  )
   permissions?: PermissionOrmEntity[];
 
   @ManyToMany(() => UserOrmEntity, (user) => user.roles)
