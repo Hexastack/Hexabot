@@ -27,8 +27,8 @@ import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 
 import { ActionService } from '@/actions/actions.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { UserService } from '@/user';
-import { UuidParam } from '@/utils';
+import { UserService } from '@/user/services/user.service';
+import { UuidParam } from '@/utils/decorators/uuid-param.decorator';
 import { BaseOrmController } from '@/utils/generics/base-orm.controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { TypeOrmSearchFilterPipe } from '@/utils/pipes/typeorm-search-filter.pipe';

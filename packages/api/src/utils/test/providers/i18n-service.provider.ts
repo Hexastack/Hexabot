@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { I18nService } from '@/i18n';
+import { I18nService } from '@/i18n/services/i18n.service';
 
 export const I18nServiceProvider = {
   provide: I18nService,

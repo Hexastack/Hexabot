@@ -38,6 +38,7 @@ import {
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import {
   conversationalWorkflowInputJsonSchema,
   scheduledWorkflowInputJsonSchema,
@@ -51,6 +52,7 @@ import {
 } from '../lib/trigger-event-wrapper';
 import { WorkflowVersionRepository } from '../repositories/workflow-version.repository';
 import { AgenticService } from '../services/agentic.service';
+import { WorkflowRunService } from '../services/workflow-run.service';
 import { WorkflowService } from '../services/workflow.service';
 import { DirectionType, WorkflowType } from '../types';
 
@@ -95,6 +97,18 @@ describe('WorkflowController (TypeORM)', () => {
   let actionService: ActionService;
   let runtimeBindingsService: RuntimeBindingsService;
   let i18nService: I18nService<unknown>;
+  const agenticServiceMock = {
+    handleEvent: jest.fn().mockResolvedValue(undefined),
+  } as jest.Mocked<Pick<AgenticService, 'handleEvent'>>;
+  const workflowRunServiceMock = {
+    findOne: jest.fn(),
+  } as jest.Mocked<Pick<WorkflowRunService, 'findOne'>>;
+  const websocketGatewayMock = {
+    joinSockets: jest.fn(),
+    broadcastWorkflowEvent: jest.fn(),
+  } as jest.Mocked<
+    Pick<WebsocketGateway, 'joinSockets' | 'broadcastWorkflowEvent'>
+  >;
   const createdWorkflowIds = new Set<string>();
   let counter = 0;
 
@@ -128,6 +142,18 @@ describe('WorkflowController (TypeORM)', () => {
         },
         I18nServiceProvider,
         WorkflowVersionRepository,
+        {
+          provide: AgenticService,
+          useValue: agenticServiceMock,
+        },
+        {
+          provide: WorkflowRunService,
+          useValue: workflowRunServiceMock,
+        },
+        {
+          provide: WebsocketGateway,
+          useValue: websocketGatewayMock,
+        },
       ],
       typeorm: {
         fixtures: [

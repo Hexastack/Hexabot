@@ -24,8 +24,8 @@ import {
   OnBeforeUpdate,
 } from '@/database/decorators/orm-event-hooks.decorator';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
-import { CredentialOrmEntity } from '@/user';
-import { AsRelation } from '@/utils';
+import { CredentialOrmEntity } from '@/user/entities/credential.entity';
+import { AsRelation } from '@/utils/decorators/relation-ref.decorator';
 
 import { McpServerDto } from '../dto/mcp-server.dto';
 import { McpServerTransport } from '../types';

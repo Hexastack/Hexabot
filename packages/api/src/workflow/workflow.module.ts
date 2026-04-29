@@ -10,8 +10,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChatModule } from '@/chat/chat.module';
 import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
-import { CmsModule } from '@/cms';
-import { UserModule } from '@/user';
+import { CmsModule } from '@/cms/cms.module';
+import { UserModule } from '@/user/user.module';
 
 import { ConversationalWorkflowContext } from './contexts/conversational-workflow.context';
 import { ManualWorkflowContext } from './contexts/manual-workflow.context';

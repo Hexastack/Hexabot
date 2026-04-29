@@ -6,14 +6,13 @@
 
 import { Workflow } from '@hexabot-ai/types';
 import { BadRequestException } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TestingModule } from '@nestjs/testing';
 import { FindOneOptions } from 'typeorm';
 
-import { UserService } from '@/user';
-import { EHook, InferActionsDto } from '@/utils';
+import { UserService } from '@/user/services/user.service';
+import { EHook } from '@/utils/generics/base-orm.repository';
 import { userFixtureIds } from '@/utils/test/fixtures/user';
 import { installScheduledWorkflowFixturesTypeOrm } from '@/utils/test/fixtures/workflow';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
@@ -22,18 +21,20 @@ import {
   getLastTypeOrmDataSource,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import type { InferActionsDto } from '@/utils/types/dto.types';
 import {
   DeleteEntityEvent,
   InsertEntityEvent,
   UpdateEntityEvent,
 } from '@/utils/types/entity-event.types';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import { WorkflowType } from '@/workflow/types';
 
-import { ScheduledWorkflowContext } from '../contexts/scheduled-workflow.context';
 import { WorkflowOrmEntity } from '../entities/workflow.entity';
 import { ScheduledEventWrapper } from '../lib/trigger-event-wrapper';
 
 import { AgenticService } from './agentic.service';
+import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowSchedulerService } from './workflow-scheduler.service';
 import { WorkflowService } from './workflow.service';
 
@@ -47,7 +48,18 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
   let userService: UserService;
   let eventEmitter: EventEmitter2;
   let handleEventSpy: jest.SpyInstance;
-
+  const agenticServiceMock = {
+    handleEvent: jest.fn().mockResolvedValue(undefined),
+  } as jest.Mocked<Pick<AgenticService, 'handleEvent'>>;
+  const workflowRunServiceMock = {
+    findOne: jest.fn(),
+  } as jest.Mocked<Pick<WorkflowRunService, 'findOne'>>;
+  const websocketGatewayMock = {
+    joinSockets: jest.fn(),
+    broadcastWorkflowEvent: jest.fn(),
+  } as jest.Mocked<
+    Pick<WebsocketGateway, 'joinSockets' | 'broadcastWorkflowEvent'>
+  >;
   const flushCronCallbacks = async () =>
     await new Promise<void>((resolve) => setImmediate(resolve));
   const clearCronJobs = () => {
@@ -82,10 +94,16 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
       providers: [
         WorkflowSchedulerService,
         {
-          provide: ModuleRef,
-          useValue: {
-            resolve: () => new ScheduledWorkflowContext(),
-          },
+          provide: AgenticService,
+          useValue: agenticServiceMock,
+        },
+        {
+          provide: WorkflowRunService,
+          useValue: workflowRunServiceMock,
+        },
+        {
+          provide: WebsocketGateway,
+          useValue: websocketGatewayMock,
         },
         I18nServiceProvider,
       ],

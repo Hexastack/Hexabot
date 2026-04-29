@@ -9,7 +9,7 @@ import { WorkflowRunFull } from '@hexabot-ai/types';
 import { forwardRef, Inject, Injectable, Scope } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import { ActionService } from '@/actions';
+import { ActionService } from '@/actions/actions.service';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ContentTypeService } from '@/cms/services/content-type.service';
@@ -17,7 +17,7 @@ import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { CredentialService } from '@/user';
+import { CredentialService } from '@/user/services/credential.service';
 import { cloneObject } from '@/utils/helpers/clone';
 import { WorkflowContextState, WorkflowType } from '@/workflow/types';
 

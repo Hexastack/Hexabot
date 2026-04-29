@@ -8,7 +8,7 @@ import { createMCPClient } from '@ai-sdk/mcp';
 import { Experimental_StdioMCPTransport } from '@ai-sdk/mcp/mcp-stdio';
 import { ToolSet } from 'ai';
 
-import { CredentialService } from '@/user';
+import { CredentialService } from '@/user/services/credential.service';
 
 import { McpServerRepository } from '../repositories/mcp-server.repository';
 import { McpServerTransport } from '../types';

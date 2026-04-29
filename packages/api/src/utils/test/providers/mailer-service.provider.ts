@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { MailerService } from '@/mailer';
+import { MailerService } from '@/mailer/mailer.service';
 
 export const mailerMock = {
   sendMail: jest.fn((_options) =>
