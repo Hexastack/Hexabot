@@ -447,5 +447,42 @@ describe('MemoryStore', () => {
         stats: { count: 2 },
       });
     });
+
+    it('merges with previous memory value before persisting', async () => {
+      const definition = createDefinition({
+        slug: 'profile',
+        schema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            role: { type: 'string' },
+          },
+          required: ['name', 'role'],
+          additionalProperties: false,
+        },
+      });
+      const persistRecord = jest.fn().mockResolvedValue(undefined);
+      const context = createContext();
+      const store = MemoryStore.createStore(
+        {
+          identifiers: { ownerId: 'owner-1' },
+          definitionCache: new Map([[definition.slug, definition]]),
+          records: [createRecord(definition, { name: 'Grace', role: 'admin' })],
+          upsertRecord: persistRecord,
+        },
+        context,
+      );
+
+      await expect(store.update({ profile: { name: 'Ada' } })).resolves.toEqual(
+        {
+          profile: { name: 'Ada', role: 'admin' },
+        },
+      );
+      expect(persistRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          value: { name: 'Ada', role: 'admin' },
+        }),
+      );
+    });
   });
 });
