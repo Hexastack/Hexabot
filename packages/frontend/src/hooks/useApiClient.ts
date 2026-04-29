@@ -126,6 +126,11 @@ export const useEntityApiClient = <TE extends THook["entity"]>(entity: TE) => {
   return getApiClientByEntity(entity);
 };
 
+export const getApiClientQueryKey = (
+  methodName: keyof ApiClient,
+  params: readonly unknown[] = [],
+) => [QueryType.item, methodName, ...params] as const;
+
 export const useApiClientQuery = <
   N extends keyof ApiClient,
   F extends ApiClient[N],
@@ -140,7 +145,7 @@ export const useApiClientQuery = <
 
   return useTanstackQuery({
     ...rest,
-    queryKey: [QueryType.item, methodName],
+    queryKey: getApiClientQueryKey(methodName, params),
     queryFn: () => (apiClient[methodName] as Function)(...params),
   });
 };
