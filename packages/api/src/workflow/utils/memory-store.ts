@@ -378,10 +378,20 @@ export class MemoryStore {
 
     const updates = await Promise.all(
       entries.map(async ([slug, value]) => {
-        const currentValue = this.raw[slug] || {};
+        const currentValue = this.raw[slug];
+        const canMerge =
+          currentValue !== null &&
+          value !== null &&
+          typeof currentValue === 'object' &&
+          typeof value === 'object' &&
+          !Array.isArray(currentValue) &&
+          !Array.isArray(value);
+        const nextValue = canMerge
+          ? deepMerge(cloneObject(currentValue), value)
+          : value;
         const parsedValue = await this.updateStoreEntry(
           slug,
-          deepMerge({ ...currentValue }, value),
+          nextValue,
           persistRecord,
         );
 
