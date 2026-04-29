@@ -18,7 +18,6 @@ import {
   installDummyFixturesTypeOrm,
 } from '@/utils/test/fixtures/dummy';
 import {
-  closeTypeOrmConnections,
   getLastTypeOrmDataSource,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
@@ -52,13 +51,6 @@ describe('BaseOrmRepository', () => {
     baselineEntities = await ormRepository.save(
       ormRepository.create(dummyFixtures),
     );
-  });
-
-  afterAll(async () => {
-    if (module) {
-      await module.close();
-    }
-    await closeTypeOrmConnections();
   });
 
   describe('utility methods', () => {
