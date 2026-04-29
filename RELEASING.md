@@ -83,12 +83,32 @@ Allowed release types:
 - For `alpha` and `beta`: `prepatch`, `preminor`, `premajor`, `prerelease`
 - For `stable`/`final`: `patch`, `minor`, `major`
 
-Examples:
+Use the release channel to decide who should install the build:
+
+| Use case | Command example | npm tag |
+| --- | --- | --- |
+| First test build for the next minor version | `./bump-version.sh publish alpha preminor` | `alpha` |
+| Another alpha build of the same version | `./bump-version.sh publish alpha prerelease` | `alpha` |
+| First beta after alpha validation | `./bump-version.sh publish beta prerelease` | `beta` |
+| Another beta build of the same version | `./bump-version.sh publish beta prerelease` | `beta` |
+| Final production release | `./bump-version.sh publish stable patch` | `latest` |
+
+Use the release type to decide how the version changes:
+
+| Release type | Example result |
+| --- | --- |
+| `preminor` | `3.2.2-alpha.0` -> `3.3.0-alpha.0` |
+| `prepatch` | `3.2.2-alpha.0` -> `3.2.3-alpha.0` |
+| `prerelease` | `3.3.0-alpha.0` -> `3.3.0-alpha.1` |
+| `patch` | `3.3.0-beta.2` -> `3.3.0`, or `3.3.0` -> `3.3.1` |
+| `minor` | `3.3.0` -> `3.4.0` |
+| `major` | `3.3.0` -> `4.0.0` |
+
+Common examples:
 
 ```bash
 ./bump-version.sh publish alpha preminor
 ./bump-version.sh publish alpha prerelease
-./bump-version.sh publish beta preminor
 ./bump-version.sh publish beta prerelease
 ./bump-version.sh publish stable patch
 ```
