@@ -31,9 +31,13 @@ jobs:
 
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          npm_config_build_from_source: sqlite3
 
       - name: 🧱 Rebuild SQLite native dependency
         run: pnpm rebuild -r sqlite3
+        env:
+          npm_config_build_from_source: sqlite3
 
       - name: 🔎 Verify API SQLite driver
         run: pnpm --filter @hexabot-ai/api exec node -e "require('sqlite3'); require('typeorm/platform/PlatformTools').PlatformTools.load('sqlite3')"
