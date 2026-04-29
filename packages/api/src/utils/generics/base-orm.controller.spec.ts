@@ -11,6 +11,7 @@ import { TestingModule } from '@nestjs/testing';
 import { In } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
+import { DummyOrmEntity } from '@/utils/test/dummy/entities/dummy.entity';
 import { DummyService } from '@/utils/test/dummy/services/dummy.service';
 import {
   dummyFixtures,
@@ -33,6 +34,7 @@ describe('BaseOrmController', () => {
       autoInjectFrom: ['controllers'],
       controllers: [DummyController],
       typeorm: {
+        entities: [DummyOrmEntity],
         fixtures: installDummyFixturesTypeOrm,
       },
     });

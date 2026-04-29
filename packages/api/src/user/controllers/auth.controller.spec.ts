@@ -8,6 +8,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { TestingModule } from '@nestjs/testing';
 
 import { LicenseService } from '@/license/services/license.service';
+import { ModelOrmEntity } from '@/user/entities/model.entity';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { RoleOrmEntity } from '@/user/entities/role.entity';
+import { UserOrmEntity } from '@/user/entities/user.entity';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { installPermissionFixturesTypeOrm } from '@/utils/test/fixtures/permission';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
@@ -62,6 +66,12 @@ describe('AuthController (TypeORM)', () => {
         },
       ],
       typeorm: {
+        entities: [
+          ModelOrmEntity,
+          PermissionOrmEntity,
+          RoleOrmEntity,
+          UserOrmEntity,
+        ],
         fixtures: [
           installLanguageFixturesTypeOrm,
           installPermissionFixturesTypeOrm,

@@ -11,7 +11,7 @@ import {
   installUserFixturesTypeOrm,
   userFixtureIds,
 } from '@/utils/test/fixtures/user';
-import { WorkflowCreateDto } from '@/workflow';
+import { WorkflowCreateDto } from '@/workflow/dto/workflow.dto';
 import { WorkflowVersionOrmEntity } from '@/workflow/entities/workflow-version.entity';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
 import {

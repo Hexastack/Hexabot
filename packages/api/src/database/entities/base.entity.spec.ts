@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 
-import { TZodDto } from '@/utils';
+import type { TZodDto } from '@/utils/types/dto.types';
 
 import { BaseOrmEntity } from './base.entity';
 

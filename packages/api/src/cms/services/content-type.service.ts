@@ -8,8 +8,8 @@ import { ContentType } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 import { JSONSchema7 } from 'json-schema';
 
-import { InferCreateDto } from '@/utils';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import type { InferCreateDto } from '@/utils/types/dto.types';
 
 import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';

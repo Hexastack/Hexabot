@@ -7,7 +7,7 @@
 import { ChannelService } from '@/channel/channel.service';
 import { SourceService } from '@/channel/services/source.service';
 import { config } from '@/config';
-import { MailerService } from '@/mailer';
+import { MailerService } from '@/mailer/mailer.service';
 
 import { HealthService } from './health.service';
 

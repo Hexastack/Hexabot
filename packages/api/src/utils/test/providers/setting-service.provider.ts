@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SettingService } from '@/setting';
+import { SettingService } from '@/setting/services/setting.service';
 
 export const SettingServiceProvider = {
   provide: SettingService,
