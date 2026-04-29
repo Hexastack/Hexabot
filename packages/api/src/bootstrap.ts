@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Type, ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, Logger, Type, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import bodyParser from 'body-parser';
@@ -24,6 +24,12 @@ import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';
 moduleAlias.addAliases({
   '@': __dirname,
 });
+
+class HexabotBootstrapLogger extends ConsoleLogger {
+  override log(message: unknown, context?: string) {
+    super.log(message, context === 'NestApplication' ? 'Hexabot' : context);
+  }
+}
 
 const rawBodyBuffer = (req, res, buf, encoding) => {
   if (buf?.length) {
@@ -54,6 +60,7 @@ export async function createHexabotApplication<
   await resolveDynamicProviders();
   const app = await NestFactory.create<TApp>(moduleRef, {
     bodyParser: false,
+    logger: new HexabotBootstrapLogger(),
   });
 
   app.set('query parser', 'extended');
@@ -134,6 +141,8 @@ export async function bootstrapHexabotApp(
   const host = options.listen?.host ?? '0.0.0.0';
 
   await app.listen(port, host);
+  const appUrl = await app.getUrl();
+  Logger.log(`Hexabot is running at ${appUrl}`, 'Hexabot');
 
   return app;
 }
