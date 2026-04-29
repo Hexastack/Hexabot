@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
+
 import type {
   Attachment,
   Source,
@@ -25,7 +27,6 @@ import {
 import { OnEvent } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
 import { Socket } from 'socket.io';
-import { v4 as uuidv4 } from 'uuid';
 import type { z } from 'zod';
 
 import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
@@ -125,7 +126,7 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
   }
 
   generateId(): string {
-    return `${this.name}-${uuidv4()}`;
+    return `${this.name}-${randomUUID()}`;
   }
 
   getChannelAttributes(

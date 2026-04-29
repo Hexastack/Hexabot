@@ -18,12 +18,13 @@ import {
   LemonSqueezyService,
 } from './lemon-squeezy.service';
 
-jest.mock('uuid', () => ({
-  v4: jest.fn(),
+jest.mock('crypto', () => ({
+  ...jest.requireActual('crypto'),
+  randomUUID: jest.fn(),
 }));
 
 describe('LemonSqueezyService', () => {
-  const uuidMock = jest.requireMock('uuid').v4 as jest.Mock;
+  const randomUUIDMock = jest.requireMock('crypto').randomUUID as jest.Mock;
   const createService = (postImplementation: jest.Mock) => {
     const httpService = {
       axiosRef: {
@@ -119,7 +120,7 @@ describe('LemonSqueezyService', () => {
 
   describe('activate', () => {
     it('should generate an instance name, call the endpoint, and return data', async () => {
-      uuidMock.mockReturnValue('generated-instance');
+      randomUUIDMock.mockReturnValue('generated-instance');
       const payload: LemonSqueezyActivationResponse = {
         activated: true,
         error: null,
@@ -130,7 +131,7 @@ describe('LemonSqueezyService', () => {
       const service = createService(postSpy);
       const result = await service.activate('license-key');
 
-      expect(uuidMock).toHaveBeenCalled();
+      expect(randomUUIDMock).toHaveBeenCalled();
       expect(postSpy).toHaveBeenCalledWith(
         `${LEMON_SQUEEZY_API_BASE_URL}/v1/licenses/activate`,
         {

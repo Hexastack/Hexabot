@@ -10,7 +10,7 @@ import {
   Injectable,
   PipeTransform,
 } from '@nestjs/common';
-import { validate as uuidValidate, version as uuidVersion } from 'uuid';
+import { isUUID } from 'class-validator';
 
 /**
  * Validates UUID route parameters by automatically checking parameters named `id`
@@ -56,13 +56,13 @@ export class UuidPipe implements PipeTransform {
 
   private ensureUuid(rawValue: string, paramName: string): void {
     const candidate = rawValue.trim();
-    if (!uuidValidate(candidate)) {
+    if (!isUUID(candidate)) {
       throw new BadRequestException(
         `Invalid UUID supplied for "${paramName}".`,
       );
     }
 
-    const version = uuidVersion(candidate);
+    const version = Number(candidate[14]);
     if (!this.allowedVersions.has(version)) {
       throw new BadRequestException(
         `Unsupported UUID version (${version}) supplied for "${paramName}".`,

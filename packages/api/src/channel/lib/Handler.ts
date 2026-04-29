@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
+
 import type {
   ActionOptions,
   Attachment,
@@ -16,7 +18,6 @@ import { Inject, Injectable, OnModuleInit, Type } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Request, Response } from 'express';
 import mime from 'mime';
-import { v4 as uuidv4 } from 'uuid';
 import z from 'zod';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
@@ -232,7 +233,7 @@ export default abstract class ChannelHandler<
     const attachments = await Promise.all(
       metadatas.map(({ file, name, type, size }) => {
         return this.attachmentService.store(file, {
-          name: `${name ? `${name}-` : ''}${uuidv4()}.${mime.extension(type)}`,
+          name: `${name ? `${name}-` : ''}${randomUUID()}.${mime.extension(type)}`,
           type,
           size,
           resourceRef: AttachmentResourceRef.MessageAttachment,

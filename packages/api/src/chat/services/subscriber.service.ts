@@ -4,12 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
+
 import { Subscriber } from '@hexabot-ai/types';
 import { Inject, Injectable, Optional, forwardRef } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import mime from 'mime';
 import { In, IsNull, Not } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
@@ -159,7 +160,7 @@ export class SubscriberService extends BaseOrmService<SubscriberOrmEntity> {
     const { file, type, size } = avatar;
     const extension = mime.extension(type);
     const attachment = await this.attachmentService.store(file, {
-      name: `avatar-${uuidv4()}.${extension}`,
+      name: `avatar-${randomUUID()}.${extension}`,
       size,
       type,
       resourceRef: AttachmentResourceRef.SubscriberAvatar,
