@@ -40,6 +40,7 @@ export class MemoryService {
     const records = await this.memoryRecordService.findActiveByScope({
       ownerId,
       workflowId,
+      threadId,
       runId,
     });
 

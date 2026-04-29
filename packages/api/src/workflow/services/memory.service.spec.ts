@@ -147,6 +147,27 @@ describe('MemoryService (TypeORM)', () => {
     expect(store.instances[runDefinition.slug]).toBeInstanceOf(SchemaInstance);
   });
 
+  it('passes threadId when loading scoped memory records', async () => {
+    const findScopedSpy = jest.spyOn(memoryRecordService, 'findActiveByScope');
+    const context = createContext();
+
+    await memoryService.buildStore(
+      {
+        ownerId: userFixtureIds.admin,
+        workflowId: memoryWorkflowFixtureId,
+        threadId: 'thread-1',
+      },
+      context,
+    );
+
+    expect(findScopedSpy).toHaveBeenCalledWith({
+      ownerId: userFixtureIds.admin,
+      workflowId: memoryWorkflowFixtureId,
+      threadId: 'thread-1',
+      runId: undefined,
+    });
+  });
+
   it('updates memory and persists it through the store proxy', async () => {
     const context = createContext();
     const store = await memoryService.buildStore(
