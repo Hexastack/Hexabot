@@ -29,6 +29,7 @@ import {
   getSchemaDefaults,
   getSchemaPropertyNames,
 } from "../../../../utils/schema-defaults.utils";
+import { createBaseDefinition } from "../../../../utils/workflow-definition.utils";
 import { useStepDrawerClose } from "../../StepDrawer/withStepDrawerLayout";
 
 import type { ActionFormDrawerFooterProps } from "./ActionFormDrawerFooter";
@@ -116,8 +117,13 @@ export const useActionFormDrawerController = ({
   onClose,
 }: UseActionFormDrawerControllerParams): UseActionFormDrawerControllerResult => {
   const { t } = useTranslate();
-  const { definition, updateDefinitionState, isSaving, taskDefinitions } =
-    useWorkflow();
+  const {
+    workflow,
+    definition,
+    updateDefinitionState,
+    isSaving,
+    taskDefinitions,
+  } = useWorkflow();
   const { actionsByName } = useWorkflowActionsCatalog();
   const selectedActionNode = useSelectedActionNode();
   const selectedNodeId = selectedActionNode?.id;
@@ -308,7 +314,10 @@ export const useActionFormDrawerController = ({
     );
   };
   const handleSave = () => {
-    if (!definition || !taskName || !actionSchema) {
+    const currentDefinition =
+      definition ?? (isCreateMode && workflow ? createBaseDefinition() : null);
+
+    if (!currentDefinition || !taskName || !actionSchema) {
       return;
     }
 
@@ -356,14 +365,15 @@ export const useActionFormDrawerController = ({
       };
       const nextStep: FlowStep = { do: nextTaskName };
       const definitionWithTask: WorkflowDefinition = {
-        ...definition,
+        ...currentDefinition,
         defs: {
-          ...(definition.defs ?? {}),
+          ...(currentDefinition.defs ?? {}),
           [nextTaskName]: nextTask,
         },
         outputs:
-          definition.outputs && Object.keys(definition.outputs).length > 0
-            ? definition.outputs
+          currentDefinition.outputs &&
+          Object.keys(currentDefinition.outputs).length > 0
+            ? currentDefinition.outputs
             : { result: `=$output.${nextTaskName}` },
       };
       const insertedDefinition = target.insertPath
@@ -375,7 +385,7 @@ export const useActionFormDrawerController = ({
         : null;
       const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
         ...definitionWithTask,
-        flow: [...(definition.flow ?? []), nextStep],
+        flow: [...(currentDefinition.flow ?? []), nextStep],
       };
 
       updateDefinitionState(nextDefinition);
@@ -412,9 +422,9 @@ export const useActionFormDrawerController = ({
         : {}),
     };
     let nextDefinition: WorkflowDefinition = {
-      ...definition,
+      ...currentDefinition,
       defs: {
-        ...(definition.defs ?? {}),
+        ...(currentDefinition.defs ?? {}),
         [taskName]: nextTask,
       },
     };
@@ -438,11 +448,12 @@ export const useActionFormDrawerController = ({
     updateDefinitionState(nextDefinition);
     handleSaveClose();
   };
+  const canSaveDefinition = Boolean(definition || (isCreateMode && workflow));
   const saveDisabled =
     hasInputVisibleErrors ||
     hasActionSettingsVisibleErrors ||
     hasExecutionSettingsVisibleErrors ||
-    !definition ||
+    !canSaveDefinition ||
     !taskName ||
     !actionSchema ||
     isSaving ||

@@ -22,11 +22,12 @@ import {
   toJsonSchema,
 } from "@/app-components/inputs/JsonSchemaObjectBuilder";
 import { useCreate } from "@/hooks/crud/useCreate";
+import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { EntityType, QueryType } from "@/services/types";
 import type { EntityAttributes } from "@/types/base.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 
@@ -149,6 +150,7 @@ export const WorkflowForm: FC<
 
   translateRef.current = t;
 
+  const queryClient = useTanstackQueryClient();
   const { toast } = useToast();
   const { refetchUser } = useAuth();
   const { definition, definitionYaml, onCreated, onUpdated } =
@@ -233,6 +235,9 @@ export const WorkflowForm: FC<
   >(EntityType.WORKFLOW, {
     ...options,
     onSuccess: (created) => {
+      void queryClient.invalidateQueries({
+        queryKey: [QueryType.item, EntityType.WORKFLOW, created.id],
+      });
       onCreated?.(created);
       options.onSuccess();
     },
