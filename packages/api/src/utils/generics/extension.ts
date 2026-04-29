@@ -8,13 +8,11 @@ import { Inject, OnModuleInit } from '@nestjs/common';
 
 import { LoggerService } from '@/logger/logger.service';
 
-import { ExtensionName } from '../types/extension';
-
 export abstract class Extension implements OnModuleInit {
   @Inject(LoggerService)
   protected readonly logger: LoggerService;
 
-  constructor(public readonly name: ExtensionName) {}
+  constructor(public readonly name: string) {}
 
   getName() {
     return this.name;

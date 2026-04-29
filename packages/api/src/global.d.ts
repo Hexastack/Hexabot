@@ -8,10 +8,4 @@ import '../types/event-emitter';
 import '../types/express-session';
 import './types/ai-sdk-mcp-stdio';
 
-declare global {
-  type HyphenToUnderscore<S extends string> = S extends `${infer P}-${infer Q}`
-    ? `${P}_${HyphenToUnderscore<Q>}`
-    : S;
-}
-
 export {};
