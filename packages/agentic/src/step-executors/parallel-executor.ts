@@ -11,6 +11,7 @@ import type {
 } from '../workflow-types';
 
 import { markStepsSkipped } from './skip-helpers';
+import { wrapSuspensionContinuation } from './suspension-continuation';
 import type { StepExecutorEnv } from './types';
 
 /**
@@ -35,29 +36,21 @@ export async function executeParallel(
     const childPath = [...path, 'parallel', index];
     const suspension = await env.executeStep(child, state, childPath);
     if (suspension) {
-      return {
-        ...suspension,
-        continue: async (resumeData: unknown) => {
-          const next = await suspension.continue(resumeData);
-          if (next) {
-            return next;
+      return wrapSuspensionContinuation(suspension, async () => {
+        if (step.strategy === 'wait_any') {
+          if (index + 1 < step.steps.length) {
+            markStepsSkipped(
+              env,
+              step.steps.slice(index + 1),
+              state.iterationStack,
+            );
           }
 
-          if (step.strategy === 'wait_any') {
-            if (index + 1 < step.steps.length) {
-              markStepsSkipped(
-                env,
-                step.steps.slice(index + 1),
-                state.iterationStack,
-              );
-            }
+          return undefined;
+        }
 
-            return undefined;
-          }
-
-          return executeParallel(env, step, state, path, index + 1);
-        },
-      };
+        return executeParallel(env, step, state, path, index + 1);
+      });
     }
 
     if (step.strategy === 'wait_any') {
