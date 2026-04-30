@@ -163,7 +163,7 @@ export class ExtensionJsonLoader extends I18nLoader implements OnModuleDestroy {
     const i18nDirectories = (
       await Promise.all(
         extensionRootPaths.map((rootPath) =>
-          fsLimit(() => this.findI18nDirectories(rootPath)),
+          fsLimit(() => this.findI18nDirectories(rootPath, fsLimit)),
         ),
       )
     ).flat();
@@ -180,14 +180,16 @@ export class ExtensionJsonLoader extends I18nLoader implements OnModuleDestroy {
     );
   }
 
-  private async findI18nDirectories(rootPath: string): Promise<string[]> {
+  private async findI18nDirectories(
+    rootPath: string,
+    fsLimit: ReturnType<typeof pLimit>,
+  ): Promise<string[]> {
     const entries = await fs
       .readdir(rootPath, { withFileTypes: true })
       .catch(() => null);
     if (!entries) {
       return [];
     }
-    const fsLimit = pLimit(8);
     const nestedResults = await Promise.all(
       entries
         .filter((entry) => entry.isDirectory())
@@ -198,7 +200,7 @@ export class ExtensionJsonLoader extends I18nLoader implements OnModuleDestroy {
               return [entryPath];
             }
 
-            return this.findI18nDirectories(entryPath);
+            return this.findI18nDirectories(entryPath, fsLimit);
           }),
         ),
     );
