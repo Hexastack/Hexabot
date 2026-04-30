@@ -215,6 +215,10 @@ export class WebSessionService {
     return this.threadService.resolveThread({ subscriberId, explicitThreadId });
   }
 
+  resolveInactivityHours(settings: unknown): number {
+    return this.threadService.resolveInactivityHours(settings);
+  }
+
   /**
    * Resolves a thread from the request query/body and writes the result back
    * to the session. Used by the subscribe/history flows.
@@ -228,6 +232,37 @@ export class WebSessionService {
     const thread = await this.resolveThread(subscriberId, explicitThreadId);
     if (req.session.web) {
       req.session.web.threadId = thread?.id;
+    }
+
+    return thread;
+  }
+
+  /**
+   * Resolves the writable thread for an incoming message and persists it on the
+   * socket session before chatbot processing continues asynchronously.
+   */
+  async resolveThreadForIncoming(
+    req: SocketRequest,
+    subscriberId: string,
+    {
+      explicitThreadId,
+      inactivityHours,
+      sourceId,
+    }: {
+      explicitThreadId?: string;
+      inactivityHours?: number;
+      sourceId?: string;
+    },
+  ): Promise<Thread> {
+    const thread = await this.threadService.resolveThreadForIncoming({
+      subscriberId,
+      explicitThreadId,
+      inactivityHours,
+      sourceId,
+    });
+
+    if (req.session.web) {
+      req.session.web.threadId = thread.id;
     }
 
     return thread;
