@@ -308,10 +308,15 @@ describe('rebuildSuspension', () => {
       state,
       stepId: '0.parallel.1:child_b',
     });
-
-    mockedRunParallelExecutor.mockResolvedValue(
-      'next-suspension' as unknown as void,
-    );
+    const nextSuspension = {
+      step: {
+        id: '0.parallel.2:child_c',
+        name: 'child_c',
+        type: StepType.Task,
+      },
+      continue: jest.fn().mockResolvedValue(undefined),
+    };
+    mockedRunParallelExecutor.mockResolvedValue(nextSuspension);
 
     const result = await suspension?.continue({ payload: true });
 
@@ -325,7 +330,17 @@ describe('rebuildSuspension', () => {
       [0],
       2,
     );
-    expect(result).toBe('next-suspension');
+    expect(result?.step.id).toBe(nextSuspension.step.id);
+
+    await result?.continue({ done: true });
+
+    expect(nextSuspension.continue).toHaveBeenCalledWith({ done: true });
+    expect(deps.executeFlow).toHaveBeenLastCalledWith(
+      compiled.flow,
+      state,
+      [],
+      1,
+    );
   });
 
   it('resumes a loop suspension, updating accumulators and continuing execution', async () => {
@@ -367,9 +382,15 @@ describe('rebuildSuspension', () => {
 
     mockedUpdateAccumulator.mockResolvedValue(5);
     mockedShouldStopLoop.mockResolvedValue(false);
-    mockedRunLoopExecutor.mockResolvedValue(
-      'loop-continued' as unknown as void,
-    );
+    const nextSuspension = {
+      step: {
+        id: '0.collector.0:loop_task[2]',
+        name: 'loop_task',
+        type: StepType.Task,
+      },
+      continue: jest.fn().mockResolvedValue(undefined),
+    };
+    mockedRunLoopExecutor.mockResolvedValue(nextSuspension);
 
     const suspension = rebuildSuspension(deps, {
       state,
@@ -404,6 +425,19 @@ describe('rebuildSuspension', () => {
     const loopState = mockedRunLoopExecutor.mock.calls[0]?.[2];
     expect(loopState?.accumulator).toBe(5);
     expect(loopState?.iterationStack).toEqual([]);
-    expect(result).toBe('loop-continued');
+    expect(result?.step.id).toBe(nextSuspension.step.id);
+
+    await result?.continue({ done: true });
+
+    expect(nextSuspension.continue).toHaveBeenCalledWith({ done: true });
+    expect(deps.executeFlow).toHaveBeenLastCalledWith(
+      compiled.flow,
+      expect.objectContaining({
+        accumulator: 5,
+        output: expect.objectContaining({ collector: { sum: 5 } }),
+      }),
+      [],
+      1,
+    );
   });
 });

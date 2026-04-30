@@ -17,6 +17,7 @@ import { RunnerRuntimeControl } from './runner-runtime-control';
 import { executeConditional as runConditionalExecutor } from './step-executors/conditional-executor';
 import { executeLoop as runLoopExecutor } from './step-executors/loop-executor';
 import { executeParallel as runParallelExecutor } from './step-executors/parallel-executor';
+import { wrapSuspensionContinuation } from './step-executors/suspension-continuation';
 import { executeTaskStep as runTaskExecutor } from './step-executors/task-executor';
 import type { StepExecutorEnv } from './step-executors/types';
 import {
@@ -552,17 +553,9 @@ export class WorkflowRunner {
       const suspension = await this.executeStep(step, state, stepPath);
 
       if (suspension) {
-        return {
-          ...suspension,
-          continue: async (resumeData: unknown) => {
-            const next = await suspension.continue(resumeData);
-            if (next) {
-              return next;
-            }
-
-            return this.executeFlow(steps, state, path, index + 1);
-          },
-        };
+        return wrapSuspensionContinuation(suspension, () =>
+          this.executeFlow(steps, state, path, index + 1),
+        );
       }
     }
 

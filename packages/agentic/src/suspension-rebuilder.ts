@@ -12,6 +12,7 @@ import {
 } from './step-executors/loop-executor';
 import { executeParallel as runParallelExecutor } from './step-executors/parallel-executor';
 import { markStepsSkipped } from './step-executors/skip-helpers';
+import { wrapSuspensionContinuation } from './step-executors/suspension-continuation';
 import type { StepExecutorEnv } from './step-executors/types';
 import {
   StepType,
@@ -272,17 +273,9 @@ export function buildSuspensionForPath(
 
           const resumed = await executeStep(step, state, currentPath);
           if (resumed) {
-            return {
-              ...resumed,
-              continue: async (nextResumeData: unknown) => {
-                const next = await resumed.continue(nextResumeData);
-                if (next) {
-                  return next;
-                }
-
-                return deps.executeFlow(steps, state, pathPrefix, current + 1);
-              },
-            };
+            return wrapSuspensionContinuation(resumed, () =>
+              deps.executeFlow(steps, state, pathPrefix, current + 1),
+            );
           }
 
           return deps.executeFlow(steps, state, pathPrefix, current + 1);
@@ -324,35 +317,35 @@ export function buildSuspensionForPath(
     const childIndex =
       typeof childPath[0] === 'number' ? (childPath[0] as number) : 0;
 
-    return {
-      ...childSuspension,
-      continue: async (resumeData: unknown) => {
-        const next = await childSuspension.continue(resumeData);
-        if (next) {
-          return next;
+    return wrapSuspensionContinuation(childSuspension, async () => {
+      if (step.strategy === 'wait_any') {
+        if (childIndex + 1 < step.steps.length) {
+          markStepsSkipped(
+            env,
+            step.steps.slice(childIndex + 1),
+            state.iterationStack ?? [],
+          );
         }
 
-        if (step.strategy === 'wait_any') {
-          if (childIndex + 1 < step.steps.length) {
-            markStepsSkipped(
-              env,
-              step.steps.slice(childIndex + 1),
-              state.iterationStack ?? [],
-            );
-          }
+        return deps.executeFlow(steps, state, pathPrefix, current + 1);
+      }
 
-          return undefined;
-        }
+      const next = await runParallelExecutor(
+        env,
+        step,
+        state,
+        currentPath,
+        childIndex + 1,
+      );
 
-        return runParallelExecutor(
-          env,
-          step,
-          state,
-          currentPath,
-          childIndex + 1,
+      if (next) {
+        return wrapSuspensionContinuation(next, () =>
+          deps.executeFlow(steps, state, pathPrefix, current + 1),
         );
-      },
-    };
+      }
+
+      return deps.executeFlow(steps, state, pathPrefix, current + 1);
+    });
   }
 
   if (step.type === StepType.Conditional) {
@@ -382,17 +375,9 @@ export function buildSuspensionForPath(
       return null;
     }
 
-    return {
-      ...branchSuspension,
-      continue: async (resumeData: unknown) => {
-        const next = await branchSuspension.continue(resumeData);
-        if (next) {
-          return next;
-        }
-
-        return deps.executeFlow(steps, state, pathPrefix, current + 1);
-      },
-    };
+    return wrapSuspensionContinuation(branchSuspension, () =>
+      deps.executeFlow(steps, state, pathPrefix, current + 1),
+    );
   }
 
   if (step.type === StepType.Loop) {
@@ -441,63 +426,72 @@ export function buildSuspensionForPath(
     const accumulator =
       iterationState.accumulator ?? state.accumulator ?? undefined;
 
-    return {
-      ...childSuspension,
-      continue: async (resumeData: unknown) => {
-        const next = await childSuspension.continue(resumeData);
-        if (next) {
-          return next;
-        }
+    return wrapSuspensionContinuation(childSuspension, async () => {
+      const scope: EvaluationScope = {
+        input: iterationState.input,
+        context: env.context.state,
+        output: iterationState.output,
+        iteration: iterationState.iteration ?? {
+          item: undefined,
+          index: iterationIndex,
+        },
+        accumulator,
+      };
+      const updatedAccumulator = await updateAccumulator(
+        step,
+        scope,
+        accumulator,
+      );
+      const shouldStop = await shouldStopLoop(step, scope);
 
-        const scope: EvaluationScope = {
-          input: iterationState.input,
-          context: env.context.state,
-          output: iterationState.output,
-          iteration: iterationState.iteration ?? {
-            item: undefined,
-            index: iterationIndex,
-          },
-          accumulator,
+      state.output = iterationState.output;
+
+      if (step.accumulate && step.name) {
+        state.output[step.name] = {
+          [step.accumulate.as]: updatedAccumulator,
         };
-        const updatedAccumulator = await updateAccumulator(
-          step,
-          scope,
-          accumulator,
-        );
-        const shouldStop = await shouldStopLoop(step, scope);
+      }
 
-        state.output = iterationState.output;
+      if (step.accumulate) {
+        state.accumulator = updatedAccumulator;
+      }
 
-        if (step.accumulate && step.name) {
-          state.output[step.name] = {
-            [step.accumulate.as]: updatedAccumulator,
-          };
-        }
+      if (shouldStop) {
+        return deps.executeFlow(steps, state, pathPrefix, current + 1);
+      }
 
-        if (step.accumulate) {
-          state.accumulator = updatedAccumulator;
-        }
+      const baseState: ExecutionState = {
+        ...iterationState,
+        iterationStack: ancestorIterationStack,
+        accumulator: updatedAccumulator,
+        output: state.output,
+      };
+      const next = await runLoopExecutor(
+        env,
+        step,
+        baseState,
+        currentPath,
+        iterationIndex + 1,
+      );
 
-        if (shouldStop) {
-          return undefined;
-        }
+      state.output = baseState.output;
+      if (step.accumulate) {
+        state.accumulator = baseState.accumulator;
+      }
 
-        const baseState: ExecutionState = {
-          ...iterationState,
-          iterationStack: ancestorIterationStack,
-          accumulator: updatedAccumulator,
-          output: state.output,
-        };
+      if (next) {
+        return wrapSuspensionContinuation(next, async () => {
+          state.output = baseState.output;
+          if (step.accumulate) {
+            state.accumulator = baseState.accumulator;
+          }
 
-        return runLoopExecutor(
-          env,
-          step,
-          baseState,
-          currentPath,
-          iterationIndex + 1,
-        );
-      },
-    };
+          return deps.executeFlow(steps, state, pathPrefix, current + 1);
+        });
+      }
+
+      return deps.executeFlow(steps, state, pathPrefix, current + 1);
+    });
   }
 
   return null;

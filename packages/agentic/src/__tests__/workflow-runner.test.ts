@@ -588,6 +588,103 @@ describe('WorkflowRunner', () => {
     }
   });
 
+  it('continues following steps after a repeatedly suspended while loop exits', async () => {
+    const suspendAction = defineAction<
+      { prompt: string },
+      { reply: string; done: boolean },
+      TestContext,
+      Settings
+    >({
+      name: 'loop_suspend_action',
+      inputSchema: z.object({ prompt: z.string() }),
+      outputSchema: z.object({ reply: z.string(), done: z.boolean() }),
+      execute: async ({ input, context }) => {
+        const resumeData = (await context.workflow.suspend({
+          reason: 'awaiting_reply',
+          data: { prompt: input.prompt },
+        })) as { reply: string };
+
+        return {
+          reply: resumeData.reply,
+          done: resumeData.reply === 'stop',
+        };
+      },
+    });
+    const afterExecute = jest.fn(async ({ input }) => ({
+      stored: `stored:${input.reply}`,
+    }));
+    const afterAction = defineAction<
+      { reply: string },
+      { stored: string },
+      TestContext,
+      Settings
+    >({
+      name: 'after_loop_action',
+      inputSchema: z.object({ reply: z.string() }),
+      outputSchema: z.object({ stored: z.string() }),
+      execute: afterExecute,
+    });
+    const definition: WorkflowDefinition = {
+      defs: createTaskDefs({
+        wait_step: {
+          action: 'loop_suspend_action',
+          inputs: { prompt: '="Attempt " & $string($iteration.index)' },
+        },
+        after_loop_step: {
+          action: 'after_loop_action',
+          inputs: { reply: '=$output.wait_step.reply' },
+        },
+      }),
+      flow: [
+        {
+          loop: {
+            type: 'while',
+            name: 'wait_until_stop',
+            while:
+              '=$not($exists($output.wait_step.done) and $output.wait_step.done = true)',
+            steps: [{ do: 'wait_step' }],
+          },
+        },
+        { do: 'after_loop_step' },
+      ],
+      outputs: {
+        reply: '=$output.wait_step.reply',
+        stored: '=$output.after_loop_step.stored',
+      },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: {
+        loop_suspend_action: suspendAction,
+        after_loop_action: afterAction,
+      },
+    });
+    const runner = new WorkflowRunner(compiled, {
+      runId: 'run-while-suspend-after',
+    });
+    const context = new TestContext({});
+    const startResult = await runner.start({ inputData: {}, context });
+
+    expect(startResult.status).toBe('suspended');
+    const firstResume = await runner.resume({
+      resumeData: { reply: 'continue' },
+    });
+
+    expect(firstResume.status).toBe('suspended');
+    const secondResume = await runner.resume({
+      resumeData: { reply: 'stop' },
+    });
+
+    expect(secondResume.status).toBe('finished');
+    if (secondResume.status === 'finished') {
+      expect(secondResume.output.reply).toBe('stop');
+      expect(secondResume.output.stored).toBe('stored:stop');
+    }
+    expect(afterExecute).toHaveBeenCalledTimes(1);
+    expect(afterExecute).toHaveBeenCalledWith(
+      expect.objectContaining({ input: { reply: 'stop' } }),
+    );
+  });
+
   it('handles suspension and resumes with provided data', async () => {
     const suspendAction = defineAction<
       { prompt: string },
@@ -994,11 +1091,26 @@ describe('WorkflowRunner', () => {
         return { reply: `ack:${resumeData.reply}` };
       },
     });
+    const afterAction = defineAction<
+      { reply: string },
+      { summary: string },
+      TestContext,
+      Settings
+    >({
+      name: 'after_loop_action',
+      inputSchema: z.object({ reply: z.string() }),
+      outputSchema: z.object({ summary: z.string() }),
+      execute: async ({ input }) => ({ summary: `after:${input.reply}` }),
+    });
     const definition: WorkflowDefinition = {
       defs: createTaskDefs({
         wait_step: {
           action: 'loop_suspend_action',
           inputs: { prompt: '="Ping"' },
+        },
+        after_step: {
+          action: 'after_loop_action',
+          inputs: { reply: '=$output.wait_step.reply' },
         },
       }),
       flow: [
@@ -1010,8 +1122,12 @@ describe('WorkflowRunner', () => {
             steps: [{ do: 'wait_step' }],
           },
         },
+        { do: 'after_step' },
       ],
-      outputs: { reply: '=$output.wait_step.reply' },
+      outputs: {
+        reply: '=$output.wait_step.reply',
+        summary: '=$output.after_step.summary',
+      },
       inputs: {
         schema: {
           items: { type: 'array', items: { type: 'string' } },
@@ -1021,6 +1137,7 @@ describe('WorkflowRunner', () => {
     const compiled = compileWorkflow(definition, {
       actions: {
         loop_suspend_action: suspendAction,
+        after_loop_action: afterAction,
       },
     });
     const runner = new WorkflowRunner(compiled);
@@ -1061,6 +1178,7 @@ describe('WorkflowRunner', () => {
     expect(resumeResult.status).toBe('finished');
     if (resumeResult.status === 'finished') {
       expect(resumeResult.output.reply).toBe('ack:Pong');
+      expect(resumeResult.output.summary).toBe('after:ack:Pong');
     }
   });
 

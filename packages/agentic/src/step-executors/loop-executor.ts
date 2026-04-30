@@ -14,6 +14,7 @@ import type {
 } from '../workflow-types';
 import { evaluateValue } from '../workflow-values';
 
+import { wrapSuspensionContinuation } from './suspension-continuation';
 import type { StepExecutorEnv } from './types';
 
 type LoopScope = EvaluationScope;
@@ -74,45 +75,37 @@ async function executeForEachLoop(
     ]);
 
     if (suspension) {
-      return {
-        ...suspension,
-        continue: async (resumeData: unknown) => {
-          const next = await suspension.continue(resumeData);
-          if (next) {
-            return next;
+      return wrapSuspensionContinuation(suspension, async () => {
+        const postScope = buildScope(
+          env,
+          iterationState,
+          { item, index },
+          accumulator,
+        );
+        accumulator = await updateAccumulator(step, postScope, accumulator);
+
+        const shouldStop = await shouldStopLoop(step, postScope);
+        if (shouldStop) {
+          state.accumulator = accumulator;
+          if (step.accumulate && step.name) {
+            state.output[step.name] = { [step.accumulate.as]: accumulator };
           }
 
-          const postScope = buildScope(
-            env,
-            iterationState,
-            { item, index },
+          return undefined;
+        }
+
+        return executeForEachLoop(
+          env,
+          step,
+          {
+            ...iterationState,
             accumulator,
-          );
-          accumulator = await updateAccumulator(step, postScope, accumulator);
-
-          const shouldStop = await shouldStopLoop(step, postScope);
-          if (shouldStop) {
-            state.accumulator = accumulator;
-            if (step.accumulate && step.name) {
-              state.output[step.name] = { [step.accumulate.as]: accumulator };
-            }
-
-            return undefined;
-          }
-
-          return executeForEachLoop(
-            env,
-            step,
-            {
-              ...iterationState,
-              accumulator,
-              iterationStack: state.iterationStack,
-            },
-            path,
-            index + 1,
-          );
-        },
-      };
+            iterationStack: state.iterationStack,
+          },
+          path,
+          index + 1,
+        );
+      });
     }
 
     const postScope = buildScope(
@@ -170,35 +163,27 @@ async function executeWhileLoop(
     ]);
 
     if (suspension) {
-      return {
-        ...suspension,
-        continue: async (resumeData: unknown) => {
-          const next = await suspension.continue(resumeData);
-          if (next) {
-            return next;
-          }
+      return wrapSuspensionContinuation(suspension, async () => {
+        const postScope = buildScope(
+          env,
+          iterationState,
+          { item: undefined, index },
+          accumulator,
+        );
+        accumulator = await updateAccumulator(step, postScope, accumulator);
 
-          const postScope = buildScope(
-            env,
-            iterationState,
-            { item: undefined, index },
+        return executeWhileLoop(
+          env,
+          step,
+          {
+            ...iterationState,
             accumulator,
-          );
-          accumulator = await updateAccumulator(step, postScope, accumulator);
-
-          return executeWhileLoop(
-            env,
-            step,
-            {
-              ...iterationState,
-              accumulator,
-              iterationStack: state.iterationStack,
-            },
-            path,
-            index + 1,
-          );
-        },
-      };
+            iterationStack: state.iterationStack,
+          },
+          path,
+          index + 1,
+        );
+      });
     }
 
     const postScope = buildScope(
