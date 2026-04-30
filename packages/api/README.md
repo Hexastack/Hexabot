@@ -58,7 +58,7 @@ $ pnpm install
 Environment variables are loaded from `packages/api/.env` (see `packages/api/.env.example`).
 
 - Default port is `3000` and the global API prefix is `/api`.
-- SQLite is the default database (`./hexabot.sqlite`); configure `DB_TYPE` and `DB_*` for Postgres.
+- SQLite is the default database (`./hexabot.sqlite`) and uses the `better-sqlite3` TypeORM driver; configure `DB_TYPE` and `DB_*` for Postgres.
 - Set `REDIS_ENABLED=true` to use Redis-backed cache and the Socket.IO adapter.
 
 ## Development Commands

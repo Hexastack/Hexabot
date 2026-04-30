@@ -14,6 +14,7 @@ import {
   DataSource,
   DataSourceOptions,
   EntitySchema,
+  EntitySubscriberInterface,
   EntityTarget,
   getMetadataArgsStorage,
 } from 'typeorm';
@@ -258,15 +259,38 @@ const addEntityToLookup = (
 const refreshEntityLookup = (lookup: Map<string, EntityTarget<any>>): void => {
   buildEntityLookup().forEach((entity, key) => lookup.set(key, entity));
 };
-const registeredSubscribers = new Set<unknown>();
+const GENERATED_ORM_HOOK_SUBSCRIBER = Symbol('generatedOrmHookSubscriber');
+type SubscriberWithListenTo = EntitySubscriberInterface & {
+  listenTo: NonNullable<EntitySubscriberInterface['listenTo']>;
+};
+type GeneratedOrmHookSubscriber = SubscriberWithListenTo & {
+  [GENERATED_ORM_HOOK_SUBSCRIBER]: true;
+};
+const isGeneratedOrmHookSubscriber = (
+  subscriber: unknown,
+): subscriber is GeneratedOrmHookSubscriber =>
+  Boolean(
+    subscriber &&
+      typeof subscriber === 'object' &&
+      (subscriber as Record<PropertyKey, unknown>)[
+        GENERATED_ORM_HOOK_SUBSCRIBER
+      ],
+  );
+const hasListenTo = (
+  subscriber: unknown,
+): subscriber is SubscriberWithListenTo =>
+  Boolean(
+    subscriber &&
+      typeof subscriber === 'object' &&
+      typeof (subscriber as { listenTo?: unknown }).listenTo === 'function',
+  );
 const registerAllRepositorySubscribers = (
   dataSource: DataSource,
   entityClasses: (new (...args: any[]) => BaseOrmEntity<any>)[],
 ): void => {
   for (const EntityClass of entityClasses) {
-    if (registeredSubscribers.has(EntityClass)) continue;
-
     const subscriber = {
+      [GENERATED_ORM_HOOK_SUBSCRIBER]: true,
       listenTo: () => EntityClass,
       ...Object.fromEntries(
         ORM_HOOK_NAMES.map((name) => [
@@ -283,13 +307,33 @@ const registerAllRepositorySubscribers = (
       ),
     };
     const exists = dataSource.subscribers.some(
-      (s) => typeof s.listenTo === 'function' && s.listenTo() === EntityClass,
+      (subscriber) =>
+        hasListenTo(subscriber) && subscriber.listenTo() === EntityClass,
     );
     if (!exists) {
       dataSource.subscribers.push(subscriber as any);
-      registeredSubscribers.add(EntityClass);
     }
   }
+};
+const pruneGeneratedRepositorySubscribers = (dataSource: DataSource): void => {
+  const concreteSubscriberTargets = new Set(
+    dataSource.subscribers
+      .filter(
+        (subscriber): subscriber is SubscriberWithListenTo =>
+          !isGeneratedOrmHookSubscriber(subscriber) && hasListenTo(subscriber),
+      )
+      .map((subscriber) => subscriber.listenTo()),
+  );
+  const subscribers = dataSource.subscribers.filter(
+    (subscriber) =>
+      !isGeneratedOrmHookSubscriber(subscriber) ||
+      !concreteSubscriberTargets.has(subscriber.listenTo()),
+  );
+  dataSource.subscribers.splice(
+    0,
+    dataSource.subscribers.length,
+    ...subscribers,
+  );
 };
 const normalizeRepositoryToken = (token: string): string | undefined => {
   if (!token.endsWith(TYPEORM_REPOSITORY_SUFFIX)) {
@@ -687,10 +731,11 @@ export const buildTestingMocks = async ({
   const entitiesArray = Array.from(typeOrmEntities);
   let typeOrmRootModule: DynamicModule | undefined;
   let typeOrmProviders: Provider[] = [];
+  let typeOrmDataSource: DataSource | undefined;
 
   if (shouldUseTypeOrm) {
     const baseOptions: DataSourceOptions = {
-      type: 'sqlite',
+      type: 'better-sqlite3',
       database: ':memory:',
       synchronize: true,
       dropSchema: true,
@@ -700,6 +745,7 @@ export const buildTestingMocks = async ({
     } as DataSourceOptions;
     const dataSource = new DataSource(baseOptions);
     await dataSource.initialize();
+    typeOrmDataSource = dataSource;
     registerAllRepositorySubscribers(dataSource, entitiesArray as any[]);
     await runTypeOrmFixtures(dataSource);
     registerTypeOrmDataSource(dataSource);
@@ -732,6 +778,9 @@ export const buildTestingMocks = async ({
     ...rest,
   });
   const module = await testingModuleBuilder.compile();
+  if (typeOrmDataSource) {
+    pruneGeneratedRepositorySubscribers(typeOrmDataSource);
+  }
   registerTestingModule(module);
 
   return {

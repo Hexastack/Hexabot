@@ -12,6 +12,7 @@ type JsonColumnOptions = Omit<ColumnOptions, 'type'>;
 
 const dbTypeToJsonColumn: Record<string, ColumnType> = {
   sqlite: 'simple-json',
+  'better-sqlite3': 'simple-json',
   postgres: 'json',
   mysql: 'json',
   mariadb: 'json',
