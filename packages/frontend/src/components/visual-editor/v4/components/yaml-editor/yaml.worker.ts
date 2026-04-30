@@ -6,6 +6,7 @@
 
 import * as monaco from "monaco-editor";
 import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import JsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 
 import YamlWorker from "./yaml.worker.entry?worker";
 
@@ -61,6 +62,10 @@ globalMonaco.MonacoEnvironment = {
   getWorker: (moduleId: string, label: string) => {
     if (label === "yaml" || moduleId === "monaco-yaml/yaml.worker") {
       return new YamlWorker();
+    }
+
+    if (label === "json") {
+      return new JsonWorker();
     }
 
     if (existingGetWorker) {
