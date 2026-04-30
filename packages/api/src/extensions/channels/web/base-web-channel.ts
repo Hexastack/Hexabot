@@ -74,6 +74,10 @@ import { WebSessionService } from './services/web-session.service';
 import { WEB_CHANNEL_NAME } from './settings.schema';
 import { Web } from './types';
 
+type WebSocketData = Socket['data'] & {
+  webMessageQueue?: Promise<void>;
+};
+
 /**
  * Base handler for the Socket.IO-backed "web" channel.
  *
@@ -159,6 +163,30 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
     const normalizedSourceId = sourceId.trim();
 
     return normalizedSourceId.length > 0 ? normalizedSourceId : null;
+  }
+
+  private enqueueMessageDispatch(
+    req: SocketRequest,
+    event: MessageInboundEvent,
+  ): void {
+    const socket = req.socket as Socket & { data?: WebSocketData };
+    const socketData = (socket.data ??= {});
+    // Keep chatbot processing ordered per socket without making the client ack
+    // wait for slow actions, LLM calls, or external integrations.
+    const previous = socketData.webMessageQueue ?? Promise.resolve();
+    const next = previous
+      .catch(() => undefined)
+      .then(() => this.channelEventBus.emitMessage(event))
+      .catch((err) => {
+        this.logger.error('Failed to process web socket message', err);
+      });
+
+    socketData.webMessageQueue = next;
+    void next.finally(() => {
+      if (socketData.webMessageQueue === next) {
+        delete socketData.webMessageQueue;
+      }
+    });
   }
 
   @OnEvent('hook:websocket:connection', { async: true })
@@ -547,15 +575,24 @@ export default abstract class BaseWebChannelHandler<N extends ChannelName>
           messageEvent.setAuthorForeignId(profile.foreignId);
         }
         messageEvent.setCreatedAt(new Date());
+        // Resolve the thread before acknowledging the socket request so the
+        // client receives a stable thread_id, then dispatch chatbot work later.
+        const thread = await this.sessionService.resolveThreadForIncoming(
+          req,
+          profile.id,
+          {
+            explicitThreadId: messageEvent.getThreadId(),
+            inactivityHours: this.sessionService.resolveInactivityHours(
+              source.settings,
+            ),
+            sourceId: source.id,
+          },
+        );
+        messageEvent.setThreadId(thread.id);
+        messageEvent.setThreadIdOnRaw(thread.id);
 
         this.broadcast(profile, StdEventType.message, messageEvent.getRaw());
-        await this.channelEventBus.emitMessage(messageEvent);
-
-        const resolvedThreadId = messageEvent.getThreadId();
-        if (resolvedThreadId) {
-          messageEvent.setThreadIdOnRaw(resolvedThreadId);
-          if (req.session.web) req.session.web.threadId = resolvedThreadId;
-        }
+        this.enqueueMessageDispatch(req, messageEvent);
 
         continue;
       }

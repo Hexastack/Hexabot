@@ -32,6 +32,17 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
 
+const createDeferred = () => {
+  let resolve!: () => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<void>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  return { promise, resolve, reject };
+};
+
 describe('WebChannelHandler', () => {
   let module: TestingModule;
   let subscriberService: SubscriberService;
@@ -471,9 +482,8 @@ describe('WebChannelHandler', () => {
 
     const emitMessageSpy = jest
       .spyOn(handler['channelEventBus'], 'emitMessage')
-      .mockImplementation(async (event: any) => {
-        event.setThreadId('thread-created-1');
-      });
+      .mockResolvedValue(undefined);
+    let responseThreadId: string | undefined;
 
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -487,7 +497,8 @@ describe('WebChannelHandler', () => {
         },
         json: (payload: any) => {
           clearTimeout(timeout);
-          expect(payload.thread_id).toBe('thread-created-1');
+          expect(typeof payload.thread_id).toBe('string');
+          responseThreadId = payload.thread_id;
           resolve();
         },
       } as any as SocketResponse;
@@ -495,8 +506,9 @@ describe('WebChannelHandler', () => {
       handler['handleEvent'](req as any, res, webSource);
     });
 
+    await Promise.resolve();
     expect(emitMessageSpy).toHaveBeenCalledWith(expect.anything());
-    expect(req.session.web?.threadId).toBe('thread-created-1');
+    expect(req.session.web?.threadId).toBe(responseThreadId);
     clearMock.mockRestore();
     emitMessageSpy.mockRestore();
   });
@@ -553,12 +565,13 @@ describe('WebChannelHandler', () => {
       handler['handleEvent'](req as any, res, webSource);
     });
 
+    await Promise.resolve();
     expect(req.session.web?.profile?.id).toBe(subscriber.id);
     expect(emitMessageSpy).toHaveBeenCalledWith(expect.anything());
     emitMessageSpy.mockRestore();
   });
 
-  it('broadcasts incoming user messages before async handlers finish', async () => {
+  it('acknowledges and broadcasts incoming user messages before async handlers finish', async () => {
     websocketGatewayMock.broadcast.mockClear();
     const req = {
       isSocket: true,
@@ -588,13 +601,14 @@ describe('WebChannelHandler', () => {
       profile,
     };
 
+    const pendingChatbotWork = Promise.race<void>([]);
     const emitMessageSpy = jest
       .spyOn(handler['channelEventBus'], 'emitMessage')
-      .mockResolvedValue(undefined);
+      .mockImplementation(() => pendingChatbotWork);
 
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
-        reject(new Error('Timed out waiting for message response'));
+        reject(new Error('Timed out waiting for immediate message response'));
       }, 2000);
       const res = {
         status: (code: number) => {
@@ -611,14 +625,118 @@ describe('WebChannelHandler', () => {
       handler['handleEvent'](req as any, res, webSource);
     });
 
+    await Promise.resolve();
     expect(websocketGatewayMock.broadcast).toHaveBeenCalled();
     expect(emitMessageSpy).toHaveBeenCalledWith(expect.anything());
-    const [broadcastCallOrder] = websocketGatewayMock.broadcast.mock
-      .invocationCallOrder as number[];
-    const [emitMessageCallOrder] = emitMessageSpy.mock.invocationCallOrder;
+    const broadcastCallOrder =
+      websocketGatewayMock.broadcast.mock.invocationCallOrder.at(-1);
+    const emitMessageCallOrder = emitMessageSpy.mock.invocationCallOrder.at(-1);
 
-    expect(broadcastCallOrder).toBeLessThan(emitMessageCallOrder);
+    expect(broadcastCallOrder!).toBeLessThan(emitMessageCallOrder!);
+    expect(req.session.web?.threadId).toEqual(expect.any(String));
     clearMock.mockRestore();
+    emitMessageSpy.mockRestore();
+  });
+
+  it('queues async chatbot dispatches per socket after acknowledging messages', async () => {
+    const socket = {
+      handshake: { address: '127.0.0.1' },
+      data: {},
+    };
+    const session: Record<string, any> = {};
+    const reqBase = {
+      isSocket: true,
+      query: { first_name: 'Queue', last_name: 'User' },
+      session,
+      headers: { 'user-agent': 'browser' },
+      socket,
+      user: {},
+    } as any as SocketRequest;
+    const profile = await handler['getOrCreateSession'](
+      reqBase as any,
+      webSource,
+    );
+    const firstDispatch = createDeferred();
+    const secondDispatch = createDeferred();
+    const dispatches = [firstDispatch, secondDispatch];
+    const dispatchedTexts: string[] = [];
+    const emitMessageSpy = jest
+      .spyOn(handler['channelEventBus'], 'emitMessage')
+      .mockImplementation((event: any) => {
+        dispatchedTexts.push(event.getText());
+
+        return dispatches[dispatchedTexts.length - 1].promise;
+      });
+    const sendText = async (text: string) => {
+      let responseBody: any;
+      const req = {
+        ...reqBase,
+        query: {},
+        body: {
+          type: 'text',
+          data: { text },
+        },
+        session: {
+          ...session,
+          web: {
+            ...session.web,
+            profile,
+          },
+        },
+      } as any as SocketRequest;
+
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error(`Timed out waiting for ${text} response`));
+        }, 2000);
+        const res = {
+          status: (code: number) => {
+            expect(code).toEqual(200);
+
+            return res;
+          },
+          json: (payload: any) => {
+            clearTimeout(timeout);
+            responseBody = payload;
+            resolve();
+          },
+        } as any as SocketResponse;
+
+        handler['handleEvent'](req as any, res, webSource);
+      });
+
+      Object.assign(session, req.session);
+
+      return responseBody;
+    };
+    const firstResponse = await sendText('First queued message');
+    const secondResponse = await sendText('Second queued message');
+
+    expect(firstResponse.thread_id).toEqual(expect.any(String));
+    expect(secondResponse.thread_id).toBe(firstResponse.thread_id);
+
+    await Promise.resolve();
+    expect(dispatchedTexts).toEqual(['First queued message']);
+    expect(emitMessageSpy).toHaveBeenCalledTimes(1);
+
+    firstDispatch.resolve();
+    await firstDispatch.promise;
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(dispatchedTexts).toEqual([
+      'First queued message',
+      'Second queued message',
+    ]);
+    expect(emitMessageSpy).toHaveBeenCalledTimes(2);
+
+    secondDispatch.resolve();
+    await secondDispatch.promise;
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(socket.data).not.toHaveProperty('webMessageQueue');
+
     emitMessageSpy.mockRestore();
   });
 
@@ -805,6 +923,7 @@ describe('WebChannelHandler', () => {
       handler['handleEvent'](req as any, res, webSource);
     });
 
+    await Promise.resolve();
     expect(createEventsSpy).toHaveBeenCalledTimes(1);
     expect(emitMessageSpy).toHaveBeenCalledWith(expect.anything());
     expect(emitStatusSpy).toHaveBeenCalledWith(expect.anything());
