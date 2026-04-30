@@ -133,7 +133,7 @@ const AutoCompleteApiQuerySelect = <
           );
         });
 
-    return filtered.sort((a, b) =>
+    return [...filtered].sort((a, b) =>
       normalizeSearchValue(b?.[sortKey]).localeCompare(
         normalizeSearchValue(a?.[sortKey]),
       ),
@@ -157,6 +157,7 @@ const AutoCompleteApiQuerySelect = <
   return (
     <AutoCompleteSelect<Value, Label, Multiple>
       ref={ref}
+      {...rest}
       idKey={idKey}
       labelKey={labelKey}
       options={options}
@@ -164,7 +165,6 @@ const AutoCompleteApiQuerySelect = <
       onSearch={setSearchText}
       loading={isFetching}
       data-multiple={rest.multiple}
-      {...rest}
     />
   );
 };

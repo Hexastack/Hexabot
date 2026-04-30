@@ -33,6 +33,7 @@ export const aiMcpToolBindingSchema = z.strictObject({
         methodName: 'getMcpTools',
         labelKey: 'name',
         idKey: 'name',
+        valueKey: 'name',
         idFormPath: 'server_id',
         disableSearch: true,
         multiple: true,
