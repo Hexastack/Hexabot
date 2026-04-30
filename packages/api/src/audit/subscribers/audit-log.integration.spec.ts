@@ -31,7 +31,7 @@ describe('AuditLogSubscriber integration', () => {
       maskFields: ['value'],
     };
     dataSource = new DataSource({
-      type: 'sqlite',
+      type: 'better-sqlite3',
       database: ':memory:',
       synchronize: true,
       dropSchema: true,
@@ -66,7 +66,7 @@ describe('AuditLogSubscriber integration', () => {
   });
 
   afterEach(async () => {
-    if (dataSource.isInitialized) {
+    if (dataSource?.isInitialized) {
       await dataSource.destroy();
     }
     config.audit = { ...originalAudit };

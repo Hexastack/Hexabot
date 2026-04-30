@@ -51,7 +51,7 @@ export class TypeormConfigService implements TypeOrmOptionsFactory {
         // @ts-expect-error type mismatch)
         return {
           ...base,
-          type: 'sqlite',
+          type: 'better-sqlite3',
           database: db.sqlitePath ?? 'hexabot.sqlite',
         };
     }
