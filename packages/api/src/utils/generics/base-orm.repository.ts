@@ -144,12 +144,24 @@ export abstract class BaseOrmRepository<
   private assertSafePayload(data: unknown): void {
     if (!data || typeof data !== 'object') return;
 
-    const flatKeys = Object.keys(
-      flatten(data as Record<string, unknown>) as Record<string, unknown>,
-    );
-    const forbidden = flatKeys.find((key) => hasForbiddenSegment(key));
-    if (forbidden) {
-      throw new BadRequestException(`Forbidden property path: "${forbidden}"`);
+    if (Array.isArray(data)) {
+      data.forEach((item) => this.assertSafePayload(item));
+
+      return;
+    }
+
+    const flat = flatten(data as Record<string, unknown>) as Record<
+      string,
+      unknown
+    >;
+
+    for (const [key, value] of Object.entries(flat)) {
+      if (hasForbiddenSegment(key)) {
+        throw new BadRequestException(`Forbidden property path: "${key}"`);
+      }
+      if (Array.isArray(value)) {
+        value.forEach((item) => this.assertSafePayload(item));
+      }
     }
   }
 

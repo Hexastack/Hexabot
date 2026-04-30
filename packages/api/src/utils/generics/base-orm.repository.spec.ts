@@ -328,6 +328,31 @@ describe('BaseOrmRepository', () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
+    it('should reject create with forbidden key inside array value', async () => {
+      const payload = {
+        dummy: 'safe',
+        dynamicField: {
+          items: JSON.parse('[{"__proto__":{"polluted":true}}]'),
+        },
+      };
+      await expect(
+        dummyRepository.create(payload as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should reject createMany with forbidden key nested in array', async () => {
+      await expect(
+        dummyRepository.createMany([
+          {
+            dummy: 'safe',
+            dynamicField: {
+              items: JSON.parse('[{"constructor":{"polluted":true}}]'),
+            },
+          } as any,
+        ]),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
     it('should allow safe payloads through', async () => {
       const result = await dummyRepository.create({
         dummy: 'safe payload',
