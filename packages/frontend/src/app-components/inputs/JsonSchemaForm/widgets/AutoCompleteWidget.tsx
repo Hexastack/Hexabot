@@ -103,8 +103,8 @@ const AutoCompleteWidgetWrapper = ({
           onChange(
             toAutoCompleteWidgetValue({
               selection: Array.isArray(selected)
-                ? selected.map((s) => s[labelKey])
-                : selected?.[labelKey],
+                ? selected.map((s) => s?.[valueKey] ?? s?.[labelKey])
+                : (selected?.[valueKey] ?? selected?.[labelKey]),
               valueKey,
               multiple,
             }),
