@@ -16,6 +16,7 @@ import {
   I18nLoader,
   I18nTranslation,
 } from 'nestjs-i18n';
+import pLimit from 'p-limit';
 import { Observable, Subject, merge, of, switchMap } from 'rxjs';
 
 import { deepMerge, isPlainObject } from '@/utils/helpers/object';
@@ -158,17 +159,18 @@ export class ExtensionJsonLoader extends I18nLoader implements OnModuleDestroy {
   private async resolveExtensionTranslationFiles(
     extensionRootPaths: string[],
   ): Promise<string[]> {
+    const fsLimit = pLimit(8);
     const i18nDirectories = (
       await Promise.all(
         extensionRootPaths.map((rootPath) =>
-          this.findI18nDirectories(rootPath),
+          fsLimit(() => this.findI18nDirectories(rootPath)),
         ),
       )
     ).flat();
     const translationFiles = (
       await Promise.all(
         i18nDirectories.map((i18nDir) =>
-          this.findTranslationFilesInI18nDirectory(i18nDir),
+          fsLimit(() => this.findTranslationFilesInI18nDirectory(i18nDir)),
         ),
       )
     ).flat();
@@ -185,17 +187,20 @@ export class ExtensionJsonLoader extends I18nLoader implements OnModuleDestroy {
     if (!entries) {
       return [];
     }
+    const fsLimit = pLimit(8);
     const nestedResults = await Promise.all(
       entries
         .filter((entry) => entry.isDirectory())
-        .map(async (entry) => {
-          const entryPath = path.join(rootPath, entry.name);
-          if (entry.name === 'i18n') {
-            return [entryPath];
-          }
+        .map((entry) =>
+          fsLimit(async () => {
+            const entryPath = path.join(rootPath, entry.name);
+            if (entry.name === 'i18n') {
+              return [entryPath];
+            }
 
-          return this.findI18nDirectories(entryPath);
-        }),
+            return this.findI18nDirectories(entryPath);
+          }),
+        ),
     );
 
     return nestedResults.flat();
