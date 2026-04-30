@@ -166,7 +166,7 @@ describe('RuntimeBindingsService', () => {
     expect(
       mcpToolsDefinition?.properties?.tool_names?.['ui:options'],
     ).toMatchObject({
-      entity: 'McpServerTool',
+      entity: 'McpServer',
       valueKey: 'name',
       labelKey: 'name',
       idFormPath: 'server_id',
