@@ -39,7 +39,7 @@ export type RouteParams = Record<
   string | number | boolean | null | undefined
 >;
 
-const resolveRoute = (route: string, params?: RouteParams) => {
+export const resolveRoute = (route: string, params?: RouteParams) => {
   if (!params) {
     return route;
   }
@@ -112,6 +112,15 @@ export const ROUTES = {
 
 export class TranslatableMethods {
   constructor(protected readonly request: AxiosInstance) {}
+
+  async getByPath<TResponse = unknown>(
+    path: string,
+    params?: Record<string, unknown>,
+  ) {
+    const { data } = await this.request.get<TResponse>(path, { params });
+
+    return data;
+  }
 
   async getWorkflowBindings() {
     const { data } = await this.request.get<WorkflowBindingsCatalog>(

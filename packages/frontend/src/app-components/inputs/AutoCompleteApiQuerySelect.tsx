@@ -11,26 +11,10 @@ import type { ReactNode } from "react";
 import { forwardRef, useMemo, useState } from "react";
 
 import { useApiClientQuery } from "@/hooks/useApiClient";
-import { ApiClient } from "@/services/api.class";
-
 import AutoCompleteSelect from "./AutoCompleteSelect";
 
-export type ApiClientMethodName = {
-  [K in keyof ApiClient]: ApiClient[K] extends (...args: any[]) => any
-    ? K
-    : never;
-}[keyof ApiClient];
-
-type ApiClientMethod<N extends ApiClientMethodName> = Extract<
-  ApiClient[N],
-  (...args: any[]) => any
->;
-
 type AutoCompleteApiQuerySelectProps<
-  N extends ApiClientMethodName,
-  Value = ApiClientMethod<N> extends (...args: any[]) => Promise<(infer Item)[]>
-    ? Item
-    : never,
+  Value = Record<string, unknown>,
   Label extends keyof Value = keyof Value,
   Multiple extends boolean | undefined = true,
 > = Omit<
@@ -49,13 +33,13 @@ type AutoCompleteApiQuerySelectProps<
   valueKey?: string;
   sortKey?: string;
   labelKey: Label;
-  methodName: N;
-  params?: Parameters<ApiClientMethod<N>>;
+  apiPath: string;
+  queryParams?: Record<string, unknown>;
   inputLabelSx?: unknown;
   disableSearch?: boolean;
   error?: boolean;
   helperText?: string | null | undefined;
-  preprocess?: (data: Awaited<ReturnType<ApiClientMethod<N>>>) => Value[];
+  preprocess?: (data: Value[]) => Value[];
   noOptionsWarning?: string;
   isDisabledWhenEmpty?: boolean;
   queryEnabled?: boolean;
@@ -77,16 +61,13 @@ const resolveByPath = (target: unknown, path: string) => {
   return get(target as Record<string, unknown>, path);
 };
 const AutoCompleteApiQuerySelect = <
-  N extends ApiClientMethodName,
-  Value = ApiClientMethod<N> extends (...args: any[]) => Promise<(infer Item)[]>
-    ? Item
-    : never,
+  Value = Record<string, unknown>,
   Label extends keyof Value = keyof Value,
   Multiple extends boolean | undefined = true,
 >(
   {
-    methodName,
-    params,
+    apiPath,
+    queryParams,
     disableSearch,
     preprocess,
     idKey = "id",
@@ -96,20 +77,18 @@ const AutoCompleteApiQuerySelect = <
     queryEnabled = true,
     staleTime,
     ...rest
-  }: AutoCompleteApiQuerySelectProps<N, Value, Label, Multiple>,
+  }: AutoCompleteApiQuerySelectProps<Value, Label, Multiple>,
   ref,
 ) => {
   const [searchText, setSearchText] = useState("");
-  const { data, isFetching } = useApiClientQuery(methodName, {
-    params: (params || []) as any,
+  const { data, isFetching } = useApiClientQuery("getByPath", {
+    params: [apiPath, queryParams],
     enabled: queryEnabled,
     staleTime,
   });
   const rawOptions = useMemo(() => {
     if (preprocess) {
-      return preprocess(
-        data as Awaited<ReturnType<ApiClientMethod<N>>>,
-      ) as Value[];
+      return preprocess(data as Value[]) as Value[];
     }
 
     return Array.isArray(data) ? (data as Value[]) : [];
@@ -172,14 +151,11 @@ const AutoCompleteApiQuerySelect = <
 AutoCompleteApiQuerySelect.displayName = "AutoCompleteApiQuerySelect";
 
 export default forwardRef(AutoCompleteApiQuerySelect) as unknown as <
-  N extends ApiClientMethodName,
-  Value = ApiClientMethod<N> extends (...args: any[]) => Promise<(infer Item)[]>
-    ? Item
-    : never,
+  Value = Record<string, unknown>,
   Label extends keyof Value = keyof Value,
   Multiple extends boolean | undefined = true,
 >(
-  props: AutoCompleteApiQuerySelectProps<N, Value, Label, Multiple> & {
+  props: AutoCompleteApiQuerySelectProps<Value, Label, Multiple> & {
     ref?: React.ForwardedRef<HTMLDivElement>;
   },
 ) => ReturnType<typeof AutoCompleteApiQuerySelect>;
