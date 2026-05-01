@@ -8,11 +8,9 @@ import type { RJSFSchema, WidgetProps } from "@rjsf/utils";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef } from "react";
 
-import AutoCompleteApiQuerySelect, {
-  ApiClientMethodName,
-} from "@/app-components/inputs/AutoCompleteApiQuerySelect";
+import AutoCompleteApiQuerySelect from "@/app-components/inputs/AutoCompleteApiQuerySelect";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import type { RouteParams } from "@/services/api.class";
+import { resolveRoute, type RouteParams } from "@/services/api.class";
 import { Format, normalizeEntity } from "@/services/types";
 import { IEntityMapTypes } from "@/types/base.types";
 
@@ -37,7 +35,7 @@ type AutoCompleteWidgetOptions = Omit<
   labelKey?: string;
   routeParamKey?: string;
   multiple?: boolean;
-  methodName?: ApiClientMethodName;
+  apiPath?: string;
   valueKey?: string;
   idKey?: string;
 };
@@ -54,7 +52,7 @@ const AutoCompleteWidgetWrapper = ({
   queryEnabled = true,
   onChange,
   enableEntityAddButton,
-  methodName,
+  apiPath,
   idKey,
   ...rest
 }: AutoCompleteWidgetOptions & {
@@ -80,16 +78,12 @@ const AutoCompleteWidgetWrapper = ({
     [multiple, value],
   );
 
-  if (methodName) {
-    const dependencyParam = routeParams
-      ? Object.values(routeParams).find(
-          (candidate) => candidate !== undefined && candidate !== null,
-        )
-      : undefined;
+  if (apiPath) {
+    const resolvedApiPath = resolveRoute(apiPath, routeParams);
 
     return (
-      <AutoCompleteApiQuerySelect<any, string, any, boolean>
-        methodName={methodName}
+      <AutoCompleteApiQuerySelect<any, any, boolean>
+        apiPath={resolvedApiPath}
         valueKey={valueKey}
         idKey={idKey}
         labelKey={labelKey}
@@ -97,7 +91,6 @@ const AutoCompleteWidgetWrapper = ({
         inputLabelSx={inputLabelSx}
         value={normalizedValue}
         multiple={multiple}
-        params={dependencyParam !== undefined ? [dependencyParam] : []}
         queryEnabled={queryEnabled}
         onChange={(_e, selected, ..._) => {
           onChange(
@@ -175,7 +168,7 @@ export const AutoCompleteWidget = ({
     idFormPath,
     routeParamKey = "id",
     multiple: uiMultiple,
-    methodName,
+    apiPath,
     idKey = "id",
     ...props
   } = uiSchema?.["ui:options"] as AutoCompleteWidgetOptions;
@@ -212,11 +205,11 @@ export const AutoCompleteWidget = ({
     onChange(isMultiple ? [] : "");
   }, [dependencyQueryConfig.dependencyValue, idFormPath, isMultiple, onChange]);
 
-  if (methodName || entity) {
+  if (apiPath || entity) {
     return (
       <AutoCompleteWidgetWrapper
         entity={entity ? normalizeEntity(entity) : undefined}
-        methodName={methodName}
+        apiPath={apiPath}
         idKey={idKey}
         value={value}
         label={label}

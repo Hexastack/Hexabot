@@ -30,7 +30,7 @@ export const aiMcpToolBindingSchema = z.strictObject({
         'Optional allow-list of MCP tool names. Leave empty to expose all server tools.',
       'ui:widget': 'AutoCompleteWidget',
       'ui:options': {
-        methodName: 'getMcpTools',
+        apiPath: '/mcpserver/:id/tools',
         labelKey: 'name',
         idKey: 'name',
         valueKey: 'name',

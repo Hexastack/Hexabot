@@ -166,7 +166,7 @@ describe('RuntimeBindingsService', () => {
     expect(
       mcpToolsDefinition?.properties?.tool_names?.['ui:options'],
     ).toMatchObject({
-      methodName: 'getMcpTools',
+      apiPath: '/mcpserver/:id/tools',
       labelKey: 'name',
       idFormPath: 'server_id',
       disableSearch: true,
