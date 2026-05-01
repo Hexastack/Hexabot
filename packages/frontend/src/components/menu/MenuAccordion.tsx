@@ -62,6 +62,12 @@ const StyledAccordion = styled(Accordion)(
       padding: "0",
       marginLeft: 1,
     },
+    "& .MuiAccordionSummary-expandIconWrapper": {
+      transform: "none !important",
+      "&.Mui-expanded": {
+        transform: "none !important",
+      },
+    },
   }),
 );
 
@@ -246,7 +252,7 @@ const MenuAccordion: React.FC<MenuAccordionProps> = ({
                   canRotate={isExpanded}
                   htmlColor="black"
                   from="0"
-                  to="-90"
+                  to="90"
                 />
               ) : (
                 <AnimatedComponent
@@ -254,7 +260,7 @@ const MenuAccordion: React.FC<MenuAccordionProps> = ({
                   canRotate={false}
                   htmlColor="black"
                   from="0"
-                  to="-90"
+                  to="90"
                 />
               )
             }
