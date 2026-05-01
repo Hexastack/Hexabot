@@ -8,8 +8,9 @@ import type { RJSFSchema, WidgetProps } from "@rjsf/utils";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef } from "react";
 
+import AutoCompleteApiQuerySelect from "@/app-components/inputs/AutoCompleteApiQuerySelect";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import type { RouteParams } from "@/services/api.class";
+import { resolveRoute, type RouteParams } from "@/services/api.class";
 import { Format, normalizeEntity } from "@/services/types";
 import { IEntityMapTypes } from "@/types/base.types";
 
@@ -34,6 +35,9 @@ type AutoCompleteWidgetOptions = Omit<
   labelKey?: string;
   routeParamKey?: string;
   multiple?: boolean;
+  apiPath?: string;
+  valueKey?: string;
+  idKey?: string;
 };
 
 const AutoCompleteWidgetWrapper = ({
@@ -48,12 +52,14 @@ const AutoCompleteWidgetWrapper = ({
   queryEnabled = true,
   onChange,
   enableEntityAddButton,
+  apiPath,
+  idKey,
   ...rest
 }: AutoCompleteWidgetOptions & {
   label?: ReactNode;
   inputLabelSx?: unknown;
   value: any;
-  entity: keyof IEntityMapTypes;
+  entity?: keyof IEntityMapTypes;
   multiple?: boolean;
   routeParams?: RouteParams;
   queryEnabled?: boolean;
@@ -71,6 +77,40 @@ const AutoCompleteWidgetWrapper = ({
           : "",
     [multiple, value],
   );
+
+  if (apiPath) {
+    const resolvedApiPath = resolveRoute(apiPath, routeParams);
+
+    return (
+      <AutoCompleteApiQuerySelect<any, any, boolean>
+        apiPath={resolvedApiPath}
+        valueKey={valueKey}
+        idKey={idKey}
+        labelKey={labelKey}
+        label={label ?? ""}
+        inputLabelSx={inputLabelSx}
+        value={normalizedValue}
+        multiple={multiple}
+        queryEnabled={queryEnabled}
+        onChange={(_e, selected, ..._) => {
+          onChange(
+            toAutoCompleteWidgetValue({
+              selection: Array.isArray(selected)
+                ? selected.map((s) => s?.[valueKey] ?? s?.[labelKey])
+                : (selected?.[valueKey] ?? selected?.[labelKey]),
+              valueKey,
+              multiple,
+            }),
+          );
+        }}
+        {...rest}
+      />
+    );
+  }
+
+  if (!entity) {
+    return null;
+  }
 
   return (
     <AutoCompleteEntitySelect<any, string, boolean>
@@ -128,6 +168,8 @@ export const AutoCompleteWidget = ({
     idFormPath,
     routeParamKey = "id",
     multiple: uiMultiple,
+    apiPath,
+    idKey = "id",
     ...props
   } = uiSchema?.["ui:options"] as AutoCompleteWidgetOptions;
   const isMultiple = schema?.type === "array" || Boolean(uiMultiple);
@@ -163,10 +205,12 @@ export const AutoCompleteWidget = ({
     onChange(isMultiple ? [] : "");
   }, [dependencyQueryConfig.dependencyValue, idFormPath, isMultiple, onChange]);
 
-  if (entity) {
+  if (apiPath || entity) {
     return (
       <AutoCompleteWidgetWrapper
-        entity={normalizeEntity(entity)}
+        entity={entity ? normalizeEntity(entity) : undefined}
+        apiPath={apiPath}
+        idKey={idKey}
         value={value}
         label={label}
         inputLabelSx={inputLabelSx}
