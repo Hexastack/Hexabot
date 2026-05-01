@@ -116,3 +116,59 @@ If you want to contribute to the Hexabot monorepo (architecture, package map, PN
 Copyright (c) 2025 Hexastack.
 
 Licensed under **FCL-1.0-ALv2**. See [LICENSE.md](./LICENSE.md) for full terms.
+
+## ❓ FAQ
+
+### General
+
+**What is Hexabot v3?**
+Hexabot v3 is an automation platform with first-class AI capabilities, combining YAML-driven workflows, actions, conversational channels, MCP integration, and memory/RAG in a single runtime.
+
+**How is v3 different from earlier versions?**
+v3 introduces a schema-first architecture with Zod validation, a binding system that separates capability/config from task logic, and agentic workflows with typed runtime contracts — a significant evolution from v2's channel-bot architecture.
+
+### Setup & Configuration
+
+**What are the system requirements?**
+- Node.js `^20.19.0`
+- A package manager (`npm`, `pnpm`, `yarn`, or `bun`)
+- Docker (optional, for Docker-based services)
+
+**Which databases are supported?**
+- **SQLite** — default for local development
+- **Postgres** — first-class for production setups
+Configure with `DB_TYPE` and related `DB_*` environment variables.
+
+**How do I run Hexabot with Docker?**
+Use the CLI's Docker integration:
+```bash
+hexabot dev --docker          # Dev mode with Docker services
+hexabot docker up             # Start Docker services
+hexabot docker logs           # View service logs
+```
+
+### Usage
+
+**How do I define agentic workflows?**
+Workflows are defined in YAML with typed contracts. Actions define behavior with schema-validated inputs/outputs/settings, and bindings provide reusable capabilities separated from task logic.
+
+**What is the MCP integration?**
+Hexabot supports Model Context Protocol (MCP) for tool and context interoperability, allowing agents to connect with external tools and services through a standardized protocol.
+
+**How does memory work?**
+Hexabot supports explicit memory definitions and runtime memory integration, enabling agents to maintain context across conversations and workflow executions.
+
+### Troubleshooting
+
+**`hexabot create` fails in CI/non-interactive shells**
+The CLI requires an interactive terminal (TTY) for initial admin credential setup. Run it from a local terminal first, then use non-interactive commands in CI.
+
+**Admin UI or API not accessible**
+Default endpoints are:
+- Admin UI: `http://localhost:3000`
+- API: `http://localhost:3000/api`
+- API docs: `http://localhost:3000/docs`
+Check that no other service is using port 3000 and that Docker services are running if using `--docker`.
+
+**Database connection errors**
+Verify your `DB_TYPE` and `DB_*` environment variables are correctly set. For Postgres, ensure the database server is running and accessible. Use `hexabot check` to validate your configuration.
