@@ -7,6 +7,7 @@
 import { Action, type SourceFull } from "@hexabot-ai/types";
 import {
   Button,
+  Chip,
   IconButton,
   Menu,
   MenuItem,
@@ -19,6 +20,7 @@ import { GridColDef } from "@mui/x-data-grid";
 import { ChevronDown, Copy, Plus, Webhook } from "lucide-react";
 import { MouseEvent, useMemo, useState } from "react";
 
+import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import {
   ColumnActionType,
   useActionColumns,
@@ -205,7 +207,18 @@ export const Sources = () => {
       headerName: t("label.workflow"),
       disableColumnMenu: true,
       headerAlign: "left",
-      renderCell: ({ row }) => row.defaultWorkflow?.name || t("label.none"),
+      renderCell: ({ value }) =>
+        value ? (
+          <ChipEntity
+            id={value}
+            key={value}
+            field="name"
+            color="primary"
+            entity={EntityType.WORKFLOW}
+          />
+        ) : (
+          <Chip label={t("label.none")} />
+        ),
     },
     {
       maxWidth: 140,
