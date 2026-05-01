@@ -43,6 +43,9 @@ const isProductionEnv = (forced?: boolean): boolean => {
 
   return config.env.toLowerCase().includes('prod');
 };
+const normalizeLocalhostUrl = (url: string): string => {
+  return url.replace('://127.0.0.1', '://localhost');
+};
 
 export interface HexabotBootstrapOptions {
   listen?: {
@@ -141,7 +144,7 @@ export async function bootstrapHexabotApp(
   const host = options.listen?.host ?? '0.0.0.0';
 
   await app.listen(port, host);
-  const appUrl = await app.getUrl();
+  const appUrl = normalizeLocalhostUrl(await app.getUrl());
   Logger.log(`Hexabot is running at ${appUrl}`, 'Hexabot');
 
   return app;
