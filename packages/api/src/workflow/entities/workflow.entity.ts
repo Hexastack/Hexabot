@@ -181,8 +181,8 @@ export class WorkflowOrmEntity extends BaseOrmEntity<WorkflowDto> {
       });
       await event.manager.save(WorkflowVersionOrmEntity, version);
     } catch (error: any) {
-      const code = error?.code ?? error?.driverError?.code;
-      if (typeof code !== 'string' || !code.startsWith('SQLITE_CONSTRAINT')) {
+      const codes = [error?.code, error?.driverError?.code];
+      if (!codes.includes('SQLITE_CONSTRAINT_UNIQUE')) {
         throw error;
       }
     }
