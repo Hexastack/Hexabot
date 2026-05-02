@@ -258,7 +258,7 @@ const promptSeedAdminCredentials = async (): Promise<AdminSeedCredentials> => {
     })
   ).trim();
   const adminPassword = await password({
-    message: 'Password (min 12 chars)',
+    message: 'Password (min 8 chars)',
     mask: '*',
     validate: validateAdminPassword,
   });
