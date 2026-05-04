@@ -11,7 +11,7 @@ import {
   MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
-import { FindManyOptions, FindOneOptions } from 'typeorm';
+import { FindManyOptions, FindOneOptions, In, Not } from 'typeorm';
 import { DeleteResult } from 'typeorm/driver/mongodb/typings';
 import z from 'zod';
 
@@ -107,6 +107,12 @@ export class SourceService extends BaseOrmService<SourceOrmEntity> {
     return defaultWorkflow;
   }
 
+  private isStateOnlyDisablePayload(payload: SourceUpdateDto): boolean {
+    const keys = Object.keys(payload);
+
+    return keys.length === 1 && keys[0] === 'state' && payload.state === false;
+  }
+
   private async buildCreatePayload(
     payload: SourceCreateDto,
   ): Promise<SourceCreateDto> {
@@ -141,6 +147,16 @@ export class SourceService extends BaseOrmService<SourceOrmEntity> {
       throw new NotFoundException('Source not found');
     }
 
+    if (!this.channelRegistry.findChannel(existing.channel)) {
+      if (this.isStateOnlyDisablePayload(payload)) {
+        return await super.updateOne(idOrOptions, { state: false }, options);
+      }
+
+      throw new BadRequestException(
+        `Channel "${existing.channel}" is not registered`,
+      );
+    }
+
     const channel = payload.channel ?? existing.channel;
     const shouldResetSettings =
       payload.channel !== undefined && payload.settings === undefined;
@@ -164,6 +180,27 @@ export class SourceService extends BaseOrmService<SourceOrmEntity> {
           : {}),
       },
       options,
+    );
+  }
+
+  async disableUnregisteredSources(
+    registeredChannelNames: string[],
+  ): Promise<Source[]> {
+    const uniqueRegisteredChannelNames = Array.from(
+      new Set(registeredChannelNames),
+    );
+
+    return await super.updateMany(
+      {
+        where:
+          uniqueRegisteredChannelNames.length > 0
+            ? {
+                state: true,
+                channel: Not(In(uniqueRegisteredChannelNames)),
+              }
+            : { state: true },
+      },
+      { state: false },
     );
   }
 

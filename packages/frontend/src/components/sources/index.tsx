@@ -36,6 +36,7 @@ import { EntityType, Format } from "@/services/types";
 import { IChannel } from "@/types/channel.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
+import { isSourceChannelRegistered } from "./source-form.utils";
 import { SourceFormDialog } from "./SourceFormDialog";
 
 const SOURCE_REF_ICON_SIZE = 18;
@@ -83,6 +84,7 @@ export const Sources = () => {
     null,
   );
   const hasPermission = useHasPermission();
+  const canUpdateSources = hasPermission(EntityType.SOURCE, Action.UPDATE);
   const { data: channels = [], isLoading: isLoadingChannels } = useFind(
     { entity: EntityType.CHANNEL },
     { hasCount: false },
@@ -145,6 +147,9 @@ export const Sources = () => {
             },
           });
         },
+        isDisabled: (row) =>
+          isLoadingChannels ||
+          !isSourceChannelRegistered(row.channel, channelMetadataByName),
         requires: [Action.UPDATE],
       },
     ],
@@ -200,6 +205,32 @@ export const Sources = () => {
       headerName: t("label.channel"),
       disableColumnMenu: true,
       headerAlign: "left",
+      renderCell: ({ row }) => {
+        const isRegisteredChannel = isSourceChannelRegistered(
+          row.channel,
+          channelMetadataByName,
+        );
+
+        return (
+          <Stack alignItems="center" direction="row" spacing={1} width="100%">
+            <Typography noWrap variant="body2" sx={{ minWidth: 0 }}>
+              {row.channel}
+            </Typography>
+            {!isLoadingChannels && !isRegisteredChannel ? (
+              <Tooltip
+                title={t("message.source_channel_handler_not_registered")}
+              >
+                <Chip
+                  color="error"
+                  label={t("label.unregistered")}
+                  size="small"
+                  variant="outlined"
+                />
+              </Tooltip>
+            ) : null}
+          </Stack>
+        );
+      },
     },
     {
       flex: 1,
@@ -229,7 +260,11 @@ export const Sources = () => {
       renderCell: ({ row }) => (
         <Switch
           checked={row.state}
-          disabled={!hasPermission(EntityType.SOURCE, Action.UPDATE)}
+          disabled={
+            !canUpdateSources ||
+            isLoadingChannels ||
+            !isSourceChannelRegistered(row.channel, channelMetadataByName)
+          }
           onChange={() =>
             updateSource({
               id: row.id,

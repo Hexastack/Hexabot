@@ -42,9 +42,12 @@ export class ChannelService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.sourceService.ensureDefaultSources(
-      this.getAll().map((handler) => handler.getName()),
+    const registeredChannelNames = this.getAll().map((handler) =>
+      handler.getName(),
     );
+
+    await this.sourceService.ensureDefaultSources(registeredChannelNames);
+    await this.sourceService.disableUnregisteredSources(registeredChannelNames);
   }
 
   public setChannel<T extends ChannelName, C extends ChannelHandler<T>>(
