@@ -5,6 +5,7 @@
  */
 
 import { BadRequestException } from '@nestjs/common';
+import { In, Not } from 'typeorm';
 import z from 'zod';
 
 import { WorkflowService } from '@/workflow/services/workflow.service';
@@ -16,7 +17,9 @@ import { SourceService } from './source.service';
 
 describe('SourceService', () => {
   let service: SourceService;
-  let repository: jest.Mocked<Pick<SourceRepository, 'create' | 'updateOne'>>;
+  let repository: jest.Mocked<
+    Pick<SourceRepository, 'create' | 'updateOne' | 'updateMany'>
+  >;
   let channelRegistry: jest.Mocked<Pick<ChannelRegistry, 'findChannel'>>;
   let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
 
@@ -30,6 +33,7 @@ describe('SourceService', () => {
     repository = {
       create: jest.fn(),
       updateOne: jest.fn(),
+      updateMany: jest.fn(),
     };
     channelRegistry = {
       findChannel: jest.fn(),
@@ -156,6 +160,104 @@ describe('SourceService', () => {
         defaultWorkflow: workflowId,
       }),
       undefined,
+    );
+  });
+
+  it('rejects enabling an existing source when its channel handler is not registered', async () => {
+    const sourceId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
+    jest.spyOn(service, 'findOne').mockResolvedValue({
+      id: sourceId,
+      channel: 'custom-channel',
+      settings: {},
+      defaultWorkflow: null,
+      state: false,
+    } as any);
+    channelRegistry.findChannel.mockReturnValue(undefined);
+
+    await expect(service.updateOne(sourceId, { state: true })).rejects.toThrow(
+      new BadRequestException('Channel "custom-channel" is not registered'),
+    );
+
+    expect(repository.updateOne).not.toHaveBeenCalled();
+  });
+
+  it('rejects editing an existing source when its channel handler is not registered', async () => {
+    const sourceId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
+    jest.spyOn(service, 'findOne').mockResolvedValue({
+      id: sourceId,
+      channel: 'custom-channel',
+      settings: {},
+      defaultWorkflow: null,
+      state: false,
+    } as any);
+    channelRegistry.findChannel.mockReturnValue(undefined);
+
+    await expect(
+      service.updateOne(sourceId, { name: 'Edited Source' }),
+    ).rejects.toThrow(
+      new BadRequestException('Channel "custom-channel" is not registered'),
+    );
+
+    expect(repository.updateOne).not.toHaveBeenCalled();
+  });
+
+  it('allows disabling an existing source when its channel handler is not registered', async () => {
+    const sourceId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
+    jest.spyOn(service, 'findOne').mockResolvedValue({
+      id: sourceId,
+      channel: 'custom-channel',
+      settings: {},
+      defaultWorkflow: null,
+      state: true,
+    } as any);
+    channelRegistry.findChannel.mockReturnValue(undefined);
+    repository.updateOne.mockResolvedValue({
+      id: sourceId,
+      state: false,
+    } as any);
+
+    await service.updateOne(sourceId, { state: false });
+
+    expect(repository.updateOne).toHaveBeenCalledWith(
+      sourceId,
+      { state: false },
+      undefined,
+    );
+  });
+
+  it('disables active sources whose channel handler is not registered', async () => {
+    repository.updateMany.mockResolvedValue([
+      {
+        id: 'source-1',
+        channel: 'custom-channel',
+        state: false,
+      },
+    ] as any);
+
+    await service.disableUnregisteredSources(['web', 'console']);
+
+    expect(repository.updateMany).toHaveBeenCalledWith(
+      {
+        where: {
+          state: true,
+          channel: Not(In(['web', 'console'])),
+        },
+      },
+      { state: false },
+    );
+  });
+
+  it('disables all active sources when no channel handler is registered', async () => {
+    repository.updateMany.mockResolvedValue([] as any);
+
+    await service.disableUnregisteredSources([]);
+
+    expect(repository.updateMany).toHaveBeenCalledWith(
+      { where: { state: true } },
+      { state: false },
     );
   });
 

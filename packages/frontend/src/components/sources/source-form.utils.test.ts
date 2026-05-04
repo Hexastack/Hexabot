@@ -11,9 +11,11 @@ import {
   buildSourcePayload,
   buildSourceSettingsUiSchema,
   getSourceFormDefaults,
+  isSourceChannelRegistered,
   resolveDefaultWorkflowId,
   resolveSourceChannel,
   resolveSourceSettingsSchema,
+  shouldDisableSourceFormSubmit,
 } from "./source-form.utils";
 
 describe("source form utils", () => {
@@ -27,6 +29,76 @@ describe("source form utils", () => {
     it("falls back to preset channel and then empty string", () => {
       expect(resolveSourceChannel(null, "console")).toBe("console");
       expect(resolveSourceChannel(null, undefined)).toBe("");
+    });
+  });
+
+  describe("isSourceChannelRegistered", () => {
+    it("detects registered source channels from channel metadata", () => {
+      expect(
+        isSourceChannelRegistered("web", {
+          web: {
+            id: "web",
+            name: "web",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            settingsSchema: {},
+          },
+        }),
+      ).toBe(true);
+    });
+
+    it("returns false when source channel metadata is missing", () => {
+      expect(isSourceChannelRegistered("custom-channel", {})).toBe(false);
+      expect(isSourceChannelRegistered("", {})).toBe(false);
+      expect(isSourceChannelRegistered("web", undefined)).toBe(false);
+    });
+  });
+
+  describe("shouldDisableSourceFormSubmit", () => {
+    it("keeps submit enabled for a valid registered channel form", () => {
+      expect(
+        shouldDisableSourceFormSubmit({
+          channelName: "web",
+          isUnregisteredChannel: false,
+          hasSettingsErrors: false,
+          hasNameError: false,
+        }),
+      ).toBe(false);
+    });
+
+    it("disables submit for missing, invalid, or unregistered channel forms", () => {
+      expect(
+        shouldDisableSourceFormSubmit({
+          channelName: "",
+          isUnregisteredChannel: false,
+          hasSettingsErrors: false,
+          hasNameError: false,
+        }),
+      ).toBe(true);
+      expect(
+        shouldDisableSourceFormSubmit({
+          channelName: "web",
+          isUnregisteredChannel: true,
+          hasSettingsErrors: false,
+          hasNameError: false,
+        }),
+      ).toBe(true);
+      expect(
+        shouldDisableSourceFormSubmit({
+          channelName: "web",
+          isUnregisteredChannel: false,
+          hasSettingsErrors: true,
+          hasNameError: false,
+        }),
+      ).toBe(true);
+      expect(
+        shouldDisableSourceFormSubmit({
+          channelName: "web",
+          isUnregisteredChannel: false,
+          hasSettingsErrors: false,
+          hasNameError: true,
+        }),
+      ).toBe(true);
     });
   });
 

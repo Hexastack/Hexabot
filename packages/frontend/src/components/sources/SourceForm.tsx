@@ -5,7 +5,13 @@
  */
 
 import { type Source, type SourceFull, type Workflow } from "@hexabot-ai/types";
-import { FormControlLabel, Switch, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  FormControlLabel,
+  Switch,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { type FC, Fragment, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -25,8 +31,10 @@ import {
   buildSourcePayload,
   buildSourceSettingsUiSchema,
   getSourceFormDefaults,
+  isSourceChannelRegistered,
   resolveSourceChannel,
   resolveSourceSettingsSchema,
+  shouldDisableSourceFormSubmit,
 } from "./source-form.utils";
 
 type SourceLike = Source | SourceFull;
@@ -54,6 +62,11 @@ export const SourceForm: FC<
   const { t } = useTranslate();
   const { toast } = useToast();
   const channelName = resolveSourceChannel(source, presetValues?.channel);
+  const isRegisteredChannel = isSourceChannelRegistered(
+    channelName,
+    presetValues?.channelsByName,
+  );
+  const isUnregisteredChannel = Boolean(channelName) && !isRegisteredChannel;
   const sourceDefaults = useMemo(() => getSourceFormDefaults(source), [source]);
   const [settingsData, setSettingsData] = useState(sourceDefaults.settings);
   const [hasSettingsErrors, setHasSettingsErrors] = useState(false);
@@ -99,7 +112,13 @@ export const SourceForm: FC<
   };
   const { mutate: createSource } = useCreate(EntityType.SOURCE, options);
   const { mutate: updateSource } = useUpdate(EntityType.SOURCE, options);
-  const isSubmitDisabled = !channelName || hasSettingsErrors || !!errors.name;
+  const isFormDisabled = isUnregisteredChannel;
+  const isSubmitDisabled = shouldDisableSourceFormSubmit({
+    channelName,
+    isUnregisteredChannel,
+    hasSettingsErrors,
+    hasNameError: !!errors.name,
+  });
 
   useEffect(() => {
     const nextDefaults = getSourceFormDefaults(source);
@@ -114,7 +133,7 @@ export const SourceForm: FC<
   }, [channelName, reset, source]);
 
   const onSubmitForm = (params: SourceFormData) => {
-    if (!channelName || hasSettingsErrors) {
+    if (!channelName || isUnregisteredChannel || hasSettingsErrors) {
       return;
     }
 
@@ -149,12 +168,20 @@ export const SourceForm: FC<
     >
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
+          {isUnregisteredChannel ? (
+            <ContentItem>
+              <Alert severity="warning">
+                {t("message.source_channel_handler_not_registered")}
+              </Alert>
+            </ContentItem>
+          ) : null}
           <ContentItem>
             <TextField
               label={t("label.name")}
               error={!!errors.name}
               required
               autoFocus
+              disabled={isFormDisabled}
               helperText={errors.name ? errors.name.message : null}
               {...register("name", {
                 required: t("message.name_is_required"),
@@ -183,6 +210,7 @@ export const SourceForm: FC<
                   label={t("label.workflow")}
                   labelKey="name"
                   multiple={false}
+                  disabled={isFormDisabled}
                   value={field.value}
                   onChange={(_event, selected) =>
                     field.onChange(selected?.id || null)
@@ -200,6 +228,7 @@ export const SourceForm: FC<
                   control={
                     <Switch
                       checked={field.value}
+                      disabled={isFormDisabled}
                       onChange={(_event, checked) => field.onChange(checked)}
                     />
                   }
@@ -208,28 +237,30 @@ export const SourceForm: FC<
               )}
             />
           </ContentItem>
-          <ContentItem>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              {t("label.settings")}
-            </Typography>
-            {hasSettingsSchema ? (
-              <JsonSchemaForm
-                schema={settingsSchema}
-                formData={settingsData}
-                onFormDataChange={setSettingsData}
-                onVisibleErrorsChange={setHasSettingsErrors}
-                uiSchema={settingsUiSchema}
-                enableJsonataTextWidget={false}
-                idPrefix={`source-settings-${source?.id ?? "new"}-${
-                  channelName || "unknown"
-                }`}
-              />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                {t("message.no_settings_schema_for_source_channel")}
+          {!isUnregisteredChannel ? (
+            <ContentItem>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                {t("label.settings")}
               </Typography>
-            )}
-          </ContentItem>
+              {hasSettingsSchema ? (
+                <JsonSchemaForm
+                  schema={settingsSchema}
+                  formData={settingsData}
+                  onFormDataChange={setSettingsData}
+                  onVisibleErrorsChange={setHasSettingsErrors}
+                  uiSchema={settingsUiSchema}
+                  enableJsonataTextWidget={false}
+                  idPrefix={`source-settings-${source?.id ?? "new"}-${
+                    channelName || "unknown"
+                  }`}
+                />
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  {t("message.no_settings_schema_for_source_channel")}
+                </Typography>
+              )}
+            </ContentItem>
+          ) : null}
         </ContentContainer>
       </form>
     </Wrapper>

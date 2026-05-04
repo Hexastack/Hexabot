@@ -36,15 +36,20 @@ const makeSource = (overrides: Partial<Source> = {}): Source => {
 describe('ChannelService', () => {
   let service: ChannelService;
   let webChannelHandler: {
+    getName: jest.Mock;
     handle: jest.Mock;
   };
   let consoleChannelHandler: {
+    getName: jest.Mock;
     handle: jest.Mock;
   };
   let workflowService: jest.Mocked<Pick<WorkflowService, 'findOne'>>;
   let channelRegistry: ChannelRegistry;
   let sourceService: jest.Mocked<
-    Pick<SourceService, 'findActiveByRef' | 'ensureDefaultSources'>
+    Pick<
+      SourceService,
+      'findActiveByRef' | 'ensureDefaultSources' | 'disableUnregisteredSources'
+    >
   >;
   let subscriberService: jest.Mocked<Pick<SubscriberService, 'updateOne'>>;
 
@@ -58,6 +63,7 @@ describe('ChannelService', () => {
     sourceService = {
       findActiveByRef: jest.fn(),
       ensureDefaultSources: jest.fn(),
+      disableUnregisteredSources: jest.fn(),
     };
     workflowService = {
       findOne: jest.fn(),
@@ -73,9 +79,11 @@ describe('ChannelService', () => {
     );
 
     webChannelHandler = {
+      getName: jest.fn().mockReturnValue(WEB_CHANNEL_NAME),
       handle: jest.fn().mockResolvedValue(undefined),
     };
     consoleChannelHandler = {
+      getName: jest.fn().mockReturnValue(CONSOLE_CHANNEL_NAME),
       handle: jest.fn().mockResolvedValue(undefined),
     };
 
@@ -85,6 +93,19 @@ describe('ChannelService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('creates default sources and disables sources for unregistered channels on bootstrap', async () => {
+    await service.onApplicationBootstrap();
+
+    const expectedChannelNames = [WEB_CHANNEL_NAME, CONSOLE_CHANNEL_NAME];
+
+    expect(sourceService.ensureDefaultSources).toHaveBeenCalledWith(
+      expectedChannelNames,
+    );
+    expect(sourceService.disableUnregisteredSources).toHaveBeenCalledWith(
+      expectedChannelNames,
+    );
   });
 
   it('forwards websocket web requests without workflow id', async () => {

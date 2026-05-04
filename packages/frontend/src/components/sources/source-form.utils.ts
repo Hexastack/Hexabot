@@ -8,6 +8,7 @@ import { type Source, type SourceFull } from "@hexabot-ai/types";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
 
 import { extractUiSchema } from "@/components/visual-editor/v4/utils/schema-defaults.utils";
+import type { IChannel } from "@/types/channel.types";
 import { isRecord } from "@/utils/object";
 
 type SourceLike = Source | SourceFull;
@@ -27,6 +28,24 @@ export const resolveSourceChannel = (
   source: Pick<SourceLike, "channel"> | null | undefined,
   presetChannel?: string,
 ) => source?.channel ?? presetChannel ?? "";
+
+export const isSourceChannelRegistered = (
+  channelName: string | null | undefined,
+  channelsByName: Record<string, IChannel> | null | undefined,
+): boolean => Boolean(channelName && channelsByName?.[channelName]);
+
+export const shouldDisableSourceFormSubmit = ({
+  channelName,
+  isUnregisteredChannel,
+  hasSettingsErrors,
+  hasNameError,
+}: {
+  channelName: string;
+  isUnregisteredChannel: boolean;
+  hasSettingsErrors: boolean;
+  hasNameError: boolean;
+}): boolean =>
+  !channelName || isUnregisteredChannel || hasSettingsErrors || hasNameError;
 
 export const resolveSourceSettingsSchema = (schema: unknown): RJSFSchema => {
   if (!isRecord(schema)) {
