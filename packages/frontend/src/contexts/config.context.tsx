@@ -16,6 +16,7 @@ const MB = 1024 * 1024;
 const defaultConfig: IConfig = {
   apiUrl: import.meta.env.VITE_API_ORIGIN ?? "/api",
   ssoEnabled: parseEnvBoolean(import.meta.env.VITE_SSO_ENABLED, false),
+  mcpEnabled: parseEnvBoolean(import.meta.env.VITE_MCP_ENABLED, false),
   maxUploadSize: parseEnvNumber(
     import.meta.env.VITE_UPLOAD_MAX_SIZE_IN_BYTES,
     20 * MB,
@@ -28,6 +29,7 @@ export const ConfigContext = createContext<IConfig | null>(defaultConfig);
 export interface IConfig {
   apiUrl: string;
   ssoEnabled: boolean;
+  mcpEnabled: boolean;
   maxUploadSize: number;
   hasUserSession: boolean;
 }

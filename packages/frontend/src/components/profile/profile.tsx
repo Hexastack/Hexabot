@@ -22,11 +22,15 @@ import { useValidationRules } from "@/hooks/useValidationRules";
 import { User, IProfileAttributes } from "@/types/user.types";
 import { MIME_TYPES } from "@/utils/attachment";
 
-type ProfileFormProps = { user: User };
+type ProfileFormProps = { compact?: boolean; user: User };
 
-export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
+export const ProfileForm: FC<ProfileFormProps> = ({
+  compact = false,
+  user,
+}) => {
   const { t } = useTranslate();
   const { toast } = useToast();
+  const avatarSize = compact ? 160 : 256;
   const { mutate: updateProfile, isPending } = useApiClientMutation(
     "updateProfile",
     {
@@ -99,8 +103,22 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
-      <Grid container gap={8} alignContent="center" justifyContent="center">
-        <Grid width={256} size={4}>
+      <Grid
+        container
+        gap={compact ? 3 : 8}
+        alignContent="center"
+        justifyContent="center"
+      >
+        <Grid
+          size={compact ? 12 : 4}
+          sx={{
+            alignItems: compact ? "center" : "stretch",
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "100%",
+            width: compact ? "100%" : avatarSize,
+          }}
+        >
           <Controller
             name="avatar"
             control={control}
@@ -109,14 +127,20 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 <AvatarInput
                   label={t("label.avatar")}
                   accept={MIME_TYPES["images"].join(",")}
-                  size={256}
+                  size={avatarSize}
                   {...field}
                   onChange={(file) => setValue("avatar", file)}
                 />
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ fontSize: "0.8rem", fontStyle: "italic", mt: 2 }}
+                  sx={{
+                    fontSize: "0.8rem",
+                    fontStyle: "italic",
+                    maxWidth: avatarSize,
+                    mt: 2,
+                    textAlign: compact ? "center" : "left",
+                  }}
                 >
                   {t("message.avatar_update")}
                 </Typography>
@@ -124,7 +148,13 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             )}
           />
         </Grid>
-        <Grid container flexDirection="column" size={6} gap={2}>
+        <Grid
+          container
+          flexDirection="column"
+          size={compact ? 12 : 6}
+          gap={2}
+          sx={{ minWidth: 0 }}
+        >
           <ContentContainer>
             <ContentItem>
               <TextField

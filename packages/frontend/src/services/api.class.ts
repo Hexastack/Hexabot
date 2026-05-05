@@ -7,6 +7,7 @@
 import {
   AttachmentResourceRef,
   type IntegrationHealthResponse,
+  type McpToken,
   type Workflow,
 } from "@hexabot-ai/types";
 import { AxiosInstance, AxiosResponse } from "axios";
@@ -38,6 +39,16 @@ export type RouteParams = Record<
   string,
   string | number | boolean | null | undefined
 >;
+
+export type McpTokenCreatePayload = {
+  name: string;
+  expiresAt?: string | null;
+};
+
+export type McpTokenCreateResponse = {
+  token: string;
+  record: McpToken;
+};
 
 export const resolveRoute = (route: string, params?: RouteParams) => {
   if (!params) {
@@ -76,6 +87,7 @@ export const ROUTES = {
   WORKFLOW_ACTIONS: "/workflow/actions/:type",
   MCP_SERVER_TEST: "/mcpserver/:id/test",
   MCP_TOOLS: "/mcpserver/:id/tools",
+  MCP_TOKEN: "/mcp-token",
   INTEGRATION_HEALTH: "/stats/integration-health",
   SETTING_SCHEMAS: "setting/schemas",
 
@@ -307,6 +319,36 @@ export class ApiClient extends TranslatableMethods {
   async getMcpTools(id: string) {
     const route = resolveRoute(ROUTES.MCP_TOOLS, { id });
     const { data } = await this.request.get<IMcpToolSummary[]>(route);
+
+    return data;
+  }
+
+  async listMcpTokens() {
+    const { data } = await this.request.get<McpToken[]>(ROUTES.MCP_TOKEN);
+
+    return data;
+  }
+
+  async createMcpToken(payload: McpTokenCreatePayload) {
+    const { _csrf } = await this.getCsrf();
+    const { data } = await this.request.post<
+      McpTokenCreateResponse,
+      AxiosResponse<McpTokenCreateResponse>,
+      McpTokenCreatePayload & ICsrf
+    >(ROUTES.MCP_TOKEN, {
+      ...payload,
+      _csrf,
+    });
+
+    return data;
+  }
+
+  async revokeMcpToken(id: string) {
+    const { _csrf } = await this.getCsrf();
+    const { data } = await this.request.post<McpToken>(
+      `${ROUTES.MCP_TOKEN}/${encodeURIComponent(id)}/revoke`,
+      { _csrf },
+    );
 
     return data;
   }
