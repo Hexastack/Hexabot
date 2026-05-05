@@ -82,23 +82,37 @@ const sessionLimitSubquery =
     ? true
     : process.env.SESSION_LIMIT_SUBQUERY === 'true';
 const sessionTtlSeconds = parseOptionalInt(process.env.SESSION_TTL_SECONDS);
+const apiBaseUrl = process.env.API_ORIGIN || 'http://localhost:3000/api';
 
 export const config: Config = {
   i18n: {
     translationFilename: process.env.I18N_TRANSLATION_FILENAME || 'messages',
   },
   appPath: process.cwd(),
-  apiBaseUrl: process.env.API_ORIGIN || 'http://localhost:3000/api',
+  apiBaseUrl,
   uiBaseUrl: process.env.FRONTEND_BASE_URL
     ? process.env.FRONTEND_BASE_URL
     : 'http://localhost:3000', // default to local dev
   ssoEnabled: process.env.SSO_ENABLED === 'true',
+  mcp: {
+    enabled: process.env.MCP_ENABLED === 'true',
+    serverName: process.env.MCP_SERVER_NAME || 'hexabot-api',
+    serverTitle: process.env.MCP_SERVER_TITLE || 'Hexabot API MCP Server',
+    serverVersion: process.env.MCP_SERVER_VERSION || '1.0.0',
+    serverDescription:
+      process.env.MCP_SERVER_DESCRIPTION ||
+      'Manage Hexabot workflows, runs, memory, credentials, actions, and CMS content.',
+    serverInstructions:
+      process.env.MCP_SERVER_INSTRUCTIONS ||
+      'Use these tools to inspect and manage Hexabot API resources. Credential values are never exposed.',
+  },
   security: {
     httpsEnabled: process.env.HTTPS_ENABLED === 'true',
     trustProxy: process.env.HTTPS_ENABLED === 'true', // Nginx in use ?
     cors: {
       allRoutes: true,
-      headers: 'content-type,x-xsrf-token,x-csrf-token',
+      headers:
+        'content-type,x-xsrf-token,x-csrf-token,authorization,mcp-session-id,last-event-id',
       methods: ['GET', 'PATCH', 'POST', 'DELETE', 'OPTIONS', 'HEAD'],
       allowOrigins: process.env.FRONTEND_ORIGIN
         ? process.env.FRONTEND_ORIGIN.split(',').map((origin) => origin.trim())
@@ -109,6 +123,7 @@ export const config: Config = {
     csrfExclude: [
       /^\/auth\/local$/, // login
       /^\/auth\/logout$/, // logout
+      /^\/mcp$/, // MCP Streamable HTTP endpoint
       /^\/webhook\//, // Any webhook channel
       /^\/reset(\/[^\/]+)?$/, // Reset request / Change password
     ],

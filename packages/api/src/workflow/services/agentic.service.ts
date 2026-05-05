@@ -44,7 +44,9 @@ export class AgenticService {
    * Process an event by resuming a suspended workflow run if it exists,
    * otherwise start a new run using the latest configured workflow (or the default fallback).
    */
-  async handleEvent(event: TriggerEventWrapper): Promise<void> {
+  async handleEvent(
+    event: TriggerEventWrapper,
+  ): Promise<WorkflowRunFull | null> {
     const initiator = event.getInitiator();
     const requestedWorkflowId = event.getWorkflowId();
     const threadId = event.getThreadId();
@@ -54,7 +56,7 @@ export class AgenticService {
         'Skipping workflow execution due to missing event initiator',
       );
 
-      return;
+      return null;
     }
 
     try {
@@ -72,9 +74,12 @@ export class AgenticService {
           suspendedStep: suspendedRun.suspendedStep,
           suspensionReason: suspendedRun.suspensionReason,
         });
-        await this.runWorkflow({ mode: 'resume', run: suspendedRun, event });
 
-        return;
+        return await this.runWorkflow({
+          mode: 'resume',
+          run: suspendedRun,
+          event,
+        });
       }
 
       const workflowToRun = requestedWorkflowId
@@ -85,21 +90,21 @@ export class AgenticService {
           requestedWorkflowId: requestedWorkflowId ?? null,
         });
 
-        return;
+        return null;
       }
       if (!workflowToRun.definition) {
         this.logger.warn('Workflow definition is missing', {
           workflowId: workflowToRun.id,
         });
 
-        return;
+        return null;
       }
 
       this.logger.log('Starting workflow run', {
         workflowId: workflowToRun.id,
       });
 
-      await this.runWorkflow({
+      return await this.runWorkflow({
         mode: 'start',
         workflow: workflowToRun,
         event,
@@ -109,13 +114,17 @@ export class AgenticService {
         'Unable to process incoming event through agentic workflow',
         err,
       );
+
+      return null;
     }
   }
 
   /**
    * Shared runner lifecycle for starting or resuming a workflow.
    */
-  private async runWorkflow(options: RunWorkflowOptions): Promise<void> {
+  private async runWorkflow(
+    options: RunWorkflowOptions,
+  ): Promise<WorkflowRunFull> {
     const { event, mode } = options;
     const run =
       mode === 'start'
@@ -198,6 +207,8 @@ export class AgenticService {
       strategy.resumeData,
       context,
     );
+
+    return (await this.workflowRunService.findOneAndPopulate(run.id)) ?? run;
   }
 
   /**

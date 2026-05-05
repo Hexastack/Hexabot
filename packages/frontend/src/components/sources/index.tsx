@@ -34,47 +34,13 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IChannel } from "@/types/channel.types";
+import { writeToClipboard } from "@/utils/clipboard";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { isSourceChannelRegistered } from "./source-form.utils";
 import { SourceFormDialog } from "./SourceFormDialog";
 
 const SOURCE_REF_ICON_SIZE = 18;
-const copyWithTextArea = (text: string) => {
-  const textArea = document.createElement("textarea");
-
-  textArea.value = text;
-  textArea.setAttribute("readonly", "");
-  textArea.style.left = "-9999px";
-  textArea.style.position = "fixed";
-  document.body.appendChild(textArea);
-  textArea.select();
-
-  try {
-    const wasCopied = document.execCommand("copy");
-
-    if (!wasCopied) {
-      throw new Error("Unable to copy text");
-    }
-  } finally {
-    document.body.removeChild(textArea);
-  }
-};
-const writeToClipboard = async (text: string) => {
-  if (!navigator.clipboard?.writeText) {
-    copyWithTextArea(text);
-
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(text);
-
-    return;
-  } catch {
-    copyWithTextArea(text);
-  }
-};
 
 export const Sources = () => {
   const { t } = useTranslate();

@@ -76,3 +76,12 @@ export {
   type CredentialFull,
   type CredentialStub,
 } from "./credential";
+
+export {
+  mcpTokenFullSchema,
+  mcpTokenSchema,
+  mcpTokenStubSchema,
+  type McpToken,
+  type McpTokenFull,
+  type McpTokenStub,
+} from "./mcp-token";
