@@ -12,12 +12,6 @@ const baseLabel: Label = {
   ...modelInstance,
   title: '',
   name: '',
-  label_id: {
-    messenger: '',
-    web: '',
-    dimelo: '',
-    twitter: '',
-  },
   description: '',
   builtin: false,
   group: null,
@@ -27,12 +21,6 @@ export const labelMock: Label = {
   ...baseLabel,
   title: 'Label',
   name: 'label',
-  label_id: {
-    messenger: 'none',
-    web: 'none',
-    dimelo: 'none',
-    twitter: 'none',
-  },
 };
 
 export const customerLabelsMock: Label[] = [
@@ -40,22 +28,10 @@ export const customerLabelsMock: Label[] = [
     ...baseLabel,
     title: 'Client',
     name: 'client',
-    label_id: {
-      messenger: 'none',
-      web: 'none',
-      dimelo: 'none',
-      twitter: 'none',
-    },
   },
   {
     ...baseLabel,
     title: 'Professional',
     name: 'profressional',
-    label_id: {
-      messenger: 'none',
-      web: 'none',
-      dimelo: 'none',
-      twitter: 'none',
-    },
   },
 ];

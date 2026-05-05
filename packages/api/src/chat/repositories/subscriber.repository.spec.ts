@@ -134,12 +134,6 @@ describe('SubscriberRepository (TypeORM)', () => {
       title: `Generated Label ${unique}`,
       name: `generated_label_${unique}`,
       builtin: false,
-      label_id: {
-        messenger: `messenger_${unique}`,
-        web: `web_${unique}`,
-        twitter: `twitter_${unique}`,
-        dimelo: `dimelo_${unique}`,
-      },
       description: null,
     });
     const saved = await labelRepository.save(label);
