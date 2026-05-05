@@ -64,6 +64,7 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
     workflow: workflowRunWorkflowFixtureId,
     workflowVersion: workflowRunWorkflowVersionFixtureId,
     triggeredBy: userFixtureIds.admin,
+    parentRun: null,
     status: 'running',
     input: { source: 'fixture' },
     output: null,
@@ -92,6 +93,7 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
     workflow: workflowRunWorkflowFixtureId,
     workflowVersion: workflowRunWorkflowVersionFixtureId,
     triggeredBy: null,
+    parentRun: null,
     status: 'finished',
     input: null,
     output: { result: 'ok' },
@@ -117,7 +119,7 @@ export const workflowRunOrmFixtures: WorkflowRunOrmFixture[] = [
 
 const findRunsWithRelations = async (dataSource: DataSource) =>
   await dataSource.getRepository(WorkflowRunOrmEntity).find({
-    relations: ['workflow', 'workflowVersion', 'triggeredBy'],
+    relations: ['workflow', 'workflowVersion', 'triggeredBy', 'parentRun'],
   });
 const ensureWorkflowFixture = async (dataSource: DataSource) => {
   const workflowRepository = dataSource.getRepository(WorkflowOrmEntity);
@@ -212,6 +214,7 @@ export const installWorkflowRunFixturesTypeOrm = async (
         ? { id: fixture.workflowVersion }
         : null,
       triggeredBy: fixture.triggeredBy ? { id: fixture.triggeredBy } : null,
+      parentRun: fixture.parentRun ? { id: fixture.parentRun } : null,
       status: fixture.status ?? 'idle',
       input: fixture.input ?? null,
       output: fixture.output ?? null,

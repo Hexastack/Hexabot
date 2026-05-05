@@ -1,0 +1,9 @@
+{
+  "call_workflow": {
+    "Calls another workflow and waits for its output.": "Calls another workflow and waits for its output.",
+    "Workflow": "Workflow",
+    "Workflow to call and wait for before continuing.": "Workflow to call and wait for before continuing.",
+    "Input": "Input",
+    "Optional input payload for the called workflow. When omitted, the current trigger input is reused.": "Optional input payload for the called workflow. When omitted, the current trigger input is reused."
+  }
+}

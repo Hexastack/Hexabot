@@ -23,6 +23,12 @@ export class WorkflowRunRepository extends BaseOrmRepository<WorkflowRunOrmEntit
     @InjectRepository(WorkflowRunOrmEntity)
     repository: Repository<WorkflowRunOrmEntity>,
   ) {
-    super(repository, ['workflow', 'workflowVersion', 'triggeredBy', 'thread']);
+    super(repository, [
+      'workflow',
+      'workflowVersion',
+      'triggeredBy',
+      'thread',
+      'parentRun',
+    ]);
   }
 }

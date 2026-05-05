@@ -66,6 +66,12 @@ export class ActionService {
       const name = action.getName();
       const localizationOptions =
         this.i18nService.getJsonSchemaLocalizationOptions(name, lang);
+      const inputSchema = toDraft07JsonSchema(
+        action.inputSchema,
+        localizationOptions,
+      );
+
+      this.applyActionSchemaContext(inputSchema, name, workflowType);
 
       return {
         name,
@@ -75,10 +81,7 @@ export class ActionService {
         group: action.group,
         workflowTypes: action.workflowTypes,
         supportedBindings: action.supportedBindings ?? [],
-        inputSchema: toDraft07JsonSchema(
-          action.inputSchema,
-          localizationOptions,
-        ),
+        inputSchema,
         outputSchema: toDraft07JsonSchema(
           action.outputSchema,
           localizationOptions,
@@ -89,6 +92,33 @@ export class ActionService {
         ),
       };
     });
+  }
+
+  private applyActionSchemaContext(
+    inputSchema: Record<string, any>,
+    actionName: string,
+    workflowType?: WorkflowType,
+  ): void {
+    if (actionName !== 'call_workflow' || !workflowType) {
+      return;
+    }
+
+    const workflowIdSchema = inputSchema.properties?.workflow_id;
+    if (!workflowIdSchema || typeof workflowIdSchema !== 'object') {
+      return;
+    }
+
+    // The same call_workflow action is available to every workflow type, but a
+    // specific workflow can only call another workflow with the same trigger
+    // type. The catalog endpoint has the active type, so it can scope the UI
+    // picker before the action is saved.
+    workflowIdSchema['ui:options'] = {
+      ...(workflowIdSchema['ui:options'] ?? {}),
+      where: {
+        ...(workflowIdSchema['ui:options']?.where ?? {}),
+        type: workflowType,
+      },
+    };
   }
 
   getRegistry(): Record<

@@ -9,7 +9,7 @@ import {
   Workflow as WorkflowHelper,
   WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
-import { Workflow, WorkflowRun } from '@hexabot-ai/types';
+import { Workflow, WorkflowRun, WorkflowRunFull } from '@hexabot-ai/types';
 import { TestingModule } from '@nestjs/testing';
 
 import {
@@ -305,82 +305,131 @@ describe('WorkflowRunService (TypeORM)', () => {
     });
   });
 
-  describe('findSuspendedRunByTriggeringSubscriber', () => {
-    it('delegates to repository with trigger filter and ordering', async () => {
+  describe('findSuspendedRunByInitiator', () => {
+    const buildSuspendedRun = (
+      id: string,
+      workflowId: string,
+      options: {
+        parentRun?: { id: string } | string | null;
+        suspendedAt?: string;
+        createdAt?: string;
+      } = {},
+    ): WorkflowRunFull =>
+      ({
+        id,
+        workflow: { id: workflowId },
+        parentRun: options.parentRun ?? null,
+        status: 'suspended',
+        suspendedAt: new Date(
+          options.suspendedAt ?? '2026-01-01T00:00:00.000Z',
+        ),
+        createdAt: new Date(options.createdAt ?? '2026-01-01T00:00:00.000Z'),
+      }) as unknown as WorkflowRunFull;
+
+    it('loads suspended runs for the initiator and picks the deepest leaf', async () => {
       const mockedRepo = {
-        findOneAndPopulate: jest.fn(),
+        findAndPopulate: jest.fn(),
       } as unknown as WorkflowRunRepository;
       const service = new WorkflowRunService(mockedRepo);
-      const expectedRun = { id: 'run-123' } as WorkflowRun;
+      const parentRun = buildSuspendedRun('parent-run', 'parent-workflow', {
+        suspendedAt: '2026-01-01T00:00:00.000Z',
+      });
+      const childRun = buildSuspendedRun('child-run', 'child-workflow', {
+        parentRun: { id: parentRun.id },
+        suspendedAt: '2026-01-01T00:01:00.000Z',
+      });
 
-      (mockedRepo.findOneAndPopulate as jest.Mock).mockResolvedValue(
-        expectedRun,
-      );
+      (mockedRepo.findAndPopulate as jest.Mock).mockResolvedValue([
+        parentRun,
+        childRun,
+      ]);
 
       const result = await service.findSuspendedRunByInitiator('sub-1');
 
-      expect(mockedRepo.findOneAndPopulate).toHaveBeenCalledWith({
+      expect(mockedRepo.findAndPopulate).toHaveBeenCalledWith({
         where: { triggeredBy: { id: 'sub-1' }, status: 'suspended' },
         order: { suspendedAt: 'DESC', createdAt: 'DESC' },
       });
-      expect(result).toBe(expectedRun);
+      expect(result).toBe(childRun);
     });
 
-    it('adds workflow filter when a workflow id is provided', async () => {
+    it('resolves a requested parent workflow to its suspended child leaf', async () => {
       const mockedRepo = {
-        findOneAndPopulate: jest.fn(),
+        findAndPopulate: jest.fn(),
       } as unknown as WorkflowRunRepository;
       const service = new WorkflowRunService(mockedRepo);
-      const expectedRun = { id: 'run-456' } as WorkflowRun;
+      const parentRun = buildSuspendedRun('parent-run', 'parent-workflow');
+      const childRun = buildSuspendedRun('child-run', 'child-workflow', {
+        parentRun: parentRun.id,
+      });
 
-      (mockedRepo.findOneAndPopulate as jest.Mock).mockResolvedValue(
-        expectedRun,
-      );
+      (mockedRepo.findAndPopulate as jest.Mock).mockResolvedValue([
+        parentRun,
+        childRun,
+      ]);
 
       const result = await service.findSuspendedRunByInitiator(
         'sub-1',
         undefined,
-        'workflow-1',
+        'parent-workflow',
       );
 
-      expect(mockedRepo.findOneAndPopulate).toHaveBeenCalledWith({
-        where: {
-          triggeredBy: { id: 'sub-1' },
-          status: 'suspended',
-          workflow: { id: 'workflow-1' },
-        },
+      expect(mockedRepo.findAndPopulate).toHaveBeenCalledWith({
+        where: { triggeredBy: { id: 'sub-1' }, status: 'suspended' },
         order: { suspendedAt: 'DESC', createdAt: 'DESC' },
       });
-      expect(result).toBe(expectedRun);
+      expect(result).toBe(childRun);
     });
 
-    it('adds thread and workflow filters when both are provided', async () => {
+    it('keeps thread scoping in the repository query without filtering out child stacks by workflow id', async () => {
       const mockedRepo = {
-        findOneAndPopulate: jest.fn(),
+        findAndPopulate: jest.fn(),
       } as unknown as WorkflowRunRepository;
       const service = new WorkflowRunService(mockedRepo);
-      const expectedRun = { id: 'run-789' } as WorkflowRun;
+      const parentRun = buildSuspendedRun('parent-run', 'parent-workflow');
+      const childRun = buildSuspendedRun('child-run', 'child-workflow', {
+        parentRun: { id: parentRun.id },
+      });
 
-      (mockedRepo.findOneAndPopulate as jest.Mock).mockResolvedValue(
-        expectedRun,
-      );
+      (mockedRepo.findAndPopulate as jest.Mock).mockResolvedValue([
+        parentRun,
+        childRun,
+      ]);
 
       const result = await service.findSuspendedRunByInitiator(
         'sub-1',
         'thread-1',
-        'workflow-1',
+        'parent-workflow',
       );
 
-      expect(mockedRepo.findOneAndPopulate).toHaveBeenCalledWith({
+      expect(mockedRepo.findAndPopulate).toHaveBeenCalledWith({
         where: {
           triggeredBy: { id: 'sub-1' },
           thread: { id: 'thread-1' },
           status: 'suspended',
-          workflow: { id: 'workflow-1' },
         },
         order: { suspendedAt: 'DESC', createdAt: 'DESC' },
       });
-      expect(result).toBe(expectedRun);
+      expect(result).toBe(childRun);
+    });
+
+    it('returns null when the requested workflow is not in any suspended stack', async () => {
+      const mockedRepo = {
+        findAndPopulate: jest.fn(),
+      } as unknown as WorkflowRunRepository;
+      const service = new WorkflowRunService(mockedRepo);
+
+      (mockedRepo.findAndPopulate as jest.Mock).mockResolvedValue([
+        buildSuspendedRun('run-1', 'workflow-1'),
+      ]);
+
+      const result = await service.findSuspendedRunByInitiator(
+        'sub-1',
+        undefined,
+        'workflow-2',
+      );
+
+      expect(result).toBeNull();
     });
   });
 });

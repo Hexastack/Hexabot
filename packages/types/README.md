@@ -187,6 +187,8 @@ Unknown keys are stripped by default.
 - Schema parsing preserves nullable/optional normalization used by API entity outputs.
 - Mixed owner/triggeredBy contracts (`Subscriber | User`) are supported in workflow full contracts.
 - Sensitive output parity is preserved for credentials and MCP tokens (`value` and token hashes are not part of output contracts).
+- Workflow run contracts include `parentRun` for call-and-return workflow stacks.
+- Sensitive output parity is preserved for credentials (`value` is not part of output contracts).
 
 ## Breaking-Change Notes
 

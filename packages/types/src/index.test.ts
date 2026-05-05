@@ -1052,6 +1052,7 @@ describe("@hexabot-ai/types schemas", () => {
       workflowVersionId: "wfv_1",
       triggeredById: "s_1",
       threadId: "t_1",
+      parentRun: "parent_run_1",
       finishedAt: "2026-01-01T00:02:00.000Z",
     });
     const full = workflowRunFullSchema.parse({
@@ -1101,10 +1102,23 @@ describe("@hexabot-ai/types schemas", () => {
         avatar: null,
       },
       thread: null,
+      parentRun: {
+        id: "parent_run_1",
+        createdAt: now,
+        updatedAt: now,
+        status: "suspended",
+        context: {},
+        workflowId: "parent_wf_1",
+        workflowVersionId: null,
+        triggeredById: null,
+        parentRun: null,
+      },
     });
 
     expect(run.duration).toBe(120000);
+    expect(run.parentRun).toBe("parent_run_1");
     expect(full.triggeredBy?.id).toBe("s_1");
+    expect(full.parentRun?.workflow).toBe("parent_wf_1");
     expect(typeof resolveRunDurationMs(run)).toBe("number");
   });
 

@@ -21,6 +21,7 @@ import {
   WorkflowFull,
 } from '@hexabot-ai/types';
 
+import type { WorkflowRuntimeContext } from './contexts/workflow-runtime.context';
 import { TriggerEventWrapper } from './lib/trigger-event-wrapper';
 import { SchemaInstance } from './utils/schema-instance';
 
@@ -36,16 +37,67 @@ export type MemoryValue = Record<string, unknown>;
 
 export type WorkflowResult = WorkflowStartResult | WorkflowResumeResult;
 
+/**
+ * Payload passed from a child workflow back to the suspended `call_workflow`
+ * action in its parent. Only `finished` is exposed as the action output; the
+ * action converts `failed` into a thrown error and treats `suspended` as a
+ * durable wait state.
+ */
+export type CallWorkflowFinishedResult = {
+  status: 'finished';
+  workflow_id: string;
+  workflow_run_id: string;
+  output: Record<string, unknown>;
+};
+
+export type CallWorkflowSuspendedResult = {
+  status: 'suspended';
+  workflow_id: string;
+  workflow_run_id: string;
+};
+
+export type CallWorkflowFailedResult = {
+  status: 'failed';
+  workflow_id: string;
+  workflow_run_id: string;
+  error: string;
+};
+
+export type CallWorkflowResult =
+  | CallWorkflowFinishedResult
+  | CallWorkflowSuspendedResult
+  | CallWorkflowFailedResult;
+
+export type CallWorkflowOptions = {
+  workflowId: string;
+  /** Optional child start input. When omitted, the parent event input is reused. */
+  input?: Record<string, unknown>;
+  /** Runtime context of the parent action that is issuing the workflow call. */
+  parentContext: WorkflowRuntimeContext;
+};
+
+export interface WorkflowCallService {
+  callWorkflow(options: CallWorkflowOptions): Promise<CallWorkflowResult>;
+}
+
+export const WORKFLOW_CALL_SERVICE = Symbol('WORKFLOW_CALL_SERVICE');
+
 export type RunWorkflowOptions =
   | {
       mode: 'start';
       workflow: WorkflowFull;
       event: TriggerEventWrapper;
+      /** Present when this run is a child workflow call. */
+      parentRun?: WorkflowRunFull;
+      /** Start input override for child calls. */
+      input?: Record<string, unknown>;
     }
   | {
       mode: 'resume';
       run: WorkflowRunFull;
       event: TriggerEventWrapper;
+      /** Internal resume payload used to unwind a completed child into its parent. */
+      resumeData?: unknown;
     };
 
 export type MarkRunningInput = {

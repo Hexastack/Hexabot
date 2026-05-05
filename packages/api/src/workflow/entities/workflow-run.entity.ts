@@ -12,7 +12,14 @@ import {
   type WorkflowSnapshot,
 } from '@hexabot-ai/agentic';
 import { workflowRunSchema, workflowRunFullSchema } from '@hexabot-ai/types';
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  RelationId,
+} from 'typeorm';
 
 import { ThreadOrmEntity } from '@/chat/entities/thread.entity';
 import { DatetimeColumn } from '@/database/decorators/datetime-column.decorator';
@@ -29,6 +36,7 @@ import { WorkflowVersionOrmEntity } from './workflow-version.entity';
 import { WorkflowOrmEntity } from './workflow.entity';
 
 @Entity({ name: 'workflow_runs' })
+@Index(['parentRun'])
 export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunDto> {
   plainCls = workflowRunSchema;
 
@@ -85,6 +93,19 @@ export class WorkflowRunOrmEntity extends BaseOrmEntity<WorkflowRunDto> {
   /** Identifier of the linked thread (for internal relations). */
   @RelationId((run: WorkflowRunOrmEntity) => run.thread)
   private readonly threadId?: string | null;
+
+  /** Parent workflow run that is waiting for this run to return. */
+  @ManyToOne(() => WorkflowRunOrmEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'parent_run_id' })
+  @AsRelation()
+  parentRun?: WorkflowRunOrmEntity | null;
+
+  /** Identifier of the parent run (for internal relations). */
+  @RelationId((run: WorkflowRunOrmEntity) => run.parentRun)
+  private readonly parentRunId?: string | null;
 
   /** Lifecycle status of the run (idle, running, suspended, finished, failed). */
   @EnumColumn({
