@@ -6,13 +6,7 @@
 
 import { labelFullSchema, labelSchema } from '@hexabot-ai/types';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsString,
-  Matches,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 
 import { IsUUIDv4 } from '@/utils/decorators/is-uuid.decorator';
 import { TDto } from '@/utils/types/dto.types';
@@ -43,11 +37,6 @@ export class LabelCreateDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @ApiPropertyOptional({ description: 'Label id', type: Object })
-  @IsOptional()
-  @IsObject()
-  label_id?: Record<string, any>;
 }
 
 export class LabelUpdateDto extends PartialType(LabelCreateDto) {}

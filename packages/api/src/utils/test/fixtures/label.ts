@@ -23,34 +23,16 @@ export const contentLabelDefaultValues: TLabelFixtures['defaultValues'] = {
 export const labels: TLabelFixtures['values'][] = [
   {
     description: 'test description 1',
-    label_id: {
-      messenger: 'messenger',
-      web: 'web',
-      twitter: 'twitter',
-      dimelo: 'dimelo',
-    },
     name: 'TEST_TITLE_1',
     title: 'test title 1',
   },
   {
     description: 'test description 2',
-    label_id: {
-      messenger: 'messenger',
-      web: 'web',
-      twitter: 'twitter',
-      dimelo: 'dimelo',
-    },
     name: 'TEST_TITLE_2',
     title: 'test title 2',
   },
   {
     description: 'test description 3',
-    label_id: {
-      messenger: 'messenger',
-      web: 'web',
-      twitter: 'twitter',
-      dimelo: 'dimelo',
-    },
     name: 'TEST_TITLE_3',
     title: 'test title 3',
   },
@@ -78,7 +60,6 @@ export const installLabelFixturesTypeOrm = async (dataSource: DataSource) => {
       builtin: fixture.builtin ?? false,
       description:
         fixture.description === undefined ? null : fixture.description,
-      label_id: fixture.label_id === undefined ? null : fixture.label_id,
       group: group ? ({ id: group } as Pick<LabelGroupOrmEntity, 'id'>) : null,
     });
   });

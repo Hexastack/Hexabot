@@ -470,7 +470,6 @@
     "pending": "En attente",
     "source": "Source",
     "source_ref": "Référence source",
-    "label_id": "Label ID",
     "email": "E-mail",
     "roles": "Rôles",
     "method": "HTTP",

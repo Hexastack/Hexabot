@@ -139,7 +139,6 @@ describe('LabelController (TypeORM)', () => {
         title: createUniqueLabelTitle(),
         name: createUniqueLabelName(),
         description: 'A sample label description',
-        label_id: { web: randomString() },
       };
       const createSpy = jest.spyOn(labelService, 'create');
       const result = await labelController.create(payload);

@@ -20,7 +20,6 @@ const labelAliasMap = {
 const labelStubObjectSchema = baseStubSchema.extend({
   title: z.string(),
   name: z.string(),
-  label_id: z.record(z.string(), z.unknown()).nullable().optional(),
   description: nullableOptionalStringSchema,
   builtin: z.coerce.boolean(),
 });
