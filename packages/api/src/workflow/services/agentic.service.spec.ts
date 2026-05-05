@@ -560,7 +560,7 @@ describe('AgenticService (TypeORM)', () => {
         .spyOn(AgenticWorkflow, 'fromDefinition')
         .mockReturnValue(workflowInstance);
 
-      await expect(agenticService.handleEvent(event)).resolves.toBeUndefined();
+      await expect(agenticService.handleEvent(event)).resolves.toBeNull();
 
       const [failedRun] = (await workflowRunService.findAndPopulate({
         order: { createdAt: 'DESC' },

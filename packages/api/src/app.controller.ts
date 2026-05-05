@@ -33,6 +33,7 @@ export class AppController {
     return {
       apiUrl: config.apiBaseUrl,
       ssoEnabled: config.ssoEnabled,
+      mcpEnabled: config.mcp.enabled,
       maxUploadSize: config.parameters.maxUploadSize,
       hasUserSession: !!req.session.passport?.user,
     };

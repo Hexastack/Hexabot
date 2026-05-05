@@ -5,6 +5,7 @@
  */
 
 import { existsSync } from 'fs';
+import { createRequire } from 'node:module';
 import path, { join } from 'path';
 
 import KeyvRedis from '@keyv/redis';
@@ -57,6 +58,18 @@ const workspaceFrontendPath = join(__dirname, '..', '..', 'frontend', 'dist');
 const frontendStaticPath = existsSync(compiledFrontendPath)
   ? compiledFrontendPath
   : workspaceFrontendPath;
+const requireModule = createRequire(__filename);
+const getMcpModuleImports = (): ModuleImports => {
+  if (!config.mcp.enabled) {
+    return [];
+  }
+
+  const { McpApiModule } = requireModule(
+    './mcp/mcp-api.module',
+  ) as typeof import('./mcp/mcp-api.module');
+
+  return [McpApiModule];
+};
 // I18N options
 const i18nOptions: I18nOptions = {
   fallbackLanguage: 'en',
@@ -68,7 +81,7 @@ const i18nOptions: I18nOptions = {
       path.join(__dirname, '/extensions/helpers/'),
       path.join(__dirname, '/extensions/channels/'),
     ],
-    watch: true,
+    watch: config.env.toLowerCase() !== 'test',
   },
   resolvers: [
     { use: QueryResolver, options: ['lang'] },
@@ -123,6 +136,7 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
     ignoreErrors: false,
   }),
   I18nModule.forRoot(i18nOptions),
+  ...getMcpModuleImports(),
   CacheModule.registerAsync({
     isGlobal: true,
     useFactory: async () => ({

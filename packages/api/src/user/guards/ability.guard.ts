@@ -17,6 +17,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 
+import { config } from '@/config';
+
 import { TRole } from '../entities/role.entity';
 import { PermissionService } from '../services/permission.service';
 import { MethodToAction } from '../types/action.type';
@@ -31,12 +33,20 @@ export class Ability implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.get<TRole[]>('roles', context.getHandler());
+    const { _parsedUrl } = context
+      .switchToHttp()
+      .getRequest<Request & { _parsedUrl: Url }>();
+    const pathname = _parsedUrl.pathname?.replace(`/api`, '');
+
+    if (config.mcp.enabled && pathname && pathname === '/mcp') {
+      return true;
+    }
 
     if (roles?.includes('public')) {
       return true;
     }
 
-    const { user, method, _parsedUrl, session } = context
+    const { user, method, session } = context
       .switchToHttp()
       .getRequest<Request & { user: User; _parsedUrl: Url }>();
     if (!user) {
@@ -49,11 +59,13 @@ export class Ability implements CanActivate {
       throw new UnauthorizedException('Session expired');
     }
 
+    if (config.mcp.enabled && pathname?.startsWith('/mcp-token')) {
+      return true;
+    }
+
     const roleIds = Array.isArray(user.roles) ? user.roles : [];
 
     if (roleIds.length) {
-      const pathname = _parsedUrl.pathname?.replace(`/api`, '');
-
       if (
         pathname &&
         [

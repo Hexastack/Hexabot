@@ -31,6 +31,7 @@ import {
   IncomingMessageType,
   labelFullSchema,
   labelSchema,
+  mcpTokenSchema,
   mcpServerFullSchema,
   mcpServerSchema,
   memoryRecordFullSchema,
@@ -680,6 +681,25 @@ describe("@hexabot-ai/types schemas", () => {
     expect(credential.name).toBe("OPENAI_API_KEY");
     expect(credential.owner).toBe("u_1");
     expect("value" in credential).toBe(false);
+  });
+
+  it("keeps MCP token outputs free of token hashes", () => {
+    const token = mcpTokenSchema.parse({
+      id: "mt_1",
+      createdAt: now,
+      updatedAt: now,
+      name: "Codex",
+      tokenPrefix: "hbt_mcp_abcd",
+      tokenHash: "secret-hash",
+      ownerId: "u_1",
+      expiresAt: null,
+      lastUsedAt: null,
+      revokedAt: null,
+    });
+
+    expect(token.name).toBe("Codex");
+    expect(token.owner).toBe("u_1");
+    expect("tokenHash" in token).toBe(false);
   });
 
   it("computes workflow derived fields via parser bridge", () => {

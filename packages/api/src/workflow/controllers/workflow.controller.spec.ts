@@ -98,7 +98,7 @@ describe('WorkflowController (TypeORM)', () => {
   let runtimeBindingsService: RuntimeBindingsService;
   let i18nService: I18nService<unknown>;
   const agenticServiceMock = {
-    handleEvent: jest.fn().mockResolvedValue(undefined),
+    handleEvent: jest.fn().mockResolvedValue(null),
   } as jest.Mocked<Pick<AgenticService, 'handleEvent'>>;
   const workflowRunServiceMock = {
     findOne: jest.fn(),

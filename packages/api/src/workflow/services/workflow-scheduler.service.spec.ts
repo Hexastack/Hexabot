@@ -49,7 +49,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
   let eventEmitter: EventEmitter2;
   let handleEventSpy: jest.SpyInstance;
   const agenticServiceMock = {
-    handleEvent: jest.fn().mockResolvedValue(undefined),
+    handleEvent: jest.fn().mockResolvedValue(null),
   } as jest.Mocked<Pick<AgenticService, 'handleEvent'>>;
   const workflowRunServiceMock = {
     findOne: jest.fn(),
@@ -136,7 +136,7 @@ describe('WorkflowSchedulerService (TypeORM)', () => {
     clearCronJobs();
     handleEventSpy = jest
       .spyOn(agenticService, 'handleEvent')
-      .mockResolvedValue(undefined);
+      .mockResolvedValue(null);
     await reloadScheduledWorkflow();
     clearCronJobs();
   });

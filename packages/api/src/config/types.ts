@@ -43,6 +43,14 @@ type TDatabaseConfig = {
   schema?: string;
   autoMigrate: boolean;
 };
+type TMcpConfig = {
+  enabled: boolean;
+  serverName: string;
+  serverTitle: string;
+  serverVersion: string;
+  serverDescription: string;
+  serverInstructions: string;
+};
 type SocketCookie =
   | {
       maxAge?: number | undefined;
@@ -59,6 +67,7 @@ export type Config = {
   apiBaseUrl: string;
   uiBaseUrl: string;
   ssoEnabled: boolean;
+  mcp: TMcpConfig;
   security: {
     httpsEnabled: boolean;
     trustProxy: boolean;
