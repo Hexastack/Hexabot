@@ -60,8 +60,6 @@ export * from './services/workflow-version.service';
 
 export * from './services/workflow-run.service';
 
-export * from './services/transfer/workflow-transfer.service';
-
 export * from './services/memory-definition.service';
 
 export * from './services/memory-record.service';
@@ -73,5 +71,13 @@ export * from './services/agentic.service';
 export * from './services/mcp-server.service';
 
 export * from './services/mcp-client-pool.service';
+
+export * from './transfer/workflow-transfer.module';
+
+export * from './transfer/workflow-transfer.controller';
+
+export * from './transfer/workflow-transfer-definition.service';
+
+export * from './transfer/workflow-transfer.service';
 
 export * from './defaults/default-workflow';

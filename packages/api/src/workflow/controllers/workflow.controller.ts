@@ -4,11 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Workflow,
-  WorkflowFull,
-  WorkflowImportResult,
-} from '@hexabot-ai/types';
+import { Workflow, WorkflowFull } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Body,
@@ -22,13 +18,9 @@ import {
   Post,
   Query,
   Req,
-  Res,
   UnauthorizedException,
-  UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { I18nContext } from 'nestjs-i18n';
 import { FindManyOptions } from 'typeorm';
 import { DeleteResult } from 'typeorm/driver/mongodb/typings';
@@ -49,7 +41,6 @@ import {
   ScheduledEventWrapper,
 } from '../lib/trigger-event-wrapper';
 import { AgenticService } from '../services/agentic.service';
-import { WorkflowTransferService } from '../services/transfer/workflow-transfer.service';
 import { WorkflowService } from '../services/workflow.service';
 import { WorkflowType } from '../types';
 
@@ -62,7 +53,6 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
     private readonly actionService: ActionService,
     private readonly runtimeBindingsService: RuntimeBindingsService,
     private readonly i18nService: I18nService,
-    private readonly workflowTransferService: WorkflowTransferService,
   ) {
     super(workflowService);
   }
@@ -160,61 +150,6 @@ export class WorkflowController extends BaseOrmController<WorkflowOrmEntity> {
   @Get('bindings')
   findBindings() {
     return this.runtimeBindingsService.getAllSchemaDefinitions();
-  }
-
-  /**
-   * Imports a workflow bundle YAML file.
-   *
-   * @param file - Uploaded `.workflow.yml` bundle.
-   * @param req - Express request containing the authenticated session.
-   *
-   * @returns Imported workflow and resource mapping summary.
-   */
-  @Post('import')
-  @UseInterceptors(FileInterceptor('file'))
-  async importWorkflow(
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req: Request,
-  ): Promise<WorkflowImportResult> {
-    const userId = req.session?.passport?.user?.id;
-    if (!userId) {
-      throw new UnauthorizedException(
-        'Only authenticated users can import workflows',
-      );
-    }
-
-    if (!file?.buffer) {
-      throw new BadRequestException('No workflow bundle file was selected');
-    }
-
-    return await this.workflowTransferService.importWorkflow(
-      file.buffer.toString('utf-8'),
-      userId,
-    );
-  }
-
-  /**
-   * Exports a workflow bundle YAML file.
-   *
-   * @param id - Workflow identifier.
-   * @param res - Express response used to attach download headers.
-   *
-   * @returns YAML bundle content.
-   */
-  @Get(':id/export')
-  async exportWorkflow(
-    @UuidParam('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<string> {
-    const exported = await this.workflowTransferService.exportWorkflow(id);
-
-    res.setHeader('Content-Type', 'application/x-yaml; charset=utf-8');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${exported.filename}"`,
-    );
-
-    return exported.content;
   }
 
   /**

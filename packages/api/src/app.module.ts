@@ -49,6 +49,7 @@ import { SettingModule } from './setting/setting.module';
 import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
 import { WebsocketModule } from './websocket/websocket.module';
+import { WorkflowTransferModule } from './workflow/transfer/workflow-transfer.module';
 import { WorkflowModule } from './workflow/workflow.module';
 
 // Production "monolith" mode
@@ -115,6 +116,7 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
   ActionsModule,
   BindingsModule,
   WorkflowModule,
+  WorkflowTransferModule,
   HelperModule,
   LoggerModule,
   WebsocketModule,

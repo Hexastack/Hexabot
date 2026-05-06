@@ -13,6 +13,7 @@ import {
   workflowExportBundleSchema,
 } from '@hexabot-ai/types';
 import { BadRequestException, ConflictException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
@@ -22,7 +23,9 @@ import { ActionService } from '@/actions/actions.service';
 import { RuntimeBindingsService } from '@/bindings/runtime-bindings.service';
 import { LabelGroupOrmEntity } from '@/chat/entities/label-group.entity';
 import { LabelOrmEntity } from '@/chat/entities/label.entity';
+import { LabelService } from '@/chat/services/label.service';
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
+import { ContentTypeService } from '@/cms/services/content-type.service';
 import { aiMcpToolBindingSchema } from '@/extensions/actions/ai/mcp.binding';
 import { aiMemoryBindingSchema } from '@/extensions/actions/ai/memory.binding';
 import { CredentialService } from '@/user/services/credential.service';
@@ -35,19 +38,24 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import { workflowResourceRef } from '@/workflow/resource-refs';
 
+import { McpClientPoolService } from '../services/mcp-client-pool.service';
+import { McpServerService } from '../services/mcp-server.service';
+import { MemoryDefinitionService } from '../services/memory-definition.service';
+import { WorkflowRunService } from '../services/workflow-run.service';
+import { WorkflowVersionService } from '../services/workflow-version.service';
+import { WorkflowService } from '../services/workflow.service';
 import {
   McpServerTransport,
   MemoryScope,
   WorkflowType,
   WorkflowVersionAction,
-} from '../../types';
-import { McpClientPoolService } from '../mcp-client-pool.service';
-import { McpServerService } from '../mcp-server.service';
-import { MemoryDefinitionService } from '../memory-definition.service';
-import { WorkflowRunService } from '../workflow-run.service';
-import { WorkflowVersionService } from '../workflow-version.service';
-import { WorkflowService } from '../workflow.service';
+} from '../types';
 
+import { ContentTypeTransferAdapter } from './adapters/content-type-transfer.adapter';
+import { CredentialTransferAdapter } from './adapters/credential-transfer.adapter';
+import { LabelTransferAdapter } from './adapters/label-transfer.adapter';
+import { McpServerTransferAdapter } from './adapters/mcp-server-transfer.adapter';
+import { MemoryDefinitionTransferAdapter } from './adapters/memory-definition-transfer.adapter';
 import { WorkflowTransferService } from './workflow-transfer.service';
 
 describe('WorkflowTransferService', () => {
@@ -61,6 +69,7 @@ describe('WorkflowTransferService', () => {
   let runtimeBindingsService: RuntimeBindingsService;
   let actionService: ActionService;
   let dataSource: DataSource;
+  let eventEmitter: EventEmitter2;
 
   const websocketGatewayMock = {
     joinSockets: jest.fn(),
@@ -87,6 +96,13 @@ describe('WorkflowTransferService', () => {
         MemoryDefinitionService,
         McpServerService,
         CredentialService,
+        ContentTypeService,
+        LabelService,
+        CredentialTransferAdapter,
+        MemoryDefinitionTransferAdapter,
+        ContentTypeTransferAdapter,
+        LabelTransferAdapter,
+        McpServerTransferAdapter,
         {
           provide: WebsocketGateway,
           useValue: websocketGatewayMock,
@@ -127,6 +143,7 @@ describe('WorkflowTransferService', () => {
       ActionService,
     ]);
     dataSource = module.get(DataSource);
+    eventEmitter = module.get(EventEmitter2);
   });
 
   beforeEach(() => {
@@ -393,6 +410,7 @@ describe('WorkflowTransferService', () => {
       mcpExportId,
       credentialExportId,
     });
+    const emitSpy = jest.spyOn(eventEmitter, 'emitAsync');
     const result = await transferService.importWorkflow(content, creatorId);
     const credentialResult = result.resources.find(
       (resource) => resource.kind === 'credential',
@@ -421,6 +439,20 @@ describe('WorkflowTransferService', () => {
     expect(imported?.definitionYml).toContain(mcpResult?.localId);
     expect(imported?.definitionYml).not.toContain(memoryExportId);
     expect(imported?.definitionYml).not.toContain(mcpExportId);
+    expect(emitSpy.mock.calls.map(([eventName]) => eventName)).toEqual(
+      expect.arrayContaining([
+        'hook:credential:postCreate',
+        'hook:memoryDefinition:postCreate',
+        'hook:mcpServer:postCreate',
+        'hook:workflow:postCreate',
+        'hook:workflowVersion:postCreate',
+      ]),
+    );
+    expect(
+      emitSpy.mock.calls.every(
+        ([, event]) => (event as { action?: string }).action === 'postCreate',
+      ),
+    ).toBe(true);
   });
 
   it('imports content types and labels, then remaps task resource references', async () => {
@@ -465,6 +497,7 @@ describe('WorkflowTransferService', () => {
       schema: { type: 'object', properties: { existing: { type: 'string' } } },
       ttlSeconds: null,
     });
+    const emitSpy = jest.spyOn(eventEmitter, 'emitAsync');
 
     await expect(
       transferService.importWorkflow(
@@ -478,6 +511,7 @@ describe('WorkflowTransferService', () => {
         creatorId,
       ),
     ).rejects.toThrow(ConflictException);
+    expect(emitSpy).not.toHaveBeenCalled();
   });
 
   it('reuses equivalent local resources and remaps to local IDs', async () => {

@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { TestingModule } from '@nestjs/testing';
-import type { Response as ExpressResponse } from 'express';
 import { JSONSchema7 as JsonSchema } from 'json-schema';
 import { I18nContext } from 'nestjs-i18n';
 import { z } from 'zod';
@@ -53,7 +52,6 @@ import {
 } from '../lib/trigger-event-wrapper';
 import { WorkflowVersionRepository } from '../repositories/workflow-version.repository';
 import { AgenticService } from '../services/agentic.service';
-import { WorkflowTransferService } from '../services/transfer/workflow-transfer.service';
 import { WorkflowRunService } from '../services/workflow-run.service';
 import { WorkflowService } from '../services/workflow.service';
 import { DirectionType, WorkflowType } from '../types';
@@ -105,12 +103,6 @@ describe('WorkflowController (TypeORM)', () => {
   const workflowRunServiceMock = {
     findOne: jest.fn(),
   } as jest.Mocked<Pick<WorkflowRunService, 'findOne'>>;
-  const workflowTransferServiceMock = {
-    exportWorkflow: jest.fn(),
-    importWorkflow: jest.fn(),
-  } as jest.Mocked<
-    Pick<WorkflowTransferService, 'exportWorkflow' | 'importWorkflow'>
-  >;
   const websocketGatewayMock = {
     joinSockets: jest.fn(),
     broadcastWorkflowEvent: jest.fn(),
@@ -157,10 +149,6 @@ describe('WorkflowController (TypeORM)', () => {
         {
           provide: WorkflowRunService,
           useValue: workflowRunServiceMock,
-        },
-        {
-          provide: WorkflowTransferService,
-          useValue: workflowTransferServiceMock,
         },
         {
           provide: WebsocketGateway,
@@ -483,77 +471,6 @@ describe('WorkflowController (TypeORM)', () => {
       );
 
       currentSpy.mockRestore();
-    });
-  });
-
-  describe('import/export', () => {
-    it('exports a workflow bundle with download headers', async () => {
-      const content = 'kind: hexabot.workflow.bundle\nschemaVersion: 1\n';
-      workflowTransferServiceMock.exportWorkflow.mockResolvedValue({
-        filename: 'workflow.workflow.yml',
-        content,
-      });
-      const response = {
-        setHeader: jest.fn(),
-      } as unknown as ExpressResponse;
-      const result = await workflowController.exportWorkflow(
-        randomUUID(),
-        response,
-      );
-
-      expect(result).toBe(content);
-      expect(response.setHeader).toHaveBeenCalledWith(
-        'Content-Type',
-        'application/x-yaml; charset=utf-8',
-      );
-      expect(response.setHeader).toHaveBeenCalledWith(
-        'Content-Disposition',
-        'attachment; filename="workflow.workflow.yml"',
-      );
-    });
-
-    it('imports an uploaded workflow bundle for an authenticated user', async () => {
-      const workflow = {
-        ...buildWorkflowPayload(),
-        id: randomUUID(),
-        currentVersion: null,
-        publishedVersion: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      workflowTransferServiceMock.importWorkflow.mockResolvedValue({
-        workflow,
-        resources: [],
-        warnings: [],
-      } as any);
-
-      const result = await workflowController.importWorkflow(
-        {
-          buffer: Buffer.from('kind: hexabot.workflow.bundle'),
-        } as Express.Multer.File,
-        {
-          session: { passport: { user: { id: userFixtureIds.admin } } },
-        } as any,
-      );
-
-      expect(workflowTransferServiceMock.importWorkflow).toHaveBeenCalledWith(
-        'kind: hexabot.workflow.bundle',
-        userFixtureIds.admin,
-      );
-      expect(result.workflow.id).toBe(workflow.id);
-    });
-
-    it('rejects workflow imports without an authenticated user', async () => {
-      await expect(
-        workflowController.importWorkflow(
-          { buffer: Buffer.from('') } as Express.Multer.File,
-          {} as any,
-        ),
-      ).rejects.toThrow(
-        new UnauthorizedException(
-          'Only authenticated users can import workflows',
-        ),
-      );
     });
   });
 
