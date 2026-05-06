@@ -15,8 +15,9 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import {
+  type ChangeEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -82,6 +83,7 @@ const openPricing = () => {
     "noopener,noreferrer",
   );
 };
+const flowActionButtonSx = { minWidth: 108 };
 
 export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const { t } = useTranslate();
@@ -95,6 +97,10 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     updateWorkflowURL,
     isDefinitionDirty,
     isSaving,
+    isExportingWorkflow,
+    isImportingWorkflow,
+    exportWorkflow,
+    importWorkflowBundle,
   } = useWorkflow();
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("lg"));
@@ -110,6 +116,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
   const resizeStartWidthRef = useRef(defaultDrawerWidth);
   const isResizingRef = useRef(false);
   const latestDrawerWidthRef = useRef(drawerWidth);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const trimmedQuery = query.trim();
   const normalizedQuery = normalizeQuery(trimmedQuery);
   const isSearching = trimmedQuery.length > 0;
@@ -152,6 +159,8 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     ? t("message.workflows_quota_reached")
     : undefined;
   const newWorkflowLabel = t("visual_editor.flows_drawer.new_workflow");
+  const importWorkflowLabel = t("visual_editor.flows_drawer.import_workflow");
+  const exportWorkflowLabel = t("visual_editor.flows_drawer.export_workflow");
   const newWorkflowTooltip = workflowQuotaReached
     ? t("message.workflows_quota_reached")
     : t("label.workflows_quota_usage", {
@@ -441,9 +450,37 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
     setMenuAnchorEl(null);
     setMenuFlowId(null);
   };
+  const handleOpenImportPicker = () => {
+    importInputRef.current?.click();
+  };
+  const handleImportFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    event.target.value = "";
+    if (file) {
+      importWorkflowBundle(file);
+    }
+  };
   const selectedMenuFlow = menuFlowId
     ? matches.find((match) => match.workflow.id === menuFlowId)?.workflow
     : undefined;
+  const isSelectedMenuFlowDirty =
+    selectedMenuFlow?.id === selectedFlowId && isDefinitionDirty;
+  const exportDisabled =
+    !selectedMenuFlow ||
+    isExportingWorkflow ||
+    isSaving ||
+    isSelectedMenuFlowDirty;
+  const handleExport = () => {
+    if (!selectedMenuFlow || exportDisabled) {
+      handleCloseMenu();
+
+      return;
+    }
+
+    exportWorkflow(selectedMenuFlow.id);
+    handleCloseMenu();
+  };
   const handleDelete = async () => {
     if (!selectedMenuFlow) {
       handleCloseMenu();
@@ -479,6 +516,13 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
       drawerWidth={drawerWidth}
       collapsedWidth={collapsedSize}
     >
+      <input
+        ref={importInputRef}
+        type="file"
+        accept=".workflow.yml,.yml,.yaml,application/x-yaml,text/yaml,text/plain"
+        hidden
+        onChange={handleImportFileChange}
+      />
       <FlowsDrawerHeader
         open={open}
         title={t("visual_editor.flows_drawer.title")}
@@ -536,7 +580,25 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
                 moreLabel={t("button.more")}
               />
               <Divider />
-              <Box px={2} pb={2} pt={1} display="flex" justifyContent="center">
+              <Box
+                px={2}
+                pb={2}
+                pt={1}
+                display="flex"
+                justifyContent="center"
+                gap={1}
+                flexWrap="wrap"
+              >
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  startIcon={<Upload size={18} />}
+                  onClick={handleOpenImportPicker}
+                  disabled={isImportingWorkflow}
+                  sx={flowActionButtonSx}
+                >
+                  {importWorkflowLabel}
+                </Button>
                 {shouldShowWorkflowUpgradeGate && workflowUpgradeTargetPlan ? (
                   <LicenseGate
                     requiredPlan={workflowUpgradeTargetPlan}
@@ -546,9 +608,10 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
                   >
                     <Button
                       variant="contained"
-                      size="small"
-                      startIcon={<Plus size={16} />}
+                      size="medium"
+                      startIcon={<Plus size={18} />}
                       onClick={onNew}
+                      sx={flowActionButtonSx}
                     >
                       {newWorkflowLabel}
                     </Button>
@@ -561,10 +624,11 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
                     <span>
                       <Button
                         variant="contained"
-                        size="small"
-                        startIcon={<Plus size={16} />}
+                        size="medium"
+                        startIcon={<Plus size={18} />}
                         onClick={onNew}
                         disabled={!canCreateWorkflow}
+                        sx={flowActionButtonSx}
                       >
                         {newWorkflowLabel}
                       </Button>
@@ -578,6 +642,8 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
       ) : (
         <FlowsDrawerCollapsedActions
           searchLabel={t("visual_editor.flows_drawer.search_workflows")}
+          importWorkflowLabel={importWorkflowLabel}
+          importWorkflowDisabled={isImportingWorkflow}
           newWorkflowLabel={newWorkflowLabel}
           newWorkflowDisabled={
             workflowQuotaReached && !workflowUpgradeTargetPlan
@@ -599,6 +665,7 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
           }
           yamlLabel={yamlToggleLabel}
           onOpen={handleOpenDrawer}
+          onImport={handleOpenImportPicker}
           onNew={onNew}
           onToggleYaml={handleToggleYaml}
           isYamlOpen={showYaml}
@@ -619,6 +686,9 @@ export const FlowsDrawer = ({ onNew, onEdit }: FlowsDrawerProps) => {
         onDelete={handleDelete}
         deleteDisabled={Boolean(selectedMenuFlow?.builtin)}
         deleteLabel={t("button.delete")}
+        onExport={handleExport}
+        exportDisabled={exportDisabled}
+        exportLabel={exportWorkflowLabel}
       />
     </LeftSideFlowDrawer>
   );

@@ -137,6 +137,8 @@ export const Workflow = () => {
     flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
+    isExportingWorkflow,
+    exportWorkflow,
     removeStepAtPath,
     setGraphSelection,
     updateDefinitionState,
@@ -171,6 +173,7 @@ export const Workflow = () => {
   const actionsDrawerId = "workflow-actions-drawer";
   const publishLabel = t("button.publish");
   const unpublishLabel = t("button.unpublish");
+  const exportLabel = t("visual_editor.flows_drawer.export_workflow");
   const graphColorMode: WorkflowGraphColorMode =
     mode === "light" || mode === "dark" ? mode : "system";
   const workflowGraphRef = useRef<WorkflowGraphHandle | null>(null);
@@ -426,12 +429,26 @@ export const Workflow = () => {
     setMenuAnchorEl(null);
     setMenuFlowId(null);
   };
-  const handleDelete = async () => {
-    const selectedMenuWorkflow = menuFlowId
-      ? (workflows?.find((flow) => flow.id === menuFlowId) ??
-        (workflow?.id === menuFlowId ? workflow : undefined))
-      : workflow;
+  const selectedMenuWorkflow = menuFlowId
+    ? (workflows?.find((flow) => flow.id === menuFlowId) ??
+      (workflow?.id === menuFlowId ? workflow : undefined))
+    : workflow;
+  const exportDisabled =
+    !selectedMenuWorkflow ||
+    isExportingWorkflow ||
+    isDefinitionSaving ||
+    (selectedMenuWorkflow.id === selectedFlowId && isDefinitionDirty);
+  const handleExport = () => {
+    if (!selectedMenuWorkflow || exportDisabled) {
+      handleCloseMenu();
 
+      return;
+    }
+
+    exportWorkflow(selectedMenuWorkflow.id);
+    handleCloseMenu();
+  };
+  const handleDelete = async () => {
     if (!selectedMenuWorkflow) {
       handleCloseMenu();
 
@@ -994,6 +1011,9 @@ export const Workflow = () => {
         deleteDisabled={Boolean(workflow?.builtin)}
         onDelete={handleDelete}
         deleteLabel={t("button.delete")}
+        onExport={handleExport}
+        exportDisabled={exportDisabled}
+        exportLabel={exportLabel}
       />
     </div>
   );

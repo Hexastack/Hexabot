@@ -67,6 +67,10 @@ export interface IWorkflowContext {
   updateVersionMessage: (versionId: string, message: string) => void;
   isDefinitionDirty: boolean;
   isSaving: boolean;
+  isExportingWorkflow: boolean;
+  isImportingWorkflow: boolean;
+  exportWorkflow: (workflowId: string) => void;
+  importWorkflowBundle: (file: File) => void;
   addActionStep: (action: IAction, insertPath?: FlowStepPath | null) => void;
   addConditionalStep: (insertPath?: FlowStepPath | null) => void;
   addLoopStep: (insertPath?: FlowStepPath | null) => void;
