@@ -38,19 +38,18 @@ import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import { workflowResourceRef } from '@/workflow/resource-refs';
-
-import { McpClientPoolService } from '../services/mcp-client-pool.service';
-import { McpServerService } from '../services/mcp-server.service';
-import { MemoryDefinitionService } from '../services/memory-definition.service';
-import { WorkflowRunService } from '../services/workflow-run.service';
-import { WorkflowVersionService } from '../services/workflow-version.service';
-import { WorkflowService } from '../services/workflow.service';
+import { McpClientPoolService } from '@/workflow/services/mcp-client-pool.service';
+import { McpServerService } from '@/workflow/services/mcp-server.service';
+import { MemoryDefinitionService } from '@/workflow/services/memory-definition.service';
+import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
+import { WorkflowVersionService } from '@/workflow/services/workflow-version.service';
+import { WorkflowService } from '@/workflow/services/workflow.service';
 import {
   McpServerTransport,
   MemoryScope,
   WorkflowType,
   WorkflowVersionAction,
-} from '../types';
+} from '@/workflow/types';
 
 import { ContentTypeTransferAdapter } from './adapters/content-type-transfer.adapter';
 import { CredentialTransferAdapter } from './adapters/credential-transfer.adapter';

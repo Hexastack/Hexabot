@@ -10,8 +10,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import type { Response as ExpressResponse } from 'express';
 
 import { userFixtureIds } from '@/utils/test/fixtures/user';
-
-import { WorkflowType } from '../types';
+import { WorkflowType } from '@/workflow/types';
 
 import { WorkflowTransferController } from './workflow-transfer.controller';
 import { WorkflowTransferService } from './workflow-transfer.service';

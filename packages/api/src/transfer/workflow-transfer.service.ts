@@ -24,11 +24,10 @@ import { DataSource, EntityManager } from 'typeorm';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 
 import { EHook } from '@/utils/generics/base-orm.repository';
-
-import { WorkflowOrmEntity } from '../entities/workflow.entity';
-import { WorkflowVersionService } from '../services/workflow-version.service';
-import { WorkflowService } from '../services/workflow.service';
-import { WorkflowVersionAction } from '../types';
+import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
+import { WorkflowVersionService } from '@/workflow/services/workflow-version.service';
+import { WorkflowService } from '@/workflow/services/workflow.service';
+import { WorkflowVersionAction } from '@/workflow/types';
 
 import { WorkflowTransferAdapterRegistry } from './workflow-transfer-adapter.registry';
 import {
