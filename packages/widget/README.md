@@ -2,7 +2,7 @@
 
 The [Hexabot](https://hexabot.ai/) Live Chat Widget is a React-based embeddable widget that allows users to integrate real-time chat functionality into their websites. It connects to the Hexabot API and facilitates seamless interaction between end-users and chatbots across multiple channels.
 
-[Hexabot](https://hexabot.ai/) is a chatbot / agent solution that allows users to create and manage AI-powered, multi-channel, and multilingual chatbots with ease. If you would like to learn more, please visit the [official github repo](https://github.com/Hexastack/Hexabot/).
+[Hexabot](https://hexabot.ai/) is a chatbot / agent solution that allows users to create and manage AI-powered, multi-channel, and multilingual chatbots with ease. If you would like to learn more, please visit the [official github repo](https://github.com/hexabot-ai/Hexabot/).
 
 ## Key Features
 
@@ -135,7 +135,7 @@ JsDelivr uses the package published in the npm registry: https://www.npmjs.com/p
 
 ## Examples
 
-As a proof of concept we developed a Wordpress plugin to embed the chat widget in a Wordpress website : [https://github.com/hexastack/hexabot-wordpress-live-chat-widget](https://github.com/hexastack/hexabot-wordpress-live-chat-widget)
+As a proof of concept we developed a Wordpress plugin to embed the chat widget in a Wordpress website : [https://github.com/hexabot-ai/hexabot-wordpress-live-chat-widget](https://github.com/hexabot-ai/hexabot-wordpress-live-chat-widget)
 
 ## Customization
 

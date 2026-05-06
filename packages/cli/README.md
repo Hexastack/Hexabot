@@ -3,7 +3,7 @@
 Hexabot CLI is the command-line entry point for creating, configuring, and operating Hexabot v3 projects. With it, you can scaffold new automation workspaces, initialize environments, start services in local or Docker modes, run database migrations, and manage the project lifecycle.
 
 
-Not yet familiar with [Hexabot](https://hexabot.ai/)? Hexabot v3 is an agentic AI automation platform for building and running workflows across channels with actions, bindings, memory, tools, MCP, and RAG. If you would like to learn more, please visit the [official GitHub repo](https://github.com/Hexastack/Hexabot/).
+Not yet familiar with [Hexabot](https://hexabot.ai/)? Hexabot v3 is an agentic AI automation platform for building and running workflows across channels with actions, bindings, memory, tools, MCP, and RAG. If you would like to learn more, please visit the [official GitHub repo](https://github.com/hexabot-ai/Hexabot/).
 
 ## Getting Started
 
