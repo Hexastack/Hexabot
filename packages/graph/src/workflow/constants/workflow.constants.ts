@@ -92,6 +92,11 @@ export const WORKFLOW_INSERT_MENU_ITEMS: WorkflowInsertMenuItem[] = [
 ];
 
 export const VIEWPORT_EPSILON = 0.01;
+export const DEFAULT_WORKFLOW_VIEWPORT = { x: 0, y: 0, zoom: 1 } as const;
+export const WORKFLOW_VIEWPORT_MIN_ZOOM = 0.05;
+export const WORKFLOW_VIEWPORT_MAX_ZOOM = 4;
+export const WORKFLOW_VIEWPORT_AUTO_FIT_MAX_ZOOM = 1;
+export const WORKFLOW_VIEWPORT_FIT_PADDING = 0.15;
 export const EMPTY_WORKFLOW_GRAPH: WorkflowGraphData = { nodes: [], edges: [] };
 
 export const DEFAULT_NODE_PROPS = {
