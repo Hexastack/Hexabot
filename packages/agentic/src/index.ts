@@ -114,3 +114,11 @@ export {
 } from './utils/naming';
 
 export { sleep, withTimeout } from './utils/timeout';
+
+export {
+  collectWorkflowDefinitionResourceRefs,
+  remapWorkflowDefinitionResourceRefs,
+  type WorkflowDefinitionResourceDescriptor,
+  type WorkflowDefinitionResourceIdMaps,
+  type WorkflowDefinitionResourceRefs,
+} from './utils/workflow-definition-resources';

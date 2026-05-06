@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 import { createAction } from '@/actions/create-action';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
+import { workflowResourceRef } from '@/workflow/resource-refs';
 import { WorkflowType } from '@/workflow/types';
 
 const subscriberUpdateLabelsInputSchema = z
@@ -24,6 +25,7 @@ const subscriberUpdateLabelsInputSchema = z
           valueKey: 'id',
           labelKey: 'title',
         },
+        ...workflowResourceRef('label'),
       }),
     labels_to_remove: z
       .array(z.uuid())
@@ -37,6 +39,7 @@ const subscriberUpdateLabelsInputSchema = z
           valueKey: 'id',
           labelKey: 'title',
         },
+        ...workflowResourceRef('label'),
       }),
   })
   .superRefine((input, ctx) => {

@@ -42,6 +42,9 @@ import { McpServerService } from './services/mcp-server.service';
 import { MemoryDefinitionService } from './services/memory-definition.service';
 import { MemoryRecordService } from './services/memory-record.service';
 import { MemoryService } from './services/memory.service';
+import { WorkflowTransferDefinitionService } from './services/transfer/workflow-transfer-definition.service';
+import { WorkflowTransferResourceService } from './services/transfer/workflow-transfer-resource.service';
+import { WorkflowTransferService } from './services/transfer/workflow-transfer.service';
 import { WorkflowRunService } from './services/workflow-run.service';
 import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
 import { WorkflowVersionService } from './services/workflow-version.service';
@@ -79,6 +82,9 @@ import { WorkflowService } from './services/workflow.service';
     MemoryDefinitionSeeder,
     WorkflowSeeder,
     WorkflowService,
+    WorkflowTransferDefinitionService,
+    WorkflowTransferResourceService,
+    WorkflowTransferService,
     WorkflowVersionService,
     WorkflowRunService,
     MemoryDefinitionService,
@@ -102,6 +108,7 @@ import { WorkflowService } from './services/workflow.service';
     MemoryRecordRepository,
     McpServerRepository,
     WorkflowService,
+    WorkflowTransferService,
     WorkflowVersionService,
     WorkflowRunService,
     MemoryDefinitionService,

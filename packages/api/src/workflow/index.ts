@@ -60,6 +60,8 @@ export * from './services/workflow-version.service';
 
 export * from './services/workflow-run.service';
 
+export * from './services/transfer/workflow-transfer.service';
+
 export * from './services/memory-definition.service';
 
 export * from './services/memory-record.service';

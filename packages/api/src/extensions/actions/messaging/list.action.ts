@@ -17,6 +17,7 @@ import { ExecArgs } from '@/actions';
 import { ActionService } from '@/actions/actions.service';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ConversationalWorkflowContext } from '@/workflow/contexts/conversational-workflow.context';
+import { workflowResourceRef } from '@/workflow/resource-refs';
 
 import {
   MessageAction,
@@ -31,6 +32,12 @@ const listActionInputSchema = z
   .extend({
     content: contentOptionsSchema
       .omit({ limit: true })
+      .extend({
+        contentType: contentOptionsSchema.shape.contentType.meta({
+          ...contentOptionsSchema.shape.contentType.meta(),
+          ...workflowResourceRef('contentType'),
+        }),
+      })
       .default({
         display: 'list',
         buttons: [

@@ -57,6 +57,9 @@ import {
   userFullSchema,
   userSchema,
   workflowFullSchema,
+  workflowExportBundleSchema,
+  workflowExportBundleV1Schema,
+  workflowImportResultSchema,
   workflowRunFullSchema,
   workflowRunSchema,
   workflowVersionFullSchema,
@@ -775,6 +778,214 @@ describe("@hexabot-ai/types schemas", () => {
       yml: "defs: {}\nflow: []\noutputs: {}",
     });
     expect(parser).toHaveBeenCalledTimes(1);
+  });
+
+  it("parses workflow export bundles without credential secrets", () => {
+    const bundle = workflowExportBundleSchema.parse({
+      kind: "hexabot.workflow.bundle",
+      schemaVersion: 1,
+      exportedAt: now,
+      workflow: {
+        name: "Main",
+        description: null,
+        type: WorkflowType.conversational,
+        schedule: null,
+        inputSchema: {},
+        layout: {
+          x: 0,
+          y: 0,
+          zoom: 1,
+          direction: "horizontal",
+        },
+      },
+      version: {
+        number: 3,
+        checksum: "sha",
+        message: null,
+        exportedVersionId: "wfv_1",
+      },
+      definitionYml: "defs: {}\nflow: []\noutputs: {}",
+      resources: {
+        memoryDefinitions: [
+          {
+            exportId: "mem_1",
+            name: "Profile",
+            slug: "profile",
+            scope: MemoryScope.workflow,
+            schema: { type: "object" },
+            ttlSeconds: null,
+          },
+        ],
+        mcpServers: [
+          {
+            exportId: "mcp_1",
+            name: "Search",
+            enabled: true,
+            transport: McpServerTransport.http,
+            url: "https://mcp.example.com",
+            command: null,
+            args: null,
+            cwd: null,
+            credentialExportId: "cred_1",
+          },
+        ],
+        credentials: [
+          {
+            exportId: "cred_1",
+            name: "Search API",
+            exportedOwnerId: "u_1",
+          },
+        ],
+        contentTypes: [
+          {
+            exportId: "ct_1",
+            name: "Article",
+            schema: { type: "object" },
+          },
+        ],
+        labelGroups: [
+          {
+            exportId: "lg_1",
+            name: "Status",
+          },
+        ],
+        labels: [
+          {
+            exportId: "label_1",
+            title: "Qualified",
+            name: "QUALIFIED",
+            description: null,
+            groupExportId: "lg_1",
+          },
+        ],
+      },
+    });
+
+    expect(bundle.resources.credentials[0]).toEqual({
+      exportId: "cred_1",
+      name: "Search API",
+      exportedOwnerId: "u_1",
+    });
+    expect(bundle.resources.contentTypes[0]?.name).toBe("Article");
+    expect(bundle.resources.labelGroups[0]?.name).toBe("Status");
+    expect(bundle.resources.labels[0]).toMatchObject({
+      exportId: "label_1",
+      groupExportId: "lg_1",
+    });
+  });
+
+  it("defaults new workflow bundle resource arrays for older bundles", () => {
+    const bundle = workflowExportBundleSchema.parse({
+      kind: "hexabot.workflow.bundle",
+      schemaVersion: 1,
+      exportedAt: now,
+      workflow: {
+        name: "Main",
+        description: null,
+        type: WorkflowType.conversational,
+        schedule: null,
+        inputSchema: {},
+        layout: {
+          x: 0,
+          y: 0,
+          zoom: 1,
+          direction: "horizontal",
+        },
+      },
+      version: {
+        number: 1,
+        checksum: "sha",
+        message: null,
+        exportedVersionId: "wfv_1",
+      },
+      definitionYml: "defs: {}\nflow: []\noutputs: {}",
+      resources: {
+        memoryDefinitions: [],
+        mcpServers: [],
+        credentials: [],
+      },
+    });
+
+    expect(bundle.resources.contentTypes).toEqual([]);
+    expect(bundle.resources.labelGroups).toEqual([]);
+    expect(bundle.resources.labels).toEqual([]);
+  });
+
+  it("rejects credential values in workflow export bundles", () => {
+    expect(() =>
+      workflowExportBundleV1Schema.parse({
+        kind: "hexabot.workflow.bundle",
+        schemaVersion: 1,
+        exportedAt: now,
+        workflow: {
+          name: "Main",
+          description: null,
+          type: WorkflowType.conversational,
+          schedule: null,
+          inputSchema: {},
+          layout: {
+            x: 0,
+            y: 0,
+            zoom: 1,
+            direction: "horizontal",
+          },
+        },
+        version: {
+          number: 1,
+          checksum: "sha",
+          message: null,
+          exportedVersionId: "wfv_1",
+        },
+        definitionYml: "defs: {}\nflow: []\noutputs: {}",
+        resources: {
+          memoryDefinitions: [],
+          mcpServers: [],
+          credentials: [
+            {
+              exportId: "cred_1",
+              name: "Search API",
+              value: "secret",
+            },
+          ],
+        },
+      }),
+    ).toThrow();
+  });
+
+  it("parses workflow import results", () => {
+    const result = workflowImportResultSchema.parse({
+      workflow: {
+        id: "wf_1",
+        createdAt: now,
+        updatedAt: now,
+        name: "Imported",
+        description: null,
+        type: WorkflowType.conversational,
+        schedule: null,
+        inputSchema: {},
+        builtin: false,
+        x: 0,
+        y: 0,
+        zoom: 1,
+        direction: "horizontal",
+        currentVersion: "wfv_1",
+        publishedVersion: null,
+        createdBy: "u_1",
+        runAfterMs: 0,
+      },
+      resources: [
+        {
+          kind: "label",
+          exportId: "label_1",
+          localId: "label_local",
+          name: "QUALIFIED",
+          action: "reused",
+        },
+      ],
+      warnings: ["Credential placeholder created."],
+    });
+
+    expect(result.resources[0]?.action).toBe("reused");
   });
 
   it("computes workflow run duration and mixed triggeredBy coercion", () => {

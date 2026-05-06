@@ -8,6 +8,7 @@ import { BindingKindDescriptor } from '@hexabot-ai/agentic';
 import z from 'zod';
 
 import { createBindingKind } from '@/bindings/create-binding-kind';
+import { workflowResourceRef } from '@/workflow/resource-refs';
 
 export const aiMcpToolBindingSchema = z.strictObject({
   server_id: z.uuid().meta({
@@ -20,6 +21,7 @@ export const aiMcpToolBindingSchema = z.strictObject({
       labelKey: 'name',
       enableEntityAddButton: true,
     },
+    ...workflowResourceRef('mcpServer'),
   }),
   tool_names: z
     .array(z.string().trim().min(1))
