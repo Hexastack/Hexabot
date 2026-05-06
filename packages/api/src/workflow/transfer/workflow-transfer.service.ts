@@ -30,16 +30,17 @@ import { WorkflowVersionService } from '../services/workflow-version.service';
 import { WorkflowService } from '../services/workflow.service';
 import { WorkflowVersionAction } from '../types';
 
-import { ContentTypeTransferAdapter } from './adapters/content-type-transfer.adapter';
-import { CredentialTransferAdapter } from './adapters/credential-transfer.adapter';
-import { LabelTransferAdapter } from './adapters/label-transfer.adapter';
-import { McpServerTransferAdapter } from './adapters/mcp-server-transfer.adapter';
-import { MemoryDefinitionTransferAdapter } from './adapters/memory-definition-transfer.adapter';
+import { WorkflowTransferAdapterRegistry } from './workflow-transfer-adapter.registry';
 import {
   type WorkflowBindingResourceRefs,
   WorkflowTransferDefinitionService,
   type WorkflowTaskResourceRefs,
 } from './workflow-transfer-definition.service';
+import {
+  WorkflowTransferExportContext,
+  WorkflowTransferImportContext,
+  type WorkflowTransferResourceAdapter,
+} from './workflow-transfer-resource-adapter';
 import {
   buildPostCreateEvent,
   type ImportedWorkflowTransferResources,
@@ -59,11 +60,7 @@ export class WorkflowTransferService {
     private readonly workflowService: WorkflowService,
     private readonly workflowVersionService: WorkflowVersionService,
     private readonly workflowTransferDefinitionService: WorkflowTransferDefinitionService,
-    private readonly credentialTransferAdapter: CredentialTransferAdapter,
-    private readonly memoryDefinitionTransferAdapter: MemoryDefinitionTransferAdapter,
-    private readonly contentTypeTransferAdapter: ContentTypeTransferAdapter,
-    private readonly labelTransferAdapter: LabelTransferAdapter,
-    private readonly mcpServerTransferAdapter: McpServerTransferAdapter,
+    private readonly workflowTransferAdapterRegistry: WorkflowTransferAdapterRegistry,
   ) {}
 
   async exportWorkflow(id: string): Promise<ExportedWorkflowFile> {
@@ -91,32 +88,7 @@ export class WorkflowTransferService {
       this.workflowTransferDefinitionService.collectTaskResourceRefs(
         definition,
       );
-    const mcpResources =
-      await this.mcpServerTransferAdapter.buildExportResources([
-        ...bindingRefs.mcpServers,
-        ...taskRefs.mcpServers,
-      ]);
-    const resources = {
-      memoryDefinitions:
-        await this.memoryDefinitionTransferAdapter.buildExportResources([
-          ...bindingRefs.memoryDefinitions,
-          ...taskRefs.memoryDefinitions,
-        ]),
-      mcpServers: mcpResources.mcpServers,
-      credentials: await this.credentialTransferAdapter.buildExportResources([
-        ...bindingRefs.credentials,
-        ...taskRefs.credentials,
-        ...mcpResources.credentialIds,
-      ]),
-      contentTypes: await this.contentTypeTransferAdapter.buildExportResources([
-        ...bindingRefs.contentTypes,
-        ...taskRefs.contentTypes,
-      ]),
-      ...(await this.labelTransferAdapter.buildExportResources([
-        ...bindingRefs.labels,
-        ...taskRefs.labels,
-      ])),
-    };
+    const resources = await this.buildExportResources(bindingRefs, taskRefs);
     const bundle: WorkflowExportBundle = {
       kind: WORKFLOW_EXPORT_BUNDLE_KIND,
       schemaVersion: 1,
@@ -170,6 +142,7 @@ export class WorkflowTransferService {
         definition,
       );
 
+    this.assertBundleResourceBucketsAreSupported(bundle.resources);
     this.assertBundleContainsReferencedResources(bundle, bindingRefs, taskRefs);
 
     const { workflowId, resources, warnings, postCreateEvents } =
@@ -284,49 +257,49 @@ export class WorkflowTransferService {
     return validation.data;
   }
 
+  private async buildExportResources(
+    bindingRefs: WorkflowBindingResourceRefs,
+    taskRefs: WorkflowTaskResourceRefs,
+  ): Promise<WorkflowExportBundle['resources']> {
+    const resources = this.createEmptyResourceBuckets();
+    const exportContext = new WorkflowTransferExportContext(
+      this.mergeResourceRefs(bindingRefs, taskRefs),
+    );
+
+    for (const adapter of this.workflowTransferAdapterRegistry.listInReverseDependencyOrder()) {
+      const adapterResources =
+        await adapter.buildExportResources(exportContext);
+      this.mergeAdapterResources(resources, adapter, adapterResources);
+    }
+
+    return resources as WorkflowExportBundle['resources'];
+  }
+
   private assertBundleContainsReferencedResources(
     bundle: WorkflowExportBundle,
     refs: WorkflowBindingResourceRefs,
     taskRefs: WorkflowTaskResourceRefs,
   ): void {
-    this.assertRefsAreBundled(
-      'memory definition',
-      [...refs.memoryDefinitions, ...taskRefs.memoryDefinitions],
-      bundle.resources.memoryDefinitions.map((resource) => resource.exportId),
-    );
-    this.assertRefsAreBundled(
-      'MCP server',
-      [...refs.mcpServers, ...taskRefs.mcpServers],
-      bundle.resources.mcpServers.map((resource) => resource.exportId),
-    );
-    this.assertRefsAreBundled(
-      'credential',
-      [
-        ...refs.credentials,
-        ...taskRefs.credentials,
-        ...bundle.resources.mcpServers
-          .map((resource) => resource.credentialExportId)
-          .filter((id): id is string => typeof id === 'string' && !!id),
-      ],
-      bundle.resources.credentials.map((resource) => resource.exportId),
-    );
-    this.assertRefsAreBundled(
-      'content type',
-      [...refs.contentTypes, ...taskRefs.contentTypes],
-      bundle.resources.contentTypes.map((resource) => resource.exportId),
-    );
-    this.assertRefsAreBundled(
-      'label',
-      [...refs.labels, ...taskRefs.labels],
-      bundle.resources.labels.map((resource) => resource.exportId),
-    );
-    this.assertRefsAreBundled(
-      'label group',
-      bundle.resources.labels
-        .map((resource) => resource.groupExportId)
-        .filter((id): id is string => typeof id === 'string' && !!id),
-      bundle.resources.labelGroups.map((resource) => resource.exportId),
-    );
+    for (const [kind, resourceRefs] of Object.entries(
+      this.mergeResourceRefs(refs, taskRefs),
+    )) {
+      if (resourceRefs.length === 0) {
+        continue;
+      }
+
+      const adapter = this.workflowTransferAdapterRegistry.get(kind);
+      if (!adapter) {
+        throw new BadRequestException(
+          `Workflow bundle references unsupported resource kind "${kind}"`,
+        );
+      }
+
+      this.assertRefsAreBundled(
+        kind,
+        resourceRefs,
+        this.getBundledExportIds(bundle.resources, adapter.resourceKeys[0]),
+      );
+    }
   }
 
   private assertRefsAreBundled(
@@ -345,69 +318,144 @@ export class WorkflowTransferService {
     }
   }
 
+  private assertBundleResourceBucketsAreSupported(
+    resources: WorkflowExportBundle['resources'],
+  ): void {
+    const supportedResourceKeys = new Set(
+      this.workflowTransferAdapterRegistry.getResourceKeys(),
+    );
+
+    for (const [key, value] of Object.entries(
+      resources as Record<string, unknown[]>,
+    )) {
+      if (supportedResourceKeys.has(key) || value.length === 0) {
+        continue;
+      }
+
+      throw new BadRequestException(
+        `Workflow bundle contains unsupported resource section "${key}"`,
+      );
+    }
+  }
+
+  private createEmptyResourceBuckets(): Record<string, unknown[]> {
+    return Object.fromEntries(
+      this.workflowTransferAdapterRegistry
+        .listInDependencyOrder()
+        .flatMap((adapter) =>
+          adapter.resourceKeys.map((resourceKey) => [
+            resourceKey,
+            [] as unknown[],
+          ]),
+        ),
+    );
+  }
+
+  private mergeAdapterResources(
+    resources: Record<string, unknown[]>,
+    adapter: WorkflowTransferResourceAdapter,
+    adapterResources: Record<string, unknown[]>,
+  ): void {
+    const declaredResourceKeys = new Set(adapter.resourceKeys);
+
+    for (const [key, value] of Object.entries(adapterResources)) {
+      if (!declaredResourceKeys.has(key)) {
+        throw new Error(
+          `Workflow transfer adapter "${adapter.kind}" returned undeclared resource key "${key}"`,
+        );
+      }
+
+      if (!Array.isArray(value)) {
+        throw new Error(
+          `Workflow transfer adapter "${adapter.kind}" returned non-array resources for "${key}"`,
+        );
+      }
+
+      resources[key] = value;
+    }
+
+    for (const resourceKey of adapter.resourceKeys) {
+      resources[resourceKey] ??= [];
+    }
+  }
+
+  private mergeResourceRefs(
+    refs: WorkflowBindingResourceRefs,
+    taskRefs: WorkflowTaskResourceRefs,
+  ): Record<string, string[]> {
+    const merged = new Map<string, Set<string>>();
+
+    for (const refSet of [refs, taskRefs]) {
+      for (const [kind, ids] of Object.entries(refSet)) {
+        const kindRefs = merged.get(kind) ?? new Set<string>();
+        for (const id of ids) {
+          kindRefs.add(id);
+        }
+        merged.set(kind, kindRefs);
+      }
+    }
+
+    return Object.fromEntries(
+      Array.from(merged.entries()).map(([kind, ids]) => [
+        kind,
+        Array.from(ids),
+      ]),
+    );
+  }
+
+  private getBundledExportIds(
+    resources: WorkflowExportBundle['resources'],
+    resourceKey: string,
+  ): string[] {
+    const resourceBucket = (resources as Record<string, unknown[]>)[
+      resourceKey
+    ];
+
+    return (resourceBucket ?? []).flatMap((resource) => {
+      if (
+        typeof resource === 'object' &&
+        resource !== null &&
+        'exportId' in resource &&
+        typeof resource.exportId === 'string'
+      ) {
+        return [resource.exportId];
+      }
+
+      return [];
+    });
+  }
+
   private async importResources(
     manager: EntityManager,
     resources: WorkflowExportBundle['resources'],
     ownerId: string,
   ): Promise<ImportedWorkflowTransferResources> {
-    const credentialResult =
-      await this.credentialTransferAdapter.importResources(
-        manager,
-        resources.credentials,
-        ownerId,
-      );
-    const memoryResult =
-      await this.memoryDefinitionTransferAdapter.importResources(
-        manager,
-        resources.memoryDefinitions,
-      );
-    const contentTypeResult =
-      await this.contentTypeTransferAdapter.importResources(
-        manager,
-        resources.contentTypes,
-      );
-    const labelResult = await this.labelTransferAdapter.importResources(
+    const adapters =
+      this.workflowTransferAdapterRegistry.listInDependencyOrder();
+    const importContext = new WorkflowTransferImportContext(
       manager,
-      resources.labelGroups,
-      resources.labels,
-    );
-    const mcpResult = await this.mcpServerTransferAdapter.importResources(
-      manager,
-      resources.mcpServers,
-      credentialResult.idMap,
-      credentialResult.placeholderExportIds,
+      resources,
+      ownerId,
     );
 
+    for (const adapter of adapters) {
+      importContext.addResult(
+        adapter.kind,
+        await adapter.importResources(importContext),
+      );
+    }
+
+    const results = importContext.getResultsInOrder(
+      adapters.map((adapter) => adapter.kind),
+    );
+    const idMaps = importContext.getIdMaps();
+
     return {
-      bindingIdMaps: {
-        contentTypes: contentTypeResult.idMap,
-        credentials: credentialResult.idMap,
-        labels: labelResult.idMap,
-        mcpServers: mcpResult.idMap,
-        memoryDefinitions: memoryResult.idMap,
-      },
-      taskIdMaps: {
-        contentTypes: contentTypeResult.idMap,
-        credentials: credentialResult.idMap,
-        labels: labelResult.idMap,
-        mcpServers: mcpResult.idMap,
-        memoryDefinitions: memoryResult.idMap,
-      },
-      resources: [
-        ...credentialResult.resources,
-        ...memoryResult.resources,
-        ...contentTypeResult.resources,
-        ...labelResult.resources,
-        ...mcpResult.resources,
-      ],
-      warnings: [...credentialResult.warnings, ...mcpResult.warnings],
-      postCreateEvents: [
-        ...credentialResult.postCreateEvents,
-        ...memoryResult.postCreateEvents,
-        ...contentTypeResult.postCreateEvents,
-        ...labelResult.postCreateEvents,
-        ...mcpResult.postCreateEvents,
-      ],
+      bindingIdMaps: idMaps,
+      taskIdMaps: idMaps,
+      resources: results.flatMap((result) => result.resources),
+      warnings: results.flatMap((result) => result.warnings),
+      postCreateEvents: results.flatMap((result) => result.postCreateEvents),
     };
   }
 

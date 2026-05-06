@@ -16,6 +16,14 @@ import { workflowSchema } from "./workflow";
 
 export const WORKFLOW_EXPORT_BUNDLE_KIND = "hexabot.workflow.bundle";
 
+export const WORKFLOW_TRANSFER_RESOURCE_KIND_PATTERN =
+  /^[a-z][A-Za-z0-9]*(?:[._-][A-Za-z0-9]+)*$/;
+
+export const workflowTransferResourceKindSchema = z
+  .string()
+  .min(1)
+  .regex(WORKFLOW_TRANSFER_RESOURCE_KIND_PATTERN);
+
 const workflowExportBundleLayoutSchema = z.strictObject({
   x: z.coerce.number(),
   y: z.coerce.number(),
@@ -83,14 +91,16 @@ export const workflowExportBundleLabelSchema = z.strictObject({
   groupExportId: z.string().nullable(),
 });
 
-const workflowExportBundleResourcesSchema = z.strictObject({
-  memoryDefinitions: z.array(workflowExportBundleMemoryDefinitionSchema),
-  mcpServers: z.array(workflowExportBundleMcpServerSchema),
-  credentials: z.array(workflowExportBundleCredentialSchema),
-  contentTypes: z.array(workflowExportBundleContentTypeSchema).default([]),
-  labelGroups: z.array(workflowExportBundleLabelGroupSchema).default([]),
-  labels: z.array(workflowExportBundleLabelSchema).default([]),
-});
+const workflowExportBundleResourcesSchema = z
+  .object({
+    memoryDefinitions: z.array(workflowExportBundleMemoryDefinitionSchema),
+    mcpServers: z.array(workflowExportBundleMcpServerSchema),
+    credentials: z.array(workflowExportBundleCredentialSchema),
+    contentTypes: z.array(workflowExportBundleContentTypeSchema).default([]),
+    labelGroups: z.array(workflowExportBundleLabelGroupSchema).default([]),
+    labels: z.array(workflowExportBundleLabelSchema).default([]),
+  })
+  .catchall(z.array(z.unknown()));
 
 export const workflowExportBundleV1Schema = z.strictObject({
   kind: z.literal(WORKFLOW_EXPORT_BUNDLE_KIND),
@@ -111,14 +121,7 @@ export const workflowImportResourceActionSchema = z.enum([
 ]);
 
 export const workflowImportResourceResultSchema = z.strictObject({
-  kind: z.enum([
-    "memoryDefinition",
-    "mcpServer",
-    "credential",
-    "contentType",
-    "labelGroup",
-    "label",
-  ]),
+  kind: workflowTransferResourceKindSchema,
   exportId: z.string().min(1),
   localId: z.string().min(1),
   name: z.string().min(1),

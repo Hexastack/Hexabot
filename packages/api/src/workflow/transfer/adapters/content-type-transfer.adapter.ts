@@ -12,11 +12,17 @@ import {
   type WorkflowImportResourceResult,
 } from '@hexabot-ai/types';
 import { ConflictException, Injectable } from '@nestjs/common';
-import { EntityManager, In } from 'typeorm';
+import { In } from 'typeorm';
 
 import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 
+import {
+  WorkflowTransferAdapter,
+  WorkflowTransferExportContext,
+  WorkflowTransferImportContext,
+  WorkflowTransferResourceAdapter,
+} from '../workflow-transfer-resource-adapter';
 import {
   assertFoundAll,
   buildPostCreateEvent,
@@ -25,11 +31,28 @@ import {
   type WorkflowTransferImportAdapterResult,
 } from '../workflow-transfer.types';
 
+@WorkflowTransferAdapter()
 @Injectable()
-export class ContentTypeTransferAdapter {
-  constructor(private readonly contentTypeService: ContentTypeService) {}
+export class ContentTypeTransferAdapter extends WorkflowTransferResourceAdapter {
+  override readonly kind = 'contentType';
 
-  async buildExportResources(
+  override readonly resourceKeys = ['contentTypes'];
+
+  constructor(private readonly contentTypeService: ContentTypeService) {
+    super();
+  }
+
+  override async buildExportResources(
+    ctx: WorkflowTransferExportContext,
+  ): Promise<Record<string, WorkflowExportBundleContentType[]>> {
+    return {
+      contentTypes: await this.buildContentTypeExportResources(
+        ctx.getRefs(this.kind),
+      ),
+    };
+  }
+
+  private async buildContentTypeExportResources(
     ids: string[],
   ): Promise<WorkflowExportBundleContentType[]> {
     const uniqueIds = uniqueResourceIds(ids);
@@ -53,17 +76,20 @@ export class ContentTypeTransferAdapter {
     }));
   }
 
-  async importResources(
-    manager: EntityManager,
-    contentTypes: WorkflowExportBundle['resources']['contentTypes'],
+  override async importResources(
+    ctx: WorkflowTransferImportContext,
   ): Promise<WorkflowTransferImportAdapterResult> {
+    const contentTypes =
+      ctx.getResources<
+        WorkflowExportBundle['resources']['contentTypes'][number]
+      >('contentTypes');
     const idMap: Record<string, string> = {};
     const resources: WorkflowImportResourceResult[] = [];
     const postCreateEvents: WorkflowTransferImportAdapterResult['postCreateEvents'] =
       [];
 
     for (const contentType of contentTypes) {
-      const existing = await manager.findOne(ContentTypeOrmEntity, {
+      const existing = await ctx.manager.findOne(ContentTypeOrmEntity, {
         where: { name: contentType.name },
       });
 
@@ -91,9 +117,9 @@ export class ContentTypeTransferAdapter {
         name: contentType.name,
         schema: contentType.schema,
       };
-      const created = await manager.save(
+      const created = await ctx.manager.save(
         ContentTypeOrmEntity,
-        manager.create(ContentTypeOrmEntity, payload),
+        ctx.manager.create(ContentTypeOrmEntity, payload),
       );
 
       idMap[contentType.exportId] = created.id;

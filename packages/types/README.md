@@ -152,6 +152,7 @@ Workflow import/export contracts are exposed as zod schemas and inferred types:
 import {
   workflowExportBundleSchema,
   workflowImportResultSchema,
+  workflowTransferResourceKindSchema,
   type WorkflowExportBundleV1,
   type WorkflowImportResult,
 } from "@hexabot-ai/types";
@@ -163,6 +164,8 @@ only; secret `value` fields are intentionally rejected by the strict schema.
 Resource arrays include workflow dependencies such as memory definitions, MCP
 servers, credentials, content types, label groups, and labels. Newer resource
 arrays default to empty lists so existing version 1 bundles remain importable.
+Extension resource arrays may also be included directly under `resources`; custom
+resource result `kind` values are validated with `workflowTransferResourceKindSchema`.
 
 ## Alias Compatibility
 

@@ -9,8 +9,6 @@ import { BadRequestException } from '@nestjs/common';
 
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import type { WorkflowTaskResourceIdMaps } from './workflow-transfer-definition.service';
-
 /**
  * Workflow transfer persistence contract:
  * - WorkflowTransferService owns the import transaction boundary.
@@ -35,11 +33,17 @@ export type WorkflowTransferImportAdapterResult = {
   resources: WorkflowImportResourceResult[];
   warnings: string[];
   postCreateEvents: WorkflowTransferPostCreateEvent[];
+  metadata?: Record<string, unknown>;
 };
 
+export type WorkflowTransferResourceIdMaps = Record<
+  string,
+  Record<string, string>
+>;
+
 export type ImportedWorkflowTransferResources = {
-  bindingIdMaps: WorkflowTaskResourceIdMaps;
-  taskIdMaps: WorkflowTaskResourceIdMaps;
+  bindingIdMaps: WorkflowTransferResourceIdMaps;
+  taskIdMaps: WorkflowTransferResourceIdMaps;
   resources: WorkflowImportResourceResult[];
   warnings: string[];
   postCreateEvents: WorkflowTransferPostCreateEvent[];

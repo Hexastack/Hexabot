@@ -13,6 +13,7 @@ import {
   workflowExportBundleSchema,
 } from '@hexabot-ai/types';
 import { BadRequestException, ConflictException } from '@nestjs/common';
+import { DiscoveryModule, DiscoveryService } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
@@ -56,7 +57,63 @@ import { CredentialTransferAdapter } from './adapters/credential-transfer.adapte
 import { LabelTransferAdapter } from './adapters/label-transfer.adapter';
 import { McpServerTransferAdapter } from './adapters/mcp-server-transfer.adapter';
 import { MemoryDefinitionTransferAdapter } from './adapters/memory-definition-transfer.adapter';
+import { WorkflowTransferAdapterRegistry } from './workflow-transfer-adapter.registry';
+import {
+  WorkflowTransferAdapter,
+  type WorkflowTransferExportContext,
+  type WorkflowTransferImportContext,
+  WorkflowTransferResourceAdapter,
+} from './workflow-transfer-resource-adapter';
 import { WorkflowTransferService } from './workflow-transfer.service';
+import { type WorkflowTransferImportAdapterResult } from './workflow-transfer.types';
+
+type KnowledgeBaseExportResource = {
+  exportId: string;
+  name: string;
+};
+
+@WorkflowTransferAdapter()
+class KnowledgeBaseTransferAdapter extends WorkflowTransferResourceAdapter {
+  override readonly kind = 'knowledgeBase';
+
+  override readonly resourceKeys = ['knowledgeBases'];
+
+  override async buildExportResources(
+    ctx: WorkflowTransferExportContext,
+  ): Promise<Record<string, KnowledgeBaseExportResource[]>> {
+    return {
+      knowledgeBases: ctx.getRefs(this.kind).map((id) => ({
+        exportId: id,
+        name: `Knowledge base ${id}`,
+      })),
+    };
+  }
+
+  override async importResources(
+    ctx: WorkflowTransferImportContext,
+  ): Promise<WorkflowTransferImportAdapterResult> {
+    const knowledgeBases =
+      ctx.getResources<KnowledgeBaseExportResource>('knowledgeBases');
+
+    return {
+      idMap: Object.fromEntries(
+        knowledgeBases.map((resource, index) => [
+          resource.exportId,
+          `knowledge-base-local-${index + 1}`,
+        ]),
+      ),
+      resources: knowledgeBases.map((resource, index) => ({
+        kind: this.kind,
+        exportId: resource.exportId,
+        localId: `knowledge-base-local-${index + 1}`,
+        name: resource.name,
+        action: 'created',
+      })),
+      warnings: [],
+      postCreateEvents: [],
+    };
+  }
+}
 
 describe('WorkflowTransferService', () => {
   let module: TestingModule;
@@ -89,8 +146,15 @@ describe('WorkflowTransferService', () => {
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
+      imports: [DiscoveryModule],
       providers: [
         WorkflowTransferService,
+        {
+          provide: WorkflowTransferAdapterRegistry,
+          useFactory: (discoveryService: DiscoveryService) =>
+            new WorkflowTransferAdapterRegistry(discoveryService),
+          inject: [DiscoveryService],
+        },
         WorkflowService,
         WorkflowVersionService,
         MemoryDefinitionService,
@@ -103,6 +167,7 @@ describe('WorkflowTransferService', () => {
         ContentTypeTransferAdapter,
         LabelTransferAdapter,
         McpServerTransferAdapter,
+        KnowledgeBaseTransferAdapter,
         {
           provide: WebsocketGateway,
           useValue: websocketGatewayMock,
@@ -197,6 +262,15 @@ describe('WorkflowTransferService', () => {
             .array(z.string())
             .optional()
             .meta(workflowResourceRef('label')),
+        }),
+        settingSchema: z.strictObject({}),
+      },
+      custom_use_knowledge: {
+        supportedBindings: [],
+        inputSchema: z.strictObject({
+          knowledge_base_id: z
+            .string()
+            .meta(workflowResourceRef('knowledgeBase')),
         }),
         settingSchema: z.strictObject({}),
       },
@@ -489,6 +563,62 @@ describe('WorkflowTransferService', () => {
     expect(imported?.definitionYml).not.toContain(labelExportId);
   });
 
+  it('exports and imports extension resource buckets through discovered adapters', async () => {
+    const knowledgeBaseExportId = `knowledge_base_${Date.now()}`;
+    const definition: WorkflowDefinition = {
+      defs: {
+        use_knowledge: {
+          kind: 'task',
+          action: 'custom_use_knowledge',
+          inputs: {
+            knowledge_base_id: knowledgeBaseExportId,
+          },
+        },
+      },
+      flow: [{ do: 'use_knowledge' }],
+      outputs: { ok: '=true' },
+    };
+    const workflow = await workflowService.create({
+      name: `Extension export workflow ${Date.now()}`,
+      type: WorkflowType.conversational,
+      schedule: null,
+      createdBy: creatorId,
+    });
+    await workflowVersionService.commit({
+      workflow: workflow.id,
+      definitionYml: AgenticWorkflow.stringifyDefinition(definition),
+      action: WorkflowVersionAction.update,
+      createdBy: creatorId,
+    });
+
+    const exported = await transferService.exportWorkflow(workflow.id);
+    const bundle = workflowExportBundleSchema.parse(
+      parseYaml(exported.content),
+    );
+
+    expect(bundle.resources.knowledgeBases).toEqual([
+      {
+        exportId: knowledgeBaseExportId,
+        name: `Knowledge base ${knowledgeBaseExportId}`,
+      },
+    ]);
+
+    const result = await transferService.importWorkflow(
+      exported.content,
+      creatorId,
+    );
+    const knowledgeBaseResult = result.resources.find(
+      (resource) => resource.kind === 'knowledgeBase',
+    );
+    const imported = await workflowService.findOneAndPopulate(
+      result.workflow.id,
+    );
+
+    expect(knowledgeBaseResult?.action).toBe('created');
+    expect(imported?.definitionYml).toContain(knowledgeBaseResult?.localId);
+    expect(imported?.definitionYml).not.toContain(knowledgeBaseExportId);
+  });
+
   it('fails when a matching memory definition has different configuration', async () => {
     await memoryDefinitionService.create({
       name: 'Existing profile',
@@ -692,6 +822,52 @@ describe('WorkflowTransferService', () => {
   it('rejects invalid workflow bundle YAML', async () => {
     await expect(
       transferService.importWorkflow('kind: [', creatorId),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('rejects non-empty resource buckets without a registered adapter', async () => {
+    await expect(
+      transferService.importWorkflow(
+        stringifyYaml(
+          {
+            kind: WORKFLOW_EXPORT_BUNDLE_KIND,
+            schemaVersion: 1,
+            exportedAt: '2026-05-05T00:00:00.000Z',
+            workflow: {
+              name: `Unsupported resource workflow ${Date.now()}`,
+              description: null,
+              type: WorkflowType.conversational,
+              schedule: null,
+              inputSchema: {},
+              layout: {
+                x: 0,
+                y: 0,
+                zoom: 1,
+                direction: 'horizontal',
+              },
+            },
+            version: {
+              number: 1,
+              checksum: 'sha',
+              message: null,
+              exportedVersionId: 'version-1',
+            },
+            definitionYml: AgenticWorkflow.stringifyDefinition({
+              defs: {},
+              flow: [],
+              outputs: { ok: '=true' },
+            }),
+            resources: {
+              memoryDefinitions: [],
+              mcpServers: [],
+              credentials: [],
+              unsupportedResources: [{ exportId: 'unsupported-1' }],
+            },
+          },
+          { lineWidth: 0 },
+        ),
+        creatorId,
+      ),
     ).rejects.toThrow(BadRequestException);
   });
 

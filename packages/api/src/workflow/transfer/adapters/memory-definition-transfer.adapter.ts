@@ -12,11 +12,17 @@ import {
   type WorkflowImportResourceResult,
 } from '@hexabot-ai/types';
 import { ConflictException, Injectable } from '@nestjs/common';
-import { EntityManager, In } from 'typeorm';
+import { In } from 'typeorm';
 
 import { MemoryDefinitionOrmEntity } from '@/workflow/entities/memory-definition.entity';
 import { MemoryDefinitionService } from '@/workflow/services/memory-definition.service';
 
+import {
+  WorkflowTransferAdapter,
+  WorkflowTransferExportContext,
+  WorkflowTransferImportContext,
+  WorkflowTransferResourceAdapter,
+} from '../workflow-transfer-resource-adapter';
 import {
   assertFoundAll,
   buildPostCreateEvent,
@@ -25,13 +31,30 @@ import {
   type WorkflowTransferImportAdapterResult,
 } from '../workflow-transfer.types';
 
+@WorkflowTransferAdapter()
 @Injectable()
-export class MemoryDefinitionTransferAdapter {
+export class MemoryDefinitionTransferAdapter extends WorkflowTransferResourceAdapter {
+  override readonly kind = 'memoryDefinition';
+
+  override readonly resourceKeys = ['memoryDefinitions'];
+
   constructor(
     private readonly memoryDefinitionService: MemoryDefinitionService,
-  ) {}
+  ) {
+    super();
+  }
 
-  async buildExportResources(
+  override async buildExportResources(
+    ctx: WorkflowTransferExportContext,
+  ): Promise<Record<string, WorkflowExportBundleMemoryDefinition[]>> {
+    return {
+      memoryDefinitions: await this.buildMemoryDefinitionExportResources(
+        ctx.getRefs(this.kind),
+      ),
+    };
+  }
+
+  private async buildMemoryDefinitionExportResources(
     ids: string[],
   ): Promise<WorkflowExportBundleMemoryDefinition[]> {
     const uniqueIds = uniqueResourceIds(ids);
@@ -58,17 +81,20 @@ export class MemoryDefinitionTransferAdapter {
     }));
   }
 
-  async importResources(
-    manager: EntityManager,
-    definitions: WorkflowExportBundle['resources']['memoryDefinitions'],
+  override async importResources(
+    ctx: WorkflowTransferImportContext,
   ): Promise<WorkflowTransferImportAdapterResult> {
+    const definitions =
+      ctx.getResources<
+        WorkflowExportBundle['resources']['memoryDefinitions'][number]
+      >('memoryDefinitions');
     const idMap: Record<string, string> = {};
     const resources: WorkflowImportResourceResult[] = [];
     const postCreateEvents: WorkflowTransferImportAdapterResult['postCreateEvents'] =
       [];
 
     for (const definition of definitions) {
-      const existing = await manager.findOne(MemoryDefinitionOrmEntity, {
+      const existing = await ctx.manager.findOne(MemoryDefinitionOrmEntity, {
         where: { slug: definition.slug },
       });
 
@@ -99,9 +125,9 @@ export class MemoryDefinitionTransferAdapter {
         schema: definition.schema,
         ttlSeconds: definition.ttlSeconds ?? null,
       };
-      const created = await manager.save(
+      const created = await ctx.manager.save(
         MemoryDefinitionOrmEntity,
-        manager.create(MemoryDefinitionOrmEntity, payload),
+        ctx.manager.create(MemoryDefinitionOrmEntity, payload),
       );
 
       idMap[definition.exportId] = created.id;

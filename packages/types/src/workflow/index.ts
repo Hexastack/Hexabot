@@ -71,6 +71,7 @@ export {
 
 export {
   WORKFLOW_EXPORT_BUNDLE_KIND,
+  WORKFLOW_TRANSFER_RESOURCE_KIND_PATTERN,
   workflowExportBundleContentTypeSchema,
   workflowExportBundleCredentialSchema,
   workflowExportBundleLabelGroupSchema,
@@ -82,6 +83,7 @@ export {
   workflowImportResourceActionSchema,
   workflowImportResourceResultSchema,
   workflowImportResultSchema,
+  workflowTransferResourceKindSchema,
   type WorkflowExportBundle,
   type WorkflowExportBundleContentType,
   type WorkflowExportBundleCredential,

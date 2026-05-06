@@ -4,12 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-export type WorkflowResourceRefKind =
-  | 'contentType'
-  | 'credential'
-  | 'label'
-  | 'mcpServer'
-  | 'memoryDefinition';
+import { WORKFLOW_TRANSFER_RESOURCE_KIND_PATTERN } from '@hexabot-ai/types';
+
+export type WorkflowResourceRefKind = string;
 
 export const WORKFLOW_RESOURCE_REF_METADATA_KEY = 'x-hexabot:resourceRef';
 
@@ -41,10 +38,7 @@ export const isWorkflowResourceRefKind = (
   value: unknown,
 ): value is WorkflowResourceRefKind => {
   return (
-    value === 'contentType' ||
-    value === 'credential' ||
-    value === 'label' ||
-    value === 'mcpServer' ||
-    value === 'memoryDefinition'
+    typeof value === 'string' &&
+    WORKFLOW_TRANSFER_RESOURCE_KIND_PATTERN.test(value)
   );
 };

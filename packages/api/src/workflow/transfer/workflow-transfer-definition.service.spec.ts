@@ -70,6 +70,15 @@ describe('WorkflowTransferDefinitionService', () => {
             .meta(workflowResourceRef('memoryDefinition')),
         }),
       },
+      custom_use_extension_resource: {
+        supportedBindings: [],
+        inputSchema: z.strictObject({
+          knowledge_base_id: z
+            .string()
+            .meta(workflowResourceRef('knowledgeBase')),
+        }),
+        settingSchema: z.strictObject({}),
+      },
     } as unknown as ReturnType<ActionService['getRegistry']>;
     bindingRegistry = {
       memory: {
@@ -189,24 +198,29 @@ describe('WorkflowTransferDefinitionService', () => {
             definition_id: 'task-memory-export-id',
           },
         },
+        use_extension_resource: {
+          kind: 'task',
+          action: 'custom_use_extension_resource',
+          inputs: {
+            knowledge_base_id: 'knowledge-base-export-id',
+          },
+        },
       },
       flow: [],
       outputs: {},
     };
 
     expect(service.collectBindingResourceRefs(definition)).toEqual({
-      contentTypes: [],
-      credentials: [],
-      labels: [],
-      mcpServers: ['mcp-export-id'],
-      memoryDefinitions: ['memory-export-id'],
+      mcpServer: ['mcp-export-id'],
+      memoryDefinition: ['memory-export-id'],
     });
     expect(service.collectTaskResourceRefs(definition)).toEqual({
-      contentTypes: ['content-type-export-id', 'content-type-export-id-2'],
-      credentials: ['credential-export-id'],
-      labels: ['label-export-id', 'label-export-id-2'],
-      mcpServers: ['task-mcp-export-id'],
-      memoryDefinitions: ['task-memory-export-id'],
+      contentType: ['content-type-export-id', 'content-type-export-id-2'],
+      credential: ['credential-export-id'],
+      knowledgeBase: ['knowledge-base-export-id'],
+      label: ['label-export-id', 'label-export-id-2'],
+      mcpServer: ['task-mcp-export-id'],
+      memoryDefinition: ['task-memory-export-id'],
     });
   });
 
@@ -253,23 +267,28 @@ describe('WorkflowTransferDefinitionService', () => {
             definition_id: 'task-memory-export-id',
           },
         },
+        use_extension_resource: {
+          kind: 'task',
+          action: 'custom_use_extension_resource',
+          inputs: {
+            knowledge_base_id: 'knowledge-base-export-id',
+          },
+        },
       },
       flow: [],
       outputs: {},
     };
     const remappedBindings = service.remapBindingResourceRefs(definition, {
-      contentTypes: {},
-      credentials: {},
-      labels: {},
-      mcpServers: { 'mcp-export-id': 'mcp-local-id' },
-      memoryDefinitions: { 'memory-export-id': 'memory-local-id' },
+      mcpServer: { 'mcp-export-id': 'mcp-local-id' },
+      memoryDefinition: { 'memory-export-id': 'memory-local-id' },
     });
     const remapped = service.remapTaskResourceRefs(remappedBindings, {
-      contentTypes: { 'content-type-export-id': 'content-type-local-id' },
-      credentials: { 'credential-export-id': 'credential-local-id' },
-      labels: { 'label-export-id': 'label-local-id' },
-      mcpServers: { 'task-mcp-export-id': 'task-mcp-local-id' },
-      memoryDefinitions: { 'task-memory-export-id': 'task-memory-local-id' },
+      contentType: { 'content-type-export-id': 'content-type-local-id' },
+      credential: { 'credential-export-id': 'credential-local-id' },
+      knowledgeBase: { 'knowledge-base-export-id': 'knowledge-base-local-id' },
+      label: { 'label-export-id': 'label-local-id' },
+      mcpServer: { 'task-mcp-export-id': 'task-mcp-local-id' },
+      memoryDefinition: { 'task-memory-export-id': 'task-memory-local-id' },
     });
     const remappedDefs = remapped.defs as Record<
       string,
@@ -303,6 +322,9 @@ describe('WorkflowTransferDefinitionService', () => {
       server_id: 'task-mcp-local-id',
       definition_id: 'task-memory-local-id',
     });
+    expect(remappedDefs.use_extension_resource.inputs).toEqual({
+      knowledge_base_id: 'knowledge-base-local-id',
+    });
     expect(originalDefs.profile_memory.settings).toEqual({
       definition_id: 'memory-export-id',
     });
@@ -325,11 +347,7 @@ describe('WorkflowTransferDefinitionService', () => {
 
     expect(
       service.remapTaskResourceRefs(definition, {
-        contentTypes: {},
-        credentials: {},
-        labels: {},
-        mcpServers: {},
-        memoryDefinitions: {},
+        label: {},
       }),
     ).toBe(definition);
   });

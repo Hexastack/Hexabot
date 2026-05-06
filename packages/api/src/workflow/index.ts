@@ -78,6 +78,12 @@ export * from './transfer/workflow-transfer.controller';
 
 export * from './transfer/workflow-transfer-definition.service';
 
+export * from './transfer/workflow-transfer-resource-adapter';
+
+export * from './transfer/workflow-transfer-adapter.registry';
+
+export * from './transfer/workflow-transfer.types';
+
 export * from './transfer/workflow-transfer.service';
 
 export * from './defaults/default-workflow';

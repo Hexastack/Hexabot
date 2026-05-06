@@ -9,11 +9,17 @@ import {
   type WorkflowImportResourceResult,
 } from '@hexabot-ai/types';
 import { ConflictException, Injectable } from '@nestjs/common';
-import { EntityManager, In } from 'typeorm';
+import { In } from 'typeorm';
 
 import { CredentialOrmEntity } from '@/user/entities/credential.entity';
 import { CredentialService } from '@/user/services/credential.service';
 
+import {
+  WorkflowTransferAdapter,
+  WorkflowTransferExportContext,
+  WorkflowTransferImportContext,
+  WorkflowTransferResourceAdapter,
+} from '../workflow-transfer-resource-adapter';
 import {
   assertFoundAll,
   buildPostCreateEvent,
@@ -23,16 +29,28 @@ import {
   type WorkflowTransferImportAdapterResult,
 } from '../workflow-transfer.types';
 
-export type CredentialTransferImportResult =
-  WorkflowTransferImportAdapterResult & {
-    placeholderExportIds: Set<string>;
-  };
-
+@WorkflowTransferAdapter()
 @Injectable()
-export class CredentialTransferAdapter {
-  constructor(private readonly credentialService: CredentialService) {}
+export class CredentialTransferAdapter extends WorkflowTransferResourceAdapter {
+  override readonly kind = 'credential';
 
-  async buildExportResources(
+  override readonly resourceKeys = ['credentials'];
+
+  constructor(private readonly credentialService: CredentialService) {
+    super();
+  }
+
+  override async buildExportResources(
+    ctx: WorkflowTransferExportContext,
+  ): Promise<Record<string, WorkflowExportBundleCredential[]>> {
+    return {
+      credentials: await this.buildCredentialExportResources(
+        ctx.getRefs(this.kind),
+      ),
+    };
+  }
+
+  private async buildCredentialExportResources(
     ids: string[],
   ): Promise<WorkflowExportBundleCredential[]> {
     const uniqueIds = uniqueResourceIds(ids);
@@ -56,11 +74,11 @@ export class CredentialTransferAdapter {
     }));
   }
 
-  async importResources(
-    manager: EntityManager,
-    credentials: WorkflowExportBundleCredential[],
-    ownerId: string,
-  ): Promise<CredentialTransferImportResult> {
+  override async importResources(
+    ctx: WorkflowTransferImportContext,
+  ): Promise<WorkflowTransferImportAdapterResult> {
+    const credentials =
+      ctx.getResources<WorkflowExportBundleCredential>('credentials');
     const idMap: Record<string, string> = {};
     const resources: WorkflowImportResourceResult[] = [];
     const warnings: string[] = [];
@@ -69,7 +87,7 @@ export class CredentialTransferAdapter {
     const placeholderExportIds = new Set<string>();
 
     for (const credential of credentials) {
-      const existingByName = await manager.findOne(CredentialOrmEntity, {
+      const existingByName = await ctx.manager.findOne(CredentialOrmEntity, {
         where: { name: credential.name },
         relations: ['owner'],
       });
@@ -79,7 +97,7 @@ export class CredentialTransferAdapter {
           existingByName.owner && typeof existingByName.owner === 'object'
             ? existingByName.owner.id
             : null;
-        if (existingOwnerId !== ownerId) {
+        if (existingOwnerId !== ctx.ownerId) {
           throw new ConflictException(
             `Credential "${credential.name}" already exists for another user`,
           );
@@ -101,11 +119,11 @@ export class CredentialTransferAdapter {
       const payload = {
         name: credential.name,
         value: PLACEHOLDER_CREDENTIAL_VALUE,
-        owner: { id: ownerId },
+        owner: { id: ctx.ownerId },
       };
-      const created = await manager.save(
+      const created = await ctx.manager.save(
         CredentialOrmEntity,
-        manager.create(CredentialOrmEntity, payload),
+        ctx.manager.create(CredentialOrmEntity, payload),
       );
 
       idMap[credential.exportId] = created.id;
@@ -129,10 +147,12 @@ export class CredentialTransferAdapter {
 
     return {
       idMap,
-      placeholderExportIds,
       resources,
       warnings,
       postCreateEvents,
+      metadata: {
+        placeholderExportIds,
+      },
     };
   }
 }

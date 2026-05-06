@@ -26,20 +26,10 @@ import {
 } from '@/workflow/resource-refs';
 
 export type WorkflowTaskResourceRefs = {
-  contentTypes: string[];
-  credentials: string[];
-  labels: string[];
-  mcpServers: string[];
-  memoryDefinitions: string[];
+  [kind: string]: string[];
 };
 
-export type WorkflowTaskResourceIdMaps = {
-  contentTypes: Record<string, string>;
-  credentials: Record<string, string>;
-  labels: Record<string, string>;
-  mcpServers: Record<string, string>;
-  memoryDefinitions: Record<string, string>;
-};
+export type WorkflowTaskResourceIdMaps = Record<string, Record<string, string>>;
 
 export type WorkflowBindingResourceRefs = WorkflowTaskResourceRefs;
 
@@ -53,17 +43,6 @@ type JsonSchemaResourceNode = {
   allOf?: JsonSchemaResourceNode[];
   anyOf?: JsonSchemaResourceNode[];
   oneOf?: JsonSchemaResourceNode[];
-};
-
-const RESOURCE_REF_KEYS: Record<
-  WorkflowResourceRefKind,
-  keyof WorkflowTaskResourceRefs
-> = {
-  contentType: 'contentTypes',
-  credential: 'credentials',
-  label: 'labels',
-  mcpServer: 'mcpServers',
-  memoryDefinition: 'memoryDefinitions',
 };
 
 @Injectable()
@@ -110,9 +89,8 @@ export class WorkflowTransferDefinitionService {
         bindingKinds,
         def.kind,
       )) {
-        const refKey = RESOURCE_REF_KEYS[descriptor.kind];
         this.addLiteralResourceRefs(
-          refs[refKey],
+          this.getResourceRefSet(refs, descriptor.kind),
           this.getDefinitionValueAtPath(def.settings, descriptor.path),
         );
       }
@@ -138,11 +116,10 @@ export class WorkflowTransferDefinitionService {
           bindingKinds,
           def.kind,
         )) {
-          const refKey = RESOURCE_REF_KEYS[descriptor.kind];
           const result = this.remapDefinitionValueAtPath(
             nextDef.settings,
             descriptor.path,
-            idMaps[refKey],
+            idMaps[descriptor.kind] ?? {},
           );
 
           if (result.didChange) {
@@ -181,9 +158,8 @@ export class WorkflowTransferDefinitionService {
         actions,
         def.action,
       )) {
-        const refKey = RESOURCE_REF_KEYS[descriptor.kind];
         this.addLiteralResourceRefs(
-          refs[refKey],
+          this.getResourceRefSet(refs, descriptor.kind),
           this.getDefinitionValueAtPath(
             descriptor.source === 'input' ? def.inputs : def.settings,
             descriptor.path,
@@ -214,13 +190,12 @@ export class WorkflowTransferDefinitionService {
           actions,
           def.action,
         )) {
-          const refKey = RESOURCE_REF_KEYS[descriptor.kind];
           const sourceKey =
             descriptor.source === 'input' ? 'inputs' : 'settings';
           const result = this.remapDefinitionValueAtPath(
             nextDef[sourceKey],
             descriptor.path,
-            idMaps[refKey],
+            idMaps[descriptor.kind] ?? {},
           );
 
           if (result.didChange) {
@@ -422,29 +397,25 @@ export class WorkflowTransferDefinitionService {
     });
   }
 
-  private createResourceRefSet(): Record<
-    keyof WorkflowTaskResourceRefs,
-    Set<string>
-  > {
-    return {
-      contentTypes: new Set<string>(),
-      credentials: new Set<string>(),
-      labels: new Set<string>(),
-      mcpServers: new Set<string>(),
-      memoryDefinitions: new Set<string>(),
-    };
+  private createResourceRefSet(): Record<string, Set<string>> {
+    return {};
+  }
+
+  private getResourceRefSet(
+    refs: Record<string, Set<string>>,
+    kind: WorkflowResourceRefKind,
+  ): Set<string> {
+    refs[kind] ??= new Set<string>();
+
+    return refs[kind];
   }
 
   private toResourceRefs(
-    refs: Record<keyof WorkflowTaskResourceRefs, Set<string>>,
+    refs: Record<string, Set<string>>,
   ): WorkflowTaskResourceRefs {
-    return {
-      contentTypes: Array.from(refs.contentTypes),
-      credentials: Array.from(refs.credentials),
-      labels: Array.from(refs.labels),
-      mcpServers: Array.from(refs.mcpServers),
-      memoryDefinitions: Array.from(refs.memoryDefinitions),
-    };
+    return Object.fromEntries(
+      Object.entries(refs).map(([kind, ids]) => [kind, Array.from(ids)]),
+    );
   }
 
   private asRecord(value: unknown): Record<string, JsonValue> | null {

@@ -22,6 +22,12 @@ import { LabelOrmEntity } from '@/chat/entities/label.entity';
 import { LabelService } from '@/chat/services/label.service';
 
 import {
+  WorkflowTransferAdapter,
+  WorkflowTransferExportContext,
+  WorkflowTransferImportContext,
+  WorkflowTransferResourceAdapter,
+} from '../workflow-transfer-resource-adapter';
+import {
   assertFoundAll,
   buildPostCreateEvent,
   buildResourceResult,
@@ -34,11 +40,26 @@ type LabelExportResources = {
   labels: WorkflowExportBundleLabel[];
 };
 
+@WorkflowTransferAdapter()
 @Injectable()
-export class LabelTransferAdapter {
-  constructor(private readonly labelService: LabelService) {}
+export class LabelTransferAdapter extends WorkflowTransferResourceAdapter {
+  override readonly kind = 'label';
 
-  async buildExportResources(ids: string[]): Promise<LabelExportResources> {
+  override readonly resourceKeys = ['labels', 'labelGroups'];
+
+  constructor(private readonly labelService: LabelService) {
+    super();
+  }
+
+  override async buildExportResources(
+    ctx: WorkflowTransferExportContext,
+  ): Promise<Record<string, unknown[]>> {
+    return this.buildLabelExportResources(ctx.getRefs(this.kind));
+  }
+
+  private async buildLabelExportResources(
+    ids: string[],
+  ): Promise<LabelExportResources> {
     const uniqueIds = uniqueResourceIds(ids);
     if (uniqueIds.length === 0) {
       return { labelGroups: [], labels: [] };
@@ -75,14 +96,20 @@ export class LabelTransferAdapter {
     };
   }
 
-  async importResources(
-    manager: EntityManager,
-    labelGroups: WorkflowExportBundle['resources']['labelGroups'],
-    labels: WorkflowExportBundle['resources']['labels'],
+  override async importResources(
+    ctx: WorkflowTransferImportContext,
   ): Promise<WorkflowTransferImportAdapterResult> {
-    const groupResult = await this.importLabelGroups(manager, labelGroups);
+    const labelGroups =
+      ctx.getResources<
+        WorkflowExportBundle['resources']['labelGroups'][number]
+      >('labelGroups');
+    const labels =
+      ctx.getResources<WorkflowExportBundle['resources']['labels'][number]>(
+        'labels',
+      );
+    const groupResult = await this.importLabelGroups(ctx.manager, labelGroups);
     const labelResult = await this.importLabels(
-      manager,
+      ctx.manager,
       labels,
       groupResult.idMap,
     );

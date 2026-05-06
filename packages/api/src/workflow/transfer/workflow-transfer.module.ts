@@ -5,6 +5,8 @@
  */
 
 import { Module } from '@nestjs/common';
+import { DiscoveryModule } from '@nestjs/core';
+import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
 import { ChatModule } from '@/chat/chat.module';
 import { CmsModule } from '@/cms/cms.module';
@@ -16,15 +18,22 @@ import { CredentialTransferAdapter } from './adapters/credential-transfer.adapte
 import { LabelTransferAdapter } from './adapters/label-transfer.adapter';
 import { McpServerTransferAdapter } from './adapters/mcp-server-transfer.adapter';
 import { MemoryDefinitionTransferAdapter } from './adapters/memory-definition-transfer.adapter';
+import { WorkflowTransferAdapterRegistry } from './workflow-transfer-adapter.registry';
 import { WorkflowTransferDefinitionService } from './workflow-transfer-definition.service';
 import { WorkflowTransferController } from './workflow-transfer.controller';
 import { WorkflowTransferService } from './workflow-transfer.service';
 
+@InjectDynamicProviders(
+  'node_modules/@hexabot-ai/api/dist/extensions/**/*.workflow-transfer.adapter.js',
+  'node_modules/hexabot-*/**/*.workflow-transfer.adapter.js',
+  'dist/extensions/**/*.workflow-transfer.adapter.js',
+)
 @Module({
-  imports: [WorkflowModule, UserModule, CmsModule, ChatModule],
+  imports: [DiscoveryModule, WorkflowModule, UserModule, CmsModule, ChatModule],
   controllers: [WorkflowTransferController],
   providers: [
     WorkflowTransferDefinitionService,
+    WorkflowTransferAdapterRegistry,
     CredentialTransferAdapter,
     MemoryDefinitionTransferAdapter,
     ContentTypeTransferAdapter,
@@ -32,6 +41,6 @@ import { WorkflowTransferService } from './workflow-transfer.service';
     McpServerTransferAdapter,
     WorkflowTransferService,
   ],
-  exports: [WorkflowTransferService],
+  exports: [WorkflowTransferService, WorkflowTransferAdapterRegistry],
 })
 export class WorkflowTransferModule {}

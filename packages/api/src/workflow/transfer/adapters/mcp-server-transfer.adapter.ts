@@ -16,13 +16,19 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { EntityManager, In } from 'typeorm';
+import { In } from 'typeorm';
 
 import { CredentialOrmEntity } from '@/user/entities/credential.entity';
 import { McpServerOrmEntity } from '@/workflow/entities/mcp-server.entity';
 import { McpServerService } from '@/workflow/services/mcp-server.service';
 import { McpServerTransport } from '@/workflow/types';
 
+import {
+  WorkflowTransferAdapter,
+  WorkflowTransferExportContext,
+  WorkflowTransferImportContext,
+  WorkflowTransferResourceAdapter,
+} from '../workflow-transfer-resource-adapter';
 import {
   assertFoundAll,
   buildPostCreateEvent,
@@ -36,11 +42,35 @@ type McpServerExportResources = {
   mcpServers: WorkflowExportBundleMcpServer[];
 };
 
+@WorkflowTransferAdapter()
 @Injectable()
-export class McpServerTransferAdapter {
-  constructor(private readonly mcpServerService: McpServerService) {}
+export class McpServerTransferAdapter extends WorkflowTransferResourceAdapter {
+  override readonly kind = 'mcpServer';
 
-  async buildExportResources(ids: string[]): Promise<McpServerExportResources> {
+  override readonly resourceKeys = ['mcpServers'];
+
+  override readonly dependsOn = ['credential'];
+
+  constructor(private readonly mcpServerService: McpServerService) {
+    super();
+  }
+
+  override async buildExportResources(
+    ctx: WorkflowTransferExportContext,
+  ): Promise<Record<string, WorkflowExportBundleMcpServer[]>> {
+    const resources = await this.buildMcpServerExportResources(
+      ctx.getRefs(this.kind),
+    );
+    ctx.addResourceRefs('credential', resources.credentialIds);
+
+    return {
+      mcpServers: resources.mcpServers,
+    };
+  }
+
+  private async buildMcpServerExportResources(
+    ids: string[],
+  ): Promise<McpServerExportResources> {
     const uniqueIds = uniqueResourceIds(ids);
     if (uniqueIds.length === 0) {
       return { credentialIds: [], mcpServers: [] };
@@ -73,12 +103,16 @@ export class McpServerTransferAdapter {
     };
   }
 
-  async importResources(
-    manager: EntityManager,
-    servers: WorkflowExportBundle['resources']['mcpServers'],
-    credentialIdMap: Record<string, string>,
-    placeholderCredentialExportIds: Set<string>,
+  override async importResources(
+    ctx: WorkflowTransferImportContext,
   ): Promise<WorkflowTransferImportAdapterResult> {
+    const servers =
+      ctx.getResources<WorkflowExportBundle['resources']['mcpServers'][number]>(
+        'mcpServers',
+      );
+    const credentialIdMap = ctx.getIdMap('credential');
+    const placeholderCredentialExportIds =
+      this.getPlaceholderCredentialExportIds(ctx);
     const idMap: Record<string, string> = {};
     const resources: WorkflowImportResourceResult[] = [];
     const warnings: string[] = [];
@@ -90,7 +124,7 @@ export class McpServerTransferAdapter {
         ? credentialIdMap[server.credentialExportId]
         : null;
       const credential = credentialId
-        ? await manager.findOne(CredentialOrmEntity, {
+        ? await ctx.manager.findOne(CredentialOrmEntity, {
             where: { id: credentialId },
           })
         : null;
@@ -102,7 +136,7 @@ export class McpServerTransferAdapter {
       const shouldDisable =
         Boolean(server.credentialExportId) &&
         placeholderCredentialExportIds.has(server.credentialExportId!);
-      const existing = await manager.findOne(McpServerOrmEntity, {
+      const existing = await ctx.manager.findOne(McpServerOrmEntity, {
         where: { name: server.name },
         relations: ['credential'],
       });
@@ -146,9 +180,9 @@ export class McpServerTransferAdapter {
             ? { id: credentialId }
             : null,
       };
-      const created = await manager.save(
+      const created = await ctx.manager.save(
         McpServerOrmEntity,
-        manager.create(McpServerOrmEntity, payload),
+        ctx.manager.create(McpServerOrmEntity, payload),
       );
 
       idMap[server.exportId] = created.id;
@@ -178,6 +212,24 @@ export class McpServerTransferAdapter {
       warnings,
       postCreateEvents,
     };
+  }
+
+  private getPlaceholderCredentialExportIds(
+    ctx: WorkflowTransferImportContext,
+  ): Set<string> {
+    const placeholderExportIds =
+      ctx.getDependencyResult('credential')?.metadata?.placeholderExportIds;
+    if (placeholderExportIds instanceof Set) {
+      return placeholderExportIds as Set<string>;
+    }
+
+    return Array.isArray(placeholderExportIds)
+      ? new Set(
+          placeholderExportIds.filter(
+            (id): id is string => typeof id === 'string',
+          ),
+        )
+      : new Set<string>();
   }
 
   private isEquivalentMcpServer(

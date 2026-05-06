@@ -858,6 +858,13 @@ describe("@hexabot-ai/types schemas", () => {
             groupExportId: "lg_1",
           },
         ],
+        knowledgeBases: [
+          {
+            exportId: "kb_1",
+            name: "Docs",
+            config: { index: "docs" },
+          },
+        ],
       },
     });
 
@@ -872,6 +879,13 @@ describe("@hexabot-ai/types schemas", () => {
       exportId: "label_1",
       groupExportId: "lg_1",
     });
+    expect(bundle.resources.knowledgeBases).toEqual([
+      {
+        exportId: "kb_1",
+        name: "Docs",
+        config: { index: "docs" },
+      },
+    ]);
   });
 
   it("defaults new workflow bundle resource arrays for older bundles", () => {
@@ -909,6 +923,44 @@ describe("@hexabot-ai/types schemas", () => {
     expect(bundle.resources.contentTypes).toEqual([]);
     expect(bundle.resources.labelGroups).toEqual([]);
     expect(bundle.resources.labels).toEqual([]);
+  });
+
+  it("rejects non-array custom workflow bundle resource buckets", () => {
+    expect(() =>
+      workflowExportBundleV1Schema.parse({
+        kind: "hexabot.workflow.bundle",
+        schemaVersion: 1,
+        exportedAt: now,
+        workflow: {
+          name: "Main",
+          description: null,
+          type: WorkflowType.conversational,
+          schedule: null,
+          inputSchema: {},
+          layout: {
+            x: 0,
+            y: 0,
+            zoom: 1,
+            direction: "horizontal",
+          },
+        },
+        version: {
+          number: 1,
+          checksum: "sha",
+          message: null,
+          exportedVersionId: "wfv_1",
+        },
+        definitionYml: "defs: {}\nflow: []\noutputs: {}",
+        resources: {
+          memoryDefinitions: [],
+          mcpServers: [],
+          credentials: [],
+          knowledgeBases: {
+            exportId: "kb_1",
+          },
+        },
+      }),
+    ).toThrow();
   });
 
   it("rejects credential values in workflow export bundles", () => {
@@ -975,10 +1027,10 @@ describe("@hexabot-ai/types schemas", () => {
       },
       resources: [
         {
-          kind: "label",
-          exportId: "label_1",
-          localId: "label_local",
-          name: "QUALIFIED",
+          kind: "knowledgeBase",
+          exportId: "kb_1",
+          localId: "kb_local",
+          name: "Docs",
           action: "reused",
         },
       ],
@@ -986,6 +1038,7 @@ describe("@hexabot-ai/types schemas", () => {
     });
 
     expect(result.resources[0]?.action).toBe("reused");
+    expect(result.resources[0]?.kind).toBe("knowledgeBase");
   });
 
   it("computes workflow run duration and mixed triggeredBy coercion", () => {
