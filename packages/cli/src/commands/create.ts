@@ -306,7 +306,7 @@ const logSuccessMessage = (
   console.log(chalk.yellow(`   hexabot docker up --services postgres`));
   console.log(chalk.gray(`Need env files? Run hexabot env init --docker`));
   console.log('\n');
-  console.log(chalk.bgBlue('Optional: Install Hexabot skills'));
+  console.log(chalk.blue('Optional: Install Hexabot skills'));
   console.log(
     chalk.gray('You can add official skills to accelerate your workflow:'),
   );
