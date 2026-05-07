@@ -52,7 +52,7 @@ export const registerCreateCommand = (program: Command) => {
     .option('--pm <npm|pnpm|yarn|bun>', 'Preferred package manager')
     .option('--no-install', 'Skip installing dependencies')
     .option('--dev', 'Run hexabot dev after creation')
-    .option('--docker', 'Bootstrap Docker env files during creation')
+    .option('--docker', 'Use Docker-oriented next steps and --dev startup')
     .option('--force', 'Allow scaffolding into a non-empty directory')
     .action(async (projectName: string, options: CreateCommandOptions) => {
       await createProject(projectName, options);
@@ -92,26 +92,14 @@ const createProject = async (
 
     ensureProjectConfig(projectPath, configOverrides);
     const config = loadProjectConfig(projectPath);
-
-    bootstrapEnvFile(projectPath, config.env.localExample, config.env.local, {
-      quiet: true,
-    });
-    if (options.docker) {
-      bootstrapEnvFile(
-        projectPath,
-        config.env.dockerExample,
-        config.env.docker,
-        { quiet: true },
-      );
-    }
-
+    const dockerEnvBootstrapped = bootstrapCreateEnvFiles(projectPath, config);
     const adminCredentials = await promptSeedAdminCredentials();
-    upsertEnvVariables(projectPath, config.env.local, {
-      SEED_ADMIN_FIRST_NAME: adminCredentials.firstName,
-      SEED_ADMIN_LAST_NAME: adminCredentials.lastName,
-      SEED_ADMIN_EMAIL: adminCredentials.email,
-      SEED_ADMIN_PASSWORD: adminCredentials.password,
-    });
+    persistAdminSeedCredentials(
+      projectPath,
+      config,
+      adminCredentials,
+      dockerEnvBootstrapped,
+    );
 
     if (options.noInstall) {
       console.log(
@@ -184,6 +172,45 @@ const fetchLatestReleaseTag = async (templateRepo: string) => {
   }
 
   return data.tag_name;
+};
+const bootstrapCreateEnvFiles = (
+  projectPath: string,
+  config: ReturnType<typeof loadProjectConfig>,
+) => {
+  bootstrapEnvFile(projectPath, config.env.localExample, config.env.local, {
+    quiet: true,
+  });
+
+  return bootstrapEnvFile(
+    projectPath,
+    config.env.dockerExample,
+    config.env.docker,
+    { quiet: true },
+  );
+};
+const buildAdminSeedVariables = (credentials: AdminSeedCredentials) => {
+  return {
+    SEED_ADMIN_FIRST_NAME: credentials.firstName,
+    SEED_ADMIN_LAST_NAME: credentials.lastName,
+    SEED_ADMIN_EMAIL: credentials.email,
+    SEED_ADMIN_PASSWORD: credentials.password,
+  };
+};
+const persistAdminSeedCredentials = (
+  projectPath: string,
+  config: ReturnType<typeof loadProjectConfig>,
+  credentials: AdminSeedCredentials,
+  dockerEnvBootstrapped: boolean,
+) => {
+  const seedVariables = buildAdminSeedVariables(credentials);
+  upsertEnvVariables(projectPath, config.env.local, seedVariables);
+
+  if (
+    dockerEnvBootstrapped ||
+    fs.existsSync(path.join(projectPath, config.env.docker))
+  ) {
+    upsertEnvVariables(projectPath, config.env.docker, seedVariables);
+  }
 };
 const requireValue = (label: string) => {
   return (value: string) => {
@@ -304,7 +331,7 @@ const logSuccessMessage = (
   }
   console.log(chalk.gray(`3. Explore docker helpers if needed:`));
   console.log(chalk.yellow(`   hexabot docker up --services postgres`));
-  console.log(chalk.gray(`Need env files? Run hexabot env init --docker`));
+  console.log(chalk.gray(`Env bootstrap completed.`));
   console.log('\n');
   console.log(chalk.blue('Optional: Install Hexabot skills'));
   console.log(

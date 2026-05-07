@@ -41,10 +41,10 @@ Common options:
 - `--pm <npm|pnpm|yarn|bun>` – force a package manager (auto-detected otherwise).
 - `--no-install` – skip running the package manager after scaffolding.
 - `--dev` – immediately run `hexabot dev` once creation is complete.
-- `--docker` – bootstrap the Docker env file and hint about Docker-first commands.
+- `--docker` – show Docker-first next steps and use Docker mode when combined with `--dev`.
 - `--force` – allow scaffolding into a non-empty directory.
 
-The command downloads the latest template release, installs dependencies (unless `--no-install`), and bootstraps `.env` (and `.env.docker` when `--docker` is passed).
+The command downloads the latest template release, installs dependencies (unless `--no-install`), and bootstraps `.env` plus `.env.docker` when their example files are present.
 
 #### `dev`
 
