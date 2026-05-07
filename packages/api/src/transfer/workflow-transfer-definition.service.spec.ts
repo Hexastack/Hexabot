@@ -79,6 +79,13 @@ describe('WorkflowTransferDefinitionService', () => {
         }),
         settingSchema: z.strictObject({}),
       },
+      custom_call_workflow: {
+        supportedBindings: [],
+        inputSchema: z.strictObject({
+          workflow_id: z.string().meta(workflowResourceRef('workflow')),
+        }),
+        settingSchema: z.strictObject({}),
+      },
     } as unknown as ReturnType<ActionService['getRegistry']>;
     bindingRegistry = {
       memory: {
@@ -205,6 +212,20 @@ describe('WorkflowTransferDefinitionService', () => {
             knowledge_base_id: 'knowledge-base-export-id',
           },
         },
+        call_workflow: {
+          kind: 'task',
+          action: 'custom_call_workflow',
+          inputs: {
+            workflow_id: 'workflow-export-id',
+          },
+        },
+        call_dynamic_workflow: {
+          kind: 'task',
+          action: 'custom_call_workflow',
+          inputs: {
+            workflow_id: '=$input.workflowId',
+          },
+        },
       },
       flow: [],
       outputs: {},
@@ -221,6 +242,7 @@ describe('WorkflowTransferDefinitionService', () => {
       label: ['label-export-id', 'label-export-id-2'],
       mcpServer: ['task-mcp-export-id'],
       memoryDefinition: ['task-memory-export-id'],
+      workflow: ['workflow-export-id'],
     });
   });
 
@@ -274,6 +296,20 @@ describe('WorkflowTransferDefinitionService', () => {
             knowledge_base_id: 'knowledge-base-export-id',
           },
         },
+        call_workflow: {
+          kind: 'task',
+          action: 'custom_call_workflow',
+          inputs: {
+            workflow_id: 'workflow-export-id',
+          },
+        },
+        call_dynamic_workflow: {
+          kind: 'task',
+          action: 'custom_call_workflow',
+          inputs: {
+            workflow_id: '=$input.workflowId',
+          },
+        },
       },
       flow: [],
       outputs: {},
@@ -289,6 +325,7 @@ describe('WorkflowTransferDefinitionService', () => {
       label: { 'label-export-id': 'label-local-id' },
       mcpServer: { 'task-mcp-export-id': 'task-mcp-local-id' },
       memoryDefinition: { 'task-memory-export-id': 'task-memory-local-id' },
+      workflow: { 'workflow-export-id': 'workflow-local-id' },
     });
     const remappedDefs = remapped.defs as Record<
       string,
@@ -324,6 +361,12 @@ describe('WorkflowTransferDefinitionService', () => {
     });
     expect(remappedDefs.use_extension_resource.inputs).toEqual({
       knowledge_base_id: 'knowledge-base-local-id',
+    });
+    expect(remappedDefs.call_workflow.inputs).toEqual({
+      workflow_id: 'workflow-local-id',
+    });
+    expect(remappedDefs.call_dynamic_workflow.inputs).toEqual({
+      workflow_id: '=$input.workflowId',
     });
     expect(originalDefs.profile_memory.settings).toEqual({
       definition_id: 'memory-export-id',

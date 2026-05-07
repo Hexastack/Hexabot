@@ -19,7 +19,12 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { CredentialService } from '@/user/services/credential.service';
 import { cloneObject } from '@/utils/helpers/clone';
-import { WorkflowContextState, WorkflowType } from '@/workflow/types';
+import {
+  WORKFLOW_CALL_SERVICE,
+  WorkflowContextState,
+  WorkflowType,
+  type WorkflowCallService,
+} from '@/workflow/types';
 
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
 import { McpClientPoolService } from '../services/mcp-client-pool.service';
@@ -64,6 +69,9 @@ export abstract class WorkflowRuntimeContext<
   @Inject(McpClientPoolService)
   protected readonly mcp: McpClientPoolService;
 
+  @Inject(WORKFLOW_CALL_SERVICE)
+  protected readonly workflowCallService: WorkflowCallService;
+
   public memoryStore: MemoryStore;
 
   constructor() {
@@ -82,6 +90,9 @@ export abstract class WorkflowRuntimeContext<
       actions: this.actionService,
       credentials: this.credentialService,
       mcp: this.mcp,
+      // Expose the workflow-call contract, not the concrete AgenticService, so
+      // contexts do not create a JS import cycle with WorkflowContextFactory.
+      agentic: this.workflowCallService,
     };
   }
 

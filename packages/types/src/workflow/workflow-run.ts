@@ -68,6 +68,7 @@ const workflowRunAliasMap = {
   workflowVersionId: "workflowVersion",
   triggeredById: "triggeredBy",
   threadId: "thread",
+  parentRunId: "parentRun",
 } as const;
 const workflowRunStubObjectSchema = baseStubSchema.extend({
   status: workflowRunStatusSchema,
@@ -133,6 +134,10 @@ export const workflowRunSchema = preprocess(
       (value) => (value == null ? null : asId(value)),
       z.string().nullable(),
     ),
+    parentRun: preprocess(
+      (value) => (value == null ? null : asId(value)),
+      z.string().nullable(),
+    ),
   }),
 );
 
@@ -146,6 +151,10 @@ export const workflowRunFullSchema = preprocess(
       .optional(),
     triggeredBy: nullableUserOrSubscriberSchema,
     thread: threadSchema.nullable().optional(),
+    parentRun: z
+      .lazy(() => workflowRunSchema)
+      .nullable()
+      .optional(),
   }),
 );
 

@@ -273,6 +273,14 @@ describe('WorkflowTransferService', () => {
         }),
         settingSchema: z.strictObject({}),
       },
+      call_workflow: {
+        supportedBindings: [],
+        inputSchema: z.strictObject({
+          workflow_id: z.string().meta(workflowResourceRef('workflow')),
+          input: z.record(z.string(), z.any()).optional(),
+        }),
+        settingSchema: z.strictObject({}),
+      },
     } as any);
   });
 
@@ -389,6 +397,49 @@ describe('WorkflowTransferService', () => {
 
     return { group, label };
   };
+  const createWorkflowWithTransferDefinition = async ({
+    name = `Transfer workflow ${Date.now()}-${Math.random()}`,
+    definition,
+    type = WorkflowType.conversational,
+  }: {
+    name?: string;
+    definition: WorkflowDefinition;
+    type?: WorkflowType;
+  }) => {
+    const workflow = await workflowService.create({
+      name,
+      type,
+      schedule: null,
+      createdBy: creatorId,
+    });
+    await workflowVersionService.commit({
+      workflow: workflow.id,
+      definitionYml: AgenticWorkflow.stringifyDefinition(definition),
+      action: WorkflowVersionAction.update,
+      createdBy: creatorId,
+    });
+    const populated = await workflowService.findOneAndPopulate(workflow.id);
+    if (!populated) {
+      throw new Error(`Unable to create workflow ${workflow.id}`);
+    }
+
+    return populated;
+  };
+  const createCallWorkflowDefinition = (
+    workflowId: string,
+  ): WorkflowDefinition => ({
+    defs: {
+      call_child: {
+        kind: 'task',
+        action: 'call_workflow',
+        inputs: {
+          workflow_id: workflowId,
+        },
+      },
+    },
+    flow: [{ do: 'call_child' }],
+    outputs: { ok: '=true' },
+  });
 
   it('exports referenced resources without credential secret values', async () => {
     const memoryDefinition = await memoryDefinitionService.create({
@@ -471,6 +522,111 @@ describe('WorkflowTransferService', () => {
     ]);
     expect(exported.content).not.toContain('secret-value');
     expect(exported.filename).toMatch(/\.workflow\.yml$/);
+  });
+
+  it('exports recursively referenced call_workflow dependencies and their resources', async () => {
+    const memoryDefinition = await memoryDefinitionService.create({
+      name: `Dependency memory ${Date.now()}`,
+      slug: `dependency_memory_${Date.now()}`,
+      scope: MemoryScope.workflow,
+      schema: { type: 'object' },
+      ttlSeconds: null,
+    });
+    const grandchild = await createWorkflowWithTransferDefinition({
+      name: `Grandchild dependency ${Date.now()}`,
+      definition: {
+        defs: {
+          profile_memory: {
+            kind: 'memory',
+            settings: { definition_id: memoryDefinition.id },
+          },
+        },
+        flow: [],
+        outputs: { ok: '=true' },
+      },
+    });
+    const child = await createWorkflowWithTransferDefinition({
+      name: `Child dependency ${Date.now()}`,
+      definition: createCallWorkflowDefinition(grandchild.id),
+    });
+    const parent = await createWorkflowWithTransferDefinition({
+      name: `Parent dependency ${Date.now()}`,
+      definition: createCallWorkflowDefinition(child.id),
+    });
+    const exported = await transferService.exportWorkflow(parent.id);
+    const bundle = workflowExportBundleSchema.parse(
+      parseYaml(exported.content),
+    );
+
+    expect(bundle.workflow.exportId).toBe(parent.id);
+    expect(
+      bundle.resources.workflows.map((workflow) => workflow.exportId),
+    ).toEqual([child.id, grandchild.id]);
+    expect(bundle.resources.workflows[0]).toMatchObject({
+      exportId: child.id,
+      workflow: {
+        name: child.name,
+        type: child.type,
+      },
+    });
+    expect(bundle.resources.workflows[1]?.definitionYml).toContain(
+      memoryDefinition.id,
+    );
+    expect(bundle.resources.memoryDefinitions).toEqual([
+      expect.objectContaining({
+        exportId: memoryDefinition.id,
+        slug: memoryDefinition.slug,
+      }),
+    ]);
+  });
+
+  it('imports recursive call_workflow dependencies and remaps workflow ids', async () => {
+    const grandchild = await createWorkflowWithTransferDefinition({
+      name: `Import grandchild dependency ${Date.now()}`,
+      definition: {
+        defs: {},
+        flow: [],
+        outputs: { ok: '=true' },
+      },
+    });
+    const child = await createWorkflowWithTransferDefinition({
+      name: `Import child dependency ${Date.now()}`,
+      definition: createCallWorkflowDefinition(grandchild.id),
+    });
+    const parent = await createWorkflowWithTransferDefinition({
+      name: `Import parent dependency ${Date.now()}`,
+      definition: createCallWorkflowDefinition(child.id),
+    });
+    const exported = await transferService.exportWorkflow(parent.id);
+    const result = await transferService.importWorkflow(
+      exported.content,
+      creatorId,
+    );
+    const workflowResults = result.resources.filter(
+      (resource) => resource.kind === 'workflow',
+    );
+    const childResult = workflowResults.find(
+      (resource) => resource.exportId === child.id,
+    );
+    const grandchildResult = workflowResults.find(
+      (resource) => resource.exportId === grandchild.id,
+    );
+    const importedRoot = await workflowService.findOneAndPopulate(
+      result.workflow.id,
+    );
+    const importedChild = childResult
+      ? await workflowService.findOneAndPopulate(childResult.localId)
+      : null;
+
+    expect(workflowResults).toHaveLength(2);
+    expect(childResult?.action).toBe('created');
+    expect(grandchildResult?.action).toBe('created');
+    expect(childResult?.localId).not.toBe(child.id);
+    expect(grandchildResult?.localId).not.toBe(grandchild.id);
+    expect(importedRoot?.definitionYml).toContain(childResult?.localId);
+    expect(importedRoot?.definitionYml).not.toContain(child.id);
+    expect(importedChild?.definitionYml).toContain(grandchildResult?.localId);
+    expect(importedChild?.definitionYml).not.toContain(grandchild.id);
   });
 
   it('imports resources, creates placeholder credentials, and remaps definition references', async () => {
@@ -896,6 +1052,51 @@ describe('WorkflowTransferService', () => {
           includeContentTypeResources: false,
           includeLabelResources: false,
         }),
+        creatorId,
+      ),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('rejects bundles missing referenced workflow dependencies', async () => {
+    await expect(
+      transferService.importWorkflow(
+        stringifyYaml(
+          {
+            kind: WORKFLOW_EXPORT_BUNDLE_KIND,
+            schemaVersion: 1,
+            exportedAt: '2026-05-05T00:00:00.000Z',
+            workflow: {
+              exportId: 'parent-workflow-export-id',
+              name: `Missing workflow dependency ${Date.now()}`,
+              description: null,
+              type: WorkflowType.conversational,
+              schedule: null,
+              inputSchema: {},
+              layout: {
+                x: 0,
+                y: 0,
+                zoom: 1,
+                direction: 'horizontal',
+              },
+            },
+            version: {
+              number: 1,
+              checksum: 'sha',
+              message: null,
+              exportedVersionId: 'version-1',
+            },
+            definitionYml: AgenticWorkflow.stringifyDefinition(
+              createCallWorkflowDefinition('missing-workflow-export-id'),
+            ),
+            resources: {
+              memoryDefinitions: [],
+              mcpServers: [],
+              credentials: [],
+              workflows: [],
+            },
+          },
+          { lineWidth: 0 },
+        ),
         creatorId,
       ),
     ).rejects.toThrow(BadRequestException);

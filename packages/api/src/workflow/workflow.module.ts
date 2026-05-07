@@ -46,6 +46,7 @@ import { WorkflowRunService } from './services/workflow-run.service';
 import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
 import { WorkflowVersionService } from './services/workflow-version.service';
 import { WorkflowService } from './services/workflow.service';
+import { WORKFLOW_CALL_SERVICE } from './types';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import { WorkflowService } from './services/workflow.service';
     ScheduledWorkflowContext,
     WorkflowContextFactory,
     AgenticService,
+    { provide: WORKFLOW_CALL_SERVICE, useExisting: AgenticService },
   ],
   exports: [
     WorkflowRepository,
@@ -111,6 +113,7 @@ import { WorkflowService } from './services/workflow.service';
     McpClientPoolService,
     ConversationalWorkflowContext,
     AgenticService,
+    WORKFLOW_CALL_SERVICE,
   ],
 })
 export class WorkflowModule {}

@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowSnapshot } from '@hexabot-ai/agentic';
+import { EWorkflowRunStatus, WorkflowSnapshot } from '@hexabot-ai/agentic';
 import { WorkflowRun, WorkflowRunFull } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
+import { In } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
@@ -17,6 +18,12 @@ type StateUpdate = {
   snapshot?: WorkflowSnapshot | null;
   context?: Record<string, unknown> | null;
 };
+
+const ACTIVE_WORKFLOW_RUN_STATUSES = [
+  EWorkflowRunStatus.IDLE,
+  EWorkflowRunStatus.RUNNING,
+  EWorkflowRunStatus.SUSPENDED,
+];
 
 @Injectable()
 export class WorkflowRunService extends BaseOrmService<WorkflowRunOrmEntity> {
@@ -130,25 +137,131 @@ export class WorkflowRunService extends BaseOrmService<WorkflowRunOrmEntity> {
   }
 
   /**
-   * Find the latest suspended run for a triggering subscriber.
+   * Find the suspended run that should receive the next event.
+   *
+   * For call-and-return stacks, the parent can be suspended while the child is
+   * either running or suspended for the same initiator/thread. The next external
+   * event must resume the deepest suspended leaf first; once that child
+   * completes, AgenticService resumes its parent internally with the child
+   * result.
    *
    * @param triggeredById - Identifier of the subscriber whose suspended run should be fetched.
-   * @param workflowId - Optional workflow identifier to scope the suspended run lookup.
-   * @returns The most recently suspended run populated with relations, or `null` when none exists.
+   * @param threadId - Optional thread id for conversational continuity.
+   * @param workflowId - Optional workflow id; a parent match still resolves to its child leaf.
+   * @returns The suspended leaf run populated with relations, or `null` when none exists.
    */
   async findSuspendedRunByInitiator(
     triggeredById: string,
     threadId?: string,
     workflowId?: string,
   ): Promise<WorkflowRunFull | null> {
-    return await this.findOneAndPopulate({
+    const runs = await this.findAndPopulate({
       where: {
         triggeredBy: { id: triggeredById },
         ...(threadId ? { thread: { id: threadId } } : {}),
-        status: 'suspended',
-        ...(workflowId ? { workflow: { id: workflowId } } : {}),
+        status: In(ACTIVE_WORKFLOW_RUN_STATUSES),
       },
       order: { suspendedAt: 'DESC', createdAt: 'DESC' },
     });
+
+    if (runs.length === 0) {
+      return null;
+    }
+
+    const runsById = new Map(runs.map((run) => [run.id, run]));
+    const parentRunIds = new Set(
+      runs
+        .map((run) => this.resolveRunId(run.parentRun))
+        .filter((value): value is string => typeof value === 'string'),
+    );
+    // Leaves are active runs that are not the parent of another unfinished
+    // candidate. Only suspended leaves can consume external events; running or
+    // idle leaves are still in flight and block their suspended ancestors.
+    const leaves = runs.filter((run) => !parentRunIds.has(run.id));
+    const candidates = (leaves.length > 0 ? leaves : runs)
+      .filter((run) => run.status === EWorkflowRunStatus.SUSPENDED)
+      .filter((run) =>
+        workflowId
+          ? this.isRunInWorkflowStack(run, workflowId, runsById)
+          : true,
+      );
+
+    return this.pickDeepestSuspendedRun(candidates, runsById);
+  }
+
+  private resolveRunId(
+    run: string | { id?: string | null } | null | undefined,
+  ): string | null {
+    if (typeof run === 'string') {
+      return run;
+    }
+
+    return run?.id ?? null;
+  }
+
+  private isRunInWorkflowStack(
+    run: WorkflowRunFull,
+    workflowId: string,
+    runsById: Map<string, WorkflowRunFull>,
+  ): boolean {
+    let current: WorkflowRunFull | undefined = run;
+    const visited = new Set<string>();
+
+    while (current && !visited.has(current.id)) {
+      visited.add(current.id);
+      if (current.workflow.id === workflowId) {
+        return true;
+      }
+      const parentRunId = this.resolveRunId(current.parentRun);
+      current = parentRunId ? runsById.get(parentRunId) : undefined;
+    }
+
+    return false;
+  }
+
+  private pickDeepestSuspendedRun(
+    runs: WorkflowRunFull[],
+    runsById: Map<string, WorkflowRunFull>,
+  ): WorkflowRunFull | null {
+    if (runs.length === 0) {
+      return null;
+    }
+
+    const getDepth = (run: WorkflowRunFull): number => {
+      let depth = 0;
+      let current: WorkflowRunFull | undefined = run;
+      const visited = new Set<string>();
+
+      while (current && !visited.has(current.id)) {
+        visited.add(current.id);
+        depth += 1;
+        const parentRunId = this.resolveRunId(current.parentRun);
+        current = parentRunId ? runsById.get(parentRunId) : undefined;
+      }
+
+      return depth;
+    };
+    const getTime = (value?: Date | string | null): number => {
+      if (!value) {
+        return 0;
+      }
+
+      const date = value instanceof Date ? value : new Date(value);
+      const timestamp = date.getTime();
+
+      return Number.isNaN(timestamp) ? 0 : timestamp;
+    };
+
+    return [...runs].sort((a, b) => {
+      const depthDiff = getDepth(b) - getDepth(a);
+      if (depthDiff !== 0) {
+        return depthDiff;
+      }
+
+      return (
+        getTime(b.suspendedAt) - getTime(a.suspendedAt) ||
+        getTime(b.createdAt) - getTime(a.createdAt)
+      );
+    })[0];
   }
 }

@@ -4,11 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Workflow as AgenticWorkflow } from '@hexabot-ai/agentic';
+import {
+  Workflow as AgenticWorkflow,
+  type WorkflowDefinition,
+} from '@hexabot-ai/agentic';
 import {
   WORKFLOW_EXPORT_BUNDLE_KIND,
   type WorkflowExportBundle,
+  type WorkflowExportBundleWorkflowDependency,
+  type WorkflowFull,
   type WorkflowImportResult,
+  type WorkflowVersion,
   workflowExportBundleSchema,
   workflowImportResultSchema,
 } from '@hexabot-ai/types';
@@ -41,6 +47,7 @@ import {
   type WorkflowTransferResourceAdapter,
 } from './workflow-transfer-resource-adapter';
 import {
+  buildResourceResult,
   buildPostCreateEvent,
   type ImportedWorkflowTransferResources,
   type WorkflowTransferPostCreateEvent,
@@ -50,6 +57,29 @@ type ExportedWorkflowFile = {
   filename: string;
   content: string;
 };
+
+type ParsedWorkflowImportSource = {
+  exportId?: string;
+  workflow: WorkflowExportBundle['workflow'];
+  version: WorkflowExportBundle['version'];
+  definitionYml: string;
+  definition: WorkflowDefinition;
+  isRoot: boolean;
+};
+
+type ImportedWorkflowSource = ParsedWorkflowImportSource & {
+  localId: string;
+  localName: string;
+  workflowEntity: WorkflowOrmEntity;
+  workflowPayload: WorkflowCreateWithManagerPayload;
+};
+
+type WorkflowCreateWithManagerPayload = Parameters<
+  WorkflowService['createWithManager']
+>[1];
+
+const WORKFLOW_RESOURCE_KIND = 'workflow';
+const WORKFLOW_RESOURCE_KEY = 'workflows';
 
 @Injectable()
 export class WorkflowTransferService {
@@ -79,20 +109,26 @@ export class WorkflowTransferService {
       this.workflowTransferDefinitionService.parseWithLocalCatalog(
         version.definitionYml,
       );
-    const bindingRefs =
-      this.workflowTransferDefinitionService.collectBindingResourceRefs(
-        definition,
-      );
-    const taskRefs =
-      this.workflowTransferDefinitionService.collectTaskResourceRefs(
-        definition,
-      );
-    const resources = await this.buildExportResources(bindingRefs, taskRefs);
+    const dependencyExport = await this.buildWorkflowDependencyResources(
+      workflow.id,
+      definition,
+    );
+    const { bindingRefs, taskRefs } = this.collectDefinitionResourceRefs([
+      definition,
+      ...dependencyExport.definitions,
+    ]);
+    const resources = await this.buildExportResources(
+      this.withoutResourceKind(bindingRefs, WORKFLOW_RESOURCE_KIND),
+      this.withoutResourceKind(taskRefs, WORKFLOW_RESOURCE_KIND),
+    );
+    (resources as Record<string, unknown[]>)[WORKFLOW_RESOURCE_KEY] =
+      dependencyExport.resources;
     const bundle: WorkflowExportBundle = {
       kind: WORKFLOW_EXPORT_BUNDLE_KIND,
       schemaVersion: 1,
       exportedAt: new Date().toISOString(),
       workflow: {
+        exportId: workflow.id,
         name: workflow.name,
         description: workflow.description ?? null,
         type: workflow.type,
@@ -128,18 +164,15 @@ export class WorkflowTransferService {
     createdBy: string,
   ): Promise<WorkflowImportResult> {
     const bundle = this.parseBundle(content);
+    this.assertUniqueWorkflowExportIds(bundle);
     const definition =
       this.workflowTransferDefinitionService.parseWithLocalCatalog(
         bundle.definitionYml,
       );
-    const bindingRefs =
-      this.workflowTransferDefinitionService.collectBindingResourceRefs(
-        definition,
-      );
-    const taskRefs =
-      this.workflowTransferDefinitionService.collectTaskResourceRefs(
-        definition,
-      );
+    const sources = this.parseWorkflowImportSources(bundle, definition);
+    const { bindingRefs, taskRefs } = this.collectDefinitionResourceRefs(
+      sources.map((source) => source.definition),
+    );
 
     this.assertBundleResourceBucketsAreSupported(bundle.resources);
     this.assertBundleContainsReferencedResources(bundle, bindingRefs, taskRefs);
@@ -151,72 +184,23 @@ export class WorkflowTransferService {
           bundle.resources,
           createdBy,
         );
-        const remappedBindingDefinition =
-          this.workflowTransferDefinitionService.remapBindingResourceRefs(
-            definition,
-            importedResources.bindingIdMaps,
-          );
-        const remappedDefinition =
-          this.workflowTransferDefinitionService.remapTaskResourceRefs(
-            remappedBindingDefinition,
-            importedResources.taskIdMaps,
-          );
-        const definitionYml =
-          AgenticWorkflow.stringifyDefinition(remappedDefinition);
-
-        this.workflowTransferDefinitionService.parseWithLocalCatalog(
-          definitionYml,
-        );
-
-        const workflowName = await this.buildImportedWorkflowName(
+        const importedWorkflows = await this.importWorkflowDefinitions(
           manager,
-          bundle.workflow.name,
-        );
-        const workflowPayload = {
-          name: workflowName,
-          description: bundle.workflow.description ?? undefined,
-          type: bundle.workflow.type,
-          schedule: bundle.workflow.schedule,
-          inputSchema: bundle.workflow.inputSchema,
-          builtin: false,
-          x: bundle.workflow.layout.x,
-          y: bundle.workflow.layout.y,
-          zoom: bundle.workflow.layout.zoom,
-          direction: bundle.workflow.layout.direction,
+          sources,
+          importedResources,
           createdBy,
-        };
-        const workflow = await this.workflowService.createWithManager(
-          manager,
-          workflowPayload,
         );
-        const workflowVersionPayload = {
-          workflow: workflow.id,
-          definitionYml,
-          action: WorkflowVersionAction.import,
-          message:
-            bundle.version.message ??
-            `Imported from workflow version ${bundle.version.number}`,
-          parentVersion: null,
-          createdBy,
-        };
-        const workflowVersion =
-          await this.workflowVersionService.createSnapshotWithManager(
-            manager,
-            workflowVersionPayload,
-          );
 
         return {
-          workflowId: workflow.id,
-          resources: importedResources.resources,
+          workflowId: importedWorkflows.rootWorkflowId,
+          resources: [
+            ...importedResources.resources,
+            ...importedWorkflows.resources,
+          ],
           warnings: importedResources.warnings,
           postCreateEvents: [
             ...importedResources.postCreateEvents,
-            buildPostCreateEvent('workflow', workflow, workflowPayload),
-            buildPostCreateEvent(
-              'workflowVersion',
-              workflowVersion,
-              workflowVersionPayload,
-            ),
+            ...importedWorkflows.postCreateEvents,
           ],
         };
       });
@@ -256,6 +240,339 @@ export class WorkflowTransferService {
     return validation.data;
   }
 
+  private async buildWorkflowDependencyResources(
+    rootWorkflowId: string,
+    rootDefinition: WorkflowDefinition,
+  ): Promise<{
+    resources: WorkflowExportBundleWorkflowDependency[];
+    definitions: WorkflowDefinition[];
+  }> {
+    const resources: WorkflowExportBundleWorkflowDependency[] = [];
+    const definitions: WorkflowDefinition[] = [];
+    const visitedWorkflowIds = new Set<string>([rootWorkflowId]);
+    const pendingWorkflowIds = [
+      ...this.getWorkflowRefsFromDefinition(rootDefinition),
+    ];
+
+    for (let index = 0; index < pendingWorkflowIds.length; index += 1) {
+      const workflowId = pendingWorkflowIds[index];
+      if (visitedWorkflowIds.has(workflowId)) {
+        continue;
+      }
+      visitedWorkflowIds.add(workflowId);
+
+      const { workflow, version } =
+        await this.loadWorkflowDependencyForExport(workflowId);
+      const definition =
+        this.workflowTransferDefinitionService.parseWithLocalCatalog(
+          version.definitionYml,
+        );
+
+      resources.push(
+        this.buildWorkflowDependencyExportResource(workflow, version),
+      );
+      definitions.push(definition);
+      pendingWorkflowIds.push(
+        ...this.getWorkflowRefsFromDefinition(definition),
+      );
+    }
+
+    return { resources, definitions };
+  }
+
+  private async loadWorkflowDependencyForExport(
+    workflowId: string,
+  ): Promise<{ workflow: WorkflowFull; version: WorkflowVersion }> {
+    const workflow = await this.workflowService.findOneAndPopulate(workflowId);
+    if (!workflow) {
+      throw new BadRequestException(
+        `Unable to export workflow: missing workflow(s): ${workflowId}`,
+      );
+    }
+
+    const version = workflow.currentVersion;
+    if (!version?.definitionYml) {
+      throw new BadRequestException(
+        `Called workflow "${workflow.name}" must have a current version to be exported`,
+      );
+    }
+
+    return { workflow, version };
+  }
+
+  private buildWorkflowDependencyExportResource(
+    workflow: WorkflowFull,
+    version: WorkflowVersion,
+  ): WorkflowExportBundleWorkflowDependency {
+    const { exportId: _exportId, ...workflowMetadata } =
+      this.buildWorkflowExportMetadata(workflow);
+
+    return {
+      exportId: workflow.id,
+      workflow: workflowMetadata,
+      version: this.buildWorkflowVersionExportMetadata(version),
+      definitionYml: version.definitionYml,
+    };
+  }
+
+  private buildWorkflowExportMetadata(
+    workflow: WorkflowFull,
+  ): WorkflowExportBundle['workflow'] {
+    return {
+      exportId: workflow.id,
+      name: workflow.name,
+      description: workflow.description ?? null,
+      type: workflow.type,
+      schedule: workflow.schedule ?? null,
+      inputSchema: workflow.inputSchema,
+      layout: {
+        x: workflow.x,
+        y: workflow.y,
+        zoom: workflow.zoom,
+        direction: workflow.direction,
+      },
+    };
+  }
+
+  private buildWorkflowVersionExportMetadata(
+    version: WorkflowVersion,
+  ): WorkflowExportBundle['version'] {
+    return {
+      number: version.version,
+      checksum: version.checksum,
+      message: version.message ?? null,
+      exportedVersionId: version.id,
+    };
+  }
+
+  private getWorkflowRefsFromDefinition(
+    definition: WorkflowDefinition,
+  ): string[] {
+    return (
+      this.workflowTransferDefinitionService.collectTaskResourceRefs(
+        definition,
+      )[WORKFLOW_RESOURCE_KIND] ?? []
+    );
+  }
+
+  private collectDefinitionResourceRefs(definitions: WorkflowDefinition[]): {
+    bindingRefs: WorkflowBindingResourceRefs;
+    taskRefs: WorkflowTaskResourceRefs;
+  } {
+    let bindingRefs: WorkflowBindingResourceRefs = {};
+    let taskRefs: WorkflowTaskResourceRefs = {};
+
+    for (const definition of definitions) {
+      bindingRefs = this.mergeResourceRefs(
+        bindingRefs,
+        this.workflowTransferDefinitionService.collectBindingResourceRefs(
+          definition,
+        ),
+      );
+      taskRefs = this.mergeResourceRefs(
+        taskRefs,
+        this.workflowTransferDefinitionService.collectTaskResourceRefs(
+          definition,
+        ),
+      );
+    }
+
+    return {
+      bindingRefs,
+      taskRefs,
+    };
+  }
+
+  private parseWorkflowImportSources(
+    bundle: WorkflowExportBundle,
+    rootDefinition: WorkflowDefinition,
+  ): ParsedWorkflowImportSource[] {
+    return [
+      {
+        exportId: bundle.workflow.exportId,
+        workflow: bundle.workflow,
+        version: bundle.version,
+        definitionYml: bundle.definitionYml,
+        definition: rootDefinition,
+        isRoot: true,
+      },
+      ...bundle.resources.workflows.map((resource) => ({
+        exportId: resource.exportId,
+        workflow: resource.workflow,
+        version: resource.version,
+        definitionYml: resource.definitionYml,
+        definition:
+          this.workflowTransferDefinitionService.parseWithLocalCatalog(
+            resource.definitionYml,
+          ),
+        isRoot: false,
+      })),
+    ];
+  }
+
+  private assertUniqueWorkflowExportIds(bundle: WorkflowExportBundle): void {
+    const seen = new Set<string>();
+    const exportIds = [
+      bundle.workflow.exportId,
+      ...bundle.resources.workflows.map((workflow) => workflow.exportId),
+    ].filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+    for (const exportId of exportIds) {
+      if (seen.has(exportId)) {
+        throw new BadRequestException(
+          `Workflow bundle contains duplicate workflow export ID "${exportId}"`,
+        );
+      }
+      seen.add(exportId);
+    }
+  }
+
+  private async importWorkflowDefinitions(
+    manager: EntityManager,
+    sources: ParsedWorkflowImportSource[],
+    importedResources: ImportedWorkflowTransferResources,
+    createdBy: string,
+  ): Promise<{
+    rootWorkflowId: string;
+    resources: WorkflowImportResult['resources'];
+    postCreateEvents: WorkflowTransferPostCreateEvent[];
+  }> {
+    const importedWorkflows: ImportedWorkflowSource[] = [];
+    const workflowIdMap: Record<string, string> = {};
+    const resources: WorkflowImportResult['resources'] = [];
+    const postCreateEvents: WorkflowTransferPostCreateEvent[] = [];
+
+    for (const source of sources) {
+      const localName = await this.buildImportedWorkflowName(
+        manager,
+        source.workflow.name,
+      );
+      const workflowPayload = this.buildImportedWorkflowPayload(
+        source.workflow,
+        localName,
+        createdBy,
+      );
+      const workflowEntity = await this.workflowService.createWithManager(
+        manager,
+        workflowPayload,
+      );
+
+      if (source.exportId) {
+        workflowIdMap[source.exportId] = workflowEntity.id;
+      }
+      if (!source.isRoot && source.exportId) {
+        resources.push(
+          buildResourceResult({
+            kind: WORKFLOW_RESOURCE_KIND,
+            exportId: source.exportId,
+            localId: workflowEntity.id,
+            name: localName,
+            action: 'created',
+          }),
+        );
+      }
+
+      postCreateEvents.push(
+        buildPostCreateEvent('workflow', workflowEntity, workflowPayload),
+      );
+      importedWorkflows.push({
+        ...source,
+        localId: workflowEntity.id,
+        localName,
+        workflowEntity,
+        workflowPayload,
+      });
+    }
+
+    for (const importedWorkflow of importedWorkflows) {
+      const definitionYml = this.buildImportedDefinitionYml(
+        importedWorkflow.definition,
+        importedResources,
+        workflowIdMap,
+      );
+      const workflowVersionPayload = {
+        workflow: importedWorkflow.localId,
+        definitionYml,
+        action: WorkflowVersionAction.import,
+        message:
+          importedWorkflow.version.message ??
+          `Imported from workflow version ${importedWorkflow.version.number}`,
+        parentVersion: null,
+        createdBy,
+      };
+      const workflowVersion =
+        await this.workflowVersionService.createSnapshotWithManager(
+          manager,
+          workflowVersionPayload,
+        );
+
+      postCreateEvents.push(
+        buildPostCreateEvent(
+          'workflowVersion',
+          workflowVersion,
+          workflowVersionPayload,
+        ),
+      );
+    }
+
+    const rootWorkflow = importedWorkflows.find((workflow) => workflow.isRoot);
+    if (!rootWorkflow) {
+      throw new Error('Imported workflow bundle is missing a root workflow');
+    }
+
+    return {
+      rootWorkflowId: rootWorkflow.localId,
+      resources,
+      postCreateEvents,
+    };
+  }
+
+  private buildImportedWorkflowPayload(
+    workflow: WorkflowExportBundle['workflow'],
+    name: string,
+    createdBy: string,
+  ): WorkflowCreateWithManagerPayload {
+    return {
+      name,
+      description: workflow.description ?? undefined,
+      type: workflow.type,
+      schedule: workflow.schedule,
+      inputSchema: workflow.inputSchema,
+      builtin: false,
+      x: workflow.layout.x,
+      y: workflow.layout.y,
+      zoom: workflow.layout.zoom,
+      direction: workflow.layout.direction,
+      createdBy,
+    };
+  }
+
+  private buildImportedDefinitionYml(
+    definition: WorkflowDefinition,
+    importedResources: ImportedWorkflowTransferResources,
+    workflowIdMap: Record<string, string>,
+  ): string {
+    const remappedBindingDefinition =
+      this.workflowTransferDefinitionService.remapBindingResourceRefs(
+        definition,
+        importedResources.bindingIdMaps,
+      );
+    const remappedDefinition =
+      this.workflowTransferDefinitionService.remapTaskResourceRefs(
+        remappedBindingDefinition,
+        {
+          ...importedResources.taskIdMaps,
+          [WORKFLOW_RESOURCE_KIND]: workflowIdMap,
+        },
+      );
+    const definitionYml =
+      AgenticWorkflow.stringifyDefinition(remappedDefinition);
+
+    this.workflowTransferDefinitionService.parseWithLocalCatalog(definitionYml);
+
+    return definitionYml;
+  }
+
   private async buildExportResources(
     bindingRefs: WorkflowBindingResourceRefs,
     taskRefs: WorkflowTaskResourceRefs,
@@ -279,8 +596,19 @@ export class WorkflowTransferService {
     refs: WorkflowBindingResourceRefs,
     taskRefs: WorkflowTaskResourceRefs,
   ): void {
+    const mergedRefs = this.mergeResourceRefs(refs, taskRefs);
+    const workflowRefs = mergedRefs[WORKFLOW_RESOURCE_KIND] ?? [];
+
+    if (workflowRefs.length > 0) {
+      this.assertRefsAreBundled(
+        WORKFLOW_RESOURCE_KIND,
+        workflowRefs,
+        this.getBundledWorkflowExportIds(bundle),
+      );
+    }
+
     for (const [kind, resourceRefs] of Object.entries(
-      this.mergeResourceRefs(refs, taskRefs),
+      this.withoutResourceKind(mergedRefs, WORKFLOW_RESOURCE_KIND),
     )) {
       if (resourceRefs.length === 0) {
         continue;
@@ -320,9 +648,10 @@ export class WorkflowTransferService {
   private assertBundleResourceBucketsAreSupported(
     resources: WorkflowExportBundle['resources'],
   ): void {
-    const supportedResourceKeys = new Set(
-      this.workflowTransferAdapterRegistry.getResourceKeys(),
-    );
+    const supportedResourceKeys = new Set([
+      ...this.workflowTransferAdapterRegistry.getResourceKeys(),
+      WORKFLOW_RESOURCE_KEY,
+    ]);
 
     for (const [key, value] of Object.entries(
       resources as Record<string, unknown[]>,
@@ -400,6 +729,22 @@ export class WorkflowTransferService {
         Array.from(ids),
       ]),
     );
+  }
+
+  private withoutResourceKind(
+    refs: Record<string, string[]>,
+    ignoredKind: string,
+  ): Record<string, string[]> {
+    return Object.fromEntries(
+      Object.entries(refs).filter(([kind]) => kind !== ignoredKind),
+    );
+  }
+
+  private getBundledWorkflowExportIds(bundle: WorkflowExportBundle): string[] {
+    return [
+      bundle.workflow.exportId,
+      ...bundle.resources.workflows.map((workflow) => workflow.exportId),
+    ].filter((id): id is string => typeof id === 'string' && id.length > 0);
   }
 
   private getBundledExportIds(

@@ -31,6 +31,7 @@ const workflowExportBundleLayoutSchema = z.strictObject({
   direction: directionTypeSchema,
 });
 const workflowExportBundleWorkflowSchema = z.strictObject({
+  exportId: z.string().min(1).optional(),
   name: z.string().min(1),
   description: z.string().nullable(),
   type: workflowTypeSchema,
@@ -91,6 +92,13 @@ export const workflowExportBundleLabelSchema = z.strictObject({
   groupExportId: z.string().nullable(),
 });
 
+export const workflowExportBundleWorkflowDependencySchema = z.strictObject({
+  exportId: z.string().min(1),
+  workflow: workflowExportBundleWorkflowSchema.omit({ exportId: true }),
+  version: workflowExportBundleVersionSchema,
+  definitionYml: z.string().min(1),
+});
+
 const workflowExportBundleResourcesSchema = z
   .object({
     memoryDefinitions: z.array(workflowExportBundleMemoryDefinitionSchema),
@@ -99,6 +107,9 @@ const workflowExportBundleResourcesSchema = z
     contentTypes: z.array(workflowExportBundleContentTypeSchema).default([]),
     labelGroups: z.array(workflowExportBundleLabelGroupSchema).default([]),
     labels: z.array(workflowExportBundleLabelSchema).default([]),
+    workflows: z
+      .array(workflowExportBundleWorkflowDependencySchema)
+      .default([]),
   })
   .catchall(z.array(z.unknown()));
 
@@ -156,6 +167,10 @@ export type WorkflowExportBundleLabelGroup = z.infer<
 
 export type WorkflowExportBundleLabel = z.infer<
   typeof workflowExportBundleLabelSchema
+>;
+
+export type WorkflowExportBundleWorkflowDependency = z.infer<
+  typeof workflowExportBundleWorkflowDependencySchema
 >;
 
 export type WorkflowExportBundleV1 = z.infer<

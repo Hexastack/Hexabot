@@ -161,9 +161,11 @@ import {
 `workflowExportBundleSchema` validates the portable
 `hexabot.workflow.bundle` YAML payload. Credential resources include metadata
 only; secret `value` fields are intentionally rejected by the strict schema.
-Resource arrays include workflow dependencies such as memory definitions, MCP
-servers, credentials, content types, label groups, and labels. Newer resource
-arrays default to empty lists so existing version 1 bundles remain importable.
+Resource arrays include workflow dependencies such as called workflows, memory
+definitions, MCP servers, credentials, content types, label groups, and labels.
+The root `workflow.exportId` and `resources.workflows` entries preserve
+`call_workflow` references across imports. Newer resource arrays default to
+empty lists so existing version 1 bundles remain importable.
 Extension resource arrays may also be included directly under `resources`; custom
 resource result `kind` values are validated with `workflowTransferResourceKindSchema`.
 
@@ -187,6 +189,8 @@ Unknown keys are stripped by default.
 - Schema parsing preserves nullable/optional normalization used by API entity outputs.
 - Mixed owner/triggeredBy contracts (`Subscriber | User`) are supported in workflow full contracts.
 - Sensitive output parity is preserved for credentials and MCP tokens (`value` and token hashes are not part of output contracts).
+- Workflow run contracts include `parentRun` for call-and-return workflow stacks.
+- Sensitive output parity is preserved for credentials (`value` is not part of output contracts).
 
 ## Breaking-Change Notes
 

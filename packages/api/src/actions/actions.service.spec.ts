@@ -4,10 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { CallWorkflowAction } from '@/extensions/actions/workflow/call-workflow.action';
 import { LoggerModule } from '@/logger/logger.module';
 import { DummyAction } from '@/utils/test/dummy/dummy.action';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WORKFLOW_RESOURCE_REF_METADATA_KEY } from '@/workflow/resource-refs';
+import { WorkflowType } from '@/workflow/types';
 
 import { ActionService } from './actions.service';
 import { BaseAction } from './base-action';
@@ -15,14 +18,25 @@ import { BaseAction } from './base-action';
 describe('ActionService', () => {
   let actionService: ActionService;
   let dummyAction: InstanceType<typeof DummyAction>;
+  let callWorkflowAction: InstanceType<typeof CallWorkflowAction>;
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      providers: [ActionService, DummyAction, I18nServiceProvider],
+      providers: [
+        ActionService,
+        DummyAction,
+        CallWorkflowAction,
+        I18nServiceProvider,
+      ],
       imports: [LoggerModule],
     });
-    [actionService, dummyAction] = await getMocks([ActionService, DummyAction]);
+    [actionService, dummyAction, callWorkflowAction] = await getMocks([
+      ActionService,
+      DummyAction,
+      CallWorkflowAction,
+    ]);
     await dummyAction.onModuleInit();
+    await callWorkflowAction.onModuleInit();
   });
 
   afterAll(jest.clearAllMocks);
@@ -61,6 +75,32 @@ describe('ActionService', () => {
   it('should expose a registry keyed by action name', () => {
     const registry = actionService.getRegistry();
     expect(registry[dummyAction.getName()]).toBe(dummyAction);
+  });
+
+  it('adds workflow type filtering metadata to call_workflow autocomplete schema', () => {
+    const definitions = actionService.getAllSchemaDefinitions(
+      WorkflowType.conversational,
+    );
+    const definition = definitions.find(({ name }) => name === 'call_workflow');
+    const inputDefinition = definition?.inputSchema as
+      | {
+          properties?: Record<string, Record<string, unknown>>;
+        }
+      | undefined;
+
+    expect(inputDefinition?.properties?.workflow_id?.['ui:options']).toEqual(
+      expect.objectContaining({
+        entity: 'Workflow',
+        valueKey: 'id',
+        labelKey: 'name',
+        where: { type: WorkflowType.conversational },
+      }),
+    );
+    expect(
+      inputDefinition?.properties?.workflow_id?.[
+        WORKFLOW_RESOURCE_REF_METADATA_KEY
+      ],
+    ).toEqual({ kind: 'workflow' });
   });
 
   it('should fetch an action by name', () => {

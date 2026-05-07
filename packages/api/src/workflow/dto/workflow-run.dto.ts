@@ -65,6 +65,16 @@ export class WorkflowRunCreateDto {
   workflowVersion?: string | null;
 
   @ApiPropertyOptional({
+    description: 'Parent workflow run waiting for this run',
+    type: String,
+  })
+  @IsOptional()
+  @IsUUIDv4({
+    message: 'Parent workflow run must be a valid UUID',
+  })
+  parentRun?: string | null;
+
+  @ApiPropertyOptional({
     description: 'Lifecycle status of the run',
     enum: WORKFLOW_RUN_STATUSES,
   })

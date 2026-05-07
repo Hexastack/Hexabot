@@ -11,7 +11,7 @@ import {
   StepExecutionRecord,
   WorkflowRunner,
 } from '@hexabot-ai/agentic';
-import { WorkflowRunFull, WorkflowFull } from '@hexabot-ai/types';
+import { WorkflowFull, WorkflowRunFull } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
 
 import { ActionService } from '@/actions/actions.service';
@@ -20,16 +20,30 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 
 import { WorkflowContextFactory } from '../contexts/workflow-context-factory';
-import { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
+import type { WorkflowRuntimeContext } from '../contexts/workflow-runtime.context';
 import { TriggerEventWrapper } from '../lib/trigger-event-wrapper';
 import { parseWorkflowDefinition } from '../lib/workflow-definition';
-import { RunStrategy, RunWorkflowOptions, WorkflowResult } from '../types';
+import type {
+  CallWorkflowOptions,
+  CallWorkflowResult,
+  RunStrategy,
+  RunWorkflowOptions,
+  WorkflowCallService,
+  WorkflowResult,
+} from '../types';
 
 import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowService } from './workflow.service';
 
+const MAX_CALL_STACK_DEPTH = 10;
+
+type RunWorkflowExecution = {
+  run: WorkflowRunFull;
+  result: WorkflowResult;
+};
+
 @Injectable()
-export class AgenticService {
+export class AgenticService implements WorkflowCallService {
   constructor(
     private readonly workflowService: WorkflowService,
     private readonly workflowRunService: WorkflowRunService,
@@ -42,7 +56,7 @@ export class AgenticService {
 
   /**
    * Process an event by resuming a suspended workflow run if it exists,
-   * otherwise start a new run using the latest configured workflow (or the default fallback).
+   * otherwise start a new run using the latest configured workflow.
    */
   async handleEvent(
     event: TriggerEventWrapper,
@@ -75,11 +89,13 @@ export class AgenticService {
           suspensionReason: suspendedRun.suspensionReason,
         });
 
-        return await this.runWorkflow({
+        const execution = await this.runWorkflow({
           mode: 'resume',
           run: suspendedRun,
           event,
         });
+
+        return execution.run;
       }
 
       const workflowToRun = requestedWorkflowId
@@ -104,11 +120,13 @@ export class AgenticService {
         workflowId: workflowToRun.id,
       });
 
-      return await this.runWorkflow({
+      const execution = await this.runWorkflow({
         mode: 'start',
         workflow: workflowToRun,
         event,
       });
+
+      return execution.run;
     } catch (err) {
       this.logger.error(
         'Unable to process incoming event through agentic workflow',
@@ -120,20 +138,70 @@ export class AgenticService {
   }
 
   /**
-   * Shared runner lifecycle for starting or resuming a workflow.
+   * Call another workflow from a running parent workflow.
+   *
+   * This is intentionally an API-level operation: workflows are database
+   * records, so type enforcement, call-stack validation, child run creation,
+   * and durable parent/child linkage all live here instead of in the agentic
+   * DSL runner.
+   */
+  async callWorkflow({
+    workflowId,
+    input,
+    parentContext,
+  }: CallWorkflowOptions): Promise<CallWorkflowResult> {
+    const parentRun = await this.workflowRunService.findOneAndPopulate(
+      parentContext.workflowRunId,
+    );
+    if (!parentRun) {
+      throw new Error(
+        `Unable to load parent workflow run ${parentContext.workflowRunId}`,
+      );
+    }
+
+    const workflow = await this.workflowService.findOneAndPopulate(workflowId);
+    if (!workflow) {
+      throw new Error(`Workflow with ID ${workflowId} not found`);
+    }
+    if (!workflow.definition) {
+      throw new Error(`Workflow ${workflowId} is missing a definition`);
+    }
+    if (workflow.type !== parentRun.workflow.type) {
+      throw new Error(
+        `Workflow ${workflowId} has type "${workflow.type}" and cannot be called from a "${parentRun.workflow.type}" workflow`,
+      );
+    }
+
+    await this.assertCanCallWorkflow(parentRun, workflow.id);
+
+    const execution = await this.runWorkflow({
+      mode: 'start',
+      workflow,
+      event: parentContext.event,
+      parentRun,
+      input,
+    });
+
+    return this.toCallWorkflowResult(execution.run, execution.result);
+  }
+
+  /**
+   * Shared runner lifecycle for starts, external resumes, and internal parent
+   * resumes. When a resumed child reaches a terminal state, this method also
+   * unwinds the suspended parent with the child result payload.
    */
   private async runWorkflow(
     options: RunWorkflowOptions,
-  ): Promise<WorkflowRunFull> {
+  ): Promise<RunWorkflowExecution> {
     const { event, mode } = options;
     const run =
       mode === 'start'
-        ? await this.createRun(options.workflow, event)
+        ? await this.createRun(options.workflow, event, {
+            parentRun: options.parentRun,
+            input: options.input,
+          })
         : options.run;
-    const workflow = await this.workflowService.findOneAndPopulate(
-      run.workflow.id,
-    );
-    const definition = this.resolveRunDefinition(run, workflow);
+    const definition = this.resolveRunDefinition(run);
     if (!definition) {
       throw new Error('Workflow definition is required to run the workflow');
     }
@@ -151,7 +219,7 @@ export class AgenticService {
     this.logger.debug('Preparing workflow runner', {
       mode,
       runId: run.id,
-      workflowId: workflow?.id,
+      workflowId: run.workflow?.id,
       triggeredById: run.triggeredBy?.id,
     });
 
@@ -160,6 +228,7 @@ export class AgenticService {
       run,
       context,
       workflowInstance,
+      mode === 'resume' ? options.resumeData : undefined,
     );
 
     this.logger.debug('Marking workflow run as running', {
@@ -189,6 +258,17 @@ export class AgenticService {
     } catch (err) {
       this.logger.error('Workflow runner threw during execution', err);
       await this.markRunFailed(run, strategy.runner, context.state, err);
+      if (mode === 'resume') {
+        await this.resumeParentRunFromChild(
+          run,
+          {
+            status: 'failed',
+            error: err,
+            snapshot: strategy.runner.getSnapshot(),
+          },
+          event,
+        );
+      }
 
       throw err;
     }
@@ -208,7 +288,15 @@ export class AgenticService {
       context,
     );
 
-    return (await this.workflowRunService.findOneAndPopulate(run.id)) ?? run;
+    if (mode === 'resume') {
+      await this.resumeParentRunFromChild(run, result, event);
+    }
+
+    const persistedRun = await this.workflowRunService.findOneAndPopulate(
+      run.id,
+    );
+
+    return { run: persistedRun ?? run, result };
   }
 
   /**
@@ -231,12 +319,16 @@ export class AgenticService {
 
   /**
    * Build the execution strategy for starting a new workflow or resuming an existing one.
+   *
+   * `resumeData` is supplied only for internal child-to-parent unwinds; normal
+   * event resumes use the current event input.
    */
   private async createRunStrategy(
     mode: 'start' | 'resume',
     run: WorkflowRunFull,
     context: WorkflowRuntimeContext,
     workflowInstance: AgenticWorkflow,
+    resumeData?: unknown,
   ): Promise<RunStrategy> {
     if (mode === 'start') {
       const runner = await workflowInstance.buildAsyncRunner({
@@ -256,7 +348,7 @@ export class AgenticService {
       };
     }
 
-    const latestInput = context.event.buildInput();
+    const latestInput = resumeData ?? context.event.buildInput();
     const runner = await workflowInstance.buildRunnerFromState({
       state: this.buildExecutionState(run),
       context,
@@ -289,10 +381,18 @@ export class AgenticService {
 
   /**
    * Create a workflow run record and load it with relations.
+   *
+   * Child calls inherit the same event metadata, initiator, and thread as the
+   * parent, but store an explicit `parentRun` relation so future events can
+   * resume the deepest suspended child before returning to the parent.
    */
   private async createRun(
     workflow: WorkflowFull,
     event: TriggerEventWrapper,
+    options: {
+      parentRun?: WorkflowRunFull;
+      input?: Record<string, unknown>;
+    } = {},
   ): Promise<WorkflowRunFull> {
     const initiator = event.getInitiator();
     if (!workflow.definition) {
@@ -307,7 +407,8 @@ export class AgenticService {
       workflowVersion: workflow.currentVersion?.id ?? null,
       triggeredBy: initiator.id,
       thread: event.getThreadId() ?? null,
-      input: event.buildInput(),
+      parentRun: options.parentRun?.id ?? null,
+      input: options.input ?? event.buildInput(),
       context: Object.keys(initialContext).length > 0 ? initialContext : null,
       metadata: event.getMetadata(),
     });
@@ -321,18 +422,147 @@ export class AgenticService {
   }
 
   /**
-   * Resolve the workflow definition used by the current run.
+   * Validate that a workflow call does not create a recursive or overly deep stack.
+   *
+   * The walk follows active parent links, so only the current call stack is
+   * rejected; a workflow can still be called again after an earlier stack has
+   * completed.
    */
-  private resolveRunDefinition(
+  private async assertCanCallWorkflow(
+    parentRun: WorkflowRunFull,
+    targetWorkflowId: string,
+  ): Promise<void> {
+    let current: WorkflowRunFull | null = parentRun;
+    let depth = 0;
+
+    while (current) {
+      depth += 1;
+      if (depth >= MAX_CALL_STACK_DEPTH) {
+        throw new Error(
+          `Workflow call stack depth cannot exceed ${MAX_CALL_STACK_DEPTH}`,
+        );
+      }
+
+      if (current.workflow.id === targetWorkflowId) {
+        throw new Error(
+          `Workflow call cycle detected for workflow ${targetWorkflowId}`,
+        );
+      }
+
+      const parentRunId = this.resolveRunId(current.parentRun);
+      current = parentRunId
+        ? await this.workflowRunService.findOneAndPopulate(parentRunId)
+        : null;
+    }
+  }
+
+  /**
+   * Convert a child run terminal/suspended result into the `call_workflow`
+   * contract. The same payload shape is used for immediate returns and for
+   * resuming a parent after the child completed in a later event.
+   */
+  private toCallWorkflowResult(
     run: WorkflowRunFull,
-    workflow?: WorkflowFull | null,
-  ) {
+    result: WorkflowResult,
+  ): CallWorkflowResult {
+    if (result.status === 'finished') {
+      return {
+        status: 'finished',
+        workflow_id: run.workflow.id,
+        workflow_run_id: run.id,
+        output: result.output,
+      };
+    }
+
+    if (result.status === 'suspended') {
+      return {
+        status: 'suspended',
+        workflow_id: run.workflow.id,
+        workflow_run_id: run.id,
+      };
+    }
+
+    return {
+      status: 'failed',
+      workflow_id: run.workflow.id,
+      workflow_run_id: run.id,
+      error: this.stringifyError(result.error),
+    };
+  }
+
+  /**
+   * Resume a suspended parent run after its child run completes or fails.
+   *
+   * This may cascade through multiple ancestors because resuming the parent can
+   * itself finish a child call that belongs to another suspended parent.
+   */
+  private async resumeParentRunFromChild(
+    childRun: WorkflowRunFull,
+    result: WorkflowResult,
+    event: TriggerEventWrapper,
+  ): Promise<void> {
+    if (result.status === 'suspended') {
+      return;
+    }
+
+    const parentRunId = this.resolveRunId(childRun.parentRun);
+    if (!parentRunId) {
+      return;
+    }
+
+    const parentRun =
+      await this.workflowRunService.findOneAndPopulate(parentRunId);
+    if (!parentRun) {
+      this.logger.warn('Unable to resume missing parent workflow run', {
+        childRunId: childRun.id,
+        parentRunId,
+      });
+
+      return;
+    }
+
+    if (parentRun.status !== 'suspended') {
+      this.logger.warn(
+        'Skipping parent workflow resume because it is not suspended',
+        {
+          childRunId: childRun.id,
+          parentRunId,
+          parentStatus: parentRun.status,
+        },
+      );
+
+      return;
+    }
+
+    await this.runWorkflow({
+      mode: 'resume',
+      run: parentRun,
+      event,
+      resumeData: this.toCallWorkflowResult(childRun, result),
+    });
+  }
+
+  /**
+   * Resolve a workflow run relation from either a populated object or id.
+   */
+  private resolveRunId(
+    run: string | { id?: string | null } | null | undefined,
+  ): string | null {
+    if (typeof run === 'string') {
+      return run;
+    }
+
+    return run?.id ?? null;
+  }
+
+  /**
+   * Resolve the workflow definition snapshot used by the current run.
+   */
+  private resolveRunDefinition(run: WorkflowRunFull) {
     const definitionYml = run.workflowVersion?.definitionYml;
     if (typeof definitionYml === 'string' && definitionYml.trim() !== '') {
       return parseWorkflowDefinition(definitionYml);
     }
-
-    return workflow?.definition;
   }
 
   /**
@@ -471,7 +701,7 @@ export class AgenticService {
   private pickOutput(
     result: WorkflowResult,
     state: ExecutionState | undefined,
-    fallback?: Record<string, unknown> | null,
+    previousOutput?: Record<string, unknown> | null,
   ): Record<string, unknown> | null {
     if (result.status === 'finished' && result.output) {
       return result.output;
@@ -481,7 +711,7 @@ export class AgenticService {
       return state.output;
     }
 
-    return fallback ?? null;
+    return previousOutput ?? null;
   }
 
   /**

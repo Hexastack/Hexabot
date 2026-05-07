@@ -786,6 +786,7 @@ describe("@hexabot-ai/types schemas", () => {
       schemaVersion: 1,
       exportedAt: now,
       workflow: {
+        exportId: "wf_1",
         name: "Main",
         description: null,
         type: WorkflowType.conversational,
@@ -858,6 +859,31 @@ describe("@hexabot-ai/types schemas", () => {
             groupExportId: "lg_1",
           },
         ],
+        workflows: [
+          {
+            exportId: "wf_child",
+            workflow: {
+              name: "Child",
+              description: "Called child workflow",
+              type: WorkflowType.conversational,
+              schedule: null,
+              inputSchema: {},
+              layout: {
+                x: 10,
+                y: 20,
+                zoom: 1,
+                direction: "horizontal",
+              },
+            },
+            version: {
+              number: 2,
+              checksum: "child-sha",
+              message: "Child version",
+              exportedVersionId: "wfv_child",
+            },
+            definitionYml: "defs: {}\nflow: []\noutputs: {}",
+          },
+        ],
         knowledgeBases: [
           {
             exportId: "kb_1",
@@ -873,11 +899,17 @@ describe("@hexabot-ai/types schemas", () => {
       name: "Search API",
       exportedOwnerId: "u_1",
     });
+    expect(bundle.workflow.exportId).toBe("wf_1");
     expect(bundle.resources.contentTypes[0]?.name).toBe("Article");
     expect(bundle.resources.labelGroups[0]?.name).toBe("Status");
     expect(bundle.resources.labels[0]).toMatchObject({
       exportId: "label_1",
       groupExportId: "lg_1",
+    });
+    expect(bundle.resources.workflows[0]).toMatchObject({
+      exportId: "wf_child",
+      workflow: { name: "Child" },
+      version: { exportedVersionId: "wfv_child" },
     });
     expect(bundle.resources.knowledgeBases).toEqual([
       {
@@ -923,6 +955,7 @@ describe("@hexabot-ai/types schemas", () => {
     expect(bundle.resources.contentTypes).toEqual([]);
     expect(bundle.resources.labelGroups).toEqual([]);
     expect(bundle.resources.labels).toEqual([]);
+    expect(bundle.resources.workflows).toEqual([]);
   });
 
   it("rejects non-array custom workflow bundle resource buckets", () => {
@@ -1052,6 +1085,7 @@ describe("@hexabot-ai/types schemas", () => {
       workflowVersionId: "wfv_1",
       triggeredById: "s_1",
       threadId: "t_1",
+      parentRun: "parent_run_1",
       finishedAt: "2026-01-01T00:02:00.000Z",
     });
     const full = workflowRunFullSchema.parse({
@@ -1101,10 +1135,23 @@ describe("@hexabot-ai/types schemas", () => {
         avatar: null,
       },
       thread: null,
+      parentRun: {
+        id: "parent_run_1",
+        createdAt: now,
+        updatedAt: now,
+        status: "suspended",
+        context: {},
+        workflowId: "parent_wf_1",
+        workflowVersionId: null,
+        triggeredById: null,
+        parentRun: null,
+      },
     });
 
     expect(run.duration).toBe(120000);
+    expect(run.parentRun).toBe("parent_run_1");
     expect(full.triggeredBy?.id).toBe("s_1");
+    expect(full.parentRun?.workflow).toBe("parent_wf_1");
     expect(typeof resolveRunDurationMs(run)).toBe("number");
   });
 
