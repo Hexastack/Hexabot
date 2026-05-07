@@ -12,11 +12,12 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { HookEventKey, OnEvent } from '@nestjs/event-emitter';
-import { FindOneOptions } from 'typeorm';
+import { EntityManager, FindOneOptions } from 'typeorm';
 import { z, ZodType } from 'zod';
 
 import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { InferCreateDto } from '@/utils/types/dto.types';
 import {
   Room,
   SocketGet,
@@ -66,6 +67,25 @@ export class WorkflowService extends BaseOrmService<WorkflowOrmEntity> {
     });
 
     return latest ?? null;
+  }
+
+  /**
+   * Persist a workflow using the provided transaction manager.
+   *
+   * This method intentionally does not emit BaseOrmRepository mutation events;
+   * callers that own a larger transaction must emit app-level events after
+   * commit.
+   */
+  async createWithManager(
+    manager: EntityManager,
+    payload: InferCreateDto<WorkflowOrmEntity>,
+  ): Promise<WorkflowOrmEntity> {
+    const entity = manager.create(
+      WorkflowOrmEntity,
+      this.repository.actionDtoToEntity(payload),
+    );
+
+    return await manager.save(WorkflowOrmEntity, entity);
   }
 
   /**

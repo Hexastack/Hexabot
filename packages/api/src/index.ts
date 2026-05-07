@@ -58,6 +58,8 @@ export * from './migration';
 
 export * from './setting';
 
+export * from './transfer';
+
 export * from './user';
 
 export * from './websocket';

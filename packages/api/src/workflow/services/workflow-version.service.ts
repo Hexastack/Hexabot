@@ -6,6 +6,7 @@
 
 import { WorkflowVersion } from '@hexabot-ai/types';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { EntityManager } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
@@ -61,6 +62,38 @@ export class WorkflowVersionService extends BaseOrmService<WorkflowVersionOrmEnt
       parentVersion: params.parentVersion,
       createdBy: params.createdBy,
     });
+  }
+
+  /**
+   * Persist a workflow version snapshot with the provided transaction manager.
+   *
+   * This method mirrors createSnapshot's version-number behavior without
+   * escaping the caller's transaction or emitting repository-level events.
+   */
+  public async createSnapshotWithManager(
+    manager: EntityManager,
+    params: WorkflowNewVersionDto,
+  ): Promise<WorkflowVersionOrmEntity> {
+    const latestVersion = await manager.findOne(WorkflowVersionOrmEntity, {
+      where: { workflow: { id: params.workflow } },
+      order: { version: 'DESC' },
+    });
+    const nextVersion = latestVersion ? latestVersion.version + 1 : 1;
+
+    return await manager.save(
+      WorkflowVersionOrmEntity,
+      manager.create(WorkflowVersionOrmEntity, {
+        workflow: { id: params.workflow },
+        version: nextVersion,
+        definitionYml: params.definitionYml,
+        action: params.action,
+        message: params.message,
+        parentVersion: params.parentVersion
+          ? { id: params.parentVersion }
+          : null,
+        createdBy: params.createdBy ? { id: params.createdBy } : null,
+      }),
+    );
   }
 
   /**

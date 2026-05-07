@@ -46,6 +46,7 @@ import { LoggerModule } from './logger/logger.module';
 import { MailerModule } from './mailer/mailer.module';
 import { MigrationModule } from './migration/migration.module';
 import { SettingModule } from './setting/setting.module';
+import { WorkflowTransferModule } from './transfer/workflow-transfer.module';
 import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
 import { WebsocketModule } from './websocket/websocket.module';
@@ -115,6 +116,7 @@ export const HEXABOT_MODULE_IMPORTS: ModuleImports = [
   ActionsModule,
   BindingsModule,
   WorkflowModule,
+  WorkflowTransferModule,
   HelperModule,
   LoggerModule,
   WebsocketModule,

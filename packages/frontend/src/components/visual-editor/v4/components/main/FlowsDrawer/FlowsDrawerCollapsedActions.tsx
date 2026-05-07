@@ -5,17 +5,20 @@
  */
 
 import { Box, IconButton, Tooltip } from "@mui/material";
-import { Code, Plus, Search } from "lucide-react";
+import { Code, Plus, Search, Upload } from "lucide-react";
 import type { ReactElement } from "react";
 
 type FlowsDrawerCollapsedActionsProps = {
   searchLabel: string;
+  importWorkflowLabel: string;
+  importWorkflowDisabled?: boolean;
   newWorkflowLabel: string;
   newWorkflowDisabled?: boolean;
   newWorkflowDisabledReason?: string;
   newWorkflowAction?: ReactElement;
   yamlLabel: string;
   onOpen: () => void;
+  onImport: () => void;
   onNew?: () => void;
   onToggleYaml: () => void;
   isYamlOpen: boolean;
@@ -23,12 +26,15 @@ type FlowsDrawerCollapsedActionsProps = {
 
 export const FlowsDrawerCollapsedActions = ({
   searchLabel,
+  importWorkflowLabel,
+  importWorkflowDisabled = false,
   newWorkflowLabel,
   newWorkflowDisabled = false,
   newWorkflowDisabledReason,
   newWorkflowAction,
   yamlLabel,
   onOpen,
+  onImport,
   onNew,
   onToggleYaml,
   isYamlOpen,
@@ -55,6 +61,17 @@ export const FlowsDrawerCollapsedActions = ({
       >
         <Code size={16} />
       </IconButton>
+    </Tooltip>
+    <Tooltip title={importWorkflowLabel}>
+      <span>
+        <IconButton
+          size="small"
+          onClick={onImport}
+          disabled={importWorkflowDisabled}
+        >
+          <Upload size={16} />
+        </IconButton>
+      </span>
     </Tooltip>
     {newWorkflowAction ?? (
       <Tooltip

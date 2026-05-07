@@ -16,15 +16,25 @@ import {
   type FlowStepPath,
   type WorkflowSelectionSnapshot,
 } from "@hexabot-ai/graph";
+import type { WorkflowImportResult } from "@hexabot-ai/types";
 import debounce from "@mui/utils/debounce";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import {
+  useTanstackMutation,
+  useTanstackQueryClient,
+} from "@/hooks/crud/useTanstack";
+import { useApiClient } from "@/hooks/useApiClient";
 import { useAppRouter } from "@/hooks/useAppRouter";
+import { useAuth } from "@/hooks/useAuth";
 import { useQueryState } from "@/hooks/useQueryState";
 import { useSafeCallback } from "@/hooks/useSafeCallback";
-import { EntityType, Format, RouterType } from "@/services/types";
+import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
+import type { WorkflowExportFile } from "@/services/api.class";
+import { EntityType, Format, QueryType, RouterType } from "@/services/types";
 import type { IAction } from "@/types/action.types";
 import type { EntityAttributes } from "@/types/base.types";
 
@@ -45,11 +55,23 @@ const EMPTY_GRAPH_SELECTION: WorkflowSelectionSnapshot = {
   nodeIds: [],
   nodes: [],
 };
+const TRANSFER_CACHE_ENTITIES = new Set<string>([
+  EntityType.WORKFLOW,
+  EntityType.WORKFLOW_VERSION,
+  EntityType.MEMORY_DEFINITION,
+  EntityType.MCP_SERVER,
+  EntityType.CREDENTIAL,
+]);
 
 export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   children,
   workflow,
 }) => {
+  const { t } = useTranslate();
+  const { toast } = useToast();
+  const { apiClient } = useApiClient();
+  const { refetchUser } = useAuth();
+  const queryClient = useTanstackQueryClient();
   const [flowId] = useQueryState("flowId");
   const { data: workflows } = useFind(
     {
@@ -290,6 +312,94 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
       memoizedFn.clear();
     },
   );
+  const invalidateWorkflowTransferQueries = useCallback(async () => {
+    await queryClient.invalidateQueries({
+      predicate: ({ queryKey }) => {
+        const [queryType, queryEntity] = queryKey;
+
+        if (
+          queryType !== QueryType.item &&
+          queryType !== QueryType.collection &&
+          queryType !== QueryType.count
+        ) {
+          return false;
+        }
+
+        if (typeof queryEntity !== "string") {
+          return false;
+        }
+
+        return TRANSFER_CACHE_ENTITIES.has(queryEntity.split("/")[0]);
+      },
+    });
+  }, [queryClient]);
+  const downloadWorkflowFile = useCallback((file: WorkflowExportFile) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const url = window.URL.createObjectURL(file.blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = file.filename;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  }, []);
+  const { mutate: exportWorkflowMutation, isPending: isExportingWorkflow } =
+    useTanstackMutation<WorkflowExportFile, Error, string>({
+      mutationFn: (workflowId) => apiClient.exportWorkflow(workflowId),
+      onSuccess: downloadWorkflowFile,
+      onError: (error) => {
+        toast.error(error);
+      },
+    });
+  const { mutate: importWorkflowMutation, isPending: isImportingWorkflow } =
+    useTanstackMutation<WorkflowImportResult, Error, File>({
+      mutationFn: (file) => apiClient.importWorkflowBundle(file),
+      onSuccess: (result) => {
+        queryClient.setQueryData(
+          [QueryType.item, EntityType.WORKFLOW, result.workflow.id],
+          result.workflow,
+        );
+        void invalidateWorkflowTransferQueries();
+        void updateWorkflowURL(result.workflow.id);
+        void refetchUser();
+        toast.success(t("message.workflow_import_success"));
+
+        if (result.warnings.length > 0) {
+          toast.warning(
+            t("message.workflow_import_warnings", {
+              0: result.warnings.length,
+            }),
+          );
+        }
+      },
+      onError: (error) => {
+        toast.error(error);
+      },
+    });
+  const exportWorkflow = useCallback(
+    (workflowId: string) => {
+      if (workflowId === flowId && isDefinitionDirty) {
+        toast.warning(t("message.workflow_export_save_before"));
+
+        return;
+      }
+
+      exportWorkflowMutation(workflowId);
+    },
+    [exportWorkflowMutation, flowId, isDefinitionDirty, t, toast],
+  );
+  const importWorkflowBundle = useCallback(
+    (file: File) => {
+      importWorkflowMutation(file);
+    },
+    [importWorkflowMutation],
+  );
 
   useEffect(() => {
     if (!flowId && workflows?.length) {
@@ -324,6 +434,10 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
         updateVersionMessage,
         isDefinitionDirty,
         isSaving,
+        isExportingWorkflow,
+        isImportingWorkflow,
+        exportWorkflow,
+        importWorkflowBundle,
         addActionStep,
         addConditionalStep,
         addLoopStep,

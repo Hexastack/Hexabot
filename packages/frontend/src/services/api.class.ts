@@ -9,6 +9,7 @@ import {
   type IntegrationHealthResponse,
   type McpToken,
   type Workflow,
+  type WorkflowImportResult,
 } from "@hexabot-ai/types";
 import { AxiosInstance, AxiosResponse } from "axios";
 
@@ -50,6 +51,11 @@ export type McpTokenCreateResponse = {
   record: McpToken;
 };
 
+export type WorkflowExportFile = {
+  blob: Blob;
+  filename: string;
+};
+
 export const resolveRoute = (route: string, params?: RouteParams) => {
   if (!params) {
     return route;
@@ -83,6 +89,8 @@ export const ROUTES = {
   STATS_FAILED_WORKFLOW_RUNS: "/stats/failed-workflow-runs",
   WORKFLOW_PUBLISH: "/workflow/:id/publish",
   WORKFLOW_UNPUBLISH: "/workflow/:id/unpublish",
+  WORKFLOW_EXPORT: "/workflow/:id/export",
+  WORKFLOW_IMPORT: "/workflow/import",
   WORKFLOW_BINDINGS: "/workflow/bindings",
   WORKFLOW_ACTIONS: "/workflow/actions/:type",
   MCP_SERVER_TEST: "/mcpserver/:id/test",
@@ -361,6 +369,39 @@ export class ApiClient extends TranslatableMethods {
     return data;
   }
 
+  async exportWorkflow(id: string): Promise<WorkflowExportFile> {
+    const route = resolveRoute(ROUTES.WORKFLOW_EXPORT, { id });
+    const response = await this.request.get<Blob>(route, {
+      responseType: "blob",
+    });
+    const contentDisposition = response.headers["content-disposition"];
+    const filename = this.getFilenameFromContentDisposition(
+      typeof contentDisposition === "string" ? contentDisposition : null,
+    );
+
+    return {
+      blob: response.data,
+      filename: filename || "workflow.workflow.yml",
+    };
+  }
+
+  async importWorkflowBundle(file: File): Promise<WorkflowImportResult> {
+    const { _csrf } = await this.getCsrf();
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    const { data } = await this.request.post<
+      WorkflowImportResult,
+      AxiosResponse<WorkflowImportResult>,
+      FormData
+    >(ROUTES.WORKFLOW_IMPORT, formData, {
+      params: { _csrf },
+    });
+
+    return data;
+  }
+
   async unpublishWorkflow(id: string) {
     const { _csrf } = await this.getCsrf();
     const route = resolveRoute(ROUTES.WORKFLOW_UNPUBLISH, { id });
@@ -381,6 +422,24 @@ export class ApiClient extends TranslatableMethods {
     );
 
     return data;
+  }
+
+  private getFilenameFromContentDisposition(
+    contentDisposition: string | null,
+  ): string | null {
+    if (!contentDisposition) {
+      return null;
+    }
+
+    const utf8Filename = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+
+    if (utf8Filename?.[1]) {
+      return decodeURIComponent(utf8Filename[1].trim().replace(/^"|"$/g, ""));
+    }
+
+    const filename = contentDisposition.match(/filename="?([^";]+)"?/i);
+
+    return filename?.[1]?.trim() ?? null;
   }
 
   getRequest() {

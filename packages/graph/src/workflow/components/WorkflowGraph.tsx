@@ -27,6 +27,10 @@ import {
 
 import "@xyflow/react/dist/style.css";
 
+import {
+  WORKFLOW_VIEWPORT_MAX_ZOOM,
+  WORKFLOW_VIEWPORT_MIN_ZOOM,
+} from "../constants/workflow.constants";
 import type {
   WorkflowGraphHostContextValue,
   WorkflowGraphTranslate,
@@ -283,8 +287,8 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
           edges={edges}
           nodes={nodes}
           defaultViewport={initialViewport}
-          maxZoom={4}
-          minZoom={-2}
+          maxZoom={WORKFLOW_VIEWPORT_MAX_ZOOM}
+          minZoom={WORKFLOW_VIEWPORT_MIN_ZOOM}
           nodeTypes={NODE_TYPES}
           edgeTypes={EDGE_TYPES}
           onNodesChange={onNodesChange}
@@ -325,8 +329,10 @@ export const WorkflowGraph = forwardRef<
   WorkflowGraphHandle,
   WorkflowGraphProps
 >((props, ref) => {
+  const flowKey = props.viewport.value?.id ?? "__workflow-empty__";
+
   return (
-    <ReactFlowProvider>
+    <ReactFlowProvider key={flowKey}>
       <WorkflowGraphCanvas {...props} ref={ref} />
     </ReactFlowProvider>
   );

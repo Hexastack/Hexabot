@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { createAction } from '@/actions/create-action';
 import { RagMode, RagQueryOptions } from '@/cms';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
+import { workflowResourceRef } from '@/workflow/resource-refs';
 
 const contentRagModeSchema = z.enum(['embedding', 'lexical']);
 const retrieveRagContentInputSchema = z.strictObject({
@@ -38,6 +39,7 @@ const retrieveRagContentSettingsSchema = z.strictObject({
         valueKey: 'id',
         labelKey: 'name',
       },
+      ...workflowResourceRef('contentType'),
     }),
   include_inactive: z.boolean().default(false).meta({
     title: 'Include inactive',
