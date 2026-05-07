@@ -4,9 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowSnapshot } from '@hexabot-ai/agentic';
+import { EWorkflowRunStatus, WorkflowSnapshot } from '@hexabot-ai/agentic';
 import { WorkflowRun, WorkflowRunFull } from '@hexabot-ai/types';
 import { Injectable } from '@nestjs/common';
+import { In } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
@@ -17,6 +18,12 @@ type StateUpdate = {
   snapshot?: WorkflowSnapshot | null;
   context?: Record<string, unknown> | null;
 };
+
+const ACTIVE_WORKFLOW_RUN_STATUSES = [
+  EWorkflowRunStatus.IDLE,
+  EWorkflowRunStatus.RUNNING,
+  EWorkflowRunStatus.SUSPENDED,
+];
 
 @Injectable()
 export class WorkflowRunService extends BaseOrmService<WorkflowRunOrmEntity> {
@@ -132,10 +139,11 @@ export class WorkflowRunService extends BaseOrmService<WorkflowRunOrmEntity> {
   /**
    * Find the suspended run that should receive the next event.
    *
-   * For call-and-return stacks, the parent and child can both be suspended for
-   * the same initiator/thread. The next external event must resume the deepest
-   * suspended leaf first; once that child completes, AgenticService resumes its
-   * parent internally with the child result.
+   * For call-and-return stacks, the parent can be suspended while the child is
+   * either running or suspended for the same initiator/thread. The next external
+   * event must resume the deepest suspended leaf first; once that child
+   * completes, AgenticService resumes its parent internally with the child
+   * result.
    *
    * @param triggeredById - Identifier of the subscriber whose suspended run should be fetched.
    * @param threadId - Optional thread id for conversational continuity.
@@ -151,7 +159,7 @@ export class WorkflowRunService extends BaseOrmService<WorkflowRunOrmEntity> {
       where: {
         triggeredBy: { id: triggeredById },
         ...(threadId ? { thread: { id: threadId } } : {}),
-        status: 'suspended',
+        status: In(ACTIVE_WORKFLOW_RUN_STATUSES),
       },
       order: { suspendedAt: 'DESC', createdAt: 'DESC' },
     });
@@ -166,12 +174,17 @@ export class WorkflowRunService extends BaseOrmService<WorkflowRunOrmEntity> {
         .map((run) => this.resolveRunId(run.parentRun))
         .filter((value): value is string => typeof value === 'string'),
     );
-    // Leaves are suspended runs that are not the parent of another suspended
-    // candidate. Those are the runs still waiting on an external event.
+    // Leaves are active runs that are not the parent of another unfinished
+    // candidate. Only suspended leaves can consume external events; running or
+    // idle leaves are still in flight and block their suspended ancestors.
     const leaves = runs.filter((run) => !parentRunIds.has(run.id));
-    const candidates = (leaves.length > 0 ? leaves : runs).filter((run) =>
-      workflowId ? this.isRunInWorkflowStack(run, workflowId, runsById) : true,
-    );
+    const candidates = (leaves.length > 0 ? leaves : runs)
+      .filter((run) => run.status === EWorkflowRunStatus.SUSPENDED)
+      .filter((run) =>
+        workflowId
+          ? this.isRunInWorkflowStack(run, workflowId, runsById)
+          : true,
+      );
 
     return this.pickDeepestSuspendedRun(candidates, runsById);
   }

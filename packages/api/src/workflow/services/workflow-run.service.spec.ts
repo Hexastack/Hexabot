@@ -5,6 +5,7 @@
  */
 
 import {
+  EWorkflowRunStatus,
   WorkflowDefinition,
   Workflow as WorkflowHelper,
   WorkflowSnapshot,
@@ -306,11 +307,17 @@ describe('WorkflowRunService (TypeORM)', () => {
   });
 
   describe('findSuspendedRunByInitiator', () => {
+    const activeWorkflowRunStatuses = [
+      EWorkflowRunStatus.IDLE,
+      EWorkflowRunStatus.RUNNING,
+      EWorkflowRunStatus.SUSPENDED,
+    ];
     const buildSuspendedRun = (
       id: string,
       workflowId: string,
       options: {
         parentRun?: { id: string } | string | null;
+        status?: EWorkflowRunStatus;
         suspendedAt?: string;
         createdAt?: string;
       } = {},
@@ -319,12 +326,28 @@ describe('WorkflowRunService (TypeORM)', () => {
         id,
         workflow: { id: workflowId },
         parentRun: options.parentRun ?? null,
-        status: 'suspended',
+        status: options.status ?? EWorkflowRunStatus.SUSPENDED,
         suspendedAt: new Date(
           options.suspendedAt ?? '2026-01-01T00:00:00.000Z',
         ),
         createdAt: new Date(options.createdAt ?? '2026-01-01T00:00:00.000Z'),
       }) as unknown as WorkflowRunFull;
+    const expectActiveRunLookup = (
+      mockedRepo: WorkflowRunRepository,
+      extraWhere: Record<string, unknown> = {},
+    ) => {
+      expect(mockedRepo.findAndPopulate).toHaveBeenCalledWith({
+        where: {
+          triggeredBy: { id: 'sub-1' },
+          ...extraWhere,
+          status: expect.objectContaining({
+            _type: 'in',
+            _value: activeWorkflowRunStatuses,
+          }),
+        },
+        order: { suspendedAt: 'DESC', createdAt: 'DESC' },
+      });
+    };
 
     it('loads suspended runs for the initiator and picks the deepest leaf', async () => {
       const mockedRepo = {
@@ -346,11 +369,34 @@ describe('WorkflowRunService (TypeORM)', () => {
 
       const result = await service.findSuspendedRunByInitiator('sub-1');
 
-      expect(mockedRepo.findAndPopulate).toHaveBeenCalledWith({
-        where: { triggeredBy: { id: 'sub-1' }, status: 'suspended' },
-        order: { suspendedAt: 'DESC', createdAt: 'DESC' },
-      });
+      expectActiveRunLookup(mockedRepo);
       expect(result).toBe(childRun);
+    });
+
+    it('does not treat a suspended parent as resumable while its child is running', async () => {
+      const mockedRepo = {
+        findAndPopulate: jest.fn(),
+      } as unknown as WorkflowRunRepository;
+      const service = new WorkflowRunService(mockedRepo);
+      const parentRun = buildSuspendedRun('parent-run', 'parent-workflow');
+      const childRun = buildSuspendedRun('child-run', 'child-workflow', {
+        parentRun: { id: parentRun.id },
+        status: EWorkflowRunStatus.RUNNING,
+      });
+
+      (mockedRepo.findAndPopulate as jest.Mock).mockResolvedValue([
+        parentRun,
+        childRun,
+      ]);
+
+      const result = await service.findSuspendedRunByInitiator(
+        'sub-1',
+        undefined,
+        'parent-workflow',
+      );
+
+      expectActiveRunLookup(mockedRepo);
+      expect(result).toBeNull();
     });
 
     it('resolves a requested parent workflow to its suspended child leaf', async () => {
@@ -374,10 +420,7 @@ describe('WorkflowRunService (TypeORM)', () => {
         'parent-workflow',
       );
 
-      expect(mockedRepo.findAndPopulate).toHaveBeenCalledWith({
-        where: { triggeredBy: { id: 'sub-1' }, status: 'suspended' },
-        order: { suspendedAt: 'DESC', createdAt: 'DESC' },
-      });
+      expectActiveRunLookup(mockedRepo);
       expect(result).toBe(childRun);
     });
 
@@ -402,13 +445,8 @@ describe('WorkflowRunService (TypeORM)', () => {
         'parent-workflow',
       );
 
-      expect(mockedRepo.findAndPopulate).toHaveBeenCalledWith({
-        where: {
-          triggeredBy: { id: 'sub-1' },
-          thread: { id: 'thread-1' },
-          status: 'suspended',
-        },
-        order: { suspendedAt: 'DESC', createdAt: 'DESC' },
+      expectActiveRunLookup(mockedRepo, {
+        thread: { id: 'thread-1' },
       });
       expect(result).toBe(childRun);
     });

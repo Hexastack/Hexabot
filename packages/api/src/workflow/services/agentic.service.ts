@@ -437,6 +437,12 @@ export class AgenticService implements WorkflowCallService {
 
     while (current) {
       depth += 1;
+      if (depth >= MAX_CALL_STACK_DEPTH) {
+        throw new Error(
+          `Workflow call stack depth cannot exceed ${MAX_CALL_STACK_DEPTH}`,
+        );
+      }
+
       if (current.workflow.id === targetWorkflowId) {
         throw new Error(
           `Workflow call cycle detected for workflow ${targetWorkflowId}`,
@@ -447,12 +453,6 @@ export class AgenticService implements WorkflowCallService {
       current = parentRunId
         ? await this.workflowRunService.findOneAndPopulate(parentRunId)
         : null;
-    }
-
-    if (depth >= MAX_CALL_STACK_DEPTH) {
-      throw new Error(
-        `Workflow call stack depth cannot exceed ${MAX_CALL_STACK_DEPTH}`,
-      );
     }
   }
 
