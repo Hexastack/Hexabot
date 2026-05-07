@@ -28,6 +28,39 @@ type IsEmptyArray<T> = T extends any[]
     ? true
     : false
   : false;
+
+const isBlob = (data: unknown): data is Blob => {
+  return typeof Blob !== "undefined" && data instanceof Blob;
+};
+
+export const normalizeErrorResponseData = async (data: unknown) => {
+  if (!isBlob(data)) {
+    return data;
+  }
+
+  const contentType = data.type.toLowerCase();
+
+  if (
+    contentType &&
+    !contentType.includes("json") &&
+    !contentType.startsWith("text/")
+  ) {
+    return data;
+  }
+
+  const text = await data.text();
+
+  if (!text) {
+    return data;
+  }
+
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return text;
+  }
+};
+
 export const useAxiosInstance = () => {
   const { apiUrl } = useConfig();
   const router = useAppRouter();
@@ -84,7 +117,9 @@ export const useAxiosInstance = () => {
           postMessage({ event: "logout" });
         }
 
-        return Promise.reject(error.response.data);
+        return Promise.reject(
+          await normalizeErrorResponseData(error.response.data),
+        );
       },
     );
 
