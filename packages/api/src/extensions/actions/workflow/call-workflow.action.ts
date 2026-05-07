@@ -9,6 +9,7 @@ import { z } from 'zod';
 
 import { createAction } from '@/actions/create-action';
 import { WorkflowRuntimeContext } from '@/workflow/contexts/workflow-runtime.context';
+import { workflowResourceRef } from '@/workflow/resource-refs';
 import { CallWorkflowResult } from '@/workflow/types';
 
 const callWorkflowInputSchema = z.object({
@@ -21,6 +22,7 @@ const callWorkflowInputSchema = z.object({
       valueKey: 'id',
       labelKey: 'name',
     },
+    ...workflowResourceRef('workflow'),
   }),
   input: z.record(z.string(), JsonValueSchema).optional().meta({
     title: 'Input',

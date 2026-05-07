@@ -786,6 +786,7 @@ describe("@hexabot-ai/types schemas", () => {
       schemaVersion: 1,
       exportedAt: now,
       workflow: {
+        exportId: "wf_1",
         name: "Main",
         description: null,
         type: WorkflowType.conversational,
@@ -858,6 +859,31 @@ describe("@hexabot-ai/types schemas", () => {
             groupExportId: "lg_1",
           },
         ],
+        workflows: [
+          {
+            exportId: "wf_child",
+            workflow: {
+              name: "Child",
+              description: "Called child workflow",
+              type: WorkflowType.conversational,
+              schedule: null,
+              inputSchema: {},
+              layout: {
+                x: 10,
+                y: 20,
+                zoom: 1,
+                direction: "horizontal",
+              },
+            },
+            version: {
+              number: 2,
+              checksum: "child-sha",
+              message: "Child version",
+              exportedVersionId: "wfv_child",
+            },
+            definitionYml: "defs: {}\nflow: []\noutputs: {}",
+          },
+        ],
         knowledgeBases: [
           {
             exportId: "kb_1",
@@ -873,11 +899,17 @@ describe("@hexabot-ai/types schemas", () => {
       name: "Search API",
       exportedOwnerId: "u_1",
     });
+    expect(bundle.workflow.exportId).toBe("wf_1");
     expect(bundle.resources.contentTypes[0]?.name).toBe("Article");
     expect(bundle.resources.labelGroups[0]?.name).toBe("Status");
     expect(bundle.resources.labels[0]).toMatchObject({
       exportId: "label_1",
       groupExportId: "lg_1",
+    });
+    expect(bundle.resources.workflows[0]).toMatchObject({
+      exportId: "wf_child",
+      workflow: { name: "Child" },
+      version: { exportedVersionId: "wfv_child" },
     });
     expect(bundle.resources.knowledgeBases).toEqual([
       {
@@ -923,6 +955,7 @@ describe("@hexabot-ai/types schemas", () => {
     expect(bundle.resources.contentTypes).toEqual([]);
     expect(bundle.resources.labelGroups).toEqual([]);
     expect(bundle.resources.labels).toEqual([]);
+    expect(bundle.resources.workflows).toEqual([]);
   });
 
   it("rejects non-array custom workflow bundle resource buckets", () => {

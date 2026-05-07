@@ -9,6 +9,7 @@ import { LoggerModule } from '@/logger/logger.module';
 import { DummyAction } from '@/utils/test/dummy/dummy.action';
 import { I18nServiceProvider } from '@/utils/test/providers/i18n-service.provider';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WORKFLOW_RESOURCE_REF_METADATA_KEY } from '@/workflow/resource-refs';
 import { WorkflowType } from '@/workflow/types';
 
 import { ActionService } from './actions.service';
@@ -83,10 +84,7 @@ describe('ActionService', () => {
     const definition = definitions.find(({ name }) => name === 'call_workflow');
     const inputDefinition = definition?.inputSchema as
       | {
-          properties?: Record<
-            string,
-            { 'ui:options'?: Record<string, unknown> }
-          >;
+          properties?: Record<string, Record<string, unknown>>;
         }
       | undefined;
 
@@ -98,6 +96,11 @@ describe('ActionService', () => {
         where: { type: WorkflowType.conversational },
       }),
     );
+    expect(
+      inputDefinition?.properties?.workflow_id?.[
+        WORKFLOW_RESOURCE_REF_METADATA_KEY
+      ],
+    ).toEqual({ kind: 'workflow' });
   });
 
   it('should fetch an action by name', () => {
