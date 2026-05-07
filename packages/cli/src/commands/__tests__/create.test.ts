@@ -104,6 +104,7 @@ beforeEach(() => {
 
   validateProjectName.mockReturnValue(true);
   detectPackageManager.mockReturnValue('pnpm');
+  bootstrapEnvFile.mockReturnValue(true);
   (normalizePackageManager as any).mockImplementation((value: unknown) => {
     return typeof value === 'string' ? value.toLowerCase() : undefined;
   });
@@ -133,7 +134,7 @@ afterEach(() => {
 });
 
 describe('registerCreateCommand', () => {
-  it('prompts admin credentials and persists them to local env values', async () => {
+  it('prompts admin credentials and persists them to local and Docker env values', async () => {
     (input as any)
       .mockResolvedValueOnce('Anis')
       .mockResolvedValueOnce('Bot')
@@ -166,15 +167,67 @@ describe('registerCreateCommand', () => {
       '.env',
       { quiet: true },
     );
+    expect(bootstrapEnvFile).toHaveBeenCalledWith(
+      projectPath,
+      '.env.docker.example',
+      '.env.docker',
+      { quiet: true },
+    );
     expect(upsertEnvVariables).toHaveBeenCalledWith(projectPath, '.env', {
       SEED_ADMIN_FIRST_NAME: 'Anis',
       SEED_ADMIN_LAST_NAME: 'Bot',
       SEED_ADMIN_EMAIL: 'anis@example.com',
       SEED_ADMIN_PASSWORD: 'Admin#123',
     });
+    expect(upsertEnvVariables).toHaveBeenCalledWith(
+      projectPath,
+      '.env.docker',
+      {
+        SEED_ADMIN_FIRST_NAME: 'Anis',
+        SEED_ADMIN_LAST_NAME: 'Bot',
+        SEED_ADMIN_EMAIL: 'anis@example.com',
+        SEED_ADMIN_PASSWORD: 'Admin#123',
+      },
+    );
     expect(exitSpy).not.toHaveBeenCalled();
     expect(input).toHaveBeenCalledTimes(3);
     expect(password).toHaveBeenCalledTimes(2);
+    expect(bootstrapEnvFile).toHaveBeenCalledTimes(2);
+    expect(upsertEnvVariables).toHaveBeenCalledTimes(2);
+  });
+
+  it('skips Docker admin credentials when the Docker env file is unavailable', async () => {
+    (bootstrapEnvFile as any).mockImplementation(
+      (_projectRoot: string, _exampleFile: string, targetFile: string) =>
+        targetFile === '.env',
+    );
+    (input as any)
+      .mockResolvedValueOnce('Anis')
+      .mockResolvedValueOnce('Bot')
+      .mockResolvedValueOnce('anis@example.com');
+    (password as any)
+      .mockResolvedValueOnce('Admin#123')
+      .mockResolvedValueOnce('Admin#123');
+
+    const program = new Command();
+    registerCreateCommand(program);
+
+    await program.parseAsync(['node', 'test', 'create', 'anisbot']);
+
+    const [, projectPath] = (downloadAndExtractTemplate as any).mock.calls[0];
+    expect(bootstrapEnvFile).toHaveBeenCalledWith(
+      projectPath,
+      '.env.docker.example',
+      '.env.docker',
+      { quiet: true },
+    );
+    expect(upsertEnvVariables).toHaveBeenCalledTimes(1);
+    expect(upsertEnvVariables).toHaveBeenCalledWith(projectPath, '.env', {
+      SEED_ADMIN_FIRST_NAME: 'Anis',
+      SEED_ADMIN_LAST_NAME: 'Bot',
+      SEED_ADMIN_EMAIL: 'anis@example.com',
+      SEED_ADMIN_PASSWORD: 'Admin#123',
+    });
   });
 
   it('fails cleanly when create runs in a non-interactive terminal', async () => {
