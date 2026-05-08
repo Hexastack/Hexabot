@@ -10,7 +10,13 @@ import {
   type StepExecutionRecord,
   type WorkflowRunStatus,
 } from '@hexabot-ai/agentic';
-import { Action, type User, type WorkflowRunFull } from '@hexabot-ai/types';
+import {
+  Action,
+  type User,
+  type WorkflowFull,
+  type WorkflowRunFull,
+  type WorkflowVersion,
+} from '@hexabot-ai/types';
 import {
   BadRequestException,
   Injectable,
@@ -93,6 +99,19 @@ type PaginationArgs = {
   sortBy: string;
   sortDirection: 'ASC' | 'DESC';
 };
+type WorkflowVersionSummary = Pick<
+  WorkflowVersion,
+  | 'id'
+  | 'version'
+  | 'checksum'
+  | 'message'
+  | 'action'
+  | 'parentVersion'
+  | 'workflow'
+  | 'createdBy'
+  | 'createdAt'
+  | 'updatedAt'
+>;
 
 @Injectable()
 export class HexabotMcpTools {
@@ -146,6 +165,22 @@ export class HexabotMcpTools {
   })
   async getWorkflow(args: { id: string }) {
     return await this.requireWorkflow(args.id);
+  }
+
+  @McpPermission('workflow', Action.READ)
+  @ToolGuards([McpPermissionGuard])
+  @Tool({
+    name: 'hexabot_workflow_version_status',
+    description:
+      'Check the current and published version pointers for one workflow.',
+    parameters: z.object({
+      id: uuidSchema,
+    }),
+  })
+  async getWorkflowVersionStatus(args: { id: string }) {
+    const workflow = await this.requireWorkflow(args.id);
+
+    return this.buildWorkflowVersionStatus(workflow);
   }
 
   @McpPermission('workflow', Action.CREATE)
@@ -387,14 +422,27 @@ export class HexabotMcpTools {
     _context: unknown,
     request?: HexabotMcpRequest,
   ) {
-    return await this.workflowVersionService.restoreVersion(
-      args.workflowId,
-      args.versionId,
-      {
-        updatedBy: this.getActorId(request),
-        message: args.message,
-      },
-    );
+    return await this.restoreWorkflowVersionSnapshot(args, request);
+  }
+
+  @McpPermission('workflowversion', Action.CREATE)
+  @ToolGuards([McpPermissionGuard])
+  @Tool({
+    name: 'hexabot_workflow_rollback',
+    description:
+      'Rollback a workflow to a previous YAML version by creating a new current restore snapshot.',
+    parameters: z.object({
+      workflowId: uuidSchema,
+      versionId: uuidSchema,
+      message: z.string().optional(),
+    }),
+  })
+  async rollbackWorkflowVersion(
+    args: { workflowId: string; versionId: string; message?: string },
+    _context: unknown,
+    request?: HexabotMcpRequest,
+  ) {
+    return await this.restoreWorkflowVersionSnapshot(args, request);
   }
 
   @McpPermission('workflow', Action.UPDATE)
@@ -1182,7 +1230,7 @@ export class HexabotMcpTools {
     action?: WorkflowVersionAction;
     createdBy: string;
   }) {
-    await this.requireWorkflow(params.workflowId);
+    const workflow = await this.requireWorkflow(params.workflowId);
     try {
       parseWorkflowDefinition(params.definitionYml);
     } catch (error) {
@@ -1190,17 +1238,34 @@ export class HexabotMcpTools {
         error instanceof Error ? error.message : 'Invalid workflow YAML',
       );
     }
-
+    const parentVersion =
+      params.parentVersion === undefined
+        ? this.resolveRelationId(workflow.currentVersion)
+        : params.parentVersion;
     const payload: WorkflowNewVersionDto = {
       workflow: params.workflowId,
       definitionYml: params.definitionYml,
       message: params.message ?? undefined,
-      parentVersion: params.parentVersion ?? undefined,
+      parentVersion: parentVersion ?? undefined,
       action: params.action ?? WorkflowVersionAction.update,
       createdBy: params.createdBy,
     };
 
     return await this.workflowVersionService.commit(payload);
+  }
+
+  private async restoreWorkflowVersionSnapshot(
+    args: { workflowId: string; versionId: string; message?: string },
+    request?: HexabotMcpRequest,
+  ) {
+    return await this.workflowVersionService.restoreVersion(
+      args.workflowId,
+      args.versionId,
+      {
+        updatedBy: this.getActorId(request),
+        message: args.message,
+      },
+    );
   }
 
   private findOptions<Entity>(
@@ -1247,6 +1312,67 @@ export class HexabotMcpTools {
     }
 
     return relation?.id ?? null;
+  }
+
+  private buildWorkflowVersionStatus(workflow: WorkflowFull) {
+    const currentVersion = this.summarizeWorkflowVersion(
+      workflow.currentVersion,
+    );
+    const publishedVersion = this.summarizeWorkflowVersion(
+      workflow.publishedVersion,
+    );
+    const currentVersionId = currentVersion?.id ?? null;
+    const publishedVersionId = publishedVersion?.id ?? null;
+
+    return {
+      workflow: {
+        id: workflow.id,
+        name: workflow.name,
+        type: workflow.type,
+      },
+      currentVersion,
+      publishedVersion,
+      currentVersionId,
+      publishedVersionId,
+      isPublished: Boolean(publishedVersionId),
+      isCurrentVersionPublished:
+        Boolean(currentVersionId) && currentVersionId === publishedVersionId,
+      hasUnpublishedChanges:
+        Boolean(currentVersionId) && currentVersionId !== publishedVersionId,
+    };
+  }
+
+  private summarizeWorkflowVersion(
+    version: WorkflowVersion | null | undefined,
+  ): WorkflowVersionSummary | null {
+    if (!version) {
+      return null;
+    }
+    const {
+      id,
+      version: versionNumber,
+      checksum,
+      message,
+      action,
+      parentVersion,
+      workflow,
+      createdBy,
+      createdAt,
+      updatedAt,
+    } = version;
+
+    return {
+      id,
+      version: versionNumber,
+      checksum,
+      message,
+      action,
+      parentVersion,
+      workflow,
+      createdBy,
+      createdAt,
+      updatedAt,
+    };
   }
 
   private buildWorkflowRunDebugSummary(

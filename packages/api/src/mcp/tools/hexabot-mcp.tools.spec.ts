@@ -235,6 +235,87 @@ describe('HexabotMcpTools', () => {
     });
   });
 
+  it('returns current and published workflow version status without YAML payloads', async () => {
+    const currentVersion = {
+      id: 'current-version-id',
+      version: 3,
+      definitionYml: 'defs: {}\nflow: []\noutputs: {}\n',
+      checksum: 'current-checksum',
+      message: 'Draft update',
+      action: WorkflowVersionAction.update,
+      parentVersion: 'published-version-id',
+      workflow: 'workflow-id',
+      createdBy: actor.id,
+      createdAt: new Date('2026-05-08T10:00:00.000Z'),
+      updatedAt: new Date('2026-05-08T10:00:00.000Z'),
+    };
+    const publishedVersion = {
+      id: 'published-version-id',
+      version: 2,
+      definitionYml: 'defs: {}\nflow: []\noutputs: {}\n',
+      checksum: 'published-checksum',
+      message: 'Published update',
+      action: WorkflowVersionAction.update,
+      parentVersion: null,
+      workflow: 'workflow-id',
+      createdBy: actor.id,
+      createdAt: new Date('2026-05-08T09:00:00.000Z'),
+      updatedAt: new Date('2026-05-08T09:00:00.000Z'),
+    };
+    const workflowService = {
+      findOneAndPopulate: jest.fn().mockResolvedValue({
+        id: 'workflow-id',
+        name: 'Support triage',
+        type: WorkflowType.manual,
+        currentVersion,
+        publishedVersion,
+      }),
+    };
+    const tools = buildTools({ workflowService });
+    const result = await tools.getWorkflowVersionStatus({
+      id: 'workflow-id',
+    });
+
+    expect(result).toEqual({
+      workflow: {
+        id: 'workflow-id',
+        name: 'Support triage',
+        type: WorkflowType.manual,
+      },
+      currentVersion: {
+        id: 'current-version-id',
+        version: 3,
+        checksum: 'current-checksum',
+        message: 'Draft update',
+        action: WorkflowVersionAction.update,
+        parentVersion: 'published-version-id',
+        workflow: 'workflow-id',
+        createdBy: actor.id,
+        createdAt: currentVersion.createdAt,
+        updatedAt: currentVersion.updatedAt,
+      },
+      publishedVersion: {
+        id: 'published-version-id',
+        version: 2,
+        checksum: 'published-checksum',
+        message: 'Published update',
+        action: WorkflowVersionAction.update,
+        parentVersion: null,
+        workflow: 'workflow-id',
+        createdBy: actor.id,
+        createdAt: publishedVersion.createdAt,
+        updatedAt: publishedVersion.updatedAt,
+      },
+      currentVersionId: 'current-version-id',
+      publishedVersionId: 'published-version-id',
+      isPublished: true,
+      isCurrentVersionPublished: false,
+      hasUnpublishedChanges: true,
+    });
+    expect(result.currentVersion).not.toHaveProperty('definitionYml');
+    expect(result.publishedVersion).not.toHaveProperty('definitionYml');
+  });
+
   it('validates and commits workflow YAML versions', async () => {
     const workflowVersion = { id: 'version-id', version: 1 };
     const workflowVersionService = {
@@ -262,6 +343,129 @@ describe('HexabotMcpTools', () => {
         createdBy: actor.id,
       }),
     );
+  });
+
+  it('uses the current workflow version as the default commit parent', async () => {
+    const workflowVersion = { id: 'version-id', version: 4 };
+    const workflowService = {
+      findOneAndPopulate: jest.fn().mockResolvedValue({
+        id: 'workflow-id',
+        currentVersion: { id: 'current-version-id' },
+      }),
+    };
+    const workflowVersionService = {
+      commit: jest.fn().mockResolvedValue(workflowVersion),
+    };
+    const tools = buildTools({ workflowService, workflowVersionService });
+
+    await expect(
+      tools.commitWorkflowYaml(
+        {
+          workflowId: 'workflow-id',
+          definitionYml: WorkflowOrmEntity.BLANK_DEFINITION_YML,
+          message: 'draft change',
+          action: WorkflowVersionAction.update,
+        },
+        {},
+        request,
+      ),
+    ).resolves.toEqual(workflowVersion);
+
+    expect(workflowVersionService.commit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workflow: 'workflow-id',
+        parentVersion: 'current-version-id',
+        createdBy: actor.id,
+      }),
+    );
+  });
+
+  it('rolls back workflow YAML by creating a restore snapshot', async () => {
+    const restoredVersion = { id: 'restored-version-id', version: 5 };
+    const workflowVersionService = {
+      restoreVersion: jest.fn().mockResolvedValue(restoredVersion),
+    };
+    const tools = buildTools({ workflowVersionService });
+
+    await expect(
+      tools.rollbackWorkflowVersion(
+        {
+          workflowId: 'workflow-id',
+          versionId: 'target-version-id',
+          message: 'Rollback to production-safe version',
+        },
+        {},
+        request,
+      ),
+    ).resolves.toEqual(restoredVersion);
+
+    expect(workflowVersionService.restoreVersion).toHaveBeenCalledWith(
+      'workflow-id',
+      'target-version-id',
+      {
+        updatedBy: actor.id,
+        message: 'Rollback to production-safe version',
+      },
+    );
+  });
+
+  it('publishes the current workflow version', async () => {
+    const publishedWorkflow = {
+      id: 'workflow-id',
+      currentVersion: { id: 'current-version-id' },
+      publishedVersion: { id: 'current-version-id' },
+    };
+    const workflowService = {
+      findOne: jest.fn().mockResolvedValue({
+        id: 'workflow-id',
+        currentVersion: 'current-version-id',
+      }),
+      updateOne: jest.fn().mockResolvedValue({
+        id: 'workflow-id',
+        currentVersion: 'current-version-id',
+        publishedVersion: 'current-version-id',
+      }),
+      findOneAndPopulate: jest.fn().mockResolvedValue(publishedWorkflow),
+    };
+    const tools = buildTools({ workflowService });
+
+    await expect(tools.publishWorkflow({ id: 'workflow-id' })).resolves.toEqual(
+      publishedWorkflow,
+    );
+    expect(workflowService.updateOne).toHaveBeenCalledWith('workflow-id', {
+      publishedVersion: 'current-version-id',
+    });
+  });
+
+  it('unpublishes the workflow without changing the current version', async () => {
+    const currentWorkflow = {
+      id: 'workflow-id',
+      currentVersion: { id: 'current-version-id' },
+      publishedVersion: { id: 'current-version-id' },
+    };
+    const unpublishedWorkflow = {
+      ...currentWorkflow,
+      publishedVersion: null,
+    };
+    const workflowService = {
+      findOneAndPopulate: jest
+        .fn()
+        .mockResolvedValueOnce(currentWorkflow)
+        .mockResolvedValueOnce(unpublishedWorkflow),
+      updateOne: jest.fn().mockResolvedValue({
+        id: 'workflow-id',
+        currentVersion: 'current-version-id',
+        publishedVersion: null,
+      }),
+    };
+    const tools = buildTools({ workflowService });
+
+    await expect(
+      tools.unpublishWorkflow({ id: 'workflow-id' }),
+    ).resolves.toEqual(unpublishedWorkflow);
+    expect(workflowService.updateOne).toHaveBeenCalledWith('workflow-id', {
+      publishedVersion: null,
+    });
   });
 
   it('rejects invalid workflow YAML before committing a version', async () => {
