@@ -4,8 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { validateWorkflow } from '@hexabot-ai/agentic';
-import { Action, type User } from '@hexabot-ai/types';
+import {
+  EWorkflowRunStatus,
+  validateWorkflow,
+  type StepExecutionRecord,
+  type WorkflowRunStatus,
+} from '@hexabot-ai/agentic';
+import { Action, type User, type WorkflowRunFull } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Injectable,
@@ -528,6 +533,66 @@ export class HexabotMcpTools {
     }
 
     return run;
+  }
+
+  @McpPermission('workflowrun', Action.READ)
+  @ToolGuards([McpPermissionGuard])
+  @Tool({
+    name: 'hexabot_workflow_run_debug',
+    description:
+      'Inspect one workflow run for debugging with execution state, workflow YAML, and related parent/child runs.',
+    parameters: z.object({
+      id: uuidSchema,
+      includeWorkflowDefinition: z.boolean().default(true),
+      includeRelatedRuns: z.boolean().default(true),
+      childRunsLimit: z.number().int().min(1).max(50).default(10),
+    }),
+  })
+  async debugWorkflowRun(args: {
+    id: string;
+    includeWorkflowDefinition?: boolean;
+    includeRelatedRuns?: boolean;
+    childRunsLimit?: number;
+  }) {
+    const run = await this.workflowRunService.findOneAndPopulate(args.id);
+    if (!run) {
+      throw new NotFoundException(`Workflow run ${args.id} not found`);
+    }
+
+    const includeRelatedRuns = args.includeRelatedRuns ?? true;
+    const childRunsLimit = args.childRunsLimit ?? 10;
+    const parentRunId = this.resolveRelationId(run.parentRun);
+    const childWhere = { parentRun: { id: run.id } } as any;
+    const [parentRun, childRuns, childRunTotal] = includeRelatedRuns
+      ? await Promise.all([
+          parentRunId
+            ? this.workflowRunService.findOneAndPopulate(parentRunId)
+            : Promise.resolve(null),
+          this.workflowRunService.findAndPopulate({
+            where: childWhere,
+            order: { createdAt: 'ASC' },
+            take: childRunsLimit,
+          }),
+          this.workflowRunService.count({ where: childWhere }),
+        ])
+      : ([null, [], 0] as const);
+    const response: Record<string, unknown> = {
+      run,
+      relatedRuns: {
+        parent: parentRun,
+        children: childRuns,
+        childRunTotal,
+        childRunsLimit: includeRelatedRuns ? childRunsLimit : 0,
+      },
+      summary: this.buildWorkflowRunDebugSummary(run, childRunTotal),
+    };
+
+    if (args.includeWorkflowDefinition ?? true) {
+      response.workflowDefinitionYml =
+        run.workflowVersion?.definitionYml ?? null;
+    }
+
+    return response;
   }
 
   @McpPermission('memorydefinition', Action.READ)
@@ -1172,6 +1237,83 @@ export class HexabotMcpTools {
 
   private contains(value: string) {
     return Like(`%${value}%`);
+  }
+
+  private resolveRelationId(
+    relation: string | { id?: string | null } | null | undefined,
+  ): string | null {
+    if (typeof relation === 'string') {
+      return relation;
+    }
+
+    return relation?.id ?? null;
+  }
+
+  private buildWorkflowRunDebugSummary(
+    run: WorkflowRunFull,
+    childRunTotal: number,
+  ) {
+    const stepEntries = Object.entries(run.stepLog ?? {}) as [
+      string,
+      StepExecutionRecord,
+    ][];
+    const stepStatusCounts = stepEntries.reduce<Record<string, number>>(
+      (counts, [, step]) => ({
+        ...counts,
+        [step.status]: (counts[step.status] ?? 0) + 1,
+      }),
+      {},
+    );
+    const failedSteps = stepEntries
+      .filter(
+        ([, step]) =>
+          step.status === EWorkflowRunStatus.FAILED || Boolean(step.error),
+      )
+      .map(([stepId, step]) => ({
+        id: step.id ?? stepId,
+        name: step.name ?? stepId,
+        action: step.action ?? null,
+        status: step.status,
+        error: step.error ?? null,
+        reason: step.reason ?? null,
+      }));
+
+    return {
+      id: run.id,
+      status: run.status as WorkflowRunStatus,
+      workflow: {
+        id: run.workflow.id,
+        name: run.workflow.name,
+        type: run.workflow.type,
+      },
+      workflowVersion: run.workflowVersion
+        ? {
+            id: run.workflowVersion.id,
+            version: run.workflowVersion.version,
+            checksum: run.workflowVersion.checksum,
+          }
+        : null,
+      error: run.error ?? null,
+      duration: run.duration ?? null,
+      createdAt: run.createdAt,
+      updatedAt: run.updatedAt,
+      suspendedAt: run.suspendedAt ?? null,
+      finishedAt: run.finishedAt ?? null,
+      failedAt: run.failedAt ?? null,
+      suspension:
+        run.status === EWorkflowRunStatus.SUSPENDED
+          ? {
+              step: run.suspendedStep ?? null,
+              reason: run.suspensionReason ?? null,
+              stepExecId: run.suspensionStepExecId ?? null,
+              index: run.suspensionIndex ?? null,
+              key: run.suspensionKey ?? null,
+            }
+          : null,
+      stepStatusCounts,
+      failedSteps,
+      childRunTotal,
+    };
   }
 
   private getWorkflowValidationActions() {

@@ -167,6 +167,7 @@ structured validation errors without mutating workflow state.
 | `hexabot_workflow_version_restore` | `workflowversion:create` | Restore a previous version by creating a new snapshot. |
 | `hexabot_workflow_run_search` | `workflowrun:read` | Search workflow runs by workflow and status. |
 | `hexabot_workflow_run_get` | `workflowrun:read` | Read one workflow run with populated workflow metadata. |
+| `hexabot_workflow_run_debug` | `workflowrun:read` | Inspect one workflow run with execution state, workflow YAML, and parent/child run context for troubleshooting. |
 
 ### Memory definitions
 
