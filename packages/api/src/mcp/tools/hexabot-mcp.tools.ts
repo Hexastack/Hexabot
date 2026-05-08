@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { validateWorkflow } from '@hexabot-ai/agentic';
 import { Action, type User } from '@hexabot-ai/types';
 import {
   BadRequestException,
@@ -269,6 +270,36 @@ export class HexabotMcpTools {
       ...args,
       createdBy: actorId,
     });
+  }
+
+  @McpPermission('workflow', Action.READ)
+  @ToolGuards([McpPermissionGuard])
+  @Tool({
+    name: 'hexabot_workflow_yaml_validate',
+    description:
+      'Validate workflow definition YAML without creating a workflow version.',
+    parameters: z.object({
+      definitionYml: z.string().min(1),
+      validateActions: z.boolean().default(true),
+    }),
+  })
+  async validateWorkflowYaml(args: {
+    definitionYml: string;
+    validateActions?: boolean;
+  }) {
+    const validateActions = args.validateActions ?? true;
+    const validation = validateWorkflow(args.definitionYml, {
+      bindingKinds: this.runtimeBindingsService.getRegistry(),
+      ...(validateActions
+        ? { actions: this.getWorkflowValidationActions() }
+        : {}),
+    });
+
+    if (!validation.success) {
+      return { valid: false, errors: validation.errors };
+    }
+
+    return { valid: true, errors: [], definition: validation.data };
   }
 
   @McpPermission('workflowversion', Action.READ)
@@ -1141,6 +1172,17 @@ export class HexabotMcpTools {
 
   private contains(value: string) {
     return Like(`%${value}%`);
+  }
+
+  private getWorkflowValidationActions() {
+    return Object.fromEntries(
+      Object.entries(this.actionService.getRegistry()).map(
+        ([actionName, action]) => [
+          actionName,
+          { supportedBindings: action.supportedBindings ?? [] },
+        ],
+      ),
+    );
   }
 
   private getActor(request?: HexabotMcpRequest): User {
