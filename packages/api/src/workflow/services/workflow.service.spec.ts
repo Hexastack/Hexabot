@@ -19,15 +19,18 @@ import {
 } from '@/utils/test/fixtures/user';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { WebsocketGateway } from '@/websocket';
 import {
   conversationalWorkflowInputJsonSchema,
   scheduledWorkflowInputJsonSchema,
 } from '@/workflow/schemas/workflow-input-schemas';
 
 import { WorkflowUpdateDto } from '../dto/workflow.dto';
+import { WorkflowRunRepository } from '../repositories/workflow-run.repository';
 import { WorkflowRepository } from '../repositories/workflow.repository';
 import { WorkflowType, WorkflowVersionAction } from '../types';
 
+import { WorkflowRunService } from './workflow-run.service';
 import { WorkflowVersionService } from './workflow-version.service';
 import { WorkflowService } from './workflow.service';
 
@@ -35,12 +38,16 @@ describe('WorkflowService (TypeORM)', () => {
   let module: TestingModule;
   let workflowService: WorkflowService;
   let workflowVersionService: WorkflowVersionService;
+  let workflowRunService: WorkflowRunService;
   let workflowRepository: WorkflowRepository;
   let workflow: Workflow;
   let definitionYml: string;
   let counter = 0;
   let creatorId: string;
-
+  const gatewayMock = {
+    joinSockets: jest.fn(),
+    broadcastWorkflowEvent: jest.fn(),
+  };
   const buildWorkflowDefinition = (): {
     metadata: { name: string; description: string };
     definition: WorkflowDefinition;
@@ -59,23 +66,64 @@ describe('WorkflowService (TypeORM)', () => {
       },
     };
   };
+  const createWorkflowForType = async (
+    type: WorkflowType,
+  ): Promise<Workflow> => {
+    if (type === WorkflowType.conversational) {
+      return workflow;
+    }
+
+    return await workflowService.create({
+      name: `${type}_workflow_${++counter}`,
+      description: `Workflow event broadcast test for ${type}`,
+      type,
+      schedule: type === WorkflowType.scheduled ? '*/10 * * * * *' : null,
+      createdBy: creatorId,
+    });
+  };
+  const createWorkflowRun = async (
+    targetWorkflow: Workflow,
+    context: Record<string, unknown> | null = {
+      initiatorId: creatorId,
+      workflowId: targetWorkflow.id,
+      threadId: 'thread-1',
+    },
+  ) => {
+    return await workflowRunService.create({
+      workflow: targetWorkflow.id,
+      triggeredBy: creatorId,
+      input: {},
+      context,
+    });
+  };
 
   beforeAll(async () => {
     const testing = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      providers: [WorkflowService, WorkflowVersionService],
+      providers: [
+        WorkflowService,
+        WorkflowVersionService,
+        WorkflowRunService,
+        WorkflowRunRepository,
+        { provide: WebsocketGateway, useValue: gatewayMock },
+      ],
       typeorm: {
         fixtures: installUserFixturesTypeOrm,
       },
     });
 
     module = testing.module;
-    [workflowService, workflowVersionService, workflowRepository] =
-      await testing.getMocks([
-        WorkflowService,
-        WorkflowVersionService,
-        WorkflowRepository,
-      ]);
+    [
+      workflowService,
+      workflowVersionService,
+      workflowRunService,
+      workflowRepository,
+    ] = await testing.getMocks([
+      WorkflowService,
+      WorkflowVersionService,
+      WorkflowRunService,
+      WorkflowRepository,
+    ]);
   });
 
   beforeEach(async () => {
@@ -240,6 +288,58 @@ describe('WorkflowService (TypeORM)', () => {
     const picked = await workflowService.pickWorkflow();
 
     expect(picked).toBeNull();
+  });
+
+  describe('workflow execution websocket events', () => {
+    it.each([
+      WorkflowType.conversational,
+      WorkflowType.manual,
+      WorkflowType.scheduled,
+    ])('broadcasts execution events for %s workflows', async (workflowType) => {
+      const targetWorkflow = await createWorkflowForType(workflowType);
+      const run = await createWorkflowRun(targetWorkflow);
+
+      await workflowService.sendWorkflowStart({ runId: run.id });
+
+      expect(gatewayMock.broadcastWorkflowEvent).toHaveBeenCalledTimes(1);
+      expect(gatewayMock.broadcastWorkflowEvent).toHaveBeenCalledWith({
+        runId: run.id,
+        t: expect.any(Number),
+        workflowId: targetWorkflow.id,
+        initiatorId: creatorId,
+        threadId: 'thread-1',
+        workflowEvent: 'workflow:start',
+      });
+    });
+
+    it('does not broadcast when the workflow event has no run id', async () => {
+      await workflowService.sendWorkflowStart({});
+
+      expect(gatewayMock.broadcastWorkflowEvent).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['context is missing', null],
+      ['initiatorId is missing', { workflowId: 'workflow-id' }],
+      ['workflowId is missing', { initiatorId: 'initiator-id' }],
+    ])('does not broadcast when run %s', async (_label, context) => {
+      const run = await createWorkflowRun(workflow, context);
+
+      await workflowService.sendWorkflowStart({ runId: run.id });
+
+      expect(gatewayMock.broadcastWorkflowEvent).not.toHaveBeenCalled();
+    });
+
+    it('does not broadcast when the context workflow id does not resolve', async () => {
+      const run = await createWorkflowRun(workflow, {
+        initiatorId: creatorId,
+        workflowId: userFixtureIds.admin,
+      });
+
+      await workflowService.sendWorkflowStart({ runId: run.id });
+
+      expect(gatewayMock.broadcastWorkflowEvent).not.toHaveBeenCalled();
+    });
   });
 
   it('validates manual input with the provided schema', () => {

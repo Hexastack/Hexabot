@@ -208,57 +208,77 @@ export class WorkflowService extends BaseOrmService<WorkflowOrmEntity> {
 
       return;
     }
-    const { initiatorId, workflowId, threadId } = workflowRun?.context;
-    const workflow = await this.findOne(workflowId);
-    const canBroadcastEvents =
-      initiatorId &&
-      workflow?.type &&
-      [WorkflowType.conversational].includes(workflow.type);
+    const { initiatorId, workflowId, threadId } = workflowRun.context;
+    if (
+      typeof initiatorId !== 'string' ||
+      !initiatorId ||
+      typeof workflowId !== 'string' ||
+      !workflowId
+    ) {
+      this.logger.error(
+        'workflowRun context requires initiatorId and workflowId',
+      );
 
-    if (canBroadcastEvents) {
-      this.gateway.broadcastWorkflowEvent({
-        ...payload,
-        t,
-        workflowId,
-        initiatorId,
-        threadId: typeof threadId === 'string' ? threadId : undefined,
-        workflowEvent: workflowEvent.replace('hook:', ''),
-      });
+      return;
     }
+
+    const workflow = await this.findOne(workflowId);
+    if (!workflow?.type) {
+      this.logger.error('workflow is required');
+
+      return;
+    }
+
+    this.gateway.broadcastWorkflowEvent({
+      ...payload,
+      t,
+      workflowId,
+      initiatorId,
+      threadId: typeof threadId === 'string' ? threadId : undefined,
+      workflowEvent: workflowEvent.replace('hook:', ''),
+    });
   }
 
   @OnEvent('hook:workflow:start')
-  sendWorkflowStart(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
-    this.sendWorkflowEvent('hook:workflow:start', payload);
+  async sendWorkflowStart(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    await this.sendWorkflowEvent('hook:workflow:start', payload);
   }
 
   @OnEvent('hook:workflow:finish')
-  sendWorkflowFinish(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
-    this.sendWorkflowEvent('hook:workflow:finish', payload);
+  async sendWorkflowFinish(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    await this.sendWorkflowEvent('hook:workflow:finish', payload);
   }
 
   @OnEvent('hook:workflow:failure')
-  sendWorkflowFailure(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
-    this.sendWorkflowEvent('hook:workflow:failure', payload);
+  async sendWorkflowFailure(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
+    await this.sendWorkflowEvent('hook:workflow:failure', payload);
   }
 
   @OnEvent('hook:step:start')
-  sendWorkflowStepStart(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
-    this.sendWorkflowEvent('hook:step:start', payload);
+  async sendWorkflowStepStart(
+    payload: WorkflowEventMap[keyof WorkflowEventMap],
+  ) {
+    await this.sendWorkflowEvent('hook:step:start', payload);
   }
 
   @OnEvent('hook:step:suspended')
-  sendWorkflowStepSuspended(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
-    this.sendWorkflowEvent('hook:step:suspended', payload);
+  async sendWorkflowStepSuspended(
+    payload: WorkflowEventMap[keyof WorkflowEventMap],
+  ) {
+    await this.sendWorkflowEvent('hook:step:suspended', payload);
   }
 
   @OnEvent('hook:step:success')
-  sendWorkflowStepSuccess(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
-    this.sendWorkflowEvent('hook:step:success', payload);
+  async sendWorkflowStepSuccess(
+    payload: WorkflowEventMap[keyof WorkflowEventMap],
+  ) {
+    await this.sendWorkflowEvent('hook:step:success', payload);
   }
 
   @OnEvent('hook:step:error')
-  sendWorkflowStepError(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
-    this.sendWorkflowEvent('hook:step:error', payload);
+  async sendWorkflowStepError(
+    payload: WorkflowEventMap[keyof WorkflowEventMap],
+  ) {
+    await this.sendWorkflowEvent('hook:step:error', payload);
   }
 }
