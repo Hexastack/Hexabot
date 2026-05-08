@@ -7,6 +7,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Socket, io } from 'socket.io-client';
 
+import { getJestBaseUrl, getJestHost, getJestPort } from '@/utils/test/port';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
@@ -27,7 +28,7 @@ describe('WebsocketGateway', () => {
     gateway = app.get<WebsocketGateway>(WebsocketGateway);
 
     createSocket = (id: string, query: any = {}) => {
-      const socket = io('http://localhost:3000', {
+      const socket = io(getJestBaseUrl(), {
         autoConnect: false,
         transports: ['websocket'],
         query: { EIO: '4', transport: 'websocket', ...query },
@@ -45,7 +46,7 @@ describe('WebsocketGateway', () => {
       createSocket('subscriber', { channel: 'web' }), // Subscriber
     ];
 
-    await app.listen(3000);
+    await app.listen(getJestPort(), getJestHost());
   });
 
   afterAll(async () => {

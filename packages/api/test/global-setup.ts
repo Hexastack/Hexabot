@@ -7,37 +7,47 @@
 import net from 'net';
 import 'tsconfig-paths/register';
 
-const API_PORT = Number(process.env.API_PORT ?? 3000);
+import { configureJestNetworkEnv, getJestHost } from '@/utils/test/port';
 
 function isPortInUse(port: number): Promise<boolean> {
   return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    const onError = (err: NodeJS.ErrnoException) => {
-      // Typical “port already in use”
-      if (err.code === 'EADDRINUSE') {
-        resolve(true);
+    const socket = net.createConnection({ host: getJestHost(), port });
+    const cleanup = () => {
+      socket.removeAllListeners();
+      socket.destroy();
+    };
+    const finish = (inUse: boolean) => {
+      cleanup();
+      resolve(inUse);
+    };
+
+    socket.once('connect', () => finish(true));
+    socket.once('timeout', () => finish(false));
+    socket.once('error', (err: NodeJS.ErrnoException) => {
+      cleanup();
+      // Some sandboxes deny loopback probes; the test listener will still
+      // surface real bind failures.
+      if (
+        err.code === 'ECONNREFUSED' ||
+        err.code === 'EPERM' ||
+        err.code === 'EACCES'
+      ) {
+        resolve(false);
       } else {
         reject(err);
       }
-    };
-    const onListen = () => {
-      server.close(() => resolve(false));
-    };
-
-    server.once('error', onError);
-    server.once('listening', onListen);
-
-    server.unref();
-    server.listen(port);
+    });
+    socket.setTimeout(1000);
   });
 }
 
 export = async function globalSetup() {
-  const inUse = await isPortInUse(API_PORT);
+  const { port } = configureJestNetworkEnv();
+  const inUse = await isPortInUse(port);
 
   if (inUse) {
     throw new Error(
-      `Port ${API_PORT} is already in use. Please stop the running service before executing Jest tests.`,
+      `Jest port ${port} is already in use on ${getJestHost()}. Set JEST_PORT to an available port before executing Jest tests.`,
     );
   }
 };
