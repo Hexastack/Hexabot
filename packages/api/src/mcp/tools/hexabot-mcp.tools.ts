@@ -23,6 +23,7 @@ import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import { CredentialService } from '@/user/services/credential.service';
 import { WorkflowNewVersionDto } from '@/workflow/dto/workflow-version.dto';
+import { McpServerOrmEntity } from '@/workflow/entities/mcp-server.entity';
 import { WorkflowRunOrmEntity } from '@/workflow/entities/workflow-run.entity';
 import { WorkflowVersionOrmEntity } from '@/workflow/entities/workflow-version.entity';
 import { WorkflowOrmEntity } from '@/workflow/entities/workflow.entity';
@@ -32,12 +33,14 @@ import {
 } from '@/workflow/lib/trigger-event-wrapper';
 import { parseWorkflowDefinition } from '@/workflow/lib/workflow-definition';
 import { AgenticService } from '@/workflow/services/agentic.service';
+import { McpServerService } from '@/workflow/services/mcp-server.service';
 import { MemoryDefinitionService } from '@/workflow/services/memory-definition.service';
 import { WorkflowRunService } from '@/workflow/services/workflow-run.service';
 import { WorkflowVersionService } from '@/workflow/services/workflow-version.service';
 import { WorkflowService } from '@/workflow/services/workflow.service';
 import {
   DirectionType,
+  McpServerTransport,
   MemoryScope,
   WorkflowType,
   WorkflowVersionAction,
@@ -67,6 +70,16 @@ const workflowPayloadSchema = {
   zoom: z.number().optional(),
   direction: z.enum(DirectionType).optional(),
 };
+const mcpServerPayloadSchema = {
+  name: z.string().min(1).optional(),
+  enabled: z.boolean().optional(),
+  transport: z.enum(McpServerTransport).optional(),
+  url: z.string().nullable().optional(),
+  command: z.string().nullable().optional(),
+  args: z.array(z.string()).nullable().optional(),
+  cwd: z.string().nullable().optional(),
+  credential: uuidSchema.nullable().optional(),
+};
 
 type PaginationArgs = {
   limit: number;
@@ -88,6 +101,7 @@ export class HexabotMcpTools {
     private readonly credentialService: CredentialService,
     private readonly contentTypeService: ContentTypeService,
     private readonly contentService: ContentService,
+    private readonly mcpServerService: McpServerService,
   ) {}
 
   @McpPermission('workflow', Action.READ)
@@ -721,6 +735,109 @@ export class HexabotMcpTools {
     }
 
     return HexabotMcpTools.sanitizeCredential(credential);
+  }
+
+  @McpPermission('mcpserver', Action.READ)
+  @ToolGuards([McpPermissionGuard])
+  @Tool({
+    name: 'hexabot_mcp_server_search',
+    description: 'Search configured MCP servers.',
+    parameters: z.object({
+      query: z.string().optional(),
+      enabled: z.boolean().optional(),
+      transport: z.enum(McpServerTransport).optional(),
+      credentialId: uuidSchema.optional(),
+      ...paginationSchema,
+    }),
+  })
+  async searchMcpServers(
+    args: {
+      query?: string;
+      enabled?: boolean;
+      transport?: McpServerTransport;
+      credentialId?: string;
+    } & PaginationArgs,
+  ) {
+    const base = {
+      ...(args.enabled !== undefined ? { enabled: args.enabled } : {}),
+      ...(args.transport ? { transport: args.transport } : {}),
+      ...(args.credentialId ? { credential: { id: args.credentialId } } : {}),
+    };
+    const where = args.query
+      ? [
+          { ...base, name: this.contains(args.query) },
+          { ...base, url: this.contains(args.query) },
+          { ...base, command: this.contains(args.query) },
+        ]
+      : base;
+
+    return await this.listWithCount(
+      this.mcpServerService,
+      this.findOptions<McpServerOrmEntity>(args, where as any),
+    );
+  }
+
+  @McpPermission('mcpserver', Action.READ)
+  @ToolGuards([McpPermissionGuard])
+  @Tool({
+    name: 'hexabot_mcp_server_get',
+    description: 'Read one configured MCP server.',
+    parameters: z.object({
+      id: uuidSchema,
+    }),
+  })
+  async getMcpServer(args: { id: string }) {
+    const server = await this.mcpServerService.findOneAndPopulate(args.id);
+    if (!server) {
+      throw new NotFoundException(`MCP server ${args.id} not found`);
+    }
+
+    return server;
+  }
+
+  @McpPermission('mcpserver', Action.CREATE)
+  @ToolGuards([McpPermissionGuard])
+  @Tool({
+    name: 'hexabot_mcp_server_create',
+    description: 'Create an MCP server configuration.',
+    parameters: z.object({
+      ...mcpServerPayloadSchema,
+      name: z.string().min(1),
+    }),
+  })
+  async createMcpServer(args: {
+    name: string;
+    enabled?: boolean;
+    transport?: McpServerTransport;
+    url?: string | null;
+    command?: string | null;
+    args?: string[] | null;
+    cwd?: string | null;
+    credential?: string | null;
+  }) {
+    return await this.mcpServerService.create({
+      enabled: true,
+      transport: McpServerTransport.http,
+      ...args,
+    } as any);
+  }
+
+  @McpPermission('mcpserver', Action.UPDATE)
+  @ToolGuards([McpPermissionGuard])
+  @Tool({
+    name: 'hexabot_mcp_server_update',
+    description: 'Update an MCP server configuration.',
+    parameters: z.object({
+      id: uuidSchema,
+      ...mcpServerPayloadSchema,
+    }),
+  })
+  async updateMcpServer(args: { id: string } & Record<string, unknown>) {
+    const { id, ...updates } = args;
+
+    await this.getMcpServer({ id });
+
+    return await this.mcpServerService.updateOne(id, updates as any);
   }
 
   @McpPermission('contenttype', Action.READ)
