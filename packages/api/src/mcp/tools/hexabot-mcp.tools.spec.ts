@@ -44,7 +44,11 @@ const buildTools = (overrides: Record<string, unknown> = {}) => {
   const agenticService = overrides.agenticService ?? ({} as any);
   const memoryDefinitionService =
     overrides.memoryDefinitionService ?? ({} as any);
-  const actionService = overrides.actionService ?? ({} as any);
+  const actionService =
+    overrides.actionService ??
+    ({
+      getRegistry: jest.fn().mockReturnValue({}),
+    } as any);
   const runtimeBindingsService =
     overrides.runtimeBindingsService ??
     ({
@@ -278,6 +282,64 @@ describe('HexabotMcpTools', () => {
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(workflowVersionService.commit).not.toHaveBeenCalled();
+  });
+
+  it('validates workflow YAML without committing a version', async () => {
+    const tools = buildTools();
+
+    await expect(
+      tools.validateWorkflowYaml({
+        definitionYml: WorkflowOrmEntity.BLANK_DEFINITION_YML,
+      }),
+    ).resolves.toEqual({
+      valid: true,
+      errors: [],
+      definition: expect.objectContaining({
+        defs: {},
+        flow: [],
+        outputs: {},
+      }),
+    });
+  });
+
+  it('returns structured workflow YAML validation errors', async () => {
+    const tools = buildTools();
+
+    await expect(
+      tools.validateWorkflowYaml({
+        definitionYml: 'not: a hexabot workflow',
+      }),
+    ).resolves.toEqual({
+      valid: false,
+      errors: expect.arrayContaining([expect.stringContaining('defs')]),
+    });
+  });
+
+  it('validates workflow YAML against the installed action catalog by default', async () => {
+    const actionService = {
+      getRegistry: jest.fn().mockReturnValue({}),
+    };
+    const tools = buildTools({ actionService });
+
+    await expect(
+      tools.validateWorkflowYaml({
+        definitionYml: `
+defs:
+  missing_action:
+    kind: task
+    action: unknown_action
+flow:
+  - do: missing_action
+outputs:
+  result: "=true"
+`,
+      }),
+    ).resolves.toEqual({
+      valid: false,
+      errors: expect.arrayContaining([
+        expect.stringContaining('unknown_action'),
+      ]),
+    });
   });
 
   it('returns the created workflow run summary for manual workflow execution', async () => {

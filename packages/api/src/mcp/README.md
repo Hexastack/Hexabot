@@ -147,13 +147,15 @@ client, but the effective configuration should be equivalent to:
 | `hexabot_workflow_get` | `workflow:read` | Read one workflow with populated version metadata. |
 | `hexabot_workflow_create` | `workflow:create` | Create a workflow and optionally commit initial YAML. |
 | `hexabot_workflow_update` | `workflow:update` | Update workflow metadata and optionally commit YAML. |
+| `hexabot_workflow_yaml_validate` | `workflow:read` | Validate workflow definition YAML without creating a version. |
 | `hexabot_workflow_yaml_commit` | `workflowversion:create` | Validate and commit workflow definition YAML. |
 | `hexabot_workflow_publish` | `workflow:update` | Publish the current workflow version. |
 | `hexabot_workflow_unpublish` | `workflow:update` | Clear the published workflow version. |
 | `hexabot_workflow_run` | `workflowrun:create` | Run a manual or scheduled workflow and return the run summary. |
 
 Workflow YAML is validated with `parseWorkflowDefinition()` before a version is
-created.
+created. Coding agents can call `hexabot_workflow_yaml_validate` first to get
+structured validation errors without mutating workflow state.
 
 ### Workflow versions and runs
 
