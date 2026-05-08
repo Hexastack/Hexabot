@@ -230,7 +230,9 @@ value.
 
 ## Extending the MCP module
 
-Add new tools in `tools/hexabot-mcp.tools.ts`.
+Add new tools in the focused provider file under `tools/` that matches the
+domain, or create a new `*-mcp.tools.ts` provider when the domain is new. Export
+and register new providers through `tools/index.ts`.
 
 Each tool should:
 
