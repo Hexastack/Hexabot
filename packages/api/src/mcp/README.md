@@ -145,17 +145,24 @@ client, but the effective configuration should be equivalent to:
 | --- | --- | --- |
 | `hexabot_workflow_search` | `workflow:read` | Search workflows by metadata. |
 | `hexabot_workflow_get` | `workflow:read` | Read one workflow with populated version metadata. |
+| `hexabot_workflow_version_status` | `workflow:read` | Check current and published version pointers for one workflow. |
 | `hexabot_workflow_create` | `workflow:create` | Create a workflow and optionally commit initial YAML. |
 | `hexabot_workflow_update` | `workflow:update` | Update workflow metadata and optionally commit YAML. |
 | `hexabot_workflow_yaml_validate` | `workflow:read` | Validate workflow definition YAML without creating a version. |
 | `hexabot_workflow_yaml_commit` | `workflowversion:create` | Validate and commit workflow definition YAML. |
+| `hexabot_workflow_rollback` | `workflowversion:create` | Roll back to a previous version by creating a new restore snapshot. |
 | `hexabot_workflow_publish` | `workflow:update` | Publish the current workflow version. |
 | `hexabot_workflow_unpublish` | `workflow:update` | Clear the published workflow version. |
 | `hexabot_workflow_run` | `workflowrun:create` | Run a manual or scheduled workflow and return the run summary. |
 
 Workflow YAML is validated with `parseWorkflowDefinition()` before a version is
 created. Coding agents can call `hexabot_workflow_yaml_validate` first to get
-structured validation errors without mutating workflow state.
+structured validation errors without mutating workflow state. Commits inherit
+the workflow's current version as their parent unless `parentVersion` is
+explicitly supplied. `hexabot_workflow_rollback` and
+`hexabot_workflow_version_restore` both create a new current restore snapshot;
+publish that snapshot with `hexabot_workflow_publish` when it should become the
+published version.
 
 ### Workflow versions and runs
 
@@ -167,6 +174,7 @@ structured validation errors without mutating workflow state.
 | `hexabot_workflow_version_restore` | `workflowversion:create` | Restore a previous version by creating a new snapshot. |
 | `hexabot_workflow_run_search` | `workflowrun:read` | Search workflow runs by workflow and status. |
 | `hexabot_workflow_run_get` | `workflowrun:read` | Read one workflow run with populated workflow metadata. |
+| `hexabot_workflow_run_debug` | `workflowrun:read` | Inspect one workflow run with execution state, workflow YAML, and parent/child run context for troubleshooting. |
 
 ### Memory definitions
 
@@ -222,7 +230,9 @@ value.
 
 ## Extending the MCP module
 
-Add new tools in `tools/hexabot-mcp.tools.ts`.
+Add new tools in the focused provider file under `tools/` that matches the
+domain, or create a new `*-mcp.tools.ts` provider when the domain is new. Export
+and register new providers through `tools/index.ts`.
 
 Each tool should:
 

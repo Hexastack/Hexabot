@@ -23,7 +23,7 @@ import { HexabotMcpTokenGuard } from './guards/hexabot-mcp-token.guard';
 import { McpPermissionGuard } from './guards/mcp-permission.guard';
 import { McpTokenRepository } from './repositories/mcp-token.repository';
 import { McpTokenService } from './services/mcp-token.service';
-import { HexabotMcpTools } from './tools/hexabot-mcp.tools';
+import { HEXABOT_MCP_TOOL_PROVIDERS } from './tools';
 
 @Module({
   imports: [
@@ -54,7 +54,7 @@ import { HexabotMcpTools } from './tools/hexabot-mcp.tools';
     McpPermissionGuard,
     McpTokenRepository,
     McpTokenService,
-    HexabotMcpTools,
+    ...HEXABOT_MCP_TOOL_PROVIDERS,
   ],
   controllers: [McpTokenController],
 })
