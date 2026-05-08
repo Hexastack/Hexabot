@@ -6,7 +6,10 @@
 
 import * as dotenv from 'dotenv';
 
+import { configureJestNetworkEnv } from '@/utils/test/port';
+
 dotenv.config({ path: '../.env' });
+configureJestNetworkEnv();
 
 let mockSession = null;
 
