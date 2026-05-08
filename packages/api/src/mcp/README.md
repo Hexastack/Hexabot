@@ -2,7 +2,7 @@
 
 This module exposes Hexabot API capabilities through the Model Context Protocol
 (MCP) so coding agents can inspect and manage workflows, workflow runs, memory
-definitions, actions, credentials, and CMS content.
+definitions, actions, credentials, MCP servers, and CMS content.
 
 The implementation uses `@rekog/mcp-nest` with Streamable HTTP transport.
 Authentication is Hexabot-native: users create personal MCP bearer tokens from
@@ -194,6 +194,15 @@ created.
 Credential secret values are never returned. The MCP tools remove the `value`
 field from all credential responses and do not support searching by secret
 value.
+
+### MCP servers
+
+| Tool | Permission | Purpose |
+| --- | --- | --- |
+| `hexabot_mcp_server_search` | `mcpserver:read` | Search configured MCP servers. |
+| `hexabot_mcp_server_get` | `mcpserver:read` | Read one configured MCP server. |
+| `hexabot_mcp_server_create` | `mcpserver:create` | Create an MCP server configuration. |
+| `hexabot_mcp_server_update` | `mcpserver:update` | Update an MCP server configuration. |
 
 ### CMS and RAG content
 
