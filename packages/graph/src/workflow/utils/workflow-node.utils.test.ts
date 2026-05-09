@@ -15,6 +15,7 @@ import {
 } from "@hexabot-ai/agentic";
 import { describe, expect, it } from "vitest";
 
+import { NODE_METRICS } from "../constants/workflow.constants";
 import {
   ENodeType,
   type INodeConfig,
@@ -176,6 +177,15 @@ const getNodeOwnerDefName = (node: { data?: unknown }): string | undefined => {
 
   return typeof data?.ownerDefName === "string" ? data.ownerDefName : undefined;
 };
+const getNodeRight = (node: { position: { x: number }; type?: string }) =>
+  node.position.x +
+  (NODE_METRICS[node.type as ENodeType]?.dimensions.width ?? 0);
+const getAttachmentInterval = (
+  nodes: Array<{ position: { x: number }; type?: string }>,
+) => ({
+  left: Math.min(...nodes.map((node) => node.position.x)),
+  right: Math.max(...nodes.map(getNodeRight)),
+});
 
 describe("buildNodesAndEdges", () => {
   it("always renders action steps as task nodes", async () => {
@@ -989,6 +999,120 @@ describe("buildNodesAndEdges", () => {
           edge.sourceHandle === "bindingOut-0-1-tools",
       ),
     ).toBe(true);
+  });
+
+  it("reserves horizontal layout space for wide binding attachment rows", async () => {
+    const flow: CompiledStep[] = [
+      taskStep("0:agent", "agent"),
+      taskStep("1:next", "next"),
+    ];
+    const tasks: TestTaskDefinitions = {
+      agent: {
+        action: "agent_action",
+        bindings: {
+          mcp: ["mcp_server"],
+          memory: ["profile_memory"],
+          model: "openai_model",
+          tools: ["search_tool"],
+        },
+        settings: {},
+      },
+      next: {
+        action: "agent_action",
+        bindings: {
+          mcp: ["next_mcp_server"],
+          memory: ["next_profile_memory"],
+          model: "next_openai_model",
+          tools: ["next_search_tool"],
+        },
+        settings: {},
+      },
+    };
+    const graph = await buildGraph({
+      flow,
+      tasks,
+      defs: {
+        mcp_server: {
+          kind: "mcp",
+          settings: {},
+        },
+        openai_model: {
+          kind: "model",
+          settings: {},
+        },
+        profile_memory: {
+          kind: "memory",
+          settings: {},
+        },
+        search_tool: {
+          kind: "tools",
+          settings: {},
+        },
+        next_mcp_server: {
+          kind: "mcp",
+          settings: {},
+        },
+        next_openai_model: {
+          kind: "model",
+          settings: {},
+        },
+        next_profile_memory: {
+          kind: "memory",
+          settings: {},
+        },
+        next_search_tool: {
+          kind: "tools",
+          settings: {},
+        },
+      },
+      actionCatalog: createActionCatalog({
+        agent_action: ["mcp", "memory", "model", "tools"],
+      }),
+      bindingCatalog: createBindingCatalog([
+        "mcp",
+        "memory",
+        { kind: "model", multiple: false },
+        "tools",
+      ]),
+    });
+    const agentNodeId = createStepNodeId("0:agent", "task");
+    const nextNodeId = createStepNodeId("1:next", "task");
+    const nextNode = graph.nodes.find((node) => node.id === nextNodeId);
+    const agentAttachmentNodes = graph.edges
+      .filter(
+        (edge) =>
+          edge.source === agentNodeId &&
+          edge.sourceHandle?.startsWith("bindingOut-"),
+      )
+      .map((edge) => graph.nodes.find((node) => node.id === edge.target))
+      .filter((node): node is NonNullable<typeof node> => Boolean(node));
+    const nextAttachmentNodes = graph.edges
+      .filter(
+        (edge) =>
+          edge.source === nextNodeId &&
+          edge.sourceHandle?.startsWith("bindingOut-"),
+      )
+      .map((edge) => graph.nodes.find((node) => node.id === edge.target))
+      .filter((node): node is NonNullable<typeof node> => Boolean(node));
+
+    expect(nextNode).toBeDefined();
+    expect(agentAttachmentNodes.length).toBeGreaterThanOrEqual(4);
+    expect(nextAttachmentNodes.length).toBeGreaterThanOrEqual(4);
+
+    if (!nextNode) {
+      return;
+    }
+
+    const agentAttachmentRight = Math.max(
+      ...agentAttachmentNodes.map(getNodeRight),
+    );
+    const agentAttachmentInterval = getAttachmentInterval(agentAttachmentNodes);
+    const nextAttachmentInterval = getAttachmentInterval(nextAttachmentNodes);
+
+    expect(nextNode.position.x).toBeGreaterThan(agentAttachmentRight);
+    expect(nextAttachmentInterval.left).toBeGreaterThan(
+      agentAttachmentInterval.right,
+    );
   });
 
   it("filters unsupported binding kinds that are missing from the binding catalog", async () => {
