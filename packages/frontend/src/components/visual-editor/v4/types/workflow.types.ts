@@ -8,7 +8,6 @@ import type {
   CompiledStep,
   TaskDefinition,
   WorkflowDefinition,
-  WorkflowEventMap,
 } from "@hexabot-ai/agentic";
 import type {
   FlowStepPath,
@@ -88,16 +87,10 @@ export interface WorkflowContextProps {
   workflow?: Workflow;
 }
 
-export type WorkflowEvent<
-  T extends keyof WorkflowEventMap = keyof WorkflowEventMap,
-> = T extends `${string}:${infer Rest}` ? Rest : T;
-
-export type SubscribeWorkflowProps =
-  WorkflowEventMap[keyof WorkflowEventMap] & {
-    workflowEvent: WorkflowEvent;
-    workflowId?: string;
-    t: number;
-  };
+export type {
+  SubscribeWorkflowProps,
+  WorkflowEvent,
+} from "@/websocket/types/workflow.types";
 
 export type NodeExecutionState =
   | "idle"

@@ -13,6 +13,8 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
 
+import { useWorkflowRunLiveUpdates } from "../hooks/useWorkflowRunLiveUpdates";
+
 import { RunHeader } from "./header/RunHeader";
 import { InspectorPanel } from "./panels/inspector-panel/InspectorPanel";
 import { StepTracePanel } from "./panels/step-trace-panel";
@@ -28,6 +30,11 @@ export const WorkflowRunDebugger: FC<WorkflowRunDebuggerProps> = ({
   workflow,
   workflowInput,
 }) => {
+  useWorkflowRunLiveUpdates({
+    workflowId: workflow?.id,
+    initiatorId,
+  });
+
   const getWorkflowVersionFromCache = useGetFromCache(
     EntityType.WORKFLOW_VERSION,
   );

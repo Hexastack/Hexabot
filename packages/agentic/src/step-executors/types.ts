@@ -39,7 +39,7 @@ export type StepExecutorEnv = {
   recordStepExecution: (
     step: StepInfo,
     update: Partial<StepExecutionRecord>,
-  ) => void;
+  ) => StepExecutionRecord;
   emit: <K extends keyof WorkflowEventMap>(
     event: K,
     payload: WorkflowEventMap[K],

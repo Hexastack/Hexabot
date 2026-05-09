@@ -5,7 +5,7 @@
  */
 
 import type { Action } from '../action/action.types';
-import { BaseWorkflowContext } from '../context';
+import { BaseWorkflowContext, type StepExecutionRecord } from '../context';
 import type { RuntimeSuspensionRequest } from '../runner-runtime-control';
 import { createDeferred } from '../utils/deferred';
 import {
@@ -72,26 +72,54 @@ const createCompiled = (task: CompiledTask): CompiledWorkflow =>
 const createEnv = (
   compiled: CompiledWorkflow,
   stepInfo: StepInfo,
-): StepExecutorEnv => ({
-  compiled,
-  context: new TestContext(),
-  runId: 'run-123',
-  buildInstanceStepInfo: jest.fn().mockReturnValue(stepInfo),
-  markSnapshot: jest.fn(),
-  recordStepExecution: jest.fn(),
-  emit: jest.fn(),
-  setCurrentStep: jest.fn(),
-  waitForStepSuspension: jest
-    .fn()
-    .mockImplementation(
-      () => new Promise<RuntimeSuspensionRequest>(() => undefined),
-    ),
-  clearStepSuspensions: jest.fn(),
-  primeStepResumeData: jest.fn(),
-  captureTaskOutput: jest.fn().mockResolvedValue(undefined),
-  executeFlow: jest.fn(),
-  executeStep: jest.fn(),
-});
+): StepExecutorEnv => {
+  const stepRecords: Record<string, StepExecutionRecord> = {};
+
+  return {
+    compiled,
+    context: new TestContext(),
+    runId: 'run-123',
+    buildInstanceStepInfo: jest.fn().mockReturnValue(stepInfo),
+    markSnapshot: jest.fn(),
+    recordStepExecution: jest.fn((step, update) => {
+      const existing =
+        stepRecords[step.id] ??
+        ({
+          id: step.id,
+          name: step.name,
+          status: 'pending',
+        } satisfies StepExecutionRecord);
+      const context =
+        existing.context || update.context
+          ? { ...existing.context, ...update.context }
+          : undefined;
+      const nextRecord = {
+        ...existing,
+        ...update,
+        id: step.id,
+        name: step.name,
+        status: update.status ?? existing.status,
+        context,
+      } satisfies StepExecutionRecord;
+
+      stepRecords[step.id] = nextRecord;
+
+      return nextRecord;
+    }),
+    emit: jest.fn(),
+    setCurrentStep: jest.fn(),
+    waitForStepSuspension: jest
+      .fn()
+      .mockImplementation(
+        () => new Promise<RuntimeSuspensionRequest>(() => undefined),
+      ),
+    clearStepSuspensions: jest.fn(),
+    primeStepResumeData: jest.fn(),
+    captureTaskOutput: jest.fn().mockResolvedValue(undefined),
+    executeFlow: jest.fn(),
+    executeStep: jest.fn(),
+  };
+};
 const step: TaskStep = {
   id: '0:test_task',
   type: StepType.Task,
@@ -153,10 +181,18 @@ describe('executeTaskStep', () => {
     expect(env.emit).toHaveBeenCalledWith('hook:step:start', {
       runId: 'run-123',
       step: stepInfo,
+      stepExecution: expect.objectContaining({
+        id: stepInfo.id,
+        status: 'running',
+      }),
     });
     expect(env.emit).toHaveBeenCalledWith('hook:step:success', {
       runId: 'run-123',
       step: stepInfo,
+      stepExecution: expect.objectContaining({
+        id: stepInfo.id,
+        status: 'completed',
+      }),
     });
     expect(env.setCurrentStep).toHaveBeenLastCalledWith(undefined);
   });
@@ -215,6 +251,16 @@ describe('executeTaskStep', () => {
       'suspended',
       'awaiting_user',
     );
+    expect(env.emit).toHaveBeenCalledWith('hook:step:suspended', {
+      runId: 'run-123',
+      step: stepInfo,
+      stepExecution: expect.objectContaining({
+        id: stepInfo.id,
+        status: 'suspended',
+      }),
+      reason: 'awaiting_user',
+      data: { channel: 'sms' },
+    });
 
     await suspension?.continue({ reply: 'Sure' });
 
@@ -228,6 +274,14 @@ describe('executeTaskStep', () => {
         output: { reply: 'SURE' },
       }),
     );
+    expect(env.emit).toHaveBeenCalledWith('hook:step:success', {
+      runId: 'run-123',
+      step: stepInfo,
+      stepExecution: expect.objectContaining({
+        id: stepInfo.id,
+        status: 'completed',
+      }),
+    });
   });
 
   it('marks failure and rethrows errors from the task', async () => {
@@ -250,6 +304,10 @@ describe('executeTaskStep', () => {
     expect(env.emit).toHaveBeenCalledWith('hook:step:error', {
       runId: 'run-123',
       step: stepInfo,
+      stepExecution: expect.objectContaining({
+        id: stepInfo.id,
+        status: 'failed',
+      }),
       error: expect.any(Error),
     });
     expect(env.setCurrentStep).toHaveBeenLastCalledWith(undefined);

@@ -6,6 +6,10 @@
 
 import { normalize } from "normalizr";
 
+import {
+  mergeEntityCachePayload,
+  type CacheRecord,
+} from "@/hooks/entity-cache.utils";
 import { ENTITY_MAP } from "@/services/entities";
 import { EntityType, QueryType } from "@/services/types";
 import { IBaseSchema, THook } from "@/types/base.types";
@@ -46,11 +50,12 @@ export const useNormalizeAndCache = <
           if (id && newData) {
             queryClient.setQueryData(
               [QueryType.item, entityType, id],
-              (previousData: any) => {
-                return {
-                  ...previousData,
-                  ...newData,
-                };
+              (previousData: CacheRecord | undefined) => {
+                return mergeEntityCachePayload(
+                  entityType as EntityType,
+                  previousData,
+                  newData as CacheRecord,
+                );
               },
             );
           }

@@ -5,7 +5,7 @@
  */
 
 import { type WorkflowEventMap } from '@hexabot-ai/agentic';
-import { StdEventType, Subscriber } from '@hexabot-ai/types';
+import { StdEventType, Subscriber, type WorkflowRun } from '@hexabot-ai/types';
 import { ForbiddenException, Optional } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
@@ -69,6 +69,7 @@ export class WebsocketGateway
     Partial<Pick<WorkflowContextState, 'initiatorId'>> & {
       workflowId: string;
       threadId?: string;
+      workflowRun?: WorkflowRun;
       workflowEvent: string;
       t: number;
     }): void {

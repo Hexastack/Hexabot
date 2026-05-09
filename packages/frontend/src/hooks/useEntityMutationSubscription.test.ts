@@ -38,6 +38,38 @@ describe("useEntityMutationSubscription helpers", () => {
     expect(merged.status).toBe("open");
   });
 
+  it("keeps newer live workflow run step state when a stale payload arrives", () => {
+    const previousData = {
+      id: "run-1",
+      status: "finished",
+      finishedAt: new Date(2500),
+      stepLog: {
+        "0:greet": {
+          id: "0:greet",
+          name: "greet",
+          status: "completed",
+          startedAt: 2100,
+          endedAt: 2400,
+        },
+      },
+    };
+    const nextEntityData = {
+      id: "run-1",
+      status: "running",
+      finishedAt: null,
+      stepLog: null,
+    };
+    const merged = mergeEntityCachePayload(
+      EntityType.WORKFLOW_RUN,
+      previousData,
+      nextEntityData,
+    );
+
+    expect(merged.status).toBe("finished");
+    expect(merged.finishedAt).toEqual(previousData.finishedAt);
+    expect(merged.stepLog).toEqual(previousData.stepLog);
+  });
+
   it("matches only infinite thread query keys for refetch", () => {
     expect(
       isThreadInfiniteQuery([QueryType.infinite, EntityType.THREAD, "{}"]),
