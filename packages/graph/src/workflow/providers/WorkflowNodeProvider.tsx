@@ -4,63 +4,134 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useNodeConnections, useReactFlow } from "@xyflow/react";
-import { type FC } from "react";
+import type { ActionStatus } from "@hexabot-ai/agentic";
+import type { NodeConnection } from "@xyflow/react";
+import { useMemo, type FC } from "react";
 
 import { useWorkflowGraphHost } from "../contexts/workflow-graph-host.context";
 import { WorkflowNodeContext } from "../contexts/workflow-node.context";
 import type {
-  EIndicatorType,
-  GraphNode,
+  ENodeType,
+  IWorkflowNodeContext,
   IWorkflowNodeProps,
+  NodeExecutionState,
 } from "../types/workflow-node.types";
-import { resolveNodeExecutionState } from "../utils/execution-state.utils";
+import { resolveWorkflowStepTheme } from "../utils/workflow-theme.utils";
+
+const EMPTY_NODE_CONNECTIONS: NodeConnection[] = [];
+const toActionStatus = (
+  executionState?: NodeExecutionState,
+): ActionStatus | undefined => {
+  switch (executionState) {
+    case "running":
+    case "start":
+      return "running";
+    case "suspended":
+      return "suspended";
+    case "error":
+      return "failed";
+    case "finish":
+      return "completed";
+    default:
+      return undefined;
+  }
+};
 
 export const WorkflowNodeProvider: FC<IWorkflowNodeProps> = ({
-  id,
+  node,
   children,
 }) => {
-  const { getNode } = useReactFlow();
-  const node = getNode(id) as GraphNode | undefined;
-  const connections = useNodeConnections({ id });
-  const { actionCatalog, executionStates } = useWorkflowGraphHost();
-
-  if (!node) {
-    return null;
-  }
-
-  const { data, ...rest } = node;
+  const { actionCatalog, colorMode } = useWorkflowGraphHost();
+  const {
+    data,
+    id,
+    type,
+    width,
+    height,
+    sourcePosition,
+    targetPosition,
+    dragHandle,
+    parentId,
+    dragging,
+    zIndex,
+    selectable,
+    deletable,
+    selected,
+    draggable,
+    positionAbsoluteX,
+    positionAbsoluteY,
+  } = node;
   const nodeData = data as {
     actionName?: unknown;
-    stepId?: unknown;
-    indicator?: unknown;
+    executionState?: NodeExecutionState;
   };
   const actionName =
     typeof nodeData.actionName === "string" ? nodeData.actionName : undefined;
-  const stepId =
-    typeof nodeData.stepId === "string" ? nodeData.stepId : undefined;
-  const indicator =
-    typeof nodeData.indicator === "string"
-      ? (nodeData.indicator as EIndicatorType)
-      : undefined;
   const action = actionName ? actionCatalog.get(actionName) : undefined;
-  const executionState = resolveNodeExecutionState({
-    executionStates,
-    nodeId: id,
-    stepId,
-    indicator,
-  });
+  const executionState = nodeData.executionState;
+  const resolvedTheme = useMemo(
+    () =>
+      resolveWorkflowStepTheme({
+        baseTheme: data.theme,
+        action,
+        status: toActionStatus(executionState),
+        mode: colorMode,
+      }),
+    [action, colorMode, data.theme, executionState],
+  );
+  const contextValue = useMemo(
+    () =>
+      ({
+        ...data,
+        id,
+        type: type as ENodeType,
+        position: {
+          x: positionAbsoluteX,
+          y: positionAbsoluteY,
+        },
+        width,
+        height,
+        sourcePosition,
+        targetPosition,
+        dragHandle,
+        parentId,
+        dragging,
+        zIndex,
+        selectable,
+        deletable,
+        selected,
+        draggable,
+        action,
+        connections: EMPTY_NODE_CONNECTIONS,
+        executionState,
+        resolvedTheme,
+      }) as IWorkflowNodeContext,
+    [
+      action,
+      data,
+      deletable,
+      dragHandle,
+      draggable,
+      dragging,
+      executionState,
+      height,
+      id,
+      parentId,
+      positionAbsoluteX,
+      positionAbsoluteY,
+      resolvedTheme,
+      selectable,
+      selected,
+      sourcePosition,
+      targetPosition,
+      type,
+      width,
+      zIndex,
+    ],
+  );
 
   return (
-    <WorkflowNodeContext.Provider
-      value={{
-        ...data,
-        ...rest,
-        action,
-        connections,
-        executionState,
-      }}
-    >
+    <WorkflowNodeContext.Provider value={contextValue}>
       {children}
     </WorkflowNodeContext.Provider>
   );

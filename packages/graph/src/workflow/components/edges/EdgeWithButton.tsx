@@ -14,6 +14,7 @@ import { Plus } from "lucide-react";
 import { useCallback, useMemo, type MouseEvent } from "react";
 
 import { useWorkflowGraphHost } from "../../contexts/workflow-graph-host.context";
+import { useWorkflowInsertMenu } from "../../contexts/workflow-insert-menu.context";
 import type { EdgeInsertData } from "../../types/workflow-path.types";
 import { PulseIconButton } from "../PulseIconButton";
 
@@ -31,6 +32,7 @@ export const EdgeWithButton = ({
   data,
 }: EdgeProps) => {
   const { translate } = useWorkflowGraphHost();
+  const { onOpenInsertMenu, showEdgeInsertControls } = useWorkflowInsertMenu();
   const edgeData = data as EdgeInsertData | undefined;
   const insertPath = edgeData?.insertPath;
   const [path, labelX, labelY] = useMemo(() => {
@@ -61,11 +63,13 @@ export const EdgeWithButton = ({
         return;
       }
 
-      edgeData?.onOpenInsertMenu?.(event.currentTarget, insertPath);
+      onOpenInsertMenu?.(event.currentTarget, insertPath);
     },
-    [edgeData, insertPath],
+    [insertPath, onOpenInsertMenu],
   );
-  const showInsert = Boolean(insertPath && edgeData?.onOpenInsertMenu);
+  const showInsert = Boolean(
+    showEdgeInsertControls && insertPath && onOpenInsertMenu,
+  );
 
   return (
     <>

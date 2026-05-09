@@ -64,6 +64,14 @@ export const createWorkflowSelectionSnapshot = (
   nodes: GraphNode[],
 ): WorkflowSelectionSnapshot => {
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
+
+  return createWorkflowSelectionSnapshotFromMap(requestedNodeIds, nodesById);
+};
+
+export const createWorkflowSelectionSnapshotFromMap = (
+  requestedNodeIds: string[],
+  nodesById: ReadonlyMap<string, GraphNode>,
+): WorkflowSelectionSnapshot => {
   const nodeIds: string[] = [];
   const selectionNodes: WorkflowSelectionNode[] = [];
 

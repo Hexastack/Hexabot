@@ -14,11 +14,11 @@ import { GenericNodePorts } from "../GenericNodePorts";
 import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
-export const Operator: FC<NodeProps<GraphNode<ENodeType.OPERATOR>>> = ({
-  id,
-}) => {
+export const Operator: FC<NodeProps<GraphNode<ENodeType.OPERATOR>>> = (
+  props,
+) => {
   return (
-    <WorkflowNodeProvider id={id}>
+    <WorkflowNodeProvider node={props}>
       <div>
         <GenericNodeContainer>
           <GenericNodeRightContent variant="title-only">

@@ -15,8 +15,8 @@ import { GenericNodePorts } from "../GenericNodePorts";
 import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
-export const Task: FC<NodeProps<GraphNode<ENodeType.TASK>>> = ({ id }) => (
-  <WorkflowNodeProvider id={id}>
+export const Task: FC<NodeProps<GraphNode<ENodeType.TASK>>> = (props) => (
+  <WorkflowNodeProvider node={props}>
     <GenericNodeContainer>
       <GenericNodeRightContent variant="title-with-description">
         <GenericNodeTitle />

@@ -8,7 +8,6 @@ import type { CSSProperties } from "react";
 
 import { useWorkflowGraphHost } from "../../contexts/workflow-graph-host.context";
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
-import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import { ENodeType } from "../../types/workflow-node.types";
 
 import { GenericNodeIcon } from "./GenericNodeIcon";
@@ -19,8 +18,8 @@ const normalizeTitle = (text?: string) => {
 
 export const GenericNodeTitle = <T extends ENodeType = ENodeType>() => {
   const { translate } = useWorkflowGraphHost();
-  const { title, i18nTitle } = useWorkflowNode<T>();
-  const { color } = useWorkflowNodeTheme<T>();
+  const { title, i18nTitle, resolvedTheme } = useWorkflowNode<T>();
+  const { color } = resolvedTheme;
   const normalizedTitle = i18nTitle
     ? translate(i18nTitle)
     : normalizeTitle(title);

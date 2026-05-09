@@ -12,8 +12,8 @@ import { ENodeType, type GraphNode } from "../../../types/workflow-node.types";
 import { GenericNodeContainer } from "../GenericNodeContainer";
 import { GenericNodePorts } from "../GenericNodePorts";
 
-export const Group: FC<NodeProps<GraphNode<ENodeType.GROUP>>> = ({ id }) => (
-  <WorkflowNodeProvider id={id}>
+export const Group: FC<NodeProps<GraphNode<ENodeType.GROUP>>> = (props) => (
+  <WorkflowNodeProvider node={props}>
     <GenericNodeContainer>
       <GenericNodePorts />
     </GenericNodeContainer>

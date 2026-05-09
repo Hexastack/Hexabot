@@ -14,10 +14,10 @@ import { GenericNodePorts } from "../GenericNodePorts";
 import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
-export const Indicator: FC<NodeProps<GraphNode<ENodeType.INDICATOR>>> = ({
-  id,
-}) => (
-  <WorkflowNodeProvider id={id}>
+export const Indicator: FC<NodeProps<GraphNode<ENodeType.INDICATOR>>> = (
+  props,
+) => (
+  <WorkflowNodeProvider node={props}>
     <GenericNodeContainer>
       <GenericNodeRightContent variant="title-only">
         <GenericNodeTitle />

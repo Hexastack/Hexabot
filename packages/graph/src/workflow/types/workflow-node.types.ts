@@ -9,18 +9,20 @@ import type {
   DefDefinitions,
   StepType,
 } from "@hexabot-ai/agentic";
-import type { Edge, Node, NodeProps } from "@xyflow/react";
+import type {
+  Edge,
+  EdgeTypes,
+  Node,
+  NodeProps,
+  NodeTypes,
+} from "@xyflow/react";
 import type {
   EdgeMarkerType,
   NodeConnection,
   ResizeControlDirection,
 } from "@xyflow/system";
-import type {
-  CSSProperties,
-  FC,
-  JSXElementConstructor,
-  ReactNode,
-} from "react";
+import { memo } from "react";
+import type { CSSProperties, JSXElementConstructor, ReactNode } from "react";
 
 import { EdgeWithButton } from "../components/edges/EdgeWithButton";
 import { BindingMulti } from "../components/workflow-nodes/BindingMulti";
@@ -323,23 +325,19 @@ export enum EEdgeType {
 }
 
 export const NODE_TYPES = {
-  [ENodeType.BINDING_SINGLE]: BindingSingle,
-  [ENodeType.BINDING_MULTI]: BindingMulti,
-  [ENodeType.INDICATOR]: Indicator,
-  [ENodeType.OPERATOR]: Operator,
-  [ENodeType.TASK]: Task,
-  [ENodeType.GROUP]: Group,
-  [ENodeType.BRANCH_PLACEHOLDER]: BranchPlaceholder,
-  [ENodeType.BINDING_PLACEHOLDER]: BindingPlaceholder,
-} satisfies {
-  [NT in ENodeType]: FC<NodeProps<GraphNode<NT>>>;
-};
+  [ENodeType.BINDING_SINGLE]: memo(BindingSingle),
+  [ENodeType.BINDING_MULTI]: memo(BindingMulti),
+  [ENodeType.INDICATOR]: memo(Indicator),
+  [ENodeType.OPERATOR]: memo(Operator),
+  [ENodeType.TASK]: memo(Task),
+  [ENodeType.GROUP]: memo(Group),
+  [ENodeType.BRANCH_PLACEHOLDER]: memo(BranchPlaceholder),
+  [ENodeType.BINDING_PLACEHOLDER]: memo(BindingPlaceholder),
+} satisfies NodeTypes;
 
 export const EDGE_TYPES = {
-  [EEdgeType.EDGE_WITH_BUTTON]: EdgeWithButton,
-} satisfies {
-  [K in EEdgeType]: typeof EdgeWithButton;
-};
+  [EEdgeType.EDGE_WITH_BUTTON]: memo(EdgeWithButton),
+} satisfies EdgeTypes;
 
 type FlattenedNodeData<T extends ENodeType = ENodeType> = Omit<
   GraphNode<T>,
@@ -354,10 +352,11 @@ export type IWorkflowNodeContext<T extends ENodeType = ENodeType> = Omit<
   Partial<CommonNodeDadaTypes> & {
     action?: WorkflowAction | undefined;
     connections: NodeConnection[];
+    resolvedTheme: WorkflowNodeTheme & { Icon: WorkflowIcon };
   };
 
 export interface IWorkflowNodeProps {
-  id: string;
+  node: NodeProps<GraphNode>;
   children: ReactNode;
 }
 

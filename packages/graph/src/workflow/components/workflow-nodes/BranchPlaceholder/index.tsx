@@ -9,6 +9,7 @@ import { Plus } from "lucide-react";
 import { useCallback, type FC, type MouseEvent } from "react";
 
 import { useWorkflowGraphHost } from "../../../contexts/workflow-graph-host.context";
+import { useWorkflowInsertMenu } from "../../../contexts/workflow-insert-menu.context";
 import { WorkflowNodeProvider } from "../../../providers/WorkflowNodeProvider";
 import {
   ELinkType,
@@ -21,11 +22,12 @@ import { GenericNodePorts } from "../GenericNodePorts";
 
 export const BranchPlaceholder: FC<
   NodeProps<GraphNode<ENodeType.BRANCH_PLACEHOLDER>>
-> = ({ id, data }) => {
+> = (props) => {
+  const { data } = props;
   const { translate } = useWorkflowGraphHost();
+  const { onOpenInsertMenu } = useWorkflowInsertMenu();
   const addLabel = translate("button.add");
   const insertPath = data?.insertPath;
-  const onOpenInsertMenu = data?.onOpenInsertMenu;
   const canInsert = Boolean(insertPath && onOpenInsertMenu);
   const handleOpenInsertMenu = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
@@ -41,7 +43,7 @@ export const BranchPlaceholder: FC<
   );
 
   return (
-    <WorkflowNodeProvider id={id}>
+    <WorkflowNodeProvider node={props}>
       <GenericNodeContainer>
         <div className="workflow-branch-placeholder nodrag nopan">
           <PulseIconButton

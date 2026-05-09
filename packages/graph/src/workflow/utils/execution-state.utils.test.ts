@@ -76,6 +76,21 @@ describe("execution-state.utils", () => {
     ).toBe("suspended");
   });
 
+  it("keeps the later equal-priority event when events share the same timestamp", () => {
+    expect(
+      resolveNodeExecutionState({
+        executionStates: {
+          "0:send_message": [
+            { state: "start", t: 10 },
+            { state: "running", t: 10 },
+          ],
+        },
+        nodeId: "node-1",
+        stepId: "0:send_message",
+      }),
+    ).toBe("running");
+  });
+
   it("returns undefined when no candidate key has execution states", () => {
     expect(
       resolveNodeExecutionState({

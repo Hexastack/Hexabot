@@ -5,12 +5,12 @@
  */
 
 import type { Node, NodeChange, OnNodesChange } from "@xyflow/react";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { GraphNode } from "../types/workflow-node.types";
 import type { WorkflowSelectionSnapshot } from "../types/workflow-selection.types";
 import {
-  createWorkflowSelectionSnapshot,
+  createWorkflowSelectionSnapshotFromMap,
   isSameWorkflowSelection,
 } from "../utils/workflow-selection.utils";
 
@@ -37,6 +37,10 @@ export const useWorkflowSelectionController = ({
     nodeIds: [],
     nodes: [],
   });
+  const nodesById = useMemo(
+    () => new Map(nodes.map((node) => [node.id, node])),
+    [nodes],
+  );
   const emitSelection = useCallback(
     (requestedNodeIds: string[]) => {
       if (
@@ -47,9 +51,9 @@ export const useWorkflowSelectionController = ({
         return;
       }
 
-      const nextSelection = createWorkflowSelectionSnapshot(
+      const nextSelection = createWorkflowSelectionSnapshotFromMap(
         requestedNodeIds,
-        nodes,
+        nodesById,
       );
 
       if (isSameWorkflowSelection(nextSelection, selectionRef.current)) {
@@ -60,7 +64,7 @@ export const useWorkflowSelectionController = ({
       selectedNodeIdsRef.current = nextSelection.nodeIds;
       onChange?.(nextSelection);
     },
-    [isEmptyWorkflow, nodes, onChange],
+    [isEmptyWorkflow, nodes.length, nodesById, onChange],
   );
   const onNodesChange: OnNodesChange<Node> = useCallback(
     (changes) => {

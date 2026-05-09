@@ -31,22 +31,37 @@ export const resolveNodeExecutionState = ({
   stepId,
   indicator,
 }: ResolveNodeExecutionStateParams): NodeExecutionState | undefined => {
-  const uniqueKeys = [...new Set([nodeId, stepId, indicator])].filter(
-    (key): key is string => typeof key === "string" && key.length > 0,
-  );
-  const timeline = uniqueKeys.flatMap((key) => executionStates[key] ?? []);
+  const keys: string[] = [];
+  const addKey = (key: string | undefined) => {
+    if (key && !keys.includes(key)) {
+      keys.push(key);
+    }
+  };
 
-  return timeline
-    .slice()
-    .sort((first, second) => {
-      if (first.t !== second.t) {
-        return first.t - second.t;
+  addKey(nodeId);
+  addKey(stepId);
+  addKey(indicator);
+
+  let latestState:
+    | {
+        state: NodeExecutionState;
+        t: number;
       }
+    | undefined;
 
-      return (
-        EXECUTION_STATE_PRIORITY[first.state] -
-        EXECUTION_STATE_PRIORITY[second.state]
-      );
-    })
-    .at(-1)?.state;
+  keys.forEach((key) => {
+    executionStates[key]?.forEach((entry) => {
+      if (
+        !latestState ||
+        entry.t > latestState.t ||
+        (entry.t === latestState.t &&
+          EXECUTION_STATE_PRIORITY[entry.state] >=
+            EXECUTION_STATE_PRIORITY[latestState.state])
+      ) {
+        latestState = entry;
+      }
+    });
+  });
+
+  return latestState?.state;
 };

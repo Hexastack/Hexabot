@@ -857,6 +857,71 @@ export const Workflow = () => {
     },
     [bindingsByName, definition, updateDefinitionState],
   );
+  const workflowGraphModel = useMemo(
+    () => ({
+      definition,
+      compiledFlow: flow,
+      actionCatalog: actionsByName,
+      bindingCatalog: bindingsByName,
+      executionStates,
+      layoutDirection: direction,
+    }),
+    [
+      actionsByName,
+      bindingsByName,
+      definition,
+      direction,
+      executionStates,
+      flow,
+    ],
+  );
+  const workflowGraphSelection = useMemo(
+    () => ({
+      selectedNodeIds,
+      focusNodeIds,
+      onChange: handleSelectionChange,
+    }),
+    [focusNodeIds, handleSelectionChange, selectedNodeIds],
+  );
+  const workflowGraphInsertion = useMemo(
+    () => ({
+      onInsertAtPath: handleInsert,
+      onInsertAtRoot: handleRootInsert,
+    }),
+    [handleInsert, handleRootInsert],
+  );
+  const workflowGraphViewportValue = useMemo(
+    () => ({
+      id: workflow?.id,
+      x: workflow?.x,
+      y: workflow?.y,
+      zoom: workflow?.zoom,
+    }),
+    [workflow?.id, workflow?.x, workflow?.y, workflow?.zoom],
+  );
+  const workflowGraphViewport = useMemo(
+    () => ({
+      value: workflowGraphViewportValue,
+      onChange: debouncedWorkflowUpdate,
+    }),
+    [debouncedWorkflowUpdate, workflowGraphViewportValue],
+  );
+  const workflowGraphCallbacks = useMemo(
+    () => ({
+      onRemoveStep: removeStepAtPath,
+      onAddBinding: handleAddBinding,
+      onRemoveBinding: handleRemoveBinding,
+      onNodeClick: handleGraphNodeClick,
+      onRotate: handleRotate,
+    }),
+    [
+      handleAddBinding,
+      handleGraphNodeClick,
+      handleRemoveBinding,
+      handleRotate,
+      removeStepAtPath,
+    ],
+  );
 
   return (
     <div className="visual-editor-v4">
@@ -866,39 +931,11 @@ export const Workflow = () => {
           ref={workflowGraphRef}
           colorMode={graphColorMode}
           t={translateGraph}
-          model={{
-            definition,
-            compiledFlow: flow,
-            actionCatalog: actionsByName,
-            bindingCatalog: bindingsByName,
-            executionStates,
-            layoutDirection: direction,
-          }}
-          selection={{
-            selectedNodeIds,
-            focusNodeIds,
-            onChange: handleSelectionChange,
-          }}
-          insertion={{
-            onInsertAtPath: handleInsert,
-            onInsertAtRoot: handleRootInsert,
-          }}
-          viewport={{
-            value: {
-              id: workflow?.id,
-              x: workflow?.x,
-              y: workflow?.y,
-              zoom: workflow?.zoom,
-            },
-            onChange: debouncedWorkflowUpdate,
-          }}
-          callbacks={{
-            onRemoveStep: removeStepAtPath,
-            onAddBinding: handleAddBinding,
-            onRemoveBinding: handleRemoveBinding,
-            onNodeClick: handleGraphNodeClick,
-            onRotate: handleRotate,
-          }}
+          model={workflowGraphModel}
+          selection={workflowGraphSelection}
+          insertion={workflowGraphInsertion}
+          viewport={workflowGraphViewport}
+          callbacks={workflowGraphCallbacks}
         />
         {workflow && (
           <WorkflowTitleOverlay>

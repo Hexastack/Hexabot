@@ -114,138 +114,153 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     [definition?.defs],
   );
   const taskIds = useMemo(() => extractTaskIdsFromYaml(yaml), [yaml]);
-  const addActionStep = (action: IAction, insertPath?: FlowStepPath | null) => {
-    const baseDefinition = definition ?? createBaseDefinition();
-    const nextTaskName = createTaskName(
-      action.name,
-      baseDefinition.defs ?? {},
-      taskDefinitions,
-    );
-    const taskDescription = action.description?.trim();
-    const inputDefaults = getSchemaDefaults<TaskInputs>(action.inputSchema);
-    const settingDefaults = getSchemaDefaults<TaskSettings>(
-      action.settingSchema,
-    )!;
-    const nextTaskDefinition: TaskDefinition = {
-      kind: "task",
-      action: action.name,
-      ...(taskDescription ? { description: taskDescription } : {}),
-      ...(inputDefaults !== undefined ? { inputs: inputDefaults } : {}),
-      ...(settingDefaults !== undefined ? { settings: settingDefaults } : {}),
-    };
-    const nextDefs = {
-      ...baseDefinition.defs,
-      [nextTaskName]: nextTaskDefinition,
-    };
-    const nextOutputs =
-      baseDefinition.outputs && Object.keys(baseDefinition.outputs).length > 0
-        ? baseDefinition.outputs
-        : { result: `=$output.${nextTaskName}` };
-    const nextStep: FlowStep = { do: nextTaskName };
-    const definitionWithTask: WorkflowDefinition = {
-      ...baseDefinition,
-      defs: nextDefs,
-      outputs: nextOutputs,
-    };
-    const insertedDefinition = insertPath
-      ? WorkflowHelper.insertStepAtPath(
-          definitionWithTask,
-          insertPath,
-          nextStep,
-        )
-      : null;
-    const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
-      ...definitionWithTask,
-      flow: [...(baseDefinition.flow ?? []), nextStep],
-    };
+  const addActionStep = useCallback(
+    (action: IAction, insertPath?: FlowStepPath | null) => {
+      const baseDefinition = definition ?? createBaseDefinition();
+      const nextTaskName = createTaskName(
+        action.name,
+        baseDefinition.defs ?? {},
+        taskDefinitions,
+      );
+      const taskDescription = action.description?.trim();
+      const inputDefaults = getSchemaDefaults<TaskInputs>(action.inputSchema);
+      const settingDefaults = getSchemaDefaults<TaskSettings>(
+        action.settingSchema,
+      )!;
+      const nextTaskDefinition: TaskDefinition = {
+        kind: "task",
+        action: action.name,
+        ...(taskDescription ? { description: taskDescription } : {}),
+        ...(inputDefaults !== undefined ? { inputs: inputDefaults } : {}),
+        ...(settingDefaults !== undefined ? { settings: settingDefaults } : {}),
+      };
+      const nextDefs = {
+        ...baseDefinition.defs,
+        [nextTaskName]: nextTaskDefinition,
+      };
+      const nextOutputs =
+        baseDefinition.outputs && Object.keys(baseDefinition.outputs).length > 0
+          ? baseDefinition.outputs
+          : { result: `=$output.${nextTaskName}` };
+      const nextStep: FlowStep = { do: nextTaskName };
+      const definitionWithTask: WorkflowDefinition = {
+        ...baseDefinition,
+        defs: nextDefs,
+        outputs: nextOutputs,
+      };
+      const insertedDefinition = insertPath
+        ? WorkflowHelper.insertStepAtPath(
+            definitionWithTask,
+            insertPath,
+            nextStep,
+          )
+        : null;
+      const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+        ...definitionWithTask,
+        flow: [...(baseDefinition.flow ?? []), nextStep],
+      };
 
-    updateDefinitionState(nextDefinition);
-  };
-  const addConditionalStep = (insertPath?: FlowStepPath | null) => {
-    const baseDefinition = definition ?? createBaseDefinition();
-    const conditionalStep: FlowStep = {
-      conditional: {
-        when: [
-          { condition: "=false", steps: [] },
-          { else: true, steps: [] },
-        ],
-      },
-    };
-    const insertedDefinition = insertPath
-      ? WorkflowHelper.insertStepAtPath(
-          baseDefinition,
-          insertPath,
-          conditionalStep,
-        )
-      : null;
-    const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
-      ...baseDefinition,
-      flow: [...(baseDefinition.flow ?? []), conditionalStep],
-    };
-
-    updateDefinitionState(nextDefinition);
-  };
-  const addLoopStep = (insertPath?: FlowStepPath | null) => {
-    const baseDefinition = definition ?? createBaseDefinition();
-    const loopStep: FlowStep = {
-      loop: {
-        type: "for_each",
-        for_each: {
-          item: "item",
-          in: "=[]",
+      updateDefinitionState(nextDefinition);
+    },
+    [definition, taskDefinitions, updateDefinitionState],
+  );
+  const addConditionalStep = useCallback(
+    (insertPath?: FlowStepPath | null) => {
+      const baseDefinition = definition ?? createBaseDefinition();
+      const conditionalStep: FlowStep = {
+        conditional: {
+          when: [
+            { condition: "=false", steps: [] },
+            { else: true, steps: [] },
+          ],
         },
-        steps: [],
-      },
-    };
-    const insertedDefinition = insertPath
-      ? WorkflowHelper.insertStepAtPath(baseDefinition, insertPath, loopStep)
-      : null;
-    const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
-      ...baseDefinition,
-      flow: [...(baseDefinition.flow ?? []), loopStep],
-    };
+      };
+      const insertedDefinition = insertPath
+        ? WorkflowHelper.insertStepAtPath(
+            baseDefinition,
+            insertPath,
+            conditionalStep,
+          )
+        : null;
+      const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+        ...baseDefinition,
+        flow: [...(baseDefinition.flow ?? []), conditionalStep],
+      };
 
-    updateDefinitionState(nextDefinition);
-  };
-  const addParallelStep = (insertPath?: FlowStepPath | null) => {
-    const baseDefinition = definition ?? createBaseDefinition();
-    const parallelStep: FlowStep = {
-      parallel: {
-        strategy: "wait_all",
-        steps: [],
-      },
-    };
-    const insertedDefinition = insertPath
-      ? WorkflowHelper.insertStepAtPath(
-          baseDefinition,
-          insertPath,
-          parallelStep,
-        )
-      : null;
-    const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
-      ...baseDefinition,
-      flow: [...(baseDefinition.flow ?? []), parallelStep],
-    };
+      updateDefinitionState(nextDefinition);
+    },
+    [definition, updateDefinitionState],
+  );
+  const addLoopStep = useCallback(
+    (insertPath?: FlowStepPath | null) => {
+      const baseDefinition = definition ?? createBaseDefinition();
+      const loopStep: FlowStep = {
+        loop: {
+          type: "for_each",
+          for_each: {
+            item: "item",
+            in: "=[]",
+          },
+          steps: [],
+        },
+      };
+      const insertedDefinition = insertPath
+        ? WorkflowHelper.insertStepAtPath(baseDefinition, insertPath, loopStep)
+        : null;
+      const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+        ...baseDefinition,
+        flow: [...(baseDefinition.flow ?? []), loopStep],
+      };
 
-    updateDefinitionState(nextDefinition);
-  };
+      updateDefinitionState(nextDefinition);
+    },
+    [definition, updateDefinitionState],
+  );
+  const addParallelStep = useCallback(
+    (insertPath?: FlowStepPath | null) => {
+      const baseDefinition = definition ?? createBaseDefinition();
+      const parallelStep: FlowStep = {
+        parallel: {
+          strategy: "wait_all",
+          steps: [],
+        },
+      };
+      const insertedDefinition = insertPath
+        ? WorkflowHelper.insertStepAtPath(
+            baseDefinition,
+            insertPath,
+            parallelStep,
+          )
+        : null;
+      const nextDefinition: WorkflowDefinition = insertedDefinition ?? {
+        ...baseDefinition,
+        flow: [...(baseDefinition.flow ?? []), parallelStep],
+      };
+
+      updateDefinitionState(nextDefinition);
+    },
+    [definition, updateDefinitionState],
+  );
   const getQuery = (key: string): string =>
     typeof router.query[key] === "string" ? router.query[key] : "";
-  const updateWorkflowURL = async (flowId: string, nodeIds: string[] = []) => {
-    const nodeParams =
-      Array.isArray(nodeIds) && nodeIds.length ? `/${nodeIds.join(",")}` : "";
+  const updateWorkflowURL = useCallback(
+    async (flowId: string, nodeIds: string[] = []) => {
+      const nodeParams =
+        Array.isArray(nodeIds) && nodeIds.length ? `/${nodeIds.join(",")}` : "";
 
-    if (router.pathname.startsWith(`/${RouterType.WORKFLOW_EDITOR}`)) {
-      await router.push(
-        `/${RouterType.WORKFLOW_EDITOR}/${flowId}${nodeParams}`,
-      );
-    }
-  };
-  const removeWorkflowParams = async () => {
+      if (router.pathname.startsWith(`/${RouterType.WORKFLOW_EDITOR}`)) {
+        await router.push(
+          `/${RouterType.WORKFLOW_EDITOR}/${flowId}${nodeParams}`,
+        );
+      }
+    },
+    [router.pathname, router.push],
+  );
+  const removeWorkflowParams = useCallback(async () => {
     if (flowId) {
       await router.replace(`/${RouterType.WORKFLOW_EDITOR}/${flowId}`);
     }
-  };
+  }, [flowId, router.replace]);
   const setGraphSelection = useCallback(
     (nextSelection: WorkflowSelectionSnapshot) => {
       if (isSameWorkflowSelection(graphSelection, nextSelection)) {
@@ -266,37 +281,46 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
     },
     [flowId, graphSelection, updateWorkflowURL],
   );
-  const removeStepAtPath = (stepPath: FlowStepPath, nodeId?: string) => {
-    if (!definition) {
-      return;
-    }
+  const removeStepAtPath = useCallback(
+    (stepPath: FlowStepPath, nodeId?: string) => {
+      if (!definition) {
+        return;
+      }
 
-    const nextDefinition = WorkflowHelper.removeStepAtPath(
+      const nextDefinition = WorkflowHelper.removeStepAtPath(
+        definition,
+        stepPath,
+      );
+
+      if (!nextDefinition) {
+        return;
+      }
+
+      updateDefinitionState(nextDefinition);
+
+      if (!nodeId || !selectedNodeIds.includes(nodeId)) {
+        return;
+      }
+
+      const nextSelection = selectedNodeIds.filter(
+        (selectedNodeId) => selectedNodeId !== nodeId,
+      );
+
+      setGraphSelection({
+        nodeIds: nextSelection,
+        nodes: graphSelection.nodes.filter(
+          (selectedNode) => selectedNode.id !== nodeId,
+        ),
+      });
+    },
+    [
       definition,
-      stepPath,
-    );
-
-    if (!nextDefinition) {
-      return;
-    }
-
-    updateDefinitionState(nextDefinition);
-
-    if (!nodeId || !selectedNodeIds.includes(nodeId)) {
-      return;
-    }
-
-    const nextSelection = selectedNodeIds.filter(
-      (selectedNodeId) => selectedNodeId !== nodeId,
-    );
-
-    setGraphSelection({
-      nodeIds: nextSelection,
-      nodes: graphSelection.nodes.filter(
-        (selectedNode) => selectedNode.id !== nodeId,
-      ),
-    });
-  };
+      graphSelection.nodes,
+      selectedNodeIds,
+      setGraphSelection,
+      updateDefinitionState,
+    ],
+  );
   const debouncedWorkflowUpdate = useSafeCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     debounce((props: Partial<WorkflowAttributes>) => {

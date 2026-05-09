@@ -4,14 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Edge } from "@xyflow/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
-import type {
-  GraphNode,
-  WorkflowGraphData,
-} from "../types/workflow-node.types";
-import { ENodeType } from "../types/workflow-node.types";
 import type {
   EdgeInsertType,
   FlowStepPath,
@@ -19,40 +13,18 @@ import type {
 } from "../types/workflow-path.types";
 
 type UseInsertMenuBindingsProps = {
-  graphData: WorkflowGraphData;
   onInsertAtPath?: (insertType: EdgeInsertType, path: FlowStepPath) => void;
 };
 
 type InsertMenuBindingResult = {
-  edges: Edge[];
-  nodes: GraphNode[];
   insertMenuAnchorEl: HTMLElement | null;
   isInsertMenuOpen: boolean;
+  openInsertMenu?: OnOpenInsertMenu;
   closeInsertMenu: () => void;
   insertFromMenu: (insertType: EdgeInsertType) => void;
 };
 
-const withInsertMenuHandler = <T extends { data?: unknown }>(
-  item: T,
-  onOpenInsertMenu: OnOpenInsertMenu,
-): T => {
-  const itemData = item.data as { insertPath?: FlowStepPath } | undefined;
-
-  if (!itemData?.insertPath) {
-    return item;
-  }
-
-  return {
-    ...item,
-    data: {
-      ...itemData,
-      onOpenInsertMenu,
-    },
-  };
-};
-
 export const useInsertMenuBindings = ({
-  graphData,
   onInsertAtPath,
 }: UseInsertMenuBindingsProps): InsertMenuBindingResult => {
   const [insertMenuAnchorEl, setInsertMenuAnchorEl] =
@@ -60,10 +32,17 @@ export const useInsertMenuBindings = ({
   const [insertMenuPath, setInsertMenuPath] = useState<FlowStepPath | null>(
     null,
   );
-  const openInsertMenu = useCallback<OnOpenInsertMenu>((anchorEl, path) => {
-    setInsertMenuAnchorEl(anchorEl);
-    setInsertMenuPath(path);
-  }, []);
+  const openInsertMenu = useCallback<OnOpenInsertMenu>(
+    (anchorEl, path) => {
+      if (!onInsertAtPath) {
+        return;
+      }
+
+      setInsertMenuAnchorEl(anchorEl);
+      setInsertMenuPath(path);
+    },
+    [onInsertAtPath],
+  );
   const closeInsertMenu = useCallback(() => {
     setInsertMenuAnchorEl(null);
     setInsertMenuPath(null);
@@ -78,34 +57,11 @@ export const useInsertMenuBindings = ({
     },
     [insertMenuPath, onInsertAtPath],
   );
-  const edges = useMemo(() => {
-    if (!onInsertAtPath) {
-      return graphData.edges;
-    }
-
-    return graphData.edges.map((edge) =>
-      withInsertMenuHandler(edge, openInsertMenu),
-    );
-  }, [graphData.edges, onInsertAtPath, openInsertMenu]);
-  const nodes = useMemo(() => {
-    if (!onInsertAtPath) {
-      return graphData.nodes;
-    }
-
-    return graphData.nodes.map((node) => {
-      if (node.type !== ENodeType.BRANCH_PLACEHOLDER) {
-        return node;
-      }
-
-      return withInsertMenuHandler(node, openInsertMenu);
-    });
-  }, [graphData.nodes, onInsertAtPath, openInsertMenu]);
 
   return {
-    edges,
-    nodes,
     insertMenuAnchorEl,
     isInsertMenuOpen: Boolean(insertMenuAnchorEl && insertMenuPath),
+    openInsertMenu: onInsertAtPath ? openInsertMenu : undefined,
     closeInsertMenu,
     insertFromMenu,
   };

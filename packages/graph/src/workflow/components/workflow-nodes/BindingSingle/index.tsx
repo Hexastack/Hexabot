@@ -17,11 +17,12 @@ import { GenericNodeTitle } from "../GenericNodeTitle";
 
 export const BindingSingle: FC<
   NodeProps<GraphNode<ENodeType.BINDING_SINGLE>>
-> = ({ id, data }) => {
+> = (props) => {
+  const { data } = props;
   const hasDescription = Boolean(data?.description?.trim());
 
   return (
-    <WorkflowNodeProvider id={id}>
+    <WorkflowNodeProvider node={props}>
       <GenericNodeContainer className="workflow-node-shell--interactive">
         <GenericNodeRightContent
           variant={hasDescription ? "title-with-description" : "title-only"}
