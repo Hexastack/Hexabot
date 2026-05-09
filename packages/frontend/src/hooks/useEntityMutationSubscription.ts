@@ -9,6 +9,10 @@ import { useCallback } from "react";
 
 import { isSameEntity } from "@/hooks/crud/helpers";
 import { useTanstackQueryClient } from "@/hooks/crud/useTanstack";
+import {
+  mergeEntityCachePayload,
+  type CacheRecord,
+} from "@/hooks/entity-cache.utils";
 import { ENTITY_MAP } from "@/services/entities";
 import { EntityType, QueryType } from "@/services/types";
 import { IBaseSchema } from "@/types/base.types";
@@ -32,44 +36,7 @@ const getAffectedEntityTypes = (entityType: EntityType): EntityType[] => {
 const transformEntityPayload = (entityType: EntityType, payload: unknown) =>
   PAYLOAD_TRANSFORMERS_BY_ENTITY_TYPE[entityType]?.(payload) ?? payload;
 
-type CacheRecord = Record<string, unknown>;
-
-export const mergeEntityCachePayload = (
-  entityType: EntityType,
-  previousData: CacheRecord | undefined,
-  nextEntityData: CacheRecord,
-) => {
-  const mergedPayload = {
-    ...previousData,
-    ...nextEntityData,
-  };
-
-  if (
-    entityType === EntityType.THREAD &&
-    typeof previousData?.subscriber === "object" &&
-    previousData.subscriber !== null &&
-    typeof nextEntityData.subscriber === "string"
-  ) {
-    mergedPayload.subscriber = previousData.subscriber;
-  }
-
-  if (
-    entityType === EntityType.THREAD &&
-    typeof previousData?.source === "object" &&
-    previousData.source !== null &&
-    typeof nextEntityData.source === "string"
-  ) {
-    mergedPayload.source = previousData.source;
-  }
-
-  if (entityType === EntityType.THREAD) {
-    return {
-      ...mergedPayload,
-    };
-  }
-
-  return mergedPayload;
-};
+export { mergeEntityCachePayload } from "@/hooks/entity-cache.utils";
 
 type EntityMutationEvent<E extends IBaseSchema = IBaseSchema> = {
   entity: string;

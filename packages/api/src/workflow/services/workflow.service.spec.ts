@@ -5,6 +5,8 @@
  */
 
 import {
+  StepType,
+  type StepExecutionRecord,
   WorkflowDefinition,
   Workflow as WorkflowHelper,
 } from '@hexabot-ai/agentic';
@@ -305,12 +307,58 @@ describe('WorkflowService (TypeORM)', () => {
       expect(gatewayMock.broadcastWorkflowEvent).toHaveBeenCalledWith({
         runId: run.id,
         t: expect.any(Number),
+        workflowRun: expect.objectContaining({
+          id: run.id,
+          workflow: targetWorkflow.id,
+        }),
         workflowId: targetWorkflow.id,
         initiatorId: creatorId,
         threadId: 'thread-1',
         workflowEvent: 'workflow:start',
       });
     });
+
+    it.each([WorkflowType.manual, WorkflowType.scheduled])(
+      'broadcasts step execution records for %s workflow events',
+      async (workflowType) => {
+        const targetWorkflow = await createWorkflowForType(workflowType);
+        const run = await createWorkflowRun(targetWorkflow);
+        const step = {
+          id: '0:greet',
+          name: 'greet',
+          type: StepType.Task,
+        };
+        const stepExecution: StepExecutionRecord = {
+          ...step,
+          action: 'greet',
+          status: 'running',
+          startedAt: 1700000000000,
+          input: { name: 'Ada' },
+        };
+
+        await workflowService.sendWorkflowStepStart({
+          runId: run.id,
+          step,
+          stepExecution,
+        });
+
+        expect(gatewayMock.broadcastWorkflowEvent).toHaveBeenCalledTimes(1);
+        expect(gatewayMock.broadcastWorkflowEvent).toHaveBeenCalledWith({
+          runId: run.id,
+          step,
+          stepExecution,
+          t: expect.any(Number),
+          workflowRun: expect.objectContaining({
+            id: run.id,
+            workflow: targetWorkflow.id,
+          }),
+          workflowId: targetWorkflow.id,
+          initiatorId: creatorId,
+          threadId: 'thread-1',
+          workflowEvent: 'step:start',
+        });
+      },
+    );
 
     it('does not broadcast when the workflow event has no run id', async () => {
       await workflowService.sendWorkflowStart({});

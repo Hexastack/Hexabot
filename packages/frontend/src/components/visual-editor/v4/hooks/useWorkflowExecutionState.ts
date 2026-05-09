@@ -7,7 +7,7 @@
 import { type WorkflowExecutionStateMap } from "@hexabot-ai/graph";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useSubscribe } from "@/websocket/socket-hooks";
+import { useWorkflowEventSubscription } from "@/websocket/workflow-event-hooks";
 
 import type {
   NodeExecutionState,
@@ -82,7 +82,7 @@ export const useWorkflowExecutionState = (flowId?: string) => {
     [flowId, scheduleExecutionAction],
   );
 
-  useSubscribe("workflow", handleWorkflowExecutionEvent);
+  useWorkflowEventSubscription(handleWorkflowExecutionEvent);
 
   useEffect(() => {
     clearExecutionTimeouts();

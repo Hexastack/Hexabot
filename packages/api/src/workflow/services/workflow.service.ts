@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { WorkflowEventMap } from '@hexabot-ai/agentic';
+import type { WorkflowEventMap } from '@hexabot-ai/agentic';
 import { WorkflowFull, Workflow } from '@hexabot-ai/types';
 import {
   BadRequestException,
@@ -232,6 +232,7 @@ export class WorkflowService extends BaseOrmService<WorkflowOrmEntity> {
     this.gateway.broadcastWorkflowEvent({
       ...payload,
       t,
+      workflowRun,
       workflowId,
       initiatorId,
       threadId: typeof threadId === 'string' ? threadId : undefined,
@@ -247,6 +248,13 @@ export class WorkflowService extends BaseOrmService<WorkflowOrmEntity> {
   @OnEvent('hook:workflow:finish')
   async sendWorkflowFinish(payload: WorkflowEventMap[keyof WorkflowEventMap]) {
     await this.sendWorkflowEvent('hook:workflow:finish', payload);
+  }
+
+  @OnEvent('hook:workflow:suspended')
+  async sendWorkflowSuspended(
+    payload: WorkflowEventMap[keyof WorkflowEventMap],
+  ) {
+    await this.sendWorkflowEvent('hook:workflow:suspended', payload);
   }
 
   @OnEvent('hook:workflow:failure')

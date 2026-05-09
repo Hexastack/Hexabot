@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import type { StepExecutionRecord } from './context';
+
 export enum StepType {
   Task = 'task',
   Parallel = 'parallel',
@@ -17,6 +19,12 @@ export type StepInfo = {
   type: StepType;
 };
 
+export type StepWorkflowEventPayload = {
+  runId?: string;
+  step: StepInfo;
+  stepExecution?: StepExecutionRecord;
+};
+
 export type WorkflowEventMap = {
   'hook:workflow:start': { runId?: string };
   'hook:workflow:finish': { runId?: string; output: Record<string, unknown> };
@@ -27,12 +35,10 @@ export type WorkflowEventMap = {
     reason?: string;
     data?: unknown;
   };
-  'hook:step:start': { runId?: string; step: StepInfo };
-  'hook:step:success': { runId?: string; step: StepInfo };
-  'hook:step:error': { runId?: string; step: StepInfo; error: unknown };
-  'hook:step:suspended': {
-    runId?: string;
-    step: StepInfo;
+  'hook:step:start': StepWorkflowEventPayload;
+  'hook:step:success': StepWorkflowEventPayload;
+  'hook:step:error': StepWorkflowEventPayload & { error: unknown };
+  'hook:step:suspended': StepWorkflowEventPayload & {
     reason?: string;
     data?: unknown;
   };

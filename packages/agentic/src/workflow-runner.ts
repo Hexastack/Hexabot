@@ -425,7 +425,7 @@ export class WorkflowRunner {
   private recordStepExecution(
     step: StepInfo,
     update: Partial<StepExecutionRecord>,
-  ) {
+  ): StepExecutionRecord {
     const existing = this.stepLog[step.id];
     const base: StepExecutionRecord =
       existing ??
@@ -438,14 +438,21 @@ export class WorkflowRunner {
       existing?.context || update.context
         ? { ...existing?.context, ...update.context }
         : undefined;
-
-    this.stepLog[step.id] = {
+    const nextRecord: StepExecutionRecord = {
       ...base,
       ...update,
       id: step.id,
       name: step.name,
       status: update.status ?? base.status,
       context: mergedContext,
+    };
+
+    this.stepLog[step.id] = nextRecord;
+
+    return {
+      ...nextRecord,
+      context: nextRecord.context ? { ...nextRecord.context } : undefined,
+      error: nextRecord.error ? { ...nextRecord.error } : undefined,
     };
   }
 

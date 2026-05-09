@@ -15,7 +15,7 @@ import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
 import { useConfig } from "@/hooks/useConfig";
 import { useEntityMutationSubscription } from "@/hooks/useEntityMutationSubscription";
 import { getMenuItems } from "@/utils/menu.util";
-import { useSocketGetQuery } from "@/websocket/socket-hooks";
+import { WorkflowEventProvider } from "@/websocket/workflow-event-hooks";
 
 import { LayoutProps } from ".";
 
@@ -24,7 +24,6 @@ import { theme } from "./theme";
 export const AuthenticatedLayout: React.FC<
   LayoutProps & { hasNoPadding?: boolean }
 > = ({ children, hasNoPadding, isPublicRoute }) => {
-  useSocketGetQuery("/workflow/subscribe/");
   useEntityMutationSubscription();
 
   const [isDesktopNavigationExpanded, setIsDesktopNavigationExpanded] =
@@ -58,33 +57,35 @@ export const AuthenticatedLayout: React.FC<
   }
 
   return (
-    <Box display="flex">
-      <DashboardHeader
-        logo={<HexabotLogo />}
-        menuOpen={isDesktopNavigationExpanded}
-        onToggleMenu={handleToggleHeaderMenu}
-      />
-      <DashboardSidebar
-        menu={availableMenuItems}
-        expanded={isDesktopNavigationExpanded}
-        setExpanded={setIsNavigationExpanded}
-      />
+    <WorkflowEventProvider>
+      <Box display="flex">
+        <DashboardHeader
+          logo={<HexabotLogo />}
+          menuOpen={isDesktopNavigationExpanded}
+          onToggleMenu={handleToggleHeaderMenu}
+        />
+        <DashboardSidebar
+          menu={availableMenuItems}
+          expanded={isDesktopNavigationExpanded}
+          setExpanded={setIsNavigationExpanded}
+        />
 
-      <Grid
-        sx={{
-          padding: hasNoPadding ? 0 : 3,
-          position: "relative",
-          marginTop: "64px",
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          overflow: "auto",
-          width: "calc(100% - 88px)",
-          zIndex: 5,
-        }}
-      >
-        {children}
-      </Grid>
-    </Box>
+        <Grid
+          sx={{
+            padding: hasNoPadding ? 0 : 3,
+            position: "relative",
+            marginTop: "64px",
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            overflow: "auto",
+            width: "calc(100% - 88px)",
+            zIndex: 5,
+          }}
+        >
+          {children}
+        </Grid>
+      </Box>
+    </WorkflowEventProvider>
   );
 };

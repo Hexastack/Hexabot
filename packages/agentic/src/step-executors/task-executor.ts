@@ -51,7 +51,7 @@ export async function executeTaskStep(
     accumulator: state.accumulator,
   };
   const inputs = await evaluateMapping(task.inputs, scope);
-  env.recordStepExecution(stepInfo, {
+  const stepExecution = env.recordStepExecution(stepInfo, {
     action: task.actionName,
     status: 'running',
     startedAt: Date.now(),
@@ -61,7 +61,11 @@ export async function executeTaskStep(
   env.beginStepExecution?.(stepInfo.id);
   env.setCurrentStep(stepInfo);
   env.markSnapshot(stepInfo, 'running');
-  env.emit('hook:step:start', { runId: env.runId, step: stepInfo });
+  env.emit('hook:step:start', {
+    runId: env.runId,
+    step: stepInfo,
+    stepExecution,
+  });
 
   try {
     const actionPromise = Promise.resolve().then(() =>
@@ -126,14 +130,18 @@ const completeTask = async (
   result: unknown,
 ) => {
   await env.captureTaskOutput(task, state, result);
-  env.recordStepExecution(stepInfo, {
+  const stepExecution = env.recordStepExecution(stepInfo, {
     status: 'completed',
     endedAt: Date.now(),
     output: result,
     context: { after: env.context.snapshot() },
   });
   env.markSnapshot(stepInfo, 'completed');
-  env.emit('hook:step:success', { runId: env.runId, step: stepInfo });
+  env.emit('hook:step:success', {
+    runId: env.runId,
+    step: stepInfo,
+    stepExecution,
+  });
   env.clearStepSuspensions(stepId);
 };
 const recordSuspension = (
@@ -142,7 +150,7 @@ const recordSuspension = (
   reason?: string,
   data?: unknown,
 ) => {
-  env.recordStepExecution(stepInfo, {
+  const stepExecution = env.recordStepExecution(stepInfo, {
     status: 'suspended',
     endedAt: Date.now(),
     reason,
@@ -152,6 +160,7 @@ const recordSuspension = (
   env.emit('hook:step:suspended', {
     runId: env.runId,
     step: stepInfo,
+    stepExecution,
     reason,
     data,
   });
@@ -231,14 +240,20 @@ const recordTaskFailure = (
   stepInfo: Suspension['step'],
   error: unknown,
 ) => {
-  env.recordStepExecution(stepInfo, {
+  const normalizedError = normalizeError(error);
+  const stepExecution = env.recordStepExecution(stepInfo, {
     status: 'failed',
     endedAt: Date.now(),
-    error: normalizeError(error),
+    error: normalizedError,
     context: { after: env.context.snapshot() },
   });
   env.markSnapshot(stepInfo, 'failed', normalizeErrorMessage(error));
-  env.emit('hook:step:error', { runId: env.runId, step: stepInfo, error });
+  env.emit('hook:step:error', {
+    runId: env.runId,
+    step: stepInfo,
+    stepExecution,
+    error,
+  });
 };
 const normalizeError = (error: unknown): { message: string; stack?: string } =>
   error instanceof Error
