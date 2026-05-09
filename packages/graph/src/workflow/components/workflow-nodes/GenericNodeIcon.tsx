@@ -6,11 +6,13 @@
 
 import type { CSSProperties } from "react";
 
-import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
+import { useWorkflowNode } from "../../hooks/useWorkflowNode";
 import { ENodeType } from "../../types/workflow-node.types";
 
 export const GenericNodeIcon = <T extends ENodeType = ENodeType>() => {
-  const { Icon, iconColor } = useWorkflowNodeTheme<T>();
+  const {
+    resolvedTheme: { Icon, iconColor },
+  } = useWorkflowNode<T>();
 
   return (
     <div

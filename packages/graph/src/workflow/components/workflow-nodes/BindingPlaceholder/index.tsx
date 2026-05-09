@@ -17,7 +17,8 @@ import { GenericNodePorts } from "../GenericNodePorts";
 
 export const BindingPlaceholder: FC<
   NodeProps<GraphNode<ENodeType.BINDING_PLACEHOLDER>>
-> = ({ id, data }) => {
+> = (props) => {
+  const { id, data } = props;
   const { translate, onAddBinding } = useWorkflowGraphHost();
   const stepId = data?.stepId;
   const stepPath = data?.stepPath;
@@ -56,7 +57,7 @@ export const BindingPlaceholder: FC<
   );
 
   return (
-    <WorkflowNodeProvider id={id}>
+    <WorkflowNodeProvider node={props}>
       <GenericNodeContainer>
         <div className="workflow-branch-placeholder workflow-binding-placeholder nodrag nopan">
           <PulseIconButton

@@ -15,13 +15,14 @@ import { GenericNodePorts } from "../GenericNodePorts";
 import { GenericNodeRightContent } from "../GenericNodeRightContent";
 import { GenericNodeTitle } from "../GenericNodeTitle";
 
-export const BindingMulti: FC<
-  NodeProps<GraphNode<ENodeType.BINDING_MULTI>>
-> = ({ id, data }) => {
+export const BindingMulti: FC<NodeProps<GraphNode<ENodeType.BINDING_MULTI>>> = (
+  props,
+) => {
+  const { data } = props;
   const hasDescription = Boolean(data?.description?.trim());
 
   return (
-    <WorkflowNodeProvider id={id}>
+    <WorkflowNodeProvider node={props}>
       <GenericNodeContainer className="workflow-node-shell--interactive">
         <GenericNodeRightContent
           variant={hasDescription ? "title-with-description" : "title-only"}

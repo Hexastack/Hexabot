@@ -11,6 +11,7 @@ import { ENodeType, type GraphNode } from "../types/workflow-node.types";
 
 import {
   createWorkflowSelectionSnapshot,
+  createWorkflowSelectionSnapshotFromMap,
   isSameWorkflowSelection,
 } from "./workflow-selection.utils";
 
@@ -91,6 +92,24 @@ describe("workflow-selection.utils", () => {
     expect(selection.nodeIds).toEqual(["task-node"]);
     expect(selection.nodes).toHaveLength(1);
     expect(selection.nodes[0]?.id).toBe("task-node");
+  });
+
+  it("creates selection snapshots from a precomputed node map", () => {
+    const taskNode = createNode("task-node", ENodeType.TASK, {
+      title: "task",
+      actionName: "action",
+    });
+    const selection = createWorkflowSelectionSnapshotFromMap(
+      ["task-node"],
+      new Map([[taskNode.id, taskNode]]),
+    );
+
+    expect(selection.nodeIds).toEqual(["task-node"]);
+    expect(selection.nodes[0]).toMatchObject({
+      id: "task-node",
+      taskName: "task",
+      actionName: "action",
+    });
   });
 
   it("compares selection snapshots deeply for equality guards", () => {

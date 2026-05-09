@@ -7,7 +7,6 @@
 import { type CSSProperties, type PropsWithChildren } from "react";
 
 import { useWorkflowNode } from "../../hooks/useWorkflowNode";
-import { useWorkflowNodeTheme } from "../../hooks/useWorkflowNodeTheme";
 import {
   ENodeType,
   type NodeExecutionState,
@@ -26,8 +25,8 @@ export const GenericNodeRightContent = <T extends ENodeType = ENodeType>({
   children,
   variant = "title-only",
 }: PropsWithChildren<{ variant?: TNodeCardContentVariant }>) => {
-  const { bgColor, borderColor } = useWorkflowNodeTheme<T>();
-  const { executionState } = useWorkflowNode<T>();
+  const { executionState, resolvedTheme } = useWorkflowNode<T>();
+  const { bgColor, borderColor } = resolvedTheme;
   const hasAnimatedExecutionBorder =
     executionState !== undefined &&
     ANIMATED_EXECUTION_BORDER_STATES.has(executionState);

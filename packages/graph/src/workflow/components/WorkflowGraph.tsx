@@ -9,6 +9,7 @@ import {
   Background,
   type Node,
   type NodeMouseHandler,
+  type OnMove,
   ReactFlow,
   ReactFlowProvider,
   type Viewport,
@@ -16,6 +17,7 @@ import {
 import type { ResizeControlDirection } from "@xyflow/system";
 import {
   forwardRef,
+  memo,
   type PropsWithChildren,
   useCallback,
   useEffect,
@@ -36,6 +38,10 @@ import type {
   WorkflowGraphTranslate,
 } from "../contexts/workflow-graph-host.context";
 import { WorkflowGraphHostContext } from "../contexts/workflow-graph-host.context";
+import {
+  WorkflowInsertMenuContext,
+  type WorkflowInsertMenuContextValue,
+} from "../contexts/workflow-insert-menu.context";
 import { useFocusNode } from "../hooks/useFocusNode";
 import { useInsertMenuBindings } from "../hooks/useInsertMenuBindings";
 import { useWorkflowGraphLayout } from "../hooks/useWorkflowGraphLayout";
@@ -60,6 +66,11 @@ import type {
 } from "../types/workflow-path.types";
 import type { WorkflowSelectionSnapshot } from "../types/workflow-selection.types";
 import { isSameViewport } from "../utils/workflow-graph.utils";
+import {
+  isLargeWorkflowGraph,
+  shouldShowWorkflowEdgeInsertControls,
+} from "../utils/workflow-rendering.utils";
+import { applyWorkflowExecutionStatesToNodes } from "../utils/workflow-runtime-node.utils";
 
 import { WorkflowControls } from "./WorkflowControls";
 import { WorkflowEmptyState } from "./WorkflowEmptyState";
@@ -135,6 +146,71 @@ const resolveColorMode = (mode: WorkflowGraphColorMode): "light" | "dark" => {
 
   return mode;
 };
+const areStringArraysEqual = (
+  left: readonly string[] | undefined,
+  right: readonly string[] | undefined,
+): boolean => {
+  if (left === right) {
+    return true;
+  }
+
+  if (!left || !right || left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((value, index) => value === right[index]);
+};
+const isSameViewportState = (
+  left: ViewportState | null | undefined,
+  right: ViewportState | null | undefined,
+): boolean => {
+  if (left === right) {
+    return true;
+  }
+
+  if (!left || !right) {
+    return !left && !right;
+  }
+
+  return (
+    left.id === right.id &&
+    left.x === right.x &&
+    left.y === right.y &&
+    left.zoom === right.zoom
+  );
+};
+const areWorkflowGraphPropsEqual = (
+  previous: WorkflowGraphProps,
+  next: WorkflowGraphProps,
+): boolean =>
+  previous.children === next.children &&
+  previous.colorMode === next.colorMode &&
+  previous.t === next.t &&
+  previous.model.definition?.defs === next.model.definition?.defs &&
+  previous.model.compiledFlow === next.model.compiledFlow &&
+  previous.model.actionCatalog === next.model.actionCatalog &&
+  previous.model.bindingCatalog === next.model.bindingCatalog &&
+  previous.model.executionStates === next.model.executionStates &&
+  previous.model.layoutDirection === next.model.layoutDirection &&
+  areStringArraysEqual(
+    previous.selection.selectedNodeIds,
+    next.selection.selectedNodeIds,
+  ) &&
+  areStringArraysEqual(
+    previous.selection.focusNodeIds,
+    next.selection.focusNodeIds,
+  ) &&
+  previous.selection.onChange === next.selection.onChange &&
+  previous.selection.onFocusComplete === next.selection.onFocusComplete &&
+  previous.insertion?.onInsertAtPath === next.insertion?.onInsertAtPath &&
+  previous.insertion?.onInsertAtRoot === next.insertion?.onInsertAtRoot &&
+  isSameViewportState(previous.viewport.value, next.viewport.value) &&
+  previous.viewport.onChange === next.viewport.onChange &&
+  previous.callbacks.onNodeClick === next.callbacks.onNodeClick &&
+  previous.callbacks.onRemoveStep === next.callbacks.onRemoveStep &&
+  previous.callbacks.onAddBinding === next.callbacks.onAddBinding &&
+  previous.callbacks.onRemoveBinding === next.callbacks.onRemoveBinding &&
+  previous.callbacks.onRotate === next.callbacks.onRotate;
 const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
   (
     {
@@ -152,6 +228,8 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
     const [resolvedColorMode, setResolvedColorMode] = useState<
       "light" | "dark"
     >(() => resolveColorMode(colorMode));
+    const [isGraphMoving, setIsGraphMoving] = useState(false);
+    const [currentZoom, setCurrentZoom] = useState(1);
     const lastViewportRef = useRef<Viewport>({ x: 0, y: 0, zoom: 1 });
     const { graphData, isEmptyWorkflow } = useWorkflowGraphLayout({
       compiledFlow: model.compiledFlow,
@@ -160,20 +238,35 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
       actionCatalog: model.actionCatalog,
       bindingCatalog: model.bindingCatalog,
     });
+    const runtimeNodes = useMemo(
+      () =>
+        applyWorkflowExecutionStatesToNodes(
+          graphData.nodes,
+          model.executionStates,
+        ),
+      [graphData.nodes, model.executionStates],
+    );
     const {
-      edges,
-      nodes,
       insertMenuAnchorEl,
       isInsertMenuOpen,
+      openInsertMenu,
       closeInsertMenu,
       insertFromMenu,
     } = useInsertMenuBindings({
-      graphData,
       onInsertAtPath: insertion?.onInsertAtPath,
+    });
+    const isLargeGraph = isLargeWorkflowGraph({
+      nodeCount: graphData.nodes.length,
+      edgeCount: graphData.edges.length,
+    });
+    const showEdgeInsertControls = shouldShowWorkflowEdgeInsertControls({
+      isLargeGraph,
+      isMoving: isGraphMoving,
+      zoom: currentZoom,
     });
     const { onNodesChange, emitSelection } = useWorkflowSelectionController({
       isEmptyWorkflow,
-      nodes,
+      nodes: graphData.nodes,
       selectedNodeIds: selection.selectedNodeIds,
       onChange: selection.onChange,
     });
@@ -196,7 +289,7 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
     } = useWorkflowViewport({
       viewport: viewport.value,
       isEmptyWorkflow,
-      graphNodes: nodes,
+      graphNodes: graphData.nodes,
     });
     const hostContextValue = useMemo<WorkflowGraphHostContextValue>(
       () => ({
@@ -204,7 +297,6 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
         colorMode: resolvedColorMode,
         direction: model.layoutDirection,
         actionCatalog: model.actionCatalog,
-        executionStates: model.executionStates,
         onRemoveStep: callbacks.onRemoveStep,
         onAddBinding: callbacks.onAddBinding,
         onRemoveBinding: callbacks.onRemoveBinding,
@@ -214,11 +306,17 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
         callbacks.onRemoveBinding,
         callbacks.onRemoveStep,
         model.actionCatalog,
-        model.executionStates,
         model.layoutDirection,
         resolvedColorMode,
         t,
       ],
+    );
+    const insertMenuContextValue = useMemo<WorkflowInsertMenuContextValue>(
+      () => ({
+        onOpenInsertMenu: openInsertMenu,
+        showEdgeInsertControls,
+      }),
+      [openInsertMenu, showEdgeInsertControls],
     );
 
     useImperativeHandle(
@@ -237,6 +335,7 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
 
     useEffect(() => {
       lastViewportRef.current = initialViewport;
+      setCurrentZoom(initialViewport.zoom);
     }, [initialViewport.x, initialViewport.y, initialViewport.zoom]);
 
     useEffect(() => {
@@ -268,8 +367,20 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
       };
     }, [colorMode]);
 
+    const handleMoveStart = useCallback<OnMove>((_event, nextViewport) => {
+      setIsGraphMoving(true);
+      setCurrentZoom(nextViewport.zoom);
+    }, []);
+    const handleMove = useCallback<OnMove>((_event, nextViewport) => {
+      setCurrentZoom((zoom) =>
+        Math.abs(zoom - nextViewport.zoom) <= 0.01 ? zoom : nextViewport.zoom,
+      );
+    }, []);
     const handleMoveEnd = useCallback(
       (_event: MouseEvent | TouchEvent | null, nextViewport: Viewport) => {
+        setIsGraphMoving(false);
+        setCurrentZoom(nextViewport.zoom);
+
         if (isSameViewport(lastViewportRef.current, nextViewport)) {
           return;
         }
@@ -279,45 +390,52 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
       },
       [viewport],
     );
+    const graphClassName = `workflow-graph${
+      isLargeGraph ? " workflow-graph--large" : ""
+    }`;
 
     return (
       <WorkflowGraphHostContext.Provider value={hostContextValue}>
-        <ReactFlow
-          className="workflow-graph"
-          edges={edges}
-          nodes={nodes}
-          defaultViewport={initialViewport}
-          maxZoom={WORKFLOW_VIEWPORT_MAX_ZOOM}
-          minZoom={WORKFLOW_VIEWPORT_MIN_ZOOM}
-          nodeTypes={NODE_TYPES}
-          edgeTypes={EDGE_TYPES}
-          onNodesChange={onNodesChange}
-          onMoveEnd={handleMoveEnd}
-          onNodeClick={callbacks.onNodeClick}
-          onlyRenderVisibleElements
-          colorMode={resolvedColorMode}
-        >
-          <WorkflowControls
-            direction={model.layoutDirection}
-            onFitView={() => {
-              void animateFocus();
-            }}
-            onRotate={callbacks.onRotate}
-          />
-          <Background size={2} />
+        <WorkflowInsertMenuContext.Provider value={insertMenuContextValue}>
+          <ReactFlow
+            className={graphClassName}
+            edges={graphData.edges}
+            nodes={runtimeNodes}
+            defaultViewport={initialViewport}
+            maxZoom={WORKFLOW_VIEWPORT_MAX_ZOOM}
+            minZoom={WORKFLOW_VIEWPORT_MIN_ZOOM}
+            nodeTypes={NODE_TYPES}
+            edgeTypes={EDGE_TYPES}
+            onNodesChange={onNodesChange}
+            onMove={handleMove}
+            onMoveStart={handleMoveStart}
+            onMoveEnd={handleMoveEnd}
+            onNodeClick={callbacks.onNodeClick}
+            onlyRenderVisibleElements={isLargeGraph}
+            colorMode={resolvedColorMode}
+          >
+            <WorkflowControls
+              direction={model.layoutDirection}
+              onFitView={() => {
+                void animateFocus();
+              }}
+              onRotate={callbacks.onRotate}
+            />
+            <Background size={2} />
 
-          {isEmptyWorkflow && insertion?.onInsertAtRoot ? (
-            <WorkflowEmptyState onInsert={insertion.onInsertAtRoot} />
-          ) : null}
-          {children}
-          <WorkflowInsertContextMenu
-            id="workflow-insert-menu"
-            open={isInsertMenuOpen}
-            anchorEl={insertMenuAnchorEl}
-            onClose={closeInsertMenu}
-            onInsert={insertFromMenu}
-          />
-        </ReactFlow>
+            {isEmptyWorkflow && insertion?.onInsertAtRoot ? (
+              <WorkflowEmptyState onInsert={insertion.onInsertAtRoot} />
+            ) : null}
+            {children}
+            <WorkflowInsertContextMenu
+              id="workflow-insert-menu"
+              open={isInsertMenuOpen}
+              anchorEl={insertMenuAnchorEl}
+              onClose={closeInsertMenu}
+              onInsert={insertFromMenu}
+            />
+          </ReactFlow>
+        </WorkflowInsertMenuContext.Provider>
       </WorkflowGraphHostContext.Provider>
     );
   },
@@ -325,17 +443,23 @@ const WorkflowGraphCanvas = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
 
 WorkflowGraphCanvas.displayName = "WorkflowGraphCanvas";
 
-export const WorkflowGraph = forwardRef<
-  WorkflowGraphHandle,
-  WorkflowGraphProps
->((props, ref) => {
-  const flowKey = props.viewport.value?.id ?? "__workflow-empty__";
+const WorkflowGraphRoot = forwardRef<WorkflowGraphHandle, WorkflowGraphProps>(
+  (props, ref) => {
+    const flowKey = props.viewport.value?.id ?? "__workflow-empty__";
 
-  return (
-    <ReactFlowProvider key={flowKey}>
-      <WorkflowGraphCanvas {...props} ref={ref} />
-    </ReactFlowProvider>
-  );
-});
+    return (
+      <ReactFlowProvider key={flowKey}>
+        <WorkflowGraphCanvas {...props} ref={ref} />
+      </ReactFlowProvider>
+    );
+  },
+);
+
+WorkflowGraphRoot.displayName = "WorkflowGraphRoot";
+
+export const WorkflowGraph = memo(
+  WorkflowGraphRoot,
+  areWorkflowGraphPropsEqual,
+);
 
 WorkflowGraph.displayName = "WorkflowGraph";

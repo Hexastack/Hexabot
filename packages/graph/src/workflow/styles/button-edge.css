@@ -67,6 +67,11 @@
   animation: none;
 }
 
+.workflow-graph--large .workflow-pulse-icon-button::after {
+  animation: none;
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .workflow-pulse-icon-button::after {
     animation: none;
