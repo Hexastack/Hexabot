@@ -360,6 +360,48 @@ describe('WorkflowService (TypeORM)', () => {
       },
     );
 
+    it('broadcasts cancelled step events', async () => {
+      const targetWorkflow = await createWorkflowForType(WorkflowType.manual);
+      const run = await createWorkflowRun(targetWorkflow);
+      const step = {
+        id: '0:slow_branch',
+        name: 'slow_branch',
+        type: StepType.Task,
+      };
+      const error = new Error('Parallel wait_any branch lost the race.');
+      const stepExecution: StepExecutionRecord = {
+        ...step,
+        action: 'slow_branch',
+        status: 'cancelled',
+        endedAt: 1700000000000,
+        error: { message: error.message },
+      };
+
+      await workflowService.sendWorkflowStepCancelled({
+        runId: run.id,
+        step,
+        stepExecution,
+        error,
+      });
+
+      expect(gatewayMock.broadcastWorkflowEvent).toHaveBeenCalledTimes(1);
+      expect(gatewayMock.broadcastWorkflowEvent).toHaveBeenCalledWith({
+        runId: run.id,
+        step,
+        stepExecution,
+        error,
+        t: expect.any(Number),
+        workflowRun: expect.objectContaining({
+          id: run.id,
+          workflow: targetWorkflow.id,
+        }),
+        workflowId: targetWorkflow.id,
+        initiatorId: creatorId,
+        threadId: 'thread-1',
+        workflowEvent: 'step:cancelled',
+      });
+    });
+
     it('does not broadcast when the workflow event has no run id', async () => {
       await workflowService.sendWorkflowStart({});
 

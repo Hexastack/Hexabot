@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { StepInfo } from '@hexabot-ai/agentic';
+import type { StepExecutionRecord, StepInfo } from '@hexabot-ai/agentic';
 import type { HttpException } from '@nestjs/common';
 import type { OnEventType } from '@nestjs/event-emitter';
 import type { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
@@ -135,6 +135,12 @@ type HookEventPayload<
 
 type HookWildcardPayload<Entity> = [OrmLifecycleEvent<Entity>];
 
+type StepWorkflowEventPayload = {
+  runId?: string;
+  step: StepInfo;
+  stepExecution?: StepExecutionRecord;
+};
+
 declare module '@nestjs/event-emitter' {
   interface IHookSettingsGroupLabelOperationMap
     extends DefaultHookSettingsMap {}
@@ -239,11 +245,12 @@ declare module '@nestjs/event-emitter' {
     'hook:workflow:suspended': [
       { runId?: string; step: StepInfo; reason?: string; data?: unknown },
     ];
-    'hook:step:start': [{ runId?: string; step: StepInfo }];
-    'hook:step:success': [{ runId?: string; step: StepInfo }];
-    'hook:step:error': [{ runId?: string; step: StepInfo; error: unknown }];
+    'hook:step:start': [StepWorkflowEventPayload];
+    'hook:step:success': [StepWorkflowEventPayload];
+    'hook:step:error': [StepWorkflowEventPayload & { error: unknown }];
+    'hook:step:cancelled': [StepWorkflowEventPayload & { error: unknown }];
     'hook:step:suspended': [
-      { runId?: string; step: StepInfo; reason?: string; data?: unknown },
+      StepWorkflowEventPayload & { reason?: string; data?: unknown },
     ];
     'hook:step:skipped': [{ runId?: string; step: StepInfo; reason?: string }];
   }

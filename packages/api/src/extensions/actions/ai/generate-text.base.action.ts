@@ -31,6 +31,7 @@ export abstract class AiGenerateTextBaseAction<
     settings,
     context,
     bindings,
+    signal,
   }: ExecArgs<I, C, AiGenerateTextSettings>) {
     const logger = context.services.logger;
     const modelBinding = bindings.model;
@@ -61,6 +62,7 @@ export abstract class AiGenerateTextBaseAction<
       bindings.tools,
       bindings.mcp,
       selectedMemorySlugs,
+      signal,
     )) as ToolSet | undefined;
     const toolNames = [
       ...Object.keys(bindings.tools ?? {}),
@@ -86,6 +88,7 @@ export abstract class AiGenerateTextBaseAction<
       ...promptPayload,
       ...callSettings,
       model,
+      abortSignal: signal,
       ...(tools ? { tools } : {}),
       ...(stopWhen ? { stopWhen } : {}),
     });
