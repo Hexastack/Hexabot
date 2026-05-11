@@ -571,6 +571,7 @@
       "status_failed": "Échouée",
       "status_skipped": "Ignorée",
       "status_suspended": "Suspendue",
+      "status_cancelled": "Annulée",
       "status_pending": "En attente",
       "type_llm": "LLM",
       "type_http": "HTTP",

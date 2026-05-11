@@ -151,6 +151,7 @@ export const InspectorTabs = ({ run, step }: InspectorTabsProps) => {
       failed: t("label.step_trace.status_failed"),
       skipped: t("label.step_trace.status_skipped"),
       suspended: t("label.step_trace.status_suspended"),
+      cancelled: t("label.step_trace.status_cancelled"),
       pending: t("label.step_trace.status_pending"),
     }),
     [t],
