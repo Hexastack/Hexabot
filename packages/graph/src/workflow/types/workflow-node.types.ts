@@ -52,6 +52,7 @@ export type NodeExecutionState =
   | "start"
   | "finish"
   | "suspended"
+  | "cancelled"
   | "error";
 
 export type WorkflowExecutionState = {

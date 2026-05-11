@@ -28,6 +28,8 @@ const toActionStatus = (
       return "running";
     case "suspended":
       return "suspended";
+    case "cancelled":
+      return "cancelled";
     case "error":
       return "failed";
     case "finish":
