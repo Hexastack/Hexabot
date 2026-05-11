@@ -186,7 +186,12 @@ describe('HexabotWorkflowRunMcpTools', () => {
         name: 'Manual workflow',
         type: WorkflowType.manual,
       },
-      workflowVersion: null,
+      workflowVersion: {
+        id: 'version-id',
+        version: 2,
+        checksum: 'checksum',
+        definitionYml: 'defs: {}\nflow: []\noutputs: {}\n',
+      },
       parentRun: null,
       stepLog: null,
       suspendedStep: 'await_reply',
@@ -208,9 +213,21 @@ describe('HexabotWorkflowRunMcpTools', () => {
     });
 
     expect(result).not.toHaveProperty('workflowDefinitionYml');
+    expect((result.run as any).workflowVersion).toEqual({
+      id: 'version-id',
+      version: 2,
+      checksum: 'checksum',
+    });
     expect(result).toEqual(
       expect.objectContaining({
-        run,
+        run: expect.objectContaining({
+          id: 'run-id',
+          workflowVersion: {
+            id: 'version-id',
+            version: 2,
+            checksum: 'checksum',
+          },
+        }),
         relatedRuns: {
           parent: null,
           children: [],

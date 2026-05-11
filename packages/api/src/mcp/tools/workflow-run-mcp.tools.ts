@@ -186,18 +186,25 @@ export class HexabotWorkflowRunMcpTools extends HexabotMcpToolBase {
           this.workflowRunService.count({ where: childWhere }),
         ])
       : ([null, [], 0] as const);
+    const includeWorkflowDefinition = args.includeWorkflowDefinition ?? true;
     const response: Record<string, unknown> = {
-      run,
+      run: includeWorkflowDefinition
+        ? run
+        : this.stripWorkflowDefinitionYml(run),
       relatedRuns: {
-        parent: parentRun,
-        children: childRuns,
+        parent: includeWorkflowDefinition
+          ? parentRun
+          : this.stripWorkflowDefinitionYml(parentRun),
+        children: includeWorkflowDefinition
+          ? childRuns
+          : this.stripWorkflowDefinitionYml(childRuns),
         childRunTotal,
         childRunsLimit: includeRelatedRuns ? childRunsLimit : 0,
       },
       summary: this.buildWorkflowRunDebugSummary(run, childRunTotal),
     };
 
-    if (args.includeWorkflowDefinition ?? true) {
+    if (includeWorkflowDefinition) {
       response.workflowDefinitionYml =
         run.workflowVersion?.definitionYml ?? null;
     }
@@ -270,5 +277,24 @@ export class HexabotWorkflowRunMcpTools extends HexabotMcpToolBase {
       failedSteps,
       childRunTotal,
     };
+  }
+
+  private stripWorkflowDefinitionYml<T>(value: T): T {
+    if (Array.isArray(value)) {
+      return value.map((item) => this.stripWorkflowDefinitionYml(item)) as T;
+    }
+
+    if (value === null || typeof value !== 'object' || value instanceof Date) {
+      return value;
+    }
+
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([key]) => key !== 'definitionYml')
+        .map(([key, nestedValue]) => [
+          key,
+          this.stripWorkflowDefinitionYml(nestedValue),
+        ]),
+    ) as T;
   }
 }

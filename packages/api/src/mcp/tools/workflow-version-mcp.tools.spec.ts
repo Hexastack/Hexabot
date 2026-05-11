@@ -200,6 +200,103 @@ describe('HexabotWorkflowVersionMcpTools', () => {
     });
   });
 
+  it('lists workflow versions as compact summaries without YAML bodies', async () => {
+    const version = {
+      id: 'version-id',
+      version: 3,
+      definitionYml: 'defs: {}\nflow: []\noutputs: {}\n',
+      checksum: 'checksum',
+      message: 'Draft update',
+      action: WorkflowVersionAction.update,
+      parentVersion: null,
+      workflow: 'workflow-id',
+      createdBy: actor.id,
+      createdAt: new Date('2026-05-08T10:00:00.000Z'),
+      updatedAt: new Date('2026-05-08T10:00:00.000Z'),
+    };
+    const workflowVersionService = {
+      findAndPopulate: jest.fn().mockResolvedValue([version]),
+      count: jest.fn().mockResolvedValue(1),
+    };
+    const tools = buildWorkflowVersionTools({ workflowVersionService });
+    const result = await tools.searchWorkflowVersions({
+      workflowId: 'workflow-id',
+      limit: 20,
+      skip: 0,
+      sortBy: 'version',
+      sortDirection: 'DESC',
+    });
+
+    expect(result).toEqual({
+      items: [
+        {
+          id: 'version-id',
+          version: 3,
+          checksum: 'checksum',
+          message: 'Draft update',
+          action: WorkflowVersionAction.update,
+          parentVersion: null,
+          workflow: 'workflow-id',
+          createdBy: actor.id,
+          createdAt: version.createdAt,
+          updatedAt: version.updatedAt,
+          definitionYmlByteLength: Buffer.byteLength(
+            version.definitionYml,
+            'utf8',
+          ),
+        },
+      ],
+      total: 1,
+      limit: 20,
+      skip: 0,
+    });
+    expect(result.items[0]).not.toHaveProperty('definitionYml');
+  });
+
+  it('returns exact workflow YAML chunks with checksum metadata', async () => {
+    const version = {
+      id: 'version-id',
+      version: 3,
+      definitionYml: '0123456789',
+      checksum: 'checksum',
+      workflow: 'workflow-id',
+    };
+    const workflowVersionService = {
+      findOneAndPopulate: jest.fn().mockResolvedValue(version),
+    };
+    const tools = buildWorkflowVersionTools({ workflowVersionService });
+
+    await expect(
+      tools.getWorkflowYaml({
+        versionId: 'version-id',
+        offset: 3,
+        limit: 4,
+      }),
+    ).resolves.toEqual({
+      workflowId: 'workflow-id',
+      versionId: 'version-id',
+      version: 3,
+      checksum: 'checksum',
+      definitionYmlByteLength: 10,
+      definitionYmlLength: 10,
+      chunk: {
+        offset: 3,
+        limit: 4,
+        endOffset: 7,
+        length: 4,
+        byteLength: 4,
+        hasMore: true,
+        nextOffset: 7,
+      },
+      definitionYml: '3456',
+    });
+    expect(workflowVersionService.findOneAndPopulate).toHaveBeenCalledWith({
+      where: {
+        id: 'version-id',
+      },
+    });
+  });
+
   it('returns structured workflow YAML validation errors', async () => {
     const tools = buildWorkflowVersionTools();
 
