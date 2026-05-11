@@ -282,6 +282,7 @@ describe('HexabotWorkflowVersionMcpTools', () => {
       chunk: {
         offset: 3,
         limit: 4,
+        unit: 'utf8Bytes',
         endOffset: 7,
         length: 4,
         byteLength: 4,
@@ -294,6 +295,46 @@ describe('HexabotWorkflowVersionMcpTools', () => {
       where: {
         id: 'version-id',
       },
+    });
+  });
+
+  it('chunks workflow YAML on UTF-8 byte offsets without splitting characters', async () => {
+    const version = {
+      id: 'version-id',
+      version: 3,
+      definitionYml: 'aé🙂z',
+      checksum: 'checksum',
+      workflow: 'workflow-id',
+    };
+    const workflowVersionService = {
+      findOneAndPopulate: jest.fn().mockResolvedValue(version),
+    };
+    const tools = buildWorkflowVersionTools({ workflowVersionService });
+
+    await expect(
+      tools.getWorkflowYaml({
+        versionId: 'version-id',
+        offset: 1,
+        limit: 2,
+      }),
+    ).resolves.toEqual({
+      workflowId: 'workflow-id',
+      versionId: 'version-id',
+      version: 3,
+      checksum: 'checksum',
+      definitionYmlByteLength: 8,
+      definitionYmlLength: 5,
+      chunk: {
+        offset: 1,
+        limit: 2,
+        unit: 'utf8Bytes',
+        endOffset: 3,
+        length: 1,
+        byteLength: 2,
+        hasMore: true,
+        nextOffset: 3,
+      },
+      definitionYml: 'é',
     });
   });
 

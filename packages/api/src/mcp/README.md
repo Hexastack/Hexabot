@@ -13,11 +13,11 @@ Claude Code.
 
 All routes are mounted under the existing API prefix.
 
-| Route | Purpose |
-| --- | --- |
-| `/api/mcp` | Streamable HTTP MCP endpoint. |
-| `/api/mcp-token` | List and create MCP personal access tokens for the current Hexabot user. |
-| `/api/mcp-token/:id/revoke` | Revoke one MCP personal access token owned by the current Hexabot user. |
+| Route                       | Purpose                                                                  |
+| --------------------------- | ------------------------------------------------------------------------ |
+| `/api/mcp`                  | Streamable HTTP MCP endpoint.                                            |
+| `/api/mcp-token`            | List and create MCP personal access tokens for the current Hexabot user. |
+| `/api/mcp-token/:id/revoke` | Revoke one MCP personal access token owned by the current Hexabot user.  |
 
 The MCP endpoint is stateful and uses `mcp-session-id` headers for sessions.
 
@@ -141,19 +141,20 @@ client, but the effective configuration should be equivalent to:
 
 ### Workflows
 
-| Tool | Permission | Purpose |
-| --- | --- | --- |
-| `hexabot_workflow_search` | `workflow:read` | Search workflows by metadata. |
-| `hexabot_workflow_get` | `workflow:read` | Read one workflow with populated version metadata. |
-| `hexabot_workflow_version_status` | `workflow:read` | Check current and published version pointers for one workflow. |
-| `hexabot_workflow_create` | `workflow:create` | Create a workflow and optionally commit initial YAML. |
-| `hexabot_workflow_update` | `workflow:update` | Update workflow metadata and optionally commit YAML. |
-| `hexabot_workflow_yaml_validate` | `workflow:read` | Validate workflow definition YAML without creating a version. |
-| `hexabot_workflow_yaml_commit` | `workflowversion:create` | Validate and commit workflow definition YAML. |
-| `hexabot_workflow_rollback` | `workflowversion:create` | Roll back to a previous version by creating a new restore snapshot. |
-| `hexabot_workflow_publish` | `workflow:update` | Publish the current workflow version. |
-| `hexabot_workflow_unpublish` | `workflow:update` | Clear the published workflow version. |
-| `hexabot_workflow_run` | `workflowrun:create` | Run a manual or scheduled workflow and return the run summary. |
+| Tool                              | Permission               | Purpose                                                                                      |
+| --------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------- |
+| `hexabot_workflow_search`         | `workflow:read`          | Search workflows by metadata.                                                                |
+| `hexabot_workflow_get`            | `workflow:read`          | Read one workflow with compact version metadata.                                             |
+| `hexabot_workflow_version_status` | `workflow:read`          | Check current and published version pointers for one workflow.                               |
+| `hexabot_workflow_create`         | `workflow:create`        | Create a workflow and optionally commit initial YAML.                                        |
+| `hexabot_workflow_update`         | `workflow:update`        | Update workflow metadata and optionally commit YAML.                                         |
+| `hexabot_workflow_yaml_validate`  | `workflow:read`          | Validate workflow definition YAML without creating a version.                                |
+| `hexabot_workflow_yaml_get`       | `workflowversion:read`   | Read exact workflow YAML by current workflow version or version ID with byte-range chunking. |
+| `hexabot_workflow_yaml_commit`    | `workflowversion:create` | Validate and commit workflow definition YAML.                                                |
+| `hexabot_workflow_rollback`       | `workflowversion:create` | Roll back to a previous version by creating a new restore snapshot.                          |
+| `hexabot_workflow_publish`        | `workflow:update`        | Publish the current workflow version.                                                        |
+| `hexabot_workflow_unpublish`      | `workflow:update`        | Clear the published workflow version.                                                        |
+| `hexabot_workflow_run`            | `workflowrun:create`     | Run a manual or scheduled workflow and return the run summary.                               |
 
 Workflow YAML is validated with `parseWorkflowDefinition()` before a version is
 created. Coding agents can call `hexabot_workflow_yaml_validate` first to get
@@ -164,42 +165,53 @@ explicitly supplied. `hexabot_workflow_rollback` and
 publish that snapshot with `hexabot_workflow_publish` when it should become the
 published version.
 
+Large YAML definitions are intentionally omitted from workflow and version list
+or metadata tools. Use `hexabot_workflow_yaml_get` with `workflowId` or
+`versionId` to retrieve the exact YAML. Its `offset`, `limit`, `endOffset`, and
+`nextOffset` fields use UTF-8 byte offsets; the response also includes the
+version checksum and total byte length so clients can verify reconstruction.
+
 ### Workflow versions and runs
 
-| Tool | Permission | Purpose |
-| --- | --- | --- |
-| `hexabot_workflow_version_search` | `workflowversion:read` | List YAML versions for a workflow. |
-| `hexabot_workflow_version_get` | `workflowversion:read` | Read one workflow YAML version. |
-| `hexabot_workflow_version_update` | `workflowversion:update` | Update workflow version metadata. |
-| `hexabot_workflow_version_restore` | `workflowversion:create` | Restore a previous version by creating a new snapshot. |
-| `hexabot_workflow_run_search` | `workflowrun:read` | Search workflow runs by workflow and status. |
-| `hexabot_workflow_run_get` | `workflowrun:read` | Read one workflow run with populated workflow metadata. |
-| `hexabot_workflow_run_debug` | `workflowrun:read` | Inspect one workflow run with execution state, workflow YAML, and parent/child run context for troubleshooting. |
+| Tool                               | Permission               | Purpose                                                                                         |
+| ---------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------- |
+| `hexabot_workflow_version_search`  | `workflowversion:read`   | List compact version metadata for a workflow.                                                   |
+| `hexabot_workflow_version_get`     | `workflowversion:read`   | Read compact version metadata.                                                                  |
+| `hexabot_workflow_version_update`  | `workflowversion:update` | Update workflow version metadata.                                                               |
+| `hexabot_workflow_version_restore` | `workflowversion:create` | Restore a previous version by creating a new snapshot.                                          |
+| `hexabot_workflow_run_search`      | `workflowrun:read`       | Search workflow runs by workflow and status.                                                    |
+| `hexabot_workflow_run_get`         | `workflowrun:read`       | Read one workflow run with populated workflow metadata but no nested YAML body.                 |
+| `hexabot_workflow_run_debug`       | `workflowrun:read`       | Inspect one workflow run with execution state and parent/child run context for troubleshooting. |
+
+Workflow run search/get responses strip nested `definitionYml` fields from
+populated workflow-version relations. `hexabot_workflow_run_debug` returns the
+executed YAML once as top-level `workflowDefinitionYml` only when
+`includeWorkflowDefinition=true`.
 
 ### Memory definitions
 
-| Tool | Permission | Purpose |
-| --- | --- | --- |
-| `hexabot_memory_definition_search` | `memorydefinition:read` | Search memory definitions. |
-| `hexabot_memory_definition_get` | `memorydefinition:read` | Read one memory definition. |
+| Tool                               | Permission                | Purpose                     |
+| ---------------------------------- | ------------------------- | --------------------------- |
+| `hexabot_memory_definition_search` | `memorydefinition:read`   | Search memory definitions.  |
+| `hexabot_memory_definition_get`    | `memorydefinition:read`   | Read one memory definition. |
 | `hexabot_memory_definition_create` | `memorydefinition:create` | Create a memory definition. |
 | `hexabot_memory_definition_update` | `memorydefinition:update` | Update a memory definition. |
 
 ### Actions and runtime bindings
 
-| Tool | Permission | Purpose |
-| --- | --- | --- |
-| `hexabot_action_search` | `workflow:read` | Search available workflow actions and schemas. |
-| `hexabot_action_get` | `workflow:read` | Read one workflow action schema. |
-| `hexabot_binding_search` | `workflow:read` | Search runtime binding kind schemas. |
-| `hexabot_binding_get` | `workflow:read` | Read one runtime binding schema. |
+| Tool                     | Permission      | Purpose                                        |
+| ------------------------ | --------------- | ---------------------------------------------- |
+| `hexabot_action_search`  | `workflow:read` | Search available workflow actions and schemas. |
+| `hexabot_action_get`     | `workflow:read` | Read one workflow action schema.               |
+| `hexabot_binding_search` | `workflow:read` | Search runtime binding kind schemas.           |
+| `hexabot_binding_get`    | `workflow:read` | Read one runtime binding schema.               |
 
 ### Credentials
 
-| Tool | Permission | Purpose |
-| --- | --- | --- |
+| Tool                        | Permission        | Purpose                                      |
+| --------------------------- | ----------------- | -------------------------------------------- |
 | `hexabot_credential_search` | `credential:read` | Search credential metadata by name or owner. |
-| `hexabot_credential_get` | `credential:read` | Read credential metadata. |
+| `hexabot_credential_get`    | `credential:read` | Read credential metadata.                    |
 
 Credential secret values are never returned. The MCP tools remove the `value`
 field from all credential responses and do not support searching by secret
@@ -207,26 +219,26 @@ value.
 
 ### MCP servers
 
-| Tool | Permission | Purpose |
-| --- | --- | --- |
-| `hexabot_mcp_server_search` | `mcpserver:read` | Search configured MCP servers. |
-| `hexabot_mcp_server_get` | `mcpserver:read` | Read one configured MCP server. |
+| Tool                        | Permission         | Purpose                             |
+| --------------------------- | ------------------ | ----------------------------------- |
+| `hexabot_mcp_server_search` | `mcpserver:read`   | Search configured MCP servers.      |
+| `hexabot_mcp_server_get`    | `mcpserver:read`   | Read one configured MCP server.     |
 | `hexabot_mcp_server_create` | `mcpserver:create` | Create an MCP server configuration. |
 | `hexabot_mcp_server_update` | `mcpserver:update` | Update an MCP server configuration. |
 
 ### CMS and RAG content
 
-| Tool | Permission | Purpose |
-| --- | --- | --- |
-| `hexabot_content_type_search` | `contenttype:read` | Search CMS content types. |
-| `hexabot_content_type_get` | `contenttype:read` | Read one content type. |
-| `hexabot_content_type_create` | `contenttype:create` | Create a content type. |
-| `hexabot_content_type_update` | `contenttype:update` | Update a content type. |
-| `hexabot_content_search` | `content:read` | Search CMS content records. |
-| `hexabot_content_get` | `content:read` | Read one content record. |
-| `hexabot_content_create` | `content:create` | Create a content record. |
-| `hexabot_content_update` | `content:update` | Update a content record. |
-| `hexabot_rag_content_search` | `content:read` | Search indexed CMS content through RAG retrieval. |
+| Tool                          | Permission           | Purpose                                           |
+| ----------------------------- | -------------------- | ------------------------------------------------- |
+| `hexabot_content_type_search` | `contenttype:read`   | Search CMS content types.                         |
+| `hexabot_content_type_get`    | `contenttype:read`   | Read one content type.                            |
+| `hexabot_content_type_create` | `contenttype:create` | Create a content type.                            |
+| `hexabot_content_type_update` | `contenttype:update` | Update a content type.                            |
+| `hexabot_content_search`      | `content:read`       | Search CMS content records.                       |
+| `hexabot_content_get`         | `content:read`       | Read one content record.                          |
+| `hexabot_content_create`      | `content:create`     | Create a content record.                          |
+| `hexabot_content_update`      | `content:update`     | Update a content record.                          |
+| `hexabot_rag_content_search`  | `content:read`       | Search indexed CMS content through RAG retrieval. |
 
 ## Extending the MCP module
 

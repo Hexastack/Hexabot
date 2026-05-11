@@ -39,6 +39,9 @@ import {
   paginationSchema,
   uuidSchema,
 } from './hexabot-mcp.schemas';
+import { omitKeysDeep } from './hexabot-mcp.utils';
+
+const WORKFLOW_DEFINITION_RESPONSE_KEYS = ['definitionYml'] as const;
 
 @Injectable()
 export class HexabotWorkflowRunMcpTools extends HexabotMcpToolBase {
@@ -120,11 +123,12 @@ export class HexabotWorkflowRunMcpTools extends HexabotMcpToolBase {
       ...(args.workflowId ? { workflow: { id: args.workflowId } } : {}),
       ...(args.status ? { status: args.status } : {}),
     } as any;
-
-    return await this.listWithCount(
+    const result = await this.listWithCount(
       this.workflowRunService,
       this.findOptions<WorkflowRunOrmEntity>(args, where),
     );
+
+    return this.sanitizeWorkflowRunResponse(result);
   }
 
   @McpPermission('workflowrun', Action.READ)
@@ -142,7 +146,7 @@ export class HexabotWorkflowRunMcpTools extends HexabotMcpToolBase {
       throw new NotFoundException(`Workflow run ${args.id} not found`);
     }
 
-    return run;
+    return this.withoutWorkflowDefinition(run);
   }
 
   @McpPermission('workflowrun', Action.READ)
@@ -188,16 +192,10 @@ export class HexabotWorkflowRunMcpTools extends HexabotMcpToolBase {
       : ([null, [], 0] as const);
     const includeWorkflowDefinition = args.includeWorkflowDefinition ?? true;
     const response: Record<string, unknown> = {
-      run: includeWorkflowDefinition
-        ? run
-        : this.stripWorkflowDefinitionYml(run),
+      run: this.withoutWorkflowDefinition(run),
       relatedRuns: {
-        parent: includeWorkflowDefinition
-          ? parentRun
-          : this.stripWorkflowDefinitionYml(parentRun),
-        children: includeWorkflowDefinition
-          ? childRuns
-          : this.stripWorkflowDefinitionYml(childRuns),
+        parent: this.withoutWorkflowDefinition(parentRun),
+        children: this.withoutWorkflowDefinition(childRuns),
         childRunTotal,
         childRunsLimit: includeRelatedRuns ? childRunsLimit : 0,
       },
@@ -279,22 +277,16 @@ export class HexabotWorkflowRunMcpTools extends HexabotMcpToolBase {
     };
   }
 
-  private stripWorkflowDefinitionYml<T>(value: T): T {
-    if (Array.isArray(value)) {
-      return value.map((item) => this.stripWorkflowDefinitionYml(item)) as T;
-    }
+  private sanitizeWorkflowRunResponse<T extends { items: unknown[] }>(
+    response: T,
+  ): T {
+    return {
+      ...response,
+      items: this.withoutWorkflowDefinition(response.items),
+    };
+  }
 
-    if (value === null || typeof value !== 'object' || value instanceof Date) {
-      return value;
-    }
-
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>)
-        .filter(([key]) => key !== 'definitionYml')
-        .map(([key, nestedValue]) => [
-          key,
-          this.stripWorkflowDefinitionYml(nestedValue),
-        ]),
-    ) as T;
+  private withoutWorkflowDefinition<T>(value: T): T {
+    return omitKeysDeep(value, WORKFLOW_DEFINITION_RESPONSE_KEYS);
   }
 }

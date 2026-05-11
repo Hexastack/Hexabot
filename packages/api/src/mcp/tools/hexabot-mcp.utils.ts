@@ -6,8 +6,24 @@
 
 export const sanitizeCredential = <T extends Record<string, unknown>>(
   credential: T,
-): T => {
+): Omit<T, 'value'> => {
   const { value: _value, ...safeCredential } = credential;
 
-  return safeCredential as T;
+  return safeCredential;
+};
+
+export const omitKeysDeep = <T>(value: T, keys: readonly string[]): T => {
+  if (Array.isArray(value)) {
+    return value.map((item) => omitKeysDeep(item, keys)) as T;
+  }
+
+  if (value === null || typeof value !== 'object' || value instanceof Date) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => !keys.includes(key))
+      .map(([key, nestedValue]) => [key, omitKeysDeep(nestedValue, keys)]),
+  ) as T;
 };

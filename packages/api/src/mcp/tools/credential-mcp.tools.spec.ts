@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { sanitizeCredential } from './hexabot-mcp.utils';
+import { omitKeysDeep, sanitizeCredential } from './hexabot-mcp.utils';
 
 describe('sanitizeCredential', () => {
   it('masks credential values from MCP output', () => {
@@ -17,5 +17,27 @@ describe('sanitizeCredential', () => {
 
     expect(credential).not.toHaveProperty('value');
     expect(JSON.stringify(credential)).not.toContain('secret-token');
+  });
+
+  it('omits selected keys recursively from MCP output', () => {
+    const output = omitKeysDeep(
+      {
+        id: 'run-id',
+        workflowVersion: {
+          id: 'version-id',
+          definitionYml: 'large-yaml',
+        },
+        children: [{ definitionYml: 'child-yaml', status: 'finished' }],
+      },
+      ['definitionYml'],
+    );
+
+    expect(output).toEqual({
+      id: 'run-id',
+      workflowVersion: {
+        id: 'version-id',
+      },
+      children: [{ status: 'finished' }],
+    });
   });
 });

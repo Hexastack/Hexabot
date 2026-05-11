@@ -179,7 +179,7 @@ export class HexabotWorkflowVersionMcpTools extends HexabotMcpToolBase {
   @Tool({
     name: 'hexabot_workflow_yaml_get',
     description:
-      'Read workflow definition YAML by workflowId/current version or versionId, with checksum, byte length, and offset/limit chunking.',
+      'Read workflow definition YAML by workflowId/current version or versionId, with checksum, byte length, and UTF-8 byte offset/limit chunking.',
     parameters: z.object({
       workflowId: uuidSchema.optional(),
       versionId: uuidSchema.optional(),
@@ -197,15 +197,8 @@ export class HexabotWorkflowVersionMcpTools extends HexabotMcpToolBase {
     const definitionYml = version.definitionYml;
     const offset = args.offset ?? 0;
     const limit = args.limit ?? 16000;
-
-    if (offset > definitionYml.length) {
-      throw new BadRequestException(
-        `Offset ${offset} exceeds workflow YAML length ${definitionYml.length}`,
-      );
-    }
-
-    const endOffset = Math.min(offset + limit, definitionYml.length);
-    const chunk = definitionYml.slice(offset, endOffset);
+    const { chunk, chunkByteLength, endOffset, totalByteLength } =
+      this.sliceUtf8Chunk(definitionYml, offset, limit);
     const workflowId = this.resolveRelationId(version.workflow);
 
     return {
@@ -213,16 +206,17 @@ export class HexabotWorkflowVersionMcpTools extends HexabotMcpToolBase {
       versionId: version.id,
       version: version.version,
       checksum: version.checksum,
-      definitionYmlByteLength: Buffer.byteLength(definitionYml, 'utf8'),
+      definitionYmlByteLength: totalByteLength,
       definitionYmlLength: definitionYml.length,
       chunk: {
         offset,
         limit,
+        unit: 'utf8Bytes',
         endOffset,
         length: chunk.length,
-        byteLength: Buffer.byteLength(chunk, 'utf8'),
-        hasMore: endOffset < definitionYml.length,
-        nextOffset: endOffset < definitionYml.length ? endOffset : null,
+        byteLength: chunkByteLength,
+        hasMore: endOffset < totalByteLength,
+        nextOffset: endOffset < totalByteLength ? endOffset : null,
       },
       definitionYml: chunk,
     };
@@ -369,5 +363,97 @@ export class HexabotWorkflowVersionMcpTools extends HexabotMcpToolBase {
     }
 
     return version;
+  }
+
+  private sliceUtf8Chunk(
+    value: string,
+    offset: number,
+    limit: number,
+  ): {
+    chunk: string;
+    chunkByteLength: number;
+    endOffset: number;
+    totalByteLength: number;
+  } {
+    const totalByteLength = Buffer.byteLength(value, 'utf8');
+    if (offset > totalByteLength) {
+      throw new BadRequestException(
+        `Offset ${offset} exceeds workflow YAML byte length ${totalByteLength}`,
+      );
+    }
+
+    const startIndex = this.findUtf8IndexForOffset(value, offset);
+    let endIndex = value.length;
+    let byteOffset = offset;
+
+    for (let index = startIndex; index < value.length; ) {
+      const char = this.readCodePoint(value, index);
+      const nextByteOffset = byteOffset + Buffer.byteLength(char, 'utf8');
+
+      if (nextByteOffset > offset + limit) {
+        if (index === startIndex) {
+          throw new BadRequestException(
+            `Limit ${limit} is too small to include the next UTF-8 character at offset ${offset}`,
+          );
+        }
+        endIndex = index;
+        break;
+      }
+
+      byteOffset = nextByteOffset;
+      index += char.length;
+    }
+
+    const chunk = value.slice(startIndex, endIndex);
+    const chunkByteLength = Buffer.byteLength(chunk, 'utf8');
+
+    return {
+      chunk,
+      chunkByteLength,
+      endOffset: offset + chunkByteLength,
+      totalByteLength,
+    };
+  }
+
+  private findUtf8IndexForOffset(value: string, offset: number): number {
+    if (offset === 0) {
+      return 0;
+    }
+
+    let byteOffset = 0;
+    for (let index = 0; index < value.length; ) {
+      const char = this.readCodePoint(value, index);
+      const nextByteOffset = byteOffset + Buffer.byteLength(char, 'utf8');
+
+      if (offset === nextByteOffset) {
+        return index + char.length;
+      }
+
+      if (offset < nextByteOffset) {
+        throw new BadRequestException(
+          `Offset ${offset} is not aligned to a UTF-8 character boundary`,
+        );
+      }
+
+      byteOffset = nextByteOffset;
+      index += char.length;
+    }
+
+    if (offset === byteOffset) {
+      return value.length;
+    }
+
+    throw new BadRequestException(
+      `Offset ${offset} exceeds workflow YAML byte length ${byteOffset}`,
+    );
+  }
+
+  private readCodePoint(value: string, index: number): string {
+    const codePoint = value.codePointAt(index);
+    if (codePoint === undefined) {
+      return '';
+    }
+
+    return String.fromCodePoint(codePoint);
   }
 }

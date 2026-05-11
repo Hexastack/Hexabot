@@ -44,9 +44,9 @@ export class HexabotMcpTokenGuard implements CanActivate {
       return undefined;
     }
 
-    const [type, token] = authHeader.split(' ');
+    const match = authHeader.trim().match(/^Bearer\s+(\S+)$/i);
 
-    return type === 'Bearer' ? token : undefined;
+    return match?.[1];
   }
 
   private getMcpTokenService(): McpTokenService {
