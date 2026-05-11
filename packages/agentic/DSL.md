@@ -59,7 +59,7 @@ Example: `defs.understand_request` calls an LLM with a system prompt, user query
 The `flow` array defines the run order. Each item is exactly one of the following blocks:
 
 - `do`: `{ do: <task_name> }` executes the referenced task sequentially.
-- `parallel`: runs multiple `steps` concurrently. The example uses `strategy: wait_all`, meaning downstream steps wait for every child to finish; engines may also support `wait_any`.
+- `parallel`: starts every child `step` concurrently. `strategy: wait_all` waits for every child and merges branch output deltas in child order; `strategy: wait_any` advances with the first successful child, aborts the remaining branches, and discards loser outputs.
 - `conditional`: branching table evaluated top-to-bottom. Keys:
   - `when`: list of branches with `condition` (JSONata boolean) and `steps` to run on match.
   - `else`: optional branch with `steps` when nothing matches.
@@ -77,10 +77,13 @@ The `flow` array defines the run order. Each item is exactly one of the followin
 
 All branches and loop bodies can themselves contain nested `conditional` or `parallel` blocks.
 
+Parallel branches are isolated while they run: each branch sees the `$output`, `$iteration`, `$accumulator`, and context state from the moment the parallel block starts, plus its own writes. Sibling branch outputs are not visible until after the parallel block completes. Tasks inside parallel receive an `AbortSignal` and should stop promptly when it is aborted. Human-in-the-loop suspension is not supported inside parallel branches.
+
 ## Human-in-the-loop pauses
 
 - Use a task whose `action` supports waiting (e.g., `await_user_input`) and set `settings.await_user: true`.
 - The engine should checkpoint the workflow, wait for a reply or timeout, then resume with the captured response stored under `$output.<task>`.
+- Do not place suspending actions inside a `parallel` block. `context.workflow.suspend()` inside parallel fails the workflow with `ParallelSuspensionError`.
 
 ## Final outputs
 
@@ -91,7 +94,7 @@ All branches and loop bodies can themselves contain nested `conditional` or `par
 
 - Tasks inherit `defaults.settings` unless overridden. Common knobs: `timeout_ms`, `retries.max_attempts`, `retries.backoff_ms`, and action-specific parameters like `model`/`temperature`.
 - Engines should surface action failures and retry attempts; a task failing after retries should abort the workflow unless the engine supports optional continuation semantics.
-- Parallel blocks honor task-level retries independently; the block completes based on its `strategy` (e.g., all tasks finishing for `wait_all`).
+- Parallel blocks honor task-level retries independently. `wait_all` fails fast on the first branch failure and aborts siblings. `wait_any` succeeds on the first successful branch, fails fast on the first branch failure before a winner, and aborts losing branches cooperatively via `AbortSignal`.
 
 ## Example walkthrough (`workflow.yml`)
 
@@ -114,5 +117,5 @@ Notable conventions enforced in the example:
 - Prefer descriptive task def names; keep actions generic and reusable.
 - Minimize side effects inside JSONata; use expressions mainly for routing and lightweight data shaping.
 - Treat `context` as read-only; write outputs through tasks designed for persistence if needed.
-- Keep parallel blocks small and bounded with `max_concurrency` when hitting external APIs or rate limits.
+- Keep parallel blocks small when hitting external APIs or rate limits, and make action implementations honor their `AbortSignal`.
 - Surface only the essentials in top-level `outputs` so callers get a clean contract.

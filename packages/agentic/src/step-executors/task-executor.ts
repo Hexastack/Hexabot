@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { getAbortReason, throwIfAborted } from '../errors';
 import type { RuntimeSuspensionRequest } from '../runner-runtime-control';
 import type {
   CompiledTask,
@@ -19,6 +20,7 @@ import type { StepExecutorEnv } from './types';
 type TaskProgressOutcome =
   | { type: 'completed'; value: unknown }
   | { type: 'failed'; error: unknown }
+  | { type: 'cancelled'; error: Error }
   | { type: 'suspended'; request: RuntimeSuspensionRequest };
 
 /**
@@ -43,6 +45,12 @@ export async function executeTaskStep(
   }
 
   const stepInfo = env.buildInstanceStepInfo(step, state.iterationStack);
+  if (env.signal.aborted) {
+    const error = getAbortReason(env.signal);
+    recordTaskCancellation(env, stepInfo, error);
+    throw error;
+  }
+
   const scope: EvaluationScope = {
     input: state.input,
     context: env.context.state,
@@ -51,6 +59,12 @@ export async function executeTaskStep(
     accumulator: state.accumulator,
   };
   const inputs = await evaluateMapping(task.inputs, scope);
+  if (env.signal.aborted) {
+    const error = getAbortReason(env.signal);
+    recordTaskCancellation(env, stepInfo, error);
+    throw error;
+  }
+
   const stepExecution = env.recordStepExecution(stepInfo, {
     action: task.actionName,
     status: 'running',
@@ -68,8 +82,16 @@ export async function executeTaskStep(
   });
 
   try {
+    throwIfAborted(env.signal);
+
     const actionPromise = Promise.resolve().then(() =>
-      task.action.run(inputs, env.context, task.settings, task.bindings),
+      task.action.run(
+        inputs,
+        env.context,
+        task.settings,
+        task.bindings,
+        env.signal,
+      ),
     );
     const outcome = await waitForTaskProgress(env, stepInfo.id, actionPromise);
 
@@ -89,6 +111,12 @@ export async function executeTaskStep(
     if (outcome.type === 'failed') {
       env.clearStepSuspensions(stepInfo.id, outcome.error);
       recordTaskFailure(env, stepInfo, outcome.error);
+      throw outcome.error;
+    }
+
+    if (outcome.type === 'cancelled') {
+      env.clearStepSuspensions(stepInfo.id, outcome.error);
+      recordTaskCancellation(env, stepInfo, outcome.error);
       throw outcome.error;
     }
 
@@ -118,8 +146,29 @@ const waitForTaskProgress = async (
   const suspension = env
     .waitForStepSuspension(stepId)
     .then<TaskProgressOutcome>((request) => ({ type: 'suspended', request }));
+  let cleanupCancellation = () => undefined;
+  const cancellation = new Promise<TaskProgressOutcome>((resolve) => {
+    if (env.signal.aborted) {
+      resolve({ type: 'cancelled', error: getAbortReason(env.signal) });
 
-  return Promise.race([completion, suspension]);
+      return;
+    }
+
+    const onAbort = () => {
+      resolve({ type: 'cancelled', error: getAbortReason(env.signal) });
+    };
+
+    env.signal.addEventListener('abort', onAbort, { once: true });
+    cleanupCancellation = () => {
+      env.signal.removeEventListener('abort', onAbort);
+    };
+  });
+
+  try {
+    return await Promise.race([completion, suspension, cancellation]);
+  } finally {
+    cleanupCancellation();
+  }
 };
 const completeTask = async (
   env: StepExecutorEnv,
@@ -249,6 +298,26 @@ const recordTaskFailure = (
   });
   env.markSnapshot(stepInfo, 'failed', normalizeErrorMessage(error));
   env.emit('hook:step:error', {
+    runId: env.runId,
+    step: stepInfo,
+    stepExecution,
+    error,
+  });
+};
+const recordTaskCancellation = (
+  env: StepExecutorEnv,
+  stepInfo: Suspension['step'],
+  error: unknown,
+) => {
+  const normalizedError = normalizeError(error);
+  const stepExecution = env.recordStepExecution(stepInfo, {
+    status: 'cancelled',
+    endedAt: Date.now(),
+    error: normalizedError,
+    context: { after: env.context.snapshot() },
+  });
+  env.markSnapshot(stepInfo, 'cancelled', normalizeErrorMessage(error));
+  env.emit('hook:step:cancelled', {
     runId: env.runId,
     step: stepInfo,
     stepExecution,

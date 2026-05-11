@@ -57,6 +57,38 @@ const markStepSkipped = (
       break;
   }
 };
+const markStepCancelled = (
+  env: SkipStepEnv,
+  step: CompiledStep,
+  iterationStack: number[],
+  reason?: string,
+) => {
+  const stepInfo = env.buildInstanceStepInfo(step, iterationStack);
+  env.markSnapshot(stepInfo, 'cancelled', reason);
+  env.emit('hook:step:cancelled', {
+    runId: env.runId,
+    step: stepInfo,
+    error: new Error(reason ?? 'Step execution was cancelled.'),
+  });
+
+  switch (step.type) {
+    case StepType.Parallel:
+      step.steps.forEach((child) =>
+        markStepCancelled(env, child, iterationStack, reason),
+      );
+      break;
+    case StepType.Conditional:
+      step.branches.forEach((branch) =>
+        branch.steps.forEach((child) =>
+          markStepCancelled(env, child, iterationStack, reason),
+        ),
+      );
+      break;
+    case StepType.Loop:
+    case StepType.Task:
+      break;
+  }
+};
 
 export const markStepsSkipped = (
   env: SkipStepEnv,
@@ -65,4 +97,13 @@ export const markStepsSkipped = (
   reason?: string,
 ) => {
   steps.forEach((step) => markStepSkipped(env, step, iterationStack, reason));
+};
+
+export const markStepsCancelled = (
+  env: SkipStepEnv,
+  steps: CompiledStep[],
+  iterationStack: number[],
+  reason?: string,
+) => {
+  steps.forEach((step) => markStepCancelled(env, step, iterationStack, reason));
 };

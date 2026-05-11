@@ -6,8 +6,8 @@ Typed runtime and YAML DSL for orchestrating multi-step AI/automation workflows.
 - Declarative workflow DSL in YAML or JS objects with JSONata expressions (prefixed by `=`) and clear scopes (`$input`, `$context`, `$output`, `$iteration`, `$accumulator`).
 - Type-safe actions built with `defineAction`, Zod-validated IO, and merged settings (timeouts, retries, plus action-specific options) inherited from workflow defaults.
 - Resumable execution via `WorkflowRunner` and `context.workflow.suspend`, plus snapshots for persistence and replay.
-- Flow primitives: sequential `do`, `parallel` blocks (`wait_all`/`wait_any`), `conditional` branches, and two loop variants: `loop.type: for_each` (iterables) and `loop.type: while` (pre-check condition).
-- Event emitter hooks for observability (`hook:workflow:start|finish|failure|suspended`, `hook:step:start|success|error|suspended|skipped`).
+- Flow primitives: sequential `do`, truly concurrent `parallel` blocks (`wait_all`/`wait_any`), `conditional` branches, and two loop variants: `loop.type: for_each` (iterables) and `loop.type: while` (pre-check condition).
+- Event emitter hooks for observability (`hook:workflow:start|finish|failure|suspended`, `hook:step:start|success|error|cancelled|suspended|skipped`).
 
 ## Installation
 
@@ -89,7 +89,11 @@ export const call_api = defineAction<
   description: 'Fetches data from an API',
   inputSchema: z.object({ id: z.string() }),
   outputSchema: z.object({ body: z.string() }),
-  execute: async ({ input, context, settings, bindings }) => {
+  execute: async ({ input, context, settings, bindings, signal }) => {
+    if (signal.aborted) {
+      throw signal.reason;
+    }
+
     context.log('calling api', {
       id: input.id,
       timeout: settings.timeout_ms,
@@ -100,7 +104,9 @@ export const call_api = defineAction<
 });
 ```
 
-Settings are parsed and merged with workflow defaults before `execute` runs; retries and timeout wrappers are applied automatically. Awaiting `context.workflow.suspend(...)` pauses the workflow until `resume` is called.
+Settings are parsed and merged with workflow defaults before `execute` runs; retries and timeout wrappers are applied automatically. Each action receives an `AbortSignal` as `signal`; long-running actions should stop promptly when it is aborted. Awaiting `context.workflow.suspend(...)` pauses the workflow until `resume` is called, except inside `parallel` branches where suspension fails with `ParallelSuspensionError`.
+
+Parallel branches start concurrently with isolated `$output`, `$iteration`, `$accumulator`, and context state from the parallel entry point. `wait_all` merges successful branch output deltas in child order. `wait_any` advances with the first successful branch, aborts losing branches, and discards loser outputs.
 
 ## Running a workflow from YAML
 
@@ -203,12 +209,14 @@ export const await_user = defineAction<unknown, { reply?: string }, AppContext, 
 
 `Workflow.run` throws an error with suspension details (`stepId`, `reason`, `data`) when this happens; `WorkflowRunner.start` instead returns `{ status: 'suspended', ... }` so hosts can persist state and resume later with `runner.resume`.
 
+Suspending actions must not be placed inside `parallel` blocks.
+
 ## Events and observability
 
 `WorkflowRunner` can publish lifecycle hooks to any emitter-like object with `emit`/`on` (`WorkflowEventEmitterLike`); `WorkflowEventEmitter` is the built-in helper and mirrors these events:
 
 - `hook:workflow:start | finish | failure | suspended`
-- `hook:step:start | success | error | suspended | skipped`
+- `hook:step:start | success | error | cancelled | suspended | skipped`
 
 Attach listeners to stream logs, emit metrics, or capture snapshots for debugging.
 

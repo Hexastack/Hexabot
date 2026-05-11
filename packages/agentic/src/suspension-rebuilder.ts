@@ -10,8 +10,6 @@ import {
   shouldStopLoop,
   updateAccumulator,
 } from './step-executors/loop-executor';
-import { executeParallel as runParallelExecutor } from './step-executors/parallel-executor';
-import { markStepsSkipped } from './step-executors/skip-helpers';
 import { wrapSuspensionContinuation } from './step-executors/suspension-continuation';
 import type { StepExecutorEnv } from './step-executors/types';
 import {
@@ -295,57 +293,7 @@ export function buildSuspensionForPath(
   }
 
   if (step.type === StepType.Parallel) {
-    if (rest[0] !== 'parallel') {
-      return null;
-    }
-
-    const childPath = rest.slice(1);
-    const childSuspension = buildSuspensionForPath(
-      deps,
-      step.steps,
-      state,
-      childPath,
-      [...currentPath, 'parallel'],
-      iterationDepth,
-      suspensionMetadata,
-    );
-
-    if (!childSuspension) {
-      return null;
-    }
-
-    const childIndex =
-      typeof childPath[0] === 'number' ? (childPath[0] as number) : 0;
-
-    return wrapSuspensionContinuation(childSuspension, async () => {
-      if (step.strategy === 'wait_any') {
-        if (childIndex + 1 < step.steps.length) {
-          markStepsSkipped(
-            env,
-            step.steps.slice(childIndex + 1),
-            state.iterationStack ?? [],
-          );
-        }
-
-        return deps.executeFlow(steps, state, pathPrefix, current + 1);
-      }
-
-      const next = await runParallelExecutor(
-        env,
-        step,
-        state,
-        currentPath,
-        childIndex + 1,
-      );
-
-      if (next) {
-        return wrapSuspensionContinuation(next, () =>
-          deps.executeFlow(steps, state, pathPrefix, current + 1),
-        );
-      }
-
-      return deps.executeFlow(steps, state, pathPrefix, current + 1);
-    });
+    return null;
   }
 
   if (step.type === StepType.Conditional) {

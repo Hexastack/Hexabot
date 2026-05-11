@@ -189,6 +189,7 @@ class FlakyDoubleAction extends DoubleAction {
     context,
     settings,
     bindings,
+    signal,
   }: ActionExecutionArgs<
     z.infer<typeof InputSchema>,
     DoubleContext,
@@ -199,7 +200,7 @@ class FlakyDoubleAction extends DoubleAction {
       throw new Error('Intermittent failure');
     }
 
-    return super.execute({ input, context, settings, bindings });
+    return super.execute({ input, context, settings, bindings, signal });
   }
 }
 

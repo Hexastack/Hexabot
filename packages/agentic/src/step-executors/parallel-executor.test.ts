@@ -5,6 +5,7 @@
  */
 
 import { BaseWorkflowContext } from '../context';
+import { ParallelSuspensionError } from '../errors';
 import type { RuntimeSuspensionRequest } from '../runner-runtime-control';
 import {
   StepType,
@@ -48,12 +49,14 @@ const createEnv = (): StepExecutorEnv => {
     outputMapping: {},
     inputParser: { parse: (value: unknown) => value } as any,
   } as any;
-
-  return {
+  const env = {
     compiled,
     context: new TestContext(),
+    signal: new AbortController().signal,
     runId: 'run-1',
-    buildInstanceStepInfo: jest.fn(),
+    buildInstanceStepInfo: jest.fn((step: CompiledStep): StepInfo => {
+      return { id: step.id, name: step.label, type: step.type };
+    }),
     markSnapshot: jest.fn(),
     recordStepExecution: jest.fn(),
     emit: jest.fn(),
@@ -68,115 +71,221 @@ const createEnv = (): StepExecutorEnv => {
     captureTaskOutput: jest.fn(),
     executeFlow: jest.fn(),
     executeStep: jest.fn(),
-  };
+    fork: jest.fn(),
+  } as StepExecutorEnv;
+
+  env.fork = jest.fn((overrides) => {
+    const forked = { ...env, ...overrides } as StepExecutorEnv;
+
+    forked.executeStep = jest.fn((step, state, path) =>
+      (env.executeStep as jest.Mock)(step, state, path, forked.signal),
+    );
+    forked.executeFlow = jest.fn((steps, state, path, startIndex) =>
+      (env.executeFlow as jest.Mock)(
+        steps,
+        state,
+        path,
+        startIndex,
+        forked.signal,
+      ),
+    );
+
+    return forked;
+  });
+
+  return env;
+};
+const createStep = (strategy: ParallelStep['strategy']): ParallelStep => ({
+  id: 'parallel',
+  type: StepType.Parallel,
+  label: 'parallel',
+  strategy,
+  steps: [createChild('a'), createChild('b')],
+});
+const flushPromises = async () => {
+  await Promise.resolve();
+  await Promise.resolve();
 };
 
 describe('executeParallel', () => {
-  it('executes all children when using wait_all', async () => {
+  it('starts all children before waiting when using wait_all', async () => {
     const env = createEnv();
     const state = createState();
-    const step: ParallelStep = {
-      id: 'parallel',
-      type: StepType.Parallel,
-      label: 'parallel',
-      strategy: 'wait_all',
-      steps: [createChild('a'), createChild('b')],
-    };
-    env.executeStep = jest.fn().mockResolvedValue(undefined);
+    const step = createStep('wait_all');
+    const started: string[] = [];
+    const resolvers: Array<() => void> = [];
 
-    const result = await executeParallel(env, step, state, [0]);
+    env.executeStep = jest.fn((child: CompiledStep) => {
+      started.push(child.id);
 
-    expect(result).toBeUndefined();
+      return new Promise<void>((resolve) => {
+        resolvers.push(resolve);
+      });
+    });
+
+    const resultPromise = executeParallel(env, step, state, [0]);
+    await flushPromises();
+
+    expect(started).toEqual(['a', 'b']);
     expect(env.executeStep).toHaveBeenCalledTimes(2);
-    expect(env.executeStep).toHaveBeenNthCalledWith(1, step.steps[0], state, [
-      0,
-      'parallel',
-      0,
-    ]);
-    expect(env.executeStep).toHaveBeenNthCalledWith(2, step.steps[1], state, [
-      0,
-      'parallel',
-      1,
-    ]);
+
+    resolvers.forEach((resolve) => resolve());
+    await expect(resultPromise).resolves.toBeUndefined();
   });
 
-  it('short-circuits on first completion when using wait_any', async () => {
+  it('merges wait_all output deltas in child-index order', async () => {
     const env = createEnv();
     const state = createState();
-    const step: ParallelStep = {
-      id: 'parallel',
-      type: StepType.Parallel,
-      label: 'parallel',
-      strategy: 'wait_any',
-      steps: [createChild('a'), createChild('b')],
-    };
-    env.executeStep = jest.fn().mockResolvedValue(undefined);
+    const step = createStep('wait_all');
 
-    const result = await executeParallel(env, step, state, []);
-
-    expect(result).toBeUndefined();
-    expect(env.executeStep).toHaveBeenCalledTimes(1);
-    expect(env.executeStep).toHaveBeenCalledWith(step.steps[0], state, [
-      'parallel',
-      0,
-    ]);
-  });
-
-  it('continues remaining steps after resuming from suspension (wait_all)', async () => {
-    const env = createEnv();
-    const state = createState();
-    const innerSuspension: Suspension = {
-      step: { id: 'a', name: 'a', type: StepType.Task } as StepInfo,
-      continue: jest.fn().mockResolvedValue(undefined),
-    };
-    const step: ParallelStep = {
-      id: 'parallel',
-      type: StepType.Parallel,
-      label: 'parallel',
-      strategy: 'wait_all',
-      steps: [createChild('a'), createChild('b')],
-    };
-    env.executeStep = jest
-      .fn()
-      .mockResolvedValueOnce(innerSuspension)
-      .mockResolvedValueOnce(undefined);
-
-    const suspension = await executeParallel(env, step, state, []);
-    expect(suspension).toEqual(
-      expect.objectContaining({ step: innerSuspension.step }),
+    state.output.existing = 'keep';
+    env.executeStep = jest.fn(
+      async (child: CompiledStep, branchState: ExecutionState) => {
+        branchState.output.shared = child.id;
+        branchState.output[`${child.id}_only`] = true;
+      },
     );
 
-    const result = await suspension?.continue('resume-data');
-    expect(result).toBeUndefined();
-    expect(innerSuspension.continue).toHaveBeenCalledWith('resume-data');
-    expect(env.executeStep).toHaveBeenCalledTimes(2);
-    expect(env.executeStep).toHaveBeenLastCalledWith(step.steps[1], state, [
-      'parallel',
-      1,
-    ]);
+    await executeParallel(env, step, state, []);
+
+    expect(state.output).toEqual({
+      existing: 'keep',
+      shared: 'b',
+      a_only: true,
+      b_only: true,
+    });
   });
 
-  it('stops after resuming a suspended child when using wait_any', async () => {
+  it('fails wait_all fast and aborts unfinished siblings', async () => {
     const env = createEnv();
     const state = createState();
+    const step = createStep('wait_all');
+    const failure = new Error('branch failed');
+
+    env.executeStep = jest.fn(
+      (
+        child: CompiledStep,
+        _branchState: ExecutionState,
+        _path: Array<number | string>,
+        signal?: AbortSignal,
+      ) => {
+        if (child.id === 'a') {
+          return Promise.reject(failure);
+        }
+
+        return new Promise<void>((_resolve, reject) => {
+          signal?.addEventListener('abort', () => reject(signal.reason), {
+            once: true,
+          });
+        });
+      },
+    );
+
+    await expect(executeParallel(env, step, state, [])).rejects.toThrow(
+      'branch failed',
+    );
+    expect(env.markSnapshot).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'b' }),
+      'cancelled',
+      'branch failed',
+    );
+  });
+
+  it('wait_any starts every child, keeps only the winner output, and cancels losers', async () => {
+    const env = createEnv();
+    const state = createState();
+    const step = createStep('wait_any');
+    const started: string[] = [];
+
+    env.executeStep = jest.fn(
+      async (
+        child: CompiledStep,
+        branchState: ExecutionState,
+        _path: Array<number | string>,
+        signal?: AbortSignal,
+      ) => {
+        started.push(child.id);
+        if (child.id === 'b') {
+          branchState.output.winner = child.id;
+
+          return undefined;
+        }
+
+        return new Promise<void>((_resolve, reject) => {
+          signal?.addEventListener('abort', () => reject(signal.reason), {
+            once: true,
+          });
+        });
+      },
+    );
+
+    await executeParallel(env, step, state, []);
+
+    expect(started).toEqual(['a', 'b']);
+    expect(state.output).toEqual({ winner: 'b' });
+    expect(env.markSnapshot).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'a' }),
+      'cancelled',
+      'Parallel wait_any winner selected.',
+    );
+  });
+
+  it('wait_any fails fast before any successful winner', async () => {
+    const env = createEnv();
+    const state = createState();
+    const step = createStep('wait_any');
+
+    env.executeStep = jest.fn(
+      (
+        child: CompiledStep,
+        branchState: ExecutionState,
+        _path: Array<number | string>,
+        signal?: AbortSignal,
+      ) => {
+        if (child.id === 'a') {
+          return Promise.reject(new Error('no winner'));
+        }
+
+        branchState.output.loser = true;
+
+        return new Promise<void>((_resolve, reject) => {
+          signal?.addEventListener('abort', () => reject(signal.reason), {
+            once: true,
+          });
+        });
+      },
+    );
+
+    await expect(executeParallel(env, step, state, [])).rejects.toThrow(
+      'no winner',
+    );
+    expect(state.output).toEqual({});
+    expect(env.markSnapshot).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'b' }),
+      'cancelled',
+      'no winner',
+    );
+  });
+
+  it('rejects suspensions returned by children', async () => {
+    const env = createEnv();
+    const state = createState();
+    const step = createStep('wait_all');
     const innerSuspension: Suspension = {
       step: { id: 'a', name: 'a', type: StepType.Task } as StepInfo,
       continue: jest.fn().mockResolvedValue(undefined),
     };
-    const step: ParallelStep = {
-      id: 'parallel',
-      type: StepType.Parallel,
-      label: 'parallel',
-      strategy: 'wait_any',
-      steps: [createChild('a'), createChild('b')],
-    };
-    env.executeStep = jest.fn().mockResolvedValueOnce(innerSuspension);
 
-    const suspension = await executeParallel(env, step, state, []);
-    const result = await suspension?.continue('resume-data');
+    env.executeStep = jest.fn((child: CompiledStep) => {
+      if (child.id === 'a') {
+        return Promise.resolve(innerSuspension);
+      }
 
-    expect(result).toBeUndefined();
-    expect(innerSuspension.continue).toHaveBeenCalledWith('resume-data');
-    expect(env.executeStep).toHaveBeenCalledTimes(1);
+      return Promise.resolve(undefined);
+    });
+
+    await expect(executeParallel(env, step, state, [])).rejects.toBeInstanceOf(
+      ParallelSuspensionError,
+    );
   });
 });

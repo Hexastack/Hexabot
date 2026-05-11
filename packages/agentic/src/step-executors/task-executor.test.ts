@@ -74,10 +74,10 @@ const createEnv = (
   stepInfo: StepInfo,
 ): StepExecutorEnv => {
   const stepRecords: Record<string, StepExecutionRecord> = {};
-
-  return {
+  const env = {
     compiled,
     context: new TestContext(),
+    signal: new AbortController().signal,
     runId: 'run-123',
     buildInstanceStepInfo: jest.fn().mockReturnValue(stepInfo),
     markSnapshot: jest.fn(),
@@ -118,7 +118,12 @@ const createEnv = (
     captureTaskOutput: jest.fn().mockResolvedValue(undefined),
     executeFlow: jest.fn(),
     executeStep: jest.fn(),
-  };
+    fork: jest.fn(),
+  } as StepExecutorEnv;
+
+  env.fork = jest.fn((overrides) => ({ ...env, ...overrides }));
+
+  return env;
 };
 const step: TaskStep = {
   id: '0:test_task',
@@ -150,6 +155,7 @@ describe('executeTaskStep', () => {
       env.context,
       task.settings,
       task.bindings,
+      env.signal,
     );
     expect(env.setCurrentStep).toHaveBeenNthCalledWith(1, stepInfo);
     expect(env.markSnapshot).toHaveBeenNthCalledWith(1, stepInfo, 'running');

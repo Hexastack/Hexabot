@@ -13,13 +13,17 @@ import {
   type WorkflowRunStatus,
   type WorkflowSnapshot,
 } from './context';
+import { throwIfAborted } from './errors';
 import { RunnerRuntimeControl } from './runner-runtime-control';
 import { executeConditional as runConditionalExecutor } from './step-executors/conditional-executor';
 import { executeLoop as runLoopExecutor } from './step-executors/loop-executor';
 import { executeParallel as runParallelExecutor } from './step-executors/parallel-executor';
 import { wrapSuspensionContinuation } from './step-executors/suspension-continuation';
 import { executeTaskStep as runTaskExecutor } from './step-executors/task-executor';
-import type { StepExecutorEnv } from './step-executors/types';
+import type {
+  StepExecutorEnv,
+  StepExecutorEnvForkOverrides,
+} from './step-executors/types';
 import {
   rebuildSuspension,
   type SuspensionRebuilderDeps,
@@ -190,8 +194,10 @@ export class WorkflowRunner {
       throw new Error('Workflow state not initialized.');
     }
 
+    const env = this.createExecutorEnv();
+
     return this.runExecution(() =>
-      this.executeFlow(this.compiled.flow, state, []),
+      this.executeFlow(this.compiled.flow, state, [], 0, env),
     );
   }
 
@@ -462,14 +468,28 @@ export class WorkflowRunner {
    * @returns A step executor environment bound to this runner.
    * @throws When the workflow context is missing.
    */
-  private createExecutorEnv(): StepExecutorEnv {
-    if (!this.context) {
+  private createExecutorEnv(
+    overrides: StepExecutorEnvForkOverrides = {},
+  ): StepExecutorEnv {
+    const context = overrides.context ?? this.context;
+    if (!context) {
       throw new Error('Workflow context is not attached.');
     }
 
-    return {
+    const signal = overrides.signal ?? new AbortController().signal;
+    const setCurrentStep =
+      overrides.setCurrentStep ??
+      ((step?: StepInfo) => {
+        this.currentStep = step;
+      });
+    const captureTaskOutput =
+      overrides.captureTaskOutput ??
+      ((task: CompiledTask, state: ExecutionState, result: unknown) =>
+        this.captureTaskOutput(task, state, result));
+    const executorEnv: StepExecutorEnv = {
       compiled: this.compiled,
-      context: this.context,
+      context,
+      signal,
       runId: this.runId,
       buildInstanceStepInfo: (step, iterationStack) =>
         this.buildInstanceStepInfo(step, iterationStack),
@@ -478,9 +498,7 @@ export class WorkflowRunner {
       recordStepExecution: (step, update) =>
         this.recordStepExecution(step, update),
       emit: (event, payload) => this.emit(event, payload),
-      setCurrentStep: (step?: StepInfo) => {
-        this.currentStep = step;
-      },
+      setCurrentStep,
       beginStepExecution: (stepId) => {
         if (!this.runtimeControl) {
           return `${stepId}#1`;
@@ -507,12 +525,22 @@ export class WorkflowRunner {
       recordStepSuspendResult: (params) => {
         this.runtimeControl?.recordStepSuspendResult(params);
       },
-      captureTaskOutput: (task, state, result) =>
-        this.captureTaskOutput(task, state, result),
+      captureTaskOutput,
       executeFlow: (steps, state, path, startIndex) =>
-        this.executeFlow(steps, state, path, startIndex),
-      executeStep: (step, state, path) => this.executeStep(step, state, path),
+        this.executeFlow(steps, state, path, startIndex, executorEnv),
+      executeStep: (step, state, path) =>
+        this.executeStep(step, state, path, executorEnv),
+      fork: (forkOverrides) =>
+        this.createExecutorEnv({
+          context: forkOverrides.context ?? context,
+          signal: forkOverrides.signal ?? signal,
+          setCurrentStep: forkOverrides.setCurrentStep ?? setCurrentStep,
+          captureTaskOutput:
+            forkOverrides.captureTaskOutput ?? captureTaskOutput,
+        }),
     };
+
+    return executorEnv;
   }
 
   /**
@@ -552,16 +580,19 @@ export class WorkflowRunner {
     state: ExecutionState,
     path: Array<number | string>,
     startIndex = 0,
+    env = this.createExecutorEnv(),
   ): Promise<Suspension | void> {
     // Walk the flow sequentially; if a step suspends, wrap its continuation so we resume at the same index.
     for (let index = startIndex; index < steps.length; index += 1) {
+      throwIfAborted(env.signal);
+
       const step = steps[index];
       const stepPath = [...path, index];
-      const suspension = await this.executeStep(step, state, stepPath);
+      const suspension = await this.executeStep(step, state, stepPath, env);
 
       if (suspension) {
         return wrapSuspensionContinuation(suspension, () =>
-          this.executeFlow(steps, state, path, index + 1),
+          this.executeFlow(steps, state, path, index + 1, env),
         );
       }
     }
@@ -581,8 +612,10 @@ export class WorkflowRunner {
     step: CompiledStep,
     state: ExecutionState,
     path: Array<number | string>,
+    env = this.createExecutorEnv(),
   ): Promise<Suspension | void> {
-    const env = this.createExecutorEnv();
+    throwIfAborted(env.signal);
+
     switch (step.type) {
       case StepType.Task:
         return runTaskExecutor(env, step, state, path);

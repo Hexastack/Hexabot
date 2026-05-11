@@ -34,6 +34,7 @@ export interface ActionExecutionArgs<
   context: C;
   settings: RuntimeSettings<S>;
   bindings: B;
+  signal: AbortSignal;
 }
 
 export interface Action<
@@ -59,6 +60,7 @@ export interface Action<
     context: C,
     settings?: Partial<RuntimeSettings<S>>,
     bindings?: B,
+    signal?: AbortSignal,
   ): Promise<O>;
 }
 

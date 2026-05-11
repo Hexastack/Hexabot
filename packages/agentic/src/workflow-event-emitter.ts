@@ -38,6 +38,7 @@ export type WorkflowEventMap = {
   'hook:step:start': StepWorkflowEventPayload;
   'hook:step:success': StepWorkflowEventPayload;
   'hook:step:error': StepWorkflowEventPayload & { error: unknown };
+  'hook:step:cancelled': StepWorkflowEventPayload & { error: unknown };
   'hook:step:suspended': StepWorkflowEventPayload & {
     reason?: string;
     data?: unknown;
