@@ -75,6 +75,75 @@ describe('HexabotWorkflowRunMcpTools', () => {
     );
   });
 
+  it('searches workflow runs without nested workflow YAML definitions', async () => {
+    const run = {
+      id: 'run-id',
+      status: 'finished',
+      workflowVersion: {
+        id: 'version-id',
+        version: 3,
+        checksum: 'checksum',
+        definitionYml: 'defs: {}\nflow: []\noutputs: {}\n',
+      },
+    };
+    const workflowRunService = {
+      findAndPopulate: jest.fn().mockResolvedValue([run]),
+      count: jest.fn().mockResolvedValue(1),
+    };
+    const tools = buildWorkflowRunTools({ workflowRunService });
+    const result = await tools.searchWorkflowRuns({
+      workflowId: '11111111-1111-4111-8111-111111111111',
+      limit: 20,
+      skip: 0,
+      sortBy: 'createdAt',
+      sortDirection: 'DESC',
+    });
+
+    expect(result).toEqual({
+      items: [
+        {
+          id: 'run-id',
+          status: 'finished',
+          workflowVersion: {
+            id: 'version-id',
+            version: 3,
+            checksum: 'checksum',
+          },
+        },
+      ],
+      total: 1,
+      limit: 20,
+      skip: 0,
+    });
+  });
+
+  it('reads a workflow run without nested workflow YAML definitions', async () => {
+    const run = {
+      id: 'run-id',
+      status: 'finished',
+      workflowVersion: {
+        id: 'version-id',
+        version: 3,
+        checksum: 'checksum',
+        definitionYml: 'defs: {}\nflow: []\noutputs: {}\n',
+      },
+    };
+    const workflowRunService = {
+      findOneAndPopulate: jest.fn().mockResolvedValue(run),
+    };
+    const tools = buildWorkflowRunTools({ workflowRunService });
+
+    await expect(tools.getWorkflowRun({ id: 'run-id' })).resolves.toEqual({
+      id: 'run-id',
+      status: 'finished',
+      workflowVersion: {
+        id: 'version-id',
+        version: 3,
+        checksum: 'checksum',
+      },
+    });
+  });
+
   it('returns workflow run debugging context with related runs and YAML', async () => {
     const run = {
       id: 'run-id',
@@ -105,8 +174,22 @@ describe('HexabotWorkflowRunMcpTools', () => {
       createdAt: '2026-05-08T10:00:00.000Z',
       updatedAt: '2026-05-08T10:00:01.000Z',
     };
-    const parentRun = { id: 'parent-run-id', status: 'suspended' };
-    const childRun = { id: 'child-run-id', status: 'finished' };
+    const parentRun = {
+      id: 'parent-run-id',
+      status: 'suspended',
+      workflowVersion: {
+        id: 'parent-version-id',
+        definitionYml: 'parent-yaml',
+      },
+    };
+    const childRun = {
+      id: 'child-run-id',
+      status: 'finished',
+      workflowVersion: {
+        id: 'child-version-id',
+        definitionYml: 'child-yaml',
+      },
+    };
     const workflowRunService = {
       findOneAndPopulate: jest.fn().mockImplementation((id: string) => {
         if (id === 'run-id') {
@@ -129,11 +212,32 @@ describe('HexabotWorkflowRunMcpTools', () => {
         childRunsLimit: 5,
       }),
     ).resolves.toEqual({
-      run,
+      run: {
+        ...run,
+        workflowVersion: {
+          id: 'version-id',
+          version: 3,
+          checksum: 'checksum',
+        },
+      },
       workflowDefinitionYml: run.workflowVersion.definitionYml,
       relatedRuns: {
-        parent: parentRun,
-        children: [childRun],
+        parent: {
+          id: 'parent-run-id',
+          status: 'suspended',
+          workflowVersion: {
+            id: 'parent-version-id',
+          },
+        },
+        children: [
+          {
+            id: 'child-run-id',
+            status: 'finished',
+            workflowVersion: {
+              id: 'child-version-id',
+            },
+          },
+        ],
         childRunTotal: 1,
         childRunsLimit: 5,
       },
@@ -186,7 +290,12 @@ describe('HexabotWorkflowRunMcpTools', () => {
         name: 'Manual workflow',
         type: WorkflowType.manual,
       },
-      workflowVersion: null,
+      workflowVersion: {
+        id: 'version-id',
+        version: 2,
+        checksum: 'checksum',
+        definitionYml: 'defs: {}\nflow: []\noutputs: {}\n',
+      },
       parentRun: null,
       stepLog: null,
       suspendedStep: 'await_reply',
@@ -208,9 +317,21 @@ describe('HexabotWorkflowRunMcpTools', () => {
     });
 
     expect(result).not.toHaveProperty('workflowDefinitionYml');
+    expect((result.run as any).workflowVersion).toEqual({
+      id: 'version-id',
+      version: 2,
+      checksum: 'checksum',
+    });
     expect(result).toEqual(
       expect.objectContaining({
-        run,
+        run: expect.objectContaining({
+          id: 'run-id',
+          workflowVersion: {
+            id: 'version-id',
+            version: 2,
+            checksum: 'checksum',
+          },
+        }),
         relatedRuns: {
           parent: null,
           children: [],

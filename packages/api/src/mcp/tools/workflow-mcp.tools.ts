@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Action } from '@hexabot-ai/types';
+import { Action, type WorkflowFull } from '@hexabot-ai/types';
 import {
   BadRequestException,
   Injectable,
@@ -64,21 +64,30 @@ export class HexabotWorkflowMcpTools extends HexabotMcpToolBase {
   ) {
     const where = this.buildWorkflowWhere(args);
     const options = this.findOptions<WorkflowOrmEntity>(args, where);
+    const result = await this.listWithCount(this.workflowService, options);
 
-    return await this.listWithCount(this.workflowService, options);
+    return {
+      ...result,
+      items: result.items.map((workflow) =>
+        this.workflowHelper.summarizeWorkflow(workflow as WorkflowFull),
+      ),
+    };
   }
 
   @McpPermission('workflow', Action.READ)
   @ToolGuards([McpPermissionGuard])
   @Tool({
     name: 'hexabot_workflow_get',
-    description: 'Read a Hexabot workflow with populated version metadata.',
+    description:
+      'Read a Hexabot workflow with compact version metadata, excluding YAML definition bodies.',
     parameters: z.object({
       id: uuidSchema,
     }),
   })
   async getWorkflow(args: { id: string }) {
-    return await this.workflowHelper.requireWorkflow(args.id);
+    const workflow = await this.workflowHelper.requireWorkflow(args.id);
+
+    return this.workflowHelper.summarizeWorkflow(workflow);
   }
 
   @McpPermission('workflow', Action.READ)
@@ -145,7 +154,9 @@ export class HexabotWorkflowMcpTools extends HexabotMcpToolBase {
       });
     }
 
-    return await this.workflowHelper.requireWorkflow(workflow.id);
+    return this.workflowHelper.summarizeWorkflow(
+      await this.workflowHelper.requireWorkflow(workflow.id),
+    );
   }
 
   @McpPermission('workflow', Action.UPDATE)
@@ -188,7 +199,9 @@ export class HexabotWorkflowMcpTools extends HexabotMcpToolBase {
       });
     }
 
-    return await this.workflowHelper.requireWorkflow(id);
+    return this.workflowHelper.summarizeWorkflow(
+      await this.workflowHelper.requireWorkflow(id),
+    );
   }
 
   @McpPermission('workflow', Action.UPDATE)
@@ -215,7 +228,9 @@ export class HexabotWorkflowMcpTools extends HexabotMcpToolBase {
       publishedVersion: workflow.currentVersion,
     });
 
-    return await this.workflowHelper.requireWorkflow(args.id);
+    return this.workflowHelper.summarizeWorkflow(
+      await this.workflowHelper.requireWorkflow(args.id),
+    );
   }
 
   @McpPermission('workflow', Action.UPDATE)
@@ -231,7 +246,9 @@ export class HexabotWorkflowMcpTools extends HexabotMcpToolBase {
     await this.workflowHelper.requireWorkflow(args.id);
     await this.workflowService.updateOne(args.id, { publishedVersion: null });
 
-    return await this.workflowHelper.requireWorkflow(args.id);
+    return this.workflowHelper.summarizeWorkflow(
+      await this.workflowHelper.requireWorkflow(args.id),
+    );
   }
 
   private buildWorkflowWhere(args: {

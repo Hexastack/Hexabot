@@ -4,7 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { type WorkflowFull, type WorkflowVersion } from '@hexabot-ai/types';
+import {
+  type WorkflowFull,
+  type WorkflowVersion,
+  type WorkflowVersionFull,
+} from '@hexabot-ai/types';
 import {
   BadRequestException,
   Injectable,
@@ -17,6 +21,8 @@ import { WorkflowVersionService } from '@/workflow/services/workflow-version.ser
 import { WorkflowService } from '@/workflow/services/workflow.service';
 import { WorkflowVersionAction } from '@/workflow/types';
 
+type WorkflowVersionLike = WorkflowVersion | WorkflowVersionFull;
+
 type WorkflowVersionSummary = Pick<
   WorkflowVersion,
   | 'id'
@@ -24,12 +30,26 @@ type WorkflowVersionSummary = Pick<
   | 'checksum'
   | 'message'
   | 'action'
-  | 'parentVersion'
-  | 'workflow'
-  | 'createdBy'
   | 'createdAt'
   | 'updatedAt'
->;
+> & {
+  parentVersion:
+    | WorkflowVersion['parentVersion']
+    | WorkflowVersionFull['parentVersion'];
+  workflow: WorkflowVersion['workflow'] | WorkflowVersionFull['workflow'];
+  createdBy: WorkflowVersion['createdBy'] | WorkflowVersionFull['createdBy'];
+  definitionYmlByteLength?: number;
+};
+
+type WorkflowSummary = Omit<
+  WorkflowFull,
+  'currentVersion' | 'publishedVersion' | 'definitionYml' | 'definition'
+> & {
+  currentVersion: WorkflowVersionSummary | null;
+  publishedVersion: WorkflowVersionSummary | null;
+  currentVersionId: string | null;
+  publishedVersionId: string | null;
+};
 
 @Injectable()
 export class HexabotWorkflowMcpHelper {
@@ -121,8 +141,30 @@ export class HexabotWorkflowMcpHelper {
     };
   }
 
-  private summarizeWorkflowVersion(
-    version: WorkflowVersion | null | undefined,
+  summarizeWorkflow(workflow: WorkflowFull): WorkflowSummary {
+    const {
+      currentVersion,
+      publishedVersion,
+      definitionYml: _definitionYml,
+      definition: _definition,
+      ...metadata
+    } = workflow;
+    const currentVersionSummary = this.summarizeWorkflowVersion(currentVersion);
+    const publishedVersionSummary =
+      this.summarizeWorkflowVersion(publishedVersion);
+
+    return {
+      ...metadata,
+      currentVersion: currentVersionSummary,
+      publishedVersion: publishedVersionSummary,
+      currentVersionId: currentVersionSummary?.id ?? null,
+      publishedVersionId: publishedVersionSummary?.id ?? null,
+    };
+  }
+
+  summarizeWorkflowVersion(
+    version: WorkflowVersionLike | null | undefined,
+    options?: { includeDefinitionYmlByteLength?: boolean },
   ): WorkflowVersionSummary | null {
     if (!version) {
       return null;
@@ -139,8 +181,7 @@ export class HexabotWorkflowMcpHelper {
       createdAt,
       updatedAt,
     } = version;
-
-    return {
+    const summary = {
       id,
       version: versionNumber,
       checksum,
@@ -151,7 +192,19 @@ export class HexabotWorkflowMcpHelper {
       createdBy,
       createdAt,
       updatedAt,
+      ...(options?.includeDefinitionYmlByteLength
+        ? {
+            definitionYmlByteLength:
+              typeof version.definitionYml === 'string'
+                ? Buffer.byteLength(version.definitionYml, 'utf8')
+                : undefined,
+          }
+        : {}),
     };
+
+    return Object.fromEntries(
+      Object.entries(summary).filter(([, value]) => value !== undefined),
+    ) as WorkflowVersionSummary;
   }
 
   private resolveRelationId(

@@ -54,6 +54,28 @@ describe('HexabotMcpTokenGuard', () => {
     expect(request.mcpTokenId).toBe('token-id');
   });
 
+  it('accepts bearer auth scheme case-insensitively', async () => {
+    const mcpTokenService = {
+      authenticateBearerToken: jest.fn().mockResolvedValue({
+        user: activeUser,
+        tokenId: 'token-id',
+      }),
+    } as unknown as McpTokenService;
+    const moduleRef = {
+      get: jest.fn().mockReturnValue(mcpTokenService),
+    } as unknown as ModuleRef;
+    const request = {
+      headers: { authorization: 'bearer   hbt_mcp_secret' },
+    } as HexabotMcpRequest;
+    const guard = new HexabotMcpTokenGuard(moduleRef);
+
+    await expect(guard.canActivate(buildContext(request))).resolves.toBe(true);
+
+    expect(mcpTokenService.authenticateBearerToken).toHaveBeenCalledWith(
+      'hbt_mcp_secret',
+    );
+  });
+
   it('rejects requests without bearer tokens', async () => {
     const moduleRef = {
       get: jest.fn(),

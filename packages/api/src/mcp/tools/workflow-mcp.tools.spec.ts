@@ -43,6 +43,68 @@ const buildWorkflowTools = (overrides: Record<string, unknown> = {}) => {
 };
 
 describe('HexabotWorkflowMcpTools', () => {
+  it('searches workflows with compact version summaries', async () => {
+    const workflow = {
+      id: 'workflow-id',
+      name: 'Support triage',
+      description: null,
+      type: WorkflowType.manual,
+      schedule: null,
+      inputSchema: {},
+      builtin: false,
+      x: 0,
+      y: 0,
+      zoom: 1,
+      direction: 'horizontal',
+      currentVersion: {
+        id: 'current-version-id',
+        version: 3,
+        definitionYml: 'defs: {}\nflow: []\noutputs: {}\n',
+        checksum: 'current-checksum',
+        message: 'Draft update',
+        action: WorkflowVersionAction.update,
+        parentVersion: null,
+        workflow: 'workflow-id',
+        createdBy: actor.id,
+        createdAt: new Date('2026-05-08T10:00:00.000Z'),
+        updatedAt: new Date('2026-05-08T10:00:00.000Z'),
+      },
+      publishedVersion: null,
+      createdBy: null,
+      createdAt: new Date('2026-05-08T09:00:00.000Z'),
+      updatedAt: new Date('2026-05-08T10:00:00.000Z'),
+    };
+    const workflowService = {
+      findAndPopulate: jest.fn().mockResolvedValue([workflow]),
+      count: jest.fn().mockResolvedValue(1),
+    };
+    const tools = buildWorkflowTools({ workflowService });
+    const result = await tools.searchWorkflows({
+      limit: 20,
+      skip: 0,
+      sortBy: 'createdAt',
+      sortDirection: 'DESC',
+    });
+
+    expect(result).toEqual({
+      items: [
+        expect.objectContaining({
+          id: 'workflow-id',
+          currentVersion: expect.objectContaining({
+            id: 'current-version-id',
+            checksum: 'current-checksum',
+          }),
+          currentVersionId: 'current-version-id',
+          publishedVersionId: null,
+        }),
+      ],
+      total: 1,
+      limit: 20,
+      skip: 0,
+    });
+    expect(result.items[0].currentVersion).not.toHaveProperty('definitionYml');
+  });
+
   it('returns current and published workflow version status without YAML payloads', async () => {
     const currentVersion = {
       id: 'current-version-id',
@@ -145,7 +207,13 @@ describe('HexabotWorkflowMcpTools', () => {
     const tools = buildWorkflowTools({ workflowService });
 
     await expect(tools.publishWorkflow({ id: 'workflow-id' })).resolves.toEqual(
-      publishedWorkflow,
+      expect.objectContaining({
+        id: 'workflow-id',
+        currentVersion: { id: 'current-version-id' },
+        publishedVersion: { id: 'current-version-id' },
+        currentVersionId: 'current-version-id',
+        publishedVersionId: 'current-version-id',
+      }),
     );
     expect(workflowService.updateOne).toHaveBeenCalledWith('workflow-id', {
       publishedVersion: 'current-version-id',
@@ -177,7 +245,15 @@ describe('HexabotWorkflowMcpTools', () => {
 
     await expect(
       tools.unpublishWorkflow({ id: 'workflow-id' }),
-    ).resolves.toEqual(unpublishedWorkflow);
+    ).resolves.toEqual(
+      expect.objectContaining({
+        id: 'workflow-id',
+        currentVersion: { id: 'current-version-id' },
+        publishedVersion: null,
+        currentVersionId: 'current-version-id',
+        publishedVersionId: null,
+      }),
+    );
     expect(workflowService.updateOne).toHaveBeenCalledWith('workflow-id', {
       publishedVersion: null,
     });
