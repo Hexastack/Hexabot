@@ -224,6 +224,10 @@ describe('registerCreateCommand', () => {
     expect(output).toContain(
       'You can update them later from the generated environment file before starting the app.',
     );
+    expect(output).toContain('Start local dev with SQLite:');
+    expect(output).toContain('hexabot dev');
+    expect(output).toContain('Or start dev with Docker and Postgres:');
+    expect(output).toContain('hexabot dev --docker --services postgres');
     expect(output).toContain('Optional: install Hexabot AI coding skills');
     expect(output).toContain(
       'Use these with AI coding agents to generate actions and workflows faster:',

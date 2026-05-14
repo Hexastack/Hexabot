@@ -51,8 +51,11 @@ export const registerCreateCommand = (program: Command) => {
     )
     .option('--pm <npm|pnpm|yarn|bun>', 'Preferred package manager')
     .option('--no-install', 'Skip installing dependencies')
-    .option('--dev', 'Run hexabot dev after creation')
-    .option('--docker', 'Use Docker-oriented next steps and --dev startup')
+    .option('--dev', 'Run hexabot dev after creation (local SQLite by default)')
+    .option(
+      '--docker',
+      'Show Docker/Postgres next steps and use Docker mode with --dev',
+    )
     .option('--force', 'Allow scaffolding into a non-empty directory')
     .action(async (projectName: string, options: CreateCommandOptions) => {
       await createProject(projectName, options);
@@ -329,18 +332,16 @@ const logSuccessMessage = (
   console.log(chalk.gray(`1. Navigate to the project folder:`));
   console.log(chalk.yellow(`   cd ${projectName}`));
   if (options.docker) {
-    console.log(
-      chalk.gray(
-        `2. Run dev mode with Docker (or omit --docker for local sqlite):`,
-      ),
-    );
-    console.log(chalk.yellow(`   hexabot dev --docker`));
-  } else {
-    console.log(chalk.gray(`2. Start local dev server (SQLite by default):`));
+    console.log(chalk.gray(`2. Start dev with Docker and Postgres:`));
+    console.log(chalk.yellow(`   hexabot dev --docker --services postgres`));
+    console.log(chalk.gray(`3. Or start local dev with SQLite:`));
     console.log(chalk.yellow(`   hexabot dev`));
+  } else {
+    console.log(chalk.gray(`2. Start local dev with SQLite:`));
+    console.log(chalk.yellow(`   hexabot dev`));
+    console.log(chalk.gray(`3. Or start dev with Docker and Postgres:`));
+    console.log(chalk.yellow(`   hexabot dev --docker --services postgres`));
   }
-  console.log(chalk.gray(`3. Explore docker helpers if needed:`));
-  console.log(chalk.yellow(`   hexabot docker up --services postgres`));
   console.log(chalk.gray(`Env bootstrap completed.`));
   console.log('\n');
   console.log(chalk.blue('Optional: install Hexabot AI coding skills'));
