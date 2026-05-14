@@ -13,6 +13,7 @@ import { loadProjectConfig, updateProjectConfig } from '../core/config.js';
 import {
   dockerCompose,
   generateComposeFiles,
+  resolveComposeEnvFile,
   resolveComposeFile,
 } from '../core/docker.js';
 import { bootstrapEnvFile, resolveEnvExample } from '../core/env.js';
@@ -106,6 +107,7 @@ const runDockerDev = async (
     projectRoot,
     config.docker.composeFile,
   );
+  const envFile = resolveComposeEnvFile(projectRoot, config.env.docker);
   const composeArgs = generateComposeFiles(composeFile, services, 'dev');
   const upArgs = ['up', '--build'];
   if (options.detach) {
@@ -118,5 +120,5 @@ const runDockerDev = async (
       `Starting Docker services${services.length ? ` (${services.join(', ')})` : ''}`,
     ),
   );
-  dockerCompose(composeCommand);
+  dockerCompose(composeCommand, { envFile });
 };

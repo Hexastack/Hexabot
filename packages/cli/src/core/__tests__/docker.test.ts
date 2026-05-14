@@ -10,7 +10,7 @@ import * as path from 'path';
 
 import { jest } from '@jest/globals';
 
-import { generateComposeFiles } from '../docker.js';
+import { generateComposeFiles, resolveComposeEnvFile } from '../docker.js';
 
 describe('generateComposeFiles', () => {
   let tempDir: string;
@@ -55,5 +55,13 @@ describe('generateComposeFiles', () => {
         `-f ${apiFile} ` +
         `-f ${serviceModeFile} -f ${mainModeFile}`,
     );
+  });
+
+  it('resolves a compose env file only when it exists', () => {
+    const envFile = path.join(tempDir, '.env.docker');
+    fs.writeFileSync(envFile, '');
+
+    expect(resolveComposeEnvFile(tempDir, '.env.docker')).toBe(envFile);
+    expect(resolveComposeEnvFile(tempDir, '.env.missing')).toBeUndefined();
   });
 });

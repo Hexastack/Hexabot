@@ -10,6 +10,7 @@ import { Command } from 'commander';
 const loadProjectConfig = jest.fn();
 const dockerCompose = jest.fn();
 const generateComposeFiles = jest.fn();
+const resolveComposeEnvFile = jest.fn();
 const resolveComposeFile = jest.fn();
 const bootstrapEnvFile = jest.fn();
 const checkDocker = jest.fn();
@@ -25,6 +26,7 @@ jest.unstable_mockModule('../../core/config.js', () => ({
 jest.unstable_mockModule('../../core/docker.js', () => ({
   dockerCompose,
   generateComposeFiles,
+  resolveComposeEnvFile,
   resolveComposeFile,
 }));
 
@@ -63,6 +65,7 @@ beforeEach(() => {
       .filter((entry) => entry),
   );
   resolveComposeFile.mockReturnValue('/project/docker/docker-compose.yml');
+  resolveComposeEnvFile.mockReturnValue('/project/.env.docker');
   generateComposeFiles.mockReturnValue('-f docker-compose.yml');
   loadProjectConfig.mockReturnValue({
     docker: {
@@ -103,8 +106,13 @@ describe('registerDockerCommand', () => {
       ['api', 'postgres'],
       'dev',
     );
+    expect(resolveComposeEnvFile).toHaveBeenCalledWith(
+      expect.any(String),
+      '.env.docker',
+    );
     expect(dockerCompose).toHaveBeenCalledWith(
       expect.stringContaining('up --build -d'),
+      { envFile: '/project/.env.docker' },
     );
   });
 
@@ -114,6 +122,7 @@ describe('registerDockerCommand', () => {
 
     expect(dockerCompose).toHaveBeenCalledWith(
       expect.stringContaining('down -v'),
+      { envFile: '/project/.env.docker' },
     );
     expect(bootstrapEnvFile).not.toHaveBeenCalled();
   });
@@ -133,6 +142,7 @@ describe('registerDockerCommand', () => {
 
     expect(dockerCompose).toHaveBeenCalledWith(
       expect.stringContaining('logs -f --since 1h api'),
+      { envFile: '/project/.env.docker' },
     );
   });
 
@@ -140,7 +150,9 @@ describe('registerDockerCommand', () => {
     const program = createProgram();
     await program.parseAsync(['node', 'test', 'docker', 'ps']);
 
-    expect(dockerCompose).toHaveBeenCalledWith(expect.stringContaining('ps'));
+    expect(dockerCompose).toHaveBeenCalledWith(expect.stringContaining('ps'), {
+      envFile: '/project/.env.docker',
+    });
   });
 
   it('delegates to start command for docker start', async () => {
