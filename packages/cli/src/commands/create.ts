@@ -263,39 +263,44 @@ const promptSeedAdminCredentials = async (): Promise<AdminSeedCredentials> => {
   assertInteractiveTerminal();
 
   console.log('\n');
-  console.log(chalk.bold('Admin account (initial credentials)'));
+  console.log(chalk.bold('Admin account'));
   console.log(
     chalk.gray(
-      'These details are used to seed the first admin user. You can change them later in your env file.',
+      'These details will be used to create the first admin user during setup.',
+    ),
+  );
+  console.log(
+    chalk.gray(
+      'You can update them later from the generated environment file before starting the app.',
     ),
   );
   console.log('\n');
 
   const firstName = (
     await input({
-      message: 'First name (e.g. Jhon)',
+      message: 'First name:',
       validate: requireValue('First name'),
     })
   ).trim();
   const lastName = (
     await input({
-      message: 'Last name (e.g. Doe)',
+      message: 'Last name:',
       validate: requireValue('Last name'),
     })
   ).trim();
   const email = (
     await input({
-      message: 'Email (e.g. admin@company.com)',
+      message: 'Email:',
       validate: validateEmail,
     })
   ).trim();
   const adminPassword = await password({
-    message: 'Password (min 8 chars)',
+    message: 'Password:',
     mask: '*',
     validate: validateAdminPassword,
   });
   await password({
-    message: 'Confirm password',
+    message: 'Confirm password:',
     mask: '*',
     validate: (value: string) => {
       if (value !== adminPassword) {
@@ -338,11 +343,20 @@ const logSuccessMessage = (
   console.log(chalk.yellow(`   hexabot docker up --services postgres`));
   console.log(chalk.gray(`Env bootstrap completed.`));
   console.log('\n');
-  console.log(chalk.blue('Optional: Install Hexabot skills'));
+  console.log(chalk.blue('Optional: install Hexabot AI coding skills'));
   console.log(
-    chalk.gray('You can add official skills to accelerate your workflow:'),
+    chalk.gray(
+      'Use these with AI coding agents to generate actions and workflows faster:',
+    ),
   );
+  console.log('\n');
   console.log(chalk.yellow('   npx skills add hexabot-ai/action-creator'));
   console.log(chalk.yellow('   npx skills add hexabot-ai/workflow-writer'));
+  console.log('\n');
+  console.log(
+    chalk.gray(
+      'After starting Hexabot, you can generate an MCP token from your profile and connect your favorite AI coding agent.',
+    ),
+  );
   console.log('\n');
 };
