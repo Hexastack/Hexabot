@@ -87,7 +87,7 @@ Quality-of-life wrappers around `docker compose` using the project’s `docker/`
 - `hexabot docker ps`
 - `hexabot docker start [--services <list>] [--build] [-d]` – convenience alias for `hexabot start --docker`
 
-The CLI automatically stitches together `docker-compose.yml` + `docker-compose.<service>.yml` overlays and can copy `.env.docker.example` on first run.
+The CLI automatically stitches together `docker-compose.yml` + `docker-compose.<service>.yml` overlays, can copy `.env.docker.example` on first run, and passes `.env.docker` to Docker Compose with `--env-file` when it exists.
 
 #### `start`
 
