@@ -135,6 +135,7 @@ afterEach(() => {
 
 describe('registerCreateCommand', () => {
   it('prompts admin credentials and persists create env values', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     (input as any)
       .mockResolvedValueOnce('Anis')
       .mockResolvedValueOnce('Bot')
@@ -192,9 +193,44 @@ describe('registerCreateCommand', () => {
     );
     expect(exitSpy).not.toHaveBeenCalled();
     expect(input).toHaveBeenCalledTimes(3);
+    expect(input).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ message: 'First name:' }),
+    );
+    expect(input).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ message: 'Last name:' }),
+    );
+    expect(input).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({ message: 'Email:' }),
+    );
     expect(password).toHaveBeenCalledTimes(2);
+    expect(password).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ message: 'Password:' }),
+    );
+    expect(password).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ message: 'Confirm password:' }),
+    );
     expect(bootstrapEnvFile).toHaveBeenCalledTimes(2);
     expect(upsertEnvVariables).toHaveBeenCalledTimes(2);
+    const output = logSpy.mock.calls.flat().join('\n');
+    expect(output).toContain('Admin account');
+    expect(output).toContain(
+      'These details will be used to create the first admin user during setup.',
+    );
+    expect(output).toContain(
+      'You can update them later from the generated environment file before starting the app.',
+    );
+    expect(output).toContain('Optional: install Hexabot AI coding skills');
+    expect(output).toContain(
+      'Use these with AI coding agents to generate actions and workflows faster:',
+    );
+    expect(output).toContain(
+      'After starting Hexabot, you can generate an MCP token from your profile and connect your favorite AI coding agent.',
+    );
   });
 
   it('skips Docker env values when the Docker env file is unavailable', async () => {
