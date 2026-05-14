@@ -99,6 +99,7 @@ const createProject = async (
       config,
       adminCredentials,
       dockerEnvBootstrapped,
+      projectName,
     );
 
     if (options.noInstall) {
@@ -201,6 +202,7 @@ const persistAdminSeedCredentials = (
   config: ReturnType<typeof loadProjectConfig>,
   credentials: AdminSeedCredentials,
   dockerEnvBootstrapped: boolean,
+  projectName: string,
 ) => {
   const seedVariables = buildAdminSeedVariables(credentials);
   upsertEnvVariables(projectPath, config.env.local, seedVariables);
@@ -209,7 +211,10 @@ const persistAdminSeedCredentials = (
     dockerEnvBootstrapped ||
     fs.existsSync(path.join(projectPath, config.env.docker))
   ) {
-    upsertEnvVariables(projectPath, config.env.docker, seedVariables);
+    upsertEnvVariables(projectPath, config.env.docker, {
+      ...seedVariables,
+      COMPOSE_PROJECT_NAME: projectName,
+    });
   }
 };
 const requireValue = (label: string) => {

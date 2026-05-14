@@ -44,7 +44,7 @@ Common options:
 - `--docker` – show Docker-first next steps and use Docker mode when combined with `--dev`.
 - `--force` – allow scaffolding into a non-empty directory.
 
-The command downloads the latest template release, installs dependencies (unless `--no-install`), and bootstraps `.env` plus `.env.docker` when their example files are present.
+The command downloads the latest template release, installs dependencies (unless `--no-install`), and bootstraps `.env` plus `.env.docker` when their example files are present. The Docker env file is initialized with `COMPOSE_PROJECT_NAME=<project-name>` so Docker Compose uses the scaffolded project name.
 
 #### `dev`
 

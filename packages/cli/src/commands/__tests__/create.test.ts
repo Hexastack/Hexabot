@@ -134,7 +134,7 @@ afterEach(() => {
 });
 
 describe('registerCreateCommand', () => {
-  it('prompts admin credentials and persists them to local and Docker env values', async () => {
+  it('prompts admin credentials and persists create env values', async () => {
     (input as any)
       .mockResolvedValueOnce('Anis')
       .mockResolvedValueOnce('Bot')
@@ -187,6 +187,7 @@ describe('registerCreateCommand', () => {
         SEED_ADMIN_LAST_NAME: 'Bot',
         SEED_ADMIN_EMAIL: 'anis@example.com',
         SEED_ADMIN_PASSWORD: 'Admin#123',
+        COMPOSE_PROJECT_NAME: 'anisbot',
       },
     );
     expect(exitSpy).not.toHaveBeenCalled();
@@ -196,7 +197,7 @@ describe('registerCreateCommand', () => {
     expect(upsertEnvVariables).toHaveBeenCalledTimes(2);
   });
 
-  it('skips Docker admin credentials when the Docker env file is unavailable', async () => {
+  it('skips Docker env values when the Docker env file is unavailable', async () => {
     (bootstrapEnvFile as any).mockImplementation(
       (_projectRoot: string, _exampleFile: string, targetFile: string) =>
         targetFile === '.env',
