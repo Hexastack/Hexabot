@@ -56,8 +56,9 @@ export type ActionRegistry<
   A extends Action<unknown, unknown, BaseWorkflowContext, unknown> = AnyAction,
 > = Map<ActionName, A>;
 
-export type ExecArgs<
-  I,
-  C extends BaseWorkflowContext,
-  S = unknown,
-> = ActionExecutionArgs<I, C, S, RuntimeBindings>;
+export type ExecArgs<I, C extends BaseWorkflowContext, S = unknown> = Omit<
+  ActionExecutionArgs<I, C, S, RuntimeBindings>,
+  'signal'
+> & {
+  signal?: AbortSignal;
+};

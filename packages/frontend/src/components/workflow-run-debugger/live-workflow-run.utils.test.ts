@@ -156,6 +156,43 @@ describe("live workflow run utils", () => {
     );
   });
 
+  it("merges cancelled step events without marking the run terminal", () => {
+    const runningRun = buildRun({
+      status: EWorkflowRunStatus.RUNNING,
+      stepLog: {
+        "0:slow_branch": buildStepExecution({
+          id: "0:slow_branch",
+          name: "slow_branch",
+          status: "running",
+        }),
+      },
+    });
+    const updated = mergeWorkflowRunLiveEvent(
+      runningRun,
+      buildEvent({
+        workflowRun: runningRun,
+        workflowEvent: "step:cancelled",
+        t: 3200,
+        step: { id: "0:slow_branch", name: "slow_branch", type: StepType.Task },
+        stepExecution: buildStepExecution({
+          id: "0:slow_branch",
+          name: "slow_branch",
+          status: "cancelled",
+          endedAt: 3200,
+          error: { message: "Parallel wait_any branch lost the race." },
+        }),
+      }),
+    );
+
+    expect(updated?.status).toBe(EWorkflowRunStatus.RUNNING);
+    expect(updated?.stepLog?.["0:slow_branch"]).toEqual(
+      expect.objectContaining({
+        status: "cancelled",
+        error: { message: "Parallel wait_any branch lost the race." },
+      }),
+    );
+  });
+
   it("filters and touches only matching debugger workflow run collections", () => {
     const event = buildEvent({ workflowEvent: "step:start" });
 

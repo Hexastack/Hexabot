@@ -10,6 +10,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   CheckCircle2,
   Circle,
+  Ban,
   Loader2,
   PauseCircle,
   SkipForward,
@@ -59,6 +60,12 @@ const getStatusIndicator = (
         color: "warning.main",
         label: labels.suspended,
       };
+    case "cancelled":
+      return {
+        Icon: Ban,
+        color: "text.secondary",
+        label: labels.cancelled,
+      };
     default:
       return { Icon: Circle, color: "text.secondary", label: labels.pending };
   }
@@ -76,6 +83,7 @@ export const ActionStatusIndicator = ({
       failed: t("label.step_trace.status_failed"),
       skipped: t("label.step_trace.status_skipped"),
       suspended: t("label.step_trace.status_suspended"),
+      cancelled: t("label.step_trace.status_cancelled"),
       pending: t("label.step_trace.status_pending"),
     }),
     [t],

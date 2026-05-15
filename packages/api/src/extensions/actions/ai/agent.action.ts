@@ -47,6 +47,7 @@ export class AiAgentAction extends AiBaseAction<
     settings,
     context,
     bindings,
+    signal,
   }: ExecArgs<AiAgentInput, WorkflowRuntimeContext, AiAgentSettings>) {
     const logger = context.services.logger;
     const modelBinding = bindings.model;
@@ -77,6 +78,7 @@ export class AiAgentAction extends AiBaseAction<
       bindings.tools,
       bindings.mcp,
       selectedMemorySlugs,
+      signal,
     )) as ToolSet | undefined;
     const toolNames = [
       ...Object.keys(bindings.tools ?? {}),
@@ -115,7 +117,10 @@ export class AiAgentAction extends AiBaseAction<
       throw new Error('Prompt is required to call the agent.');
     }
 
-    const result = await agent.generate({ prompt: agentPrompt });
+    const result = await agent.generate({
+      prompt: agentPrompt,
+      abortSignal: signal,
+    });
 
     return {
       text: result.text,

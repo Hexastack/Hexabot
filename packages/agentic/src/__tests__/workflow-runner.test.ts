@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { defineAction } from '../action/action';
 import { BaseWorkflowContext } from '../context';
 import type { Settings, WorkflowDefinition } from '../dsl.types';
+import { ParallelSuspensionError } from '../errors';
 import { compileWorkflow } from '../workflow-compiler';
 import {
   StepType,
@@ -298,6 +299,7 @@ describe('WorkflowRunner', () => {
     });
     const runner = new WorkflowRunner(compiled, { runId: 'run-1' });
     const context = new TestContext({});
+    context.eventEmitter = emitter;
     const result = await runner.start({
       inputData: { items: [10, 20] },
       context,
@@ -313,15 +315,13 @@ describe('WorkflowRunner', () => {
     }
 
     expect(firstExecute).toHaveBeenCalledTimes(1);
-    expect(secondExecute).not.toHaveBeenCalled();
+    expect(secondExecute).toHaveBeenCalledTimes(1);
     expect(echoExecute).toHaveBeenCalledTimes(3);
-    expect(
-      eventLog.filter((entry) => entry.includes('second_task')),
-    ).toHaveLength(0);
+    expect(eventLog).toContain('start:second_task');
     expect(runner.getSnapshot().status).toBe('finished');
     const snapshots = runner.getSnapshot().actions;
     expect(snapshots['0.parallel.0:first_task']?.status).toBe('completed');
-    expect(snapshots['0.parallel.1:second_task']?.status).toBe('skipped');
+    expect(snapshots['0.parallel.1:second_task']?.status).toBe('cancelled');
     expect(snapshots['1.branch.0.0:branch_task']?.status).toBe('completed');
     expect(snapshots['1.branch.1.0:second_task']?.status).toBe('skipped');
   });
@@ -739,6 +739,59 @@ describe('WorkflowRunner', () => {
     }
 
     expect(() => context.workflow).toThrow();
+  });
+
+  it('fails when a parallel branch attempts to suspend', async () => {
+    const suspendAction = defineAction<
+      unknown,
+      { reply: string },
+      TestContext,
+      Settings
+    >({
+      name: 'parallel_suspend_action',
+      inputSchema: z.any(),
+      outputSchema: z.object({ reply: z.string() }),
+      execute: async ({ context }) => {
+        await context.workflow.suspend({ reason: 'not_allowed' });
+
+        return { reply: 'unreachable' };
+      },
+    });
+    const definition: WorkflowDefinition = {
+      defs: createTaskDefs({
+        wait_step: { action: 'parallel_suspend_action' },
+      }),
+      flow: [
+        {
+          parallel: {
+            strategy: 'wait_all',
+            steps: [{ do: 'wait_step' }],
+          },
+        },
+      ],
+      outputs: { reply: '=$output.wait_step.reply' },
+    };
+    const compiled = compileWorkflow(definition, {
+      actions: { parallel_suspend_action: suspendAction },
+    });
+    const runner = new WorkflowRunner(compiled, {
+      runId: 'run-parallel-suspend',
+    });
+    const result = await runner.start({
+      inputData: {},
+      context: new TestContext({}),
+    });
+
+    expect(result.status).toBe('failed');
+    if (result.status === 'failed') {
+      expect(result.error).toBeInstanceOf(ParallelSuspensionError);
+    }
+    expect(
+      runner.getSnapshot().actions['0.parallel.0:wait_step'],
+    ).toMatchObject({
+      status: 'failed',
+      reason: 'workflow.suspend() is not supported inside a parallel block.',
+    });
   });
 
   it('accepts emitter-like implementations without Node EventEmitter', async () => {

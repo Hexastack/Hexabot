@@ -656,6 +656,7 @@ export abstract class AiBaseAction<
     toolBindings?: RuntimeBindings['tools'],
     mcpToolBindings?: RuntimeBindings['mcp'],
     selectedMemorySlugs: string[] = [],
+    signal?: AbortSignal,
   ): Promise<ToolSet | undefined> {
     const actionService = context.services.actions;
     const logger = context.services.logger;
@@ -691,15 +692,36 @@ export abstract class AiBaseAction<
           description: action.description,
           inputSchema: action.inputSchema,
           outputSchema: action.outputSchema,
-          execute: async (input) =>
-            nestedBindings
+          execute: async (input, options) => {
+            const toolSignal = options?.abortSignal ?? signal;
+
+            if (nestedBindings) {
+              return toolSignal
+                ? action.run(
+                    input,
+                    context,
+                    toolDefinition.settings as any,
+                    nestedBindings as RuntimeBindings,
+                    toolSignal,
+                  )
+                : action.run(
+                    input,
+                    context,
+                    toolDefinition.settings as any,
+                    nestedBindings as RuntimeBindings,
+                  );
+            }
+
+            return toolSignal
               ? action.run(
                   input,
                   context,
                   toolDefinition.settings as any,
-                  nestedBindings as RuntimeBindings,
+                  undefined,
+                  toolSignal,
                 )
-              : action.run(input, context, toolDefinition.settings as any),
+              : action.run(input, context, toolDefinition.settings as any);
+          },
         } as ToolSet[string];
       }
     }
@@ -746,7 +768,19 @@ export abstract class AiBaseAction<
           description: updateMemoryAction.description,
           inputSchema: memorySchema,
           outputSchema: memorySchema,
-          execute: async (input) => updateMemoryAction.run(input, context),
+          execute: async (input, options) => {
+            const toolSignal = options?.abortSignal ?? signal;
+
+            return toolSignal
+              ? updateMemoryAction.run(
+                  input,
+                  context,
+                  undefined,
+                  undefined,
+                  toolSignal,
+                )
+              : updateMemoryAction.run(input, context);
+          },
         } as ToolSet[string];
       }
     }

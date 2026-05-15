@@ -570,6 +570,7 @@
       "status_failed": "Failed",
       "status_skipped": "Skipped",
       "status_suspended": "Suspended",
+      "status_cancelled": "Cancelled",
       "status_pending": "Pending",
       "type_llm": "LLM",
       "type_http": "HTTP",

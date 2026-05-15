@@ -21,8 +21,9 @@ const EXECUTION_STATE_PRIORITY: Record<NodeExecutionState, number> = {
   running: 1,
   start: 1,
   finish: 2,
-  suspended: 3,
-  error: 4,
+  cancelled: 3,
+  suspended: 4,
+  error: 5,
 };
 
 export const resolveNodeExecutionState = ({

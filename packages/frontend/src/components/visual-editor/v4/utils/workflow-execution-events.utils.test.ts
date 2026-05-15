@@ -43,6 +43,11 @@ const stepSuccessEvent: SubscribeWorkflowProps = {
   workflowEvent: "step:success",
   t: 120,
 };
+const stepCancelledEvent: SubscribeWorkflowProps = {
+  ...stepStartEvent,
+  workflowEvent: "step:cancelled",
+  t: 125,
+};
 const loopStepStartEvent: SubscribeWorkflowProps = {
   ...stepStartEvent,
   t: 130,
@@ -106,6 +111,23 @@ describe("workflow-execution-events.utils", () => {
         key: "0:send_message",
         state: "finish",
         delayMs: STEP_SUCCESS_FINISH_DELAY_MS,
+      },
+    ]);
+  });
+
+  it("maps step cancellation to a cancelled state", () => {
+    expect(mapWorkflowEventToExecutionActions(stepCancelledEvent)).toEqual([
+      {
+        type: "append",
+        key: EIndicatorType.WORKFLOW_START,
+        state: "finish",
+        delayMs: START_INDICATOR_FINISH_DELAY_MS,
+      },
+      {
+        type: "append",
+        key: "0:send_message",
+        state: "cancelled",
+        t: 125,
       },
     ]);
   });

@@ -47,10 +47,10 @@ const createEnv = (executeFlow: jest.Mock): StepExecutorEnv => {
     outputMapping: {},
     inputParser: { parse: (value: unknown) => value } as any,
   } as any;
-
-  return {
+  const env = {
     compiled,
     context: new TestContext(),
+    signal: new AbortController().signal,
     runId: 'run-loop',
     buildInstanceStepInfo: jest.fn(),
     markSnapshot: jest.fn(),
@@ -67,7 +67,12 @@ const createEnv = (executeFlow: jest.Mock): StepExecutorEnv => {
     captureTaskOutput: jest.fn(),
     executeFlow,
     executeStep: jest.fn(),
-  };
+    fork: jest.fn(),
+  } as StepExecutorEnv;
+
+  env.fork = jest.fn((overrides) => ({ ...env, ...overrides }));
+
+  return env;
 };
 const createTaskStep = (id: string): CompiledStep => ({
   id,

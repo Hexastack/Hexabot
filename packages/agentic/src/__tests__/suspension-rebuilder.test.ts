@@ -18,7 +18,6 @@ import {
   shouldStopLoop,
   updateAccumulator,
 } from '../step-executors/loop-executor';
-import { executeParallel as runParallelExecutor } from '../step-executors/parallel-executor';
 import type { StepExecutorEnv } from '../step-executors/types';
 import {
   parseSuspendedStepId,
@@ -40,11 +39,6 @@ jest.mock('../step-executors/loop-executor', () => ({
   shouldStopLoop: jest.fn(),
 }));
 
-jest.mock('../step-executors/parallel-executor', () => ({
-  __esModule: true,
-  executeParallel: jest.fn(),
-}));
-
 const mockedRunLoopExecutor = runLoopExecutor as jest.MockedFunction<
   typeof runLoopExecutor
 >;
@@ -53,9 +47,6 @@ const mockedUpdateAccumulator = updateAccumulator as jest.MockedFunction<
 >;
 const mockedShouldStopLoop = shouldStopLoop as jest.MockedFunction<
   typeof shouldStopLoop
->;
-const mockedRunParallelExecutor = runParallelExecutor as jest.MockedFunction<
-  typeof runParallelExecutor
 >;
 
 class TestContext extends BaseWorkflowContext {
@@ -268,7 +259,7 @@ describe('rebuildSuspension', () => {
     expect(deps.executeFlow).toHaveBeenCalledWith(compiled.flow, state, [], 1);
   });
 
-  it('rebuilds a parallel suspension and continues remaining siblings when needed', async () => {
+  it('does not rebuild suspensions inside parallel blocks', () => {
     const firstTask = createTask('child_a');
     const secondTask = createTask('child_b');
     const childA: CompiledStep = {
@@ -308,39 +299,9 @@ describe('rebuildSuspension', () => {
       state,
       stepId: '0.parallel.1:child_b',
     });
-    const nextSuspension = {
-      step: {
-        id: '0.parallel.2:child_c',
-        name: 'child_c',
-        type: StepType.Task,
-      },
-      continue: jest.fn().mockResolvedValue(undefined),
-    };
-    mockedRunParallelExecutor.mockResolvedValue(nextSuspension);
 
-    const result = await suspension?.continue({ payload: true });
-
-    expect(deps.captureTaskOutput).toHaveBeenCalledWith(secondTask, state, {
-      payload: true,
-    });
-    expect(mockedRunParallelExecutor).toHaveBeenCalledWith(
-      expect.anything(),
-      parallelStep,
-      state,
-      [0],
-      2,
-    );
-    expect(result?.step.id).toBe(nextSuspension.step.id);
-
-    await result?.continue({ done: true });
-
-    expect(nextSuspension.continue).toHaveBeenCalledWith({ done: true });
-    expect(deps.executeFlow).toHaveBeenLastCalledWith(
-      compiled.flow,
-      state,
-      [],
-      1,
-    );
+    expect(suspension).toBeNull();
+    expect(deps.captureTaskOutput).not.toHaveBeenCalled();
   });
 
   it('resumes a loop suspension, updating accumulators and continuing execution', async () => {

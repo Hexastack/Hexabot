@@ -76,6 +76,21 @@ describe("execution-state.utils", () => {
     ).toBe("suspended");
   });
 
+  it("prefers cancelled over completed when events share the same timestamp", () => {
+    expect(
+      resolveNodeExecutionState({
+        executionStates: {
+          "0:send_message": [
+            { state: "finish", t: 10 },
+            { state: "cancelled", t: 10 },
+          ],
+        },
+        nodeId: "node-1",
+        stepId: "0:send_message",
+      }),
+    ).toBe("cancelled");
+  });
+
   it("keeps the later equal-priority event when events share the same timestamp", () => {
     expect(
       resolveNodeExecutionState({

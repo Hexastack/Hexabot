@@ -42,6 +42,7 @@ export const WORKFLOW_RUN_STATUSES: WorkflowRunStatus[] = [
  * - suspended: action paused via `workflow.suspend`; resumes to completed.
  * - completed: action resolved (either immediately or after resume).
  * - failed: action threw an error.
+ * - cancelled: action was aborted by the workflow scheduler.
  * - skipped: control flow bypassed the step (e.g., alternate branch or wait_any short-circuit).
  */
 export type ActionStatus =
@@ -50,6 +51,7 @@ export type ActionStatus =
   | 'suspended'
   | 'completed'
   | 'failed'
+  | 'cancelled'
   | 'skipped';
 
 export interface SuspensionOptions {

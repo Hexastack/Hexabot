@@ -70,6 +70,7 @@ This metadata is required for deterministic replay when a step has multiple `sus
 - `WorkflowSuspendedError` was removed.
 - `Workflow.run(...)` now throws an internal `WorkflowRunSuspendedError` carrying `stepId`, `reason`, and `data`.
 - `NonDeterministicWorkflowError` is exported and used to fail resume when replay metadata does not match runtime behavior.
+- `ParallelSuspensionError` is exported and used when `context.workflow.suspend()` is attempted inside a parallel branch.
 
 ## 3. End-to-end control flow
 
@@ -77,10 +78,12 @@ This metadata is required for deterministic replay when a step has multiple `sus
 
 1. Runner sets status to `running`, initializes state/context, and attaches runtime control.
 2. Task executor starts action execution and simultaneously waits for:
-   - action completion/failure
+   - action completion/failure/cancellation
    - first suspension request from that step
 3. If suspension arrives first, executor returns a `Suspension` continuation to the runner.
 4. Runner sets status to `suspended`, stores continuation, emits `hook:workflow:suspended`, and returns suspended result.
+
+Inside a `parallel` branch, `context.workflow.suspend()` rejects with `ParallelSuspensionError`; the workflow fails instead of returning a suspended result.
 
 ### 3.2 In-action suspension (`RunnerRuntimeControl.suspend`)
 
@@ -97,6 +100,8 @@ Inside `suspend(options)`:
    - if `awaitResults[suspendKey]` exists, return it immediately
    - else if primed resume data exists, return it immediately
 7. Otherwise enqueue a `RuntimeSuspensionRequest` and return its deferred promise.
+
+Parallel branch contexts replace the normal runtime control with one that rejects `suspend()` immediately. This avoids ambiguous multi-branch checkpoints and durable replay anomalies.
 
 ### 3.3 Resume (`Suspension.continue` + `WorkflowRunner.resume`)
 
@@ -220,7 +225,7 @@ Recommended persisted shape:
 `WorkflowRunner.fromPersistedState(...)` calls `rebuildSuspension(...)`, which:
 
 1. Parses `stepId` path and loop iteration suffix (`[i.j]`).
-2. Walks compiled flow tree (`task`, `parallel`, `conditional`, `loop`) to locate suspended node.
+2. Walks compiled flow tree (`task`, `conditional`, `loop`) to locate suspended node. Suspensions whose path is inside `parallel` are rejected because parallel suspension is unsupported.
 3. Builds a continuation that replays only the suspended step, then resumes normal flow.
 4. Injects replay seed and previously resumed data via:
    - `prepareStepReplay(...)`
@@ -263,6 +268,8 @@ Events:
 
 - Action code must `await` `workflow.suspend(...)`. Calling it without `await` can lead to cancellation of that suspend request.
 - `workflow.suspend()` outside an active step throws.
+- `workflow.suspend()` inside `parallel` fails with `ParallelSuspensionError`; move human-in-the-loop waits before or after the parallel block.
+- Actions receive an `AbortSignal` and should observe it so cancelled parallel losers can stop promptly.
 - Timeouts/retries in `AbstractAction.run()` wrap the full action execution; if non-zero timeout is used, suspended wall time counts toward that timeout.
 - `Workflow.run(...)` suspended errors are not exported as a public class; treat them structurally (`stepId`, `reason`, `data`) or use `WorkflowRunner` for explicit status objects.
 
@@ -277,6 +284,6 @@ Relevant tests:
 - `src/step-executors/task-executor.test.ts`
   - in-flight action resume behavior
 - `src/__tests__/suspension-rebuilder.test.ts`
-  - path parsing and continuation rebuild for task/parallel/loop
+  - path parsing and continuation rebuild for task/loop, plus rejection of parallel suspension paths
 - `src/__tests__/workflow.test.ts`
   - `Workflow.run()` suspension throw shape

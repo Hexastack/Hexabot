@@ -289,4 +289,11 @@ export class WorkflowService extends BaseOrmService<WorkflowOrmEntity> {
   ) {
     await this.sendWorkflowEvent('hook:step:error', payload);
   }
+
+  @OnEvent('hook:step:cancelled')
+  async sendWorkflowStepCancelled(
+    payload: WorkflowEventMap[keyof WorkflowEventMap],
+  ) {
+    await this.sendWorkflowEvent('hook:step:cancelled', payload);
+  }
 }
