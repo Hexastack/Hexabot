@@ -12,10 +12,23 @@ import chalk from 'chalk';
 
 export type ComposeMode = 'dev' | 'prod';
 
+export interface DockerComposeOptions {
+  envFile?: string;
+}
+
 export const resolveComposeFile = (projectRoot: string, filePath: string) => {
   return path.isAbsolute(filePath)
     ? filePath
     : path.join(projectRoot, filePath);
+};
+
+export const resolveComposeEnvFile = (
+  projectRoot: string,
+  filePath: string,
+) => {
+  const envFile = resolveComposeFile(projectRoot, filePath);
+
+  return fs.existsSync(envFile) ? envFile : undefined;
 };
 
 export const generateComposeFiles = (
@@ -61,9 +74,19 @@ export const generateComposeFiles = (
   return files.join(' ');
 };
 
-export const dockerCompose = (args: string) => {
+const shellArg = (value: string) => {
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+};
+
+export const dockerCompose = (
+  args: string,
+  options: DockerComposeOptions = {},
+) => {
   try {
-    const cmd = `docker compose ${args}`;
+    const envArgs = options.envFile
+      ? `--env-file ${shellArg(options.envFile)} `
+      : '';
+    const cmd = `docker compose ${envArgs}${args}`;
     console.log(chalk.yellow(cmd));
     execSync(cmd, { stdio: 'inherit' });
   } catch (_error) {

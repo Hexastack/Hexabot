@@ -12,6 +12,7 @@ import { loadProjectConfig } from '../core/config.js';
 import {
   dockerCompose,
   generateComposeFiles,
+  resolveComposeEnvFile,
   resolveComposeFile,
 } from '../core/docker.js';
 import { bootstrapEnvFile } from '../core/env.js';
@@ -115,6 +116,7 @@ const runDockerCommand = (
     bootstrapEnvFile(projectRoot, config.env.dockerExample, config.env.docker, {
       quiet: true,
     });
+    const envFile = resolveComposeEnvFile(projectRoot, config.env.docker);
     const commandArgs = ['up'];
     if (options.build) {
       commandArgs.push('--build');
@@ -122,13 +124,18 @@ const runDockerCommand = (
     if (options.detach) {
       commandArgs.push('-d');
     }
-    dockerCompose(`${composeArgs} ${commandArgs.join(' ')}`.trim());
+    dockerCompose(`${composeArgs} ${commandArgs.join(' ')}`.trim(), {
+      envFile,
+    });
   } else {
+    const envFile = resolveComposeEnvFile(projectRoot, config.env.docker);
     const commandArgs = ['down'];
     if (options.volumes) {
       commandArgs.push('-v');
     }
-    dockerCompose(`${composeArgs} ${commandArgs.join(' ')}`.trim());
+    dockerCompose(`${composeArgs} ${commandArgs.join(' ')}`.trim(), {
+      envFile,
+    });
   }
 };
 const runDockerLogs = (
@@ -149,6 +156,7 @@ const runDockerLogs = (
     config.docker.defaultServices,
     'dev',
   );
+  const envFile = resolveComposeEnvFile(projectRoot, config.env.docker);
   const args = ['logs'];
   if (options.follow) {
     args.push('-f');
@@ -160,7 +168,7 @@ const runDockerLogs = (
     args.push(service);
   }
 
-  dockerCompose(`${composeArgs} ${args.join(' ')}`.trim());
+  dockerCompose(`${composeArgs} ${args.join(' ')}`.trim(), { envFile });
 };
 const runDockerPs = () => {
   const projectRoot = path.resolve(process.cwd());
@@ -177,8 +185,9 @@ const runDockerPs = () => {
     config.docker.defaultServices,
     'dev',
   );
+  const envFile = resolveComposeEnvFile(projectRoot, config.env.docker);
 
-  dockerCompose(`${composeArgs} ps`);
+  dockerCompose(`${composeArgs} ps`, { envFile });
 };
 const resolveServices = (
   servicesInput: string | undefined,

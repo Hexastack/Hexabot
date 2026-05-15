@@ -51,8 +51,11 @@ export const registerCreateCommand = (program: Command) => {
     )
     .option('--pm <npm|pnpm|yarn|bun>', 'Preferred package manager')
     .option('--no-install', 'Skip installing dependencies')
-    .option('--dev', 'Run hexabot dev after creation')
-    .option('--docker', 'Use Docker-oriented next steps and --dev startup')
+    .option('--dev', 'Run hexabot dev after creation (local SQLite by default)')
+    .option(
+      '--docker',
+      'Show Docker/Postgres next steps and use Docker mode with --dev',
+    )
     .option('--force', 'Allow scaffolding into a non-empty directory')
     .action(async (projectName: string, options: CreateCommandOptions) => {
       await createProject(projectName, options);
@@ -99,6 +102,7 @@ const createProject = async (
       config,
       adminCredentials,
       dockerEnvBootstrapped,
+      projectName,
     );
 
     if (options.noInstall) {
@@ -201,6 +205,7 @@ const persistAdminSeedCredentials = (
   config: ReturnType<typeof loadProjectConfig>,
   credentials: AdminSeedCredentials,
   dockerEnvBootstrapped: boolean,
+  projectName: string,
 ) => {
   const seedVariables = buildAdminSeedVariables(credentials);
   upsertEnvVariables(projectPath, config.env.local, seedVariables);
@@ -209,7 +214,10 @@ const persistAdminSeedCredentials = (
     dockerEnvBootstrapped ||
     fs.existsSync(path.join(projectPath, config.env.docker))
   ) {
-    upsertEnvVariables(projectPath, config.env.docker, seedVariables);
+    upsertEnvVariables(projectPath, config.env.docker, {
+      ...seedVariables,
+      COMPOSE_PROJECT_NAME: projectName,
+    });
   }
 };
 const requireValue = (label: string) => {
@@ -258,39 +266,44 @@ const promptSeedAdminCredentials = async (): Promise<AdminSeedCredentials> => {
   assertInteractiveTerminal();
 
   console.log('\n');
-  console.log(chalk.bold('Admin account (initial credentials)'));
+  console.log(chalk.bold('Admin account'));
   console.log(
     chalk.gray(
-      'These details are used to seed the first admin user. You can change them later in your env file.',
+      'These details will be used to create the first admin user during setup.',
+    ),
+  );
+  console.log(
+    chalk.gray(
+      'You can update them later from the generated environment file before starting the app.',
     ),
   );
   console.log('\n');
 
   const firstName = (
     await input({
-      message: 'First name (e.g. Jhon)',
+      message: 'First name:',
       validate: requireValue('First name'),
     })
   ).trim();
   const lastName = (
     await input({
-      message: 'Last name (e.g. Doe)',
+      message: 'Last name:',
       validate: requireValue('Last name'),
     })
   ).trim();
   const email = (
     await input({
-      message: 'Email (e.g. admin@company.com)',
+      message: 'Email:',
       validate: validateEmail,
     })
   ).trim();
   const adminPassword = await password({
-    message: 'Password (min 8 chars)',
+    message: 'Password:',
     mask: '*',
     validate: validateAdminPassword,
   });
   await password({
-    message: 'Confirm password',
+    message: 'Confirm password:',
     mask: '*',
     validate: (value: string) => {
       if (value !== adminPassword) {
@@ -319,25 +332,32 @@ const logSuccessMessage = (
   console.log(chalk.gray(`1. Navigate to the project folder:`));
   console.log(chalk.yellow(`   cd ${projectName}`));
   if (options.docker) {
-    console.log(
-      chalk.gray(
-        `2. Run dev mode with Docker (or omit --docker for local sqlite):`,
-      ),
-    );
-    console.log(chalk.yellow(`   hexabot dev --docker`));
-  } else {
-    console.log(chalk.gray(`2. Start local dev server (SQLite by default):`));
+    console.log(chalk.gray(`2. Start dev with Docker and Postgres:`));
+    console.log(chalk.yellow(`   hexabot dev --docker --services postgres`));
+    console.log(chalk.gray(`3. Or start local dev with SQLite:`));
     console.log(chalk.yellow(`   hexabot dev`));
+  } else {
+    console.log(chalk.gray(`2. Start local dev with SQLite:`));
+    console.log(chalk.yellow(`   hexabot dev`));
+    console.log(chalk.gray(`3. Or start dev with Docker and Postgres:`));
+    console.log(chalk.yellow(`   hexabot dev --docker --services postgres`));
   }
-  console.log(chalk.gray(`3. Explore docker helpers if needed:`));
-  console.log(chalk.yellow(`   hexabot docker up --services postgres`));
   console.log(chalk.gray(`Env bootstrap completed.`));
   console.log('\n');
-  console.log(chalk.blue('Optional: Install Hexabot skills'));
+  console.log(chalk.blue('Optional: install Hexabot AI coding skills'));
   console.log(
-    chalk.gray('You can add official skills to accelerate your workflow:'),
+    chalk.gray(
+      'Use these with AI coding agents to generate actions and workflows faster:',
+    ),
   );
+  console.log('\n');
   console.log(chalk.yellow('   npx skills add hexabot-ai/action-creator'));
   console.log(chalk.yellow('   npx skills add hexabot-ai/workflow-writer'));
+  console.log('\n');
+  console.log(
+    chalk.gray(
+      'After starting Hexabot, you can generate an MCP token from your profile and connect your favorite AI coding agent.',
+    ),
+  );
   console.log('\n');
 };

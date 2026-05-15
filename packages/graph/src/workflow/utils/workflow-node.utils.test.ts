@@ -327,6 +327,9 @@ describe("buildNodesAndEdges", () => {
     expect(taskNode?.height).toBe(
       defaultConfig.dimensions?.[ENodeType.TASK]?.height,
     );
+    expect(taskNode?.measured).toEqual(
+      defaultConfig.dimensions?.[ENodeType.TASK],
+    );
     expect(taskNode?.style).toBeUndefined();
   });
 

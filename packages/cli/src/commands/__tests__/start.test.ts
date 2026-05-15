@@ -10,6 +10,7 @@ const loadProjectConfig = jest.fn();
 const updateProjectConfig = jest.fn();
 const dockerCompose = jest.fn();
 const generateComposeFiles = jest.fn();
+const resolveComposeEnvFile = jest.fn();
 const resolveComposeFile = jest.fn();
 const bootstrapEnvFile = jest.fn();
 const resolveEnvExample = jest.fn();
@@ -28,6 +29,7 @@ jest.unstable_mockModule('../../core/config.js', () => ({
 jest.unstable_mockModule('../../core/docker.js', () => ({
   dockerCompose,
   generateComposeFiles,
+  resolveComposeEnvFile,
   resolveComposeFile,
 }));
 
@@ -112,6 +114,7 @@ describe('runStart', () => {
     loadProjectConfig.mockReturnValue(config);
     detectPackageManager.mockReturnValue('pnpm');
     resolveComposeFile.mockReturnValue('/tmp/docker/docker-compose.yml');
+    resolveComposeEnvFile.mockReturnValue('/tmp/.env.docker');
     generateComposeFiles.mockReturnValue('-f docker-compose.yml');
 
     await runStart({
@@ -139,8 +142,13 @@ describe('runStart', () => {
       ['api', 'postgres'],
       'prod',
     );
+    expect(resolveComposeEnvFile).toHaveBeenCalledWith(
+      expect.any(String),
+      config.env.docker,
+    );
     expect(dockerCompose).toHaveBeenCalledWith(
       expect.stringContaining('up --build -d'),
+      { envFile: '/tmp/.env.docker' },
     );
     expect(runPackageScript).not.toHaveBeenCalled();
   });

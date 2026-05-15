@@ -38,6 +38,8 @@ export const projectSemanticGraph = (
       type: node.type,
       selectable: Boolean(node.selectable),
       position: { x: 0, y: 0 },
+      // Preserve xyflow handle bounds when controlled nodes are replaced for runtime styling.
+      measured: dimensions,
       data: node.data as GraphNode["data"],
       style,
     } as GraphNode;

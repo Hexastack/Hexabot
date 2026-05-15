@@ -40,11 +40,11 @@ Common options:
 - `-t, --template <name>` – template repository. Use `org/repo` or shorthand `starter`.
 - `--pm <npm|pnpm|yarn|bun>` – force a package manager (auto-detected otherwise).
 - `--no-install` – skip running the package manager after scaffolding.
-- `--dev` – immediately run `hexabot dev` once creation is complete.
-- `--docker` – show Docker-first next steps and use Docker mode when combined with `--dev`.
+- `--dev` – immediately run `hexabot dev` once creation is complete (local SQLite by default).
+- `--docker` – show Docker/Postgres next steps and use Docker mode when combined with `--dev`.
 - `--force` – allow scaffolding into a non-empty directory.
 
-The command downloads the latest template release, installs dependencies (unless `--no-install`), and bootstraps `.env` plus `.env.docker` when their example files are present.
+The command downloads the latest template release, installs dependencies (unless `--no-install`), and bootstraps `.env` plus `.env.docker` when their example files are present. The Docker env file is initialized with `COMPOSE_PROJECT_NAME=<project-name>` so Docker Compose uses the scaffolded project name.
 
 #### `dev`
 
@@ -54,7 +54,7 @@ Run the current project in development mode. Defaults to local (SQLite) developm
 # Local dev
 hexabot dev
 
-# Docker dev with Postgres profile
+# Run the app with Docker and Postgres
 hexabot dev --docker --services postgres
 ```
 
@@ -87,7 +87,7 @@ Quality-of-life wrappers around `docker compose` using the project’s `docker/`
 - `hexabot docker ps`
 - `hexabot docker start [--services <list>] [--build] [-d]` – convenience alias for `hexabot start --docker`
 
-The CLI automatically stitches together `docker-compose.yml` + `docker-compose.<service>.yml` overlays and can copy `.env.docker.example` on first run.
+The CLI automatically stitches together `docker-compose.yml` + `docker-compose.<service>.yml` overlays, can copy `.env.docker.example` on first run, and passes `.env.docker` to Docker Compose with `--env-file` when it exists.
 
 #### `start`
 
@@ -139,12 +139,10 @@ Run database migrations inside the Docker `api` container. Any extra args are fo
    hexabot dev
    ```
 
-3. **Need infrastructure like Postgres or Redis? Opt in with Docker**:
+3. **Run the app with Docker and Postgres when needed**:
 
    ```sh
-   hexabot dev --docker --services postgres,redis
-   # or manage Docker services directly
-   hexabot docker up --services postgres
+   hexabot dev --docker --services postgres
    ```
 
 That’s it—`create → cd → dev` is the happy path for a new Hexabot v3 automation project, while Docker and env helpers remain available on demand.
