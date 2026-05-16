@@ -10,6 +10,7 @@ import React from "react";
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { DashboardHeader } from "@/app-components/menus/DashboardSidebar/DashboardHeader";
 import { DashboardSidebar } from "@/app-components/menus/DashboardSidebar/DashboardSidebar";
+import { AdminWorkflowTour } from "@/components/guided-tour/AdminWorkflowTour";
 import { useAuthRedirection } from "@/hooks/auth/useAuthRedirection";
 import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
 import { useConfig } from "@/hooks/useConfig";
@@ -86,6 +87,7 @@ export const AuthenticatedLayout: React.FC<
           {children}
         </Grid>
       </Box>
+      <AdminWorkflowTour />
     </WorkflowEventProvider>
   );
 };
