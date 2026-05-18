@@ -47,7 +47,6 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 
 ## Conventions and gotchas
 - Expressions must start with `=`; validation will parse JSONata and fail early on syntax errors.
-- Task/action names are enforced as `snake_case` by `assertSnakeCaseName`.
 - Non-task defs must include `settings` (empty object is valid).
 - If compile-time `actions` are provided, any def declaring `action` must resolve to a known action.
 - `max_concurrency` is available only on `loop.type: for_each`, and is not yet enforced by the in-process runner (treat it as metadata/hint for now).

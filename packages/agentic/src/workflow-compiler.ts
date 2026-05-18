@@ -20,7 +20,6 @@ import type {
   WorkflowDefinition,
 } from './dsl.types';
 import { extractTaskDefinitions as extractTaskDefinitionsFromDefs } from './dsl.types';
-import { assertSnakeCaseName } from './utils/naming';
 import { StepType } from './workflow-event-emitter';
 import type {
   CompiledMapping,
@@ -168,8 +167,6 @@ const compileTasks = (
   assertActionsBound(taskDefinitions, options.actions);
 
   for (const [taskName, task] of Object.entries(taskDefinitions)) {
-    assertSnakeCaseName(taskName, 'action');
-
     const action = options.actions[task.action];
     const settingsPayload = mergeSettings(defaultSettings, task.settings);
     const parsedSettings = action.parseSettings(settingsPayload);
