@@ -60,3 +60,5 @@ export const Avatar = ({
 
   return <MuiAvatar {...rest} sx={sx} src={src || avatarSrc} />;
 };
+
+Avatar.displayName = "Avatar";
