@@ -82,5 +82,14 @@ export type JsonataFormulaFieldProps = {
   minHeightPx?: number;
   maxHeightPx?: number;
 
+  /** Shows a compact affordance that focuses JSONata autocomplete. */
+  enableExpressionAssist?: boolean;
+
+  onExpressionStateChange?: (state: {
+    hasError: boolean;
+    isExpression: boolean;
+    suppressSchemaErrors: boolean;
+  }) => void;
+
   sx?: SxProps<Theme>;
 };

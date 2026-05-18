@@ -19,6 +19,16 @@ import * as React from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
+import {
+  ensureExpressionPrefix,
+  isExpressionValue,
+  looksLikeDynamicValueExpressionBody,
+  shouldAppendCompletionDot,
+  stripExpressionPrefix,
+  toJsonataStringLiteral,
+  validateDynamicValue,
+} from "./dynamicValueUtils";
+import { ExpressionAssist } from "./ExpressionAssist";
 import { useJsonataGlobalsSchema } from "./globals-schema.context";
 import { indexToLineCol } from "./jsonataUtils";
 import {
@@ -28,6 +38,23 @@ import {
 } from "./monaco";
 import { extractGlobals } from "./schema";
 import type { JsonataFormulaFieldProps } from "./types";
+
+const getValidationMessage = (
+  validation: ReturnType<typeof validateDynamicValue>,
+  t: ReturnType<typeof useTranslate>["t"],
+) => {
+  if (validation.code === "empty_dynamic") {
+    return t("input.dynamic_value.errors.empty");
+  }
+
+  if (validation.code === "invalid_dynamic") {
+    return (
+      validation.errorMessage ?? t("input.dynamic_value.errors.invalid_jsonata")
+    );
+  }
+
+  return null;
+};
 
 export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
   const {
@@ -43,6 +70,8 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     fullWidth,
     minHeightPx = 36,
     maxHeightPx = 220,
+    enableExpressionAssist = false,
+    onExpressionStateChange,
     sx,
   } = props;
   const { t } = useTranslate();
@@ -53,7 +82,7 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     () => extractGlobals(resolvedGlobalsSchema),
     [resolvedGlobalsSchema],
   );
-  const isJsonataMode = value.startsWith("=");
+  const isJsonataMode = isExpressionValue(value);
   const monacoRef = React.useRef<typeof import("monaco-editor") | null>(null);
   const editorRef = React.useRef<
     import("monaco-editor").editor.IStandaloneCodeEditor | null
@@ -61,15 +90,12 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
   const completionDisposableRef = React.useRef<
     import("monaco-editor").IDisposable | null
   >(null);
-  const [internalError, setInternalError] = React.useState<string | null>(null);
   const [height, setHeight] = React.useState<number>(minHeightPx);
+  const [assistMenuAnchor, setAssistMenuAnchor] =
+    React.useState<HTMLElement | null>(null);
   const prevIsJsonataMode = React.useRef<boolean>(isJsonataMode);
   const onBlurRef = React.useRef(onBlur);
   const onFocusRef = React.useRef(onFocus);
-
-  React.useEffect(() => {
-    prevIsJsonataMode.current = isJsonataMode;
-  }, [isJsonataMode]);
 
   React.useEffect(() => {
     onBlurRef.current = onBlur;
@@ -181,7 +207,22 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
       editor.focus();
       editor.trigger("jsonata", "editor.action.triggerSuggest", null);
     }
+
+    prevIsJsonataMode.current = isJsonataMode;
   }, [isJsonataMode]);
+
+  const validationResult = React.useMemo(() => {
+    return validateDynamicValue(value);
+  }, [value]);
+  const validationMessage = getValidationMessage(validationResult, t);
+
+  React.useEffect(() => {
+    onExpressionStateChange?.({
+      hasError: Boolean(validationMessage),
+      isExpression: validationResult.isExpression,
+      suppressSchemaErrors: validationResult.suppressSchemaErrors,
+    });
+  }, [onExpressionStateChange, validationMessage, validationResult]);
 
   // Syntax validation (debounced)
   React.useEffect(() => {
@@ -195,8 +236,6 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     if (!model) return;
 
     const handle = window.setTimeout(() => {
-      setInternalError(null);
-
       // Clear markers in plain mode
       if (!isJsonataMode) {
         monaco.editor.setModelMarkers(model, "jsonata", []);
@@ -204,7 +243,22 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
         return;
       }
 
-      const expr = value.slice(1); // strip leading '='
+      const expr = stripExpressionPrefix(value);
+
+      if (validationResult.code === "empty_dynamic") {
+        monaco.editor.setModelMarkers(model, "jsonata", [
+          {
+            severity: monaco.MarkerSeverity.Error,
+            message: validationMessage ?? t("input.dynamic_value.errors.empty"),
+            startLineNumber: 1,
+            startColumn: 1,
+            endLineNumber: 1,
+            endColumn: 2,
+          },
+        ]);
+
+        return;
+      }
 
       if (!expr.trim()) {
         monaco.editor.setModelMarkers(model, "jsonata", []);
@@ -217,14 +271,10 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
         jsonata(expr);
 
         monaco.editor.setModelMarkers(model, "jsonata", []);
-        setInternalError(null);
       } catch (e: any) {
         const message = e?.message
           ? String(e.message)
-          : "Invalid JSONata expression";
-
-        setInternalError(message);
-
+          : t("input.dynamic_value.errors.invalid_jsonata");
         const posIndex: number =
           typeof e?.position === "number"
             ? e.position
@@ -232,7 +282,6 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
               ? e.offset
               : 0;
         const { line, col } = indexToLineCol(expr, Math.max(0, posIndex));
-        // +1 column shift on first line due to the leading '=' in the editor content
         const lineNumber = line + 1;
         const startColumn = col + 1 + (line === 0 ? 1 : 0);
         const endColumn = startColumn + 1;
@@ -251,13 +300,147 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
     }, 200);
 
     return () => window.clearTimeout(handle);
-  }, [value, isJsonataMode]);
+  }, [isJsonataMode, t, validationMessage, validationResult.code, value]);
 
-  const showError = Boolean(internalError);
+  const handleEditorChange = (nextEditorValue?: string) => {
+    onChange(nextEditorValue ?? "");
+  };
+  const appendDotForPathCompletion = (
+    editor: import("monaco-editor").editor.IStandaloneCodeEditor,
+    monaco: typeof import("monaco-editor"),
+  ) => {
+    const model = editor.getModel();
+    const position = editor.getPosition();
+
+    if (!model || !position) {
+      return;
+    }
+
+    const textBeforeCursor = model.getValueInRange({
+      startLineNumber: position.lineNumber,
+      startColumn: 1,
+      endLineNumber: position.lineNumber,
+      endColumn: position.column,
+    });
+
+    if (!shouldAppendCompletionDot(textBeforeCursor)) {
+      return;
+    }
+
+    editor.executeEdits("dynamic-value", [
+      {
+        range: new monaco.Range(
+          position.lineNumber,
+          position.column,
+          position.lineNumber,
+          position.column,
+        ),
+        text: ".",
+        forceMoveMarkers: true,
+      },
+    ]);
+    editor.setPosition({
+      lineNumber: position.lineNumber,
+      column: position.column + 1,
+    });
+  };
+  const focusDynamicValueEditor = (
+    editor: import("monaco-editor").editor.IStandaloneCodeEditor,
+    monaco: typeof import("monaco-editor"),
+    options: { triggerSuggestions?: boolean } = { triggerSuggestions: true },
+  ) => {
+    const model = editor.getModel();
+
+    if (model) {
+      monaco.editor.setModelLanguage(model, "jsonata");
+    }
+
+    if (options.triggerSuggestions) {
+      appendDotForPathCompletion(editor, monaco);
+    }
+
+    editor.focus();
+
+    if (options.triggerSuggestions) {
+      editor.trigger("dynamic-value", "editor.action.triggerSuggest", null);
+    }
+  };
+  const replaceEditorValue = (
+    nextValue: string,
+    options: { triggerSuggestions?: boolean } = { triggerSuggestions: true },
+  ) => {
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
+
+    if (!editor || !monaco) {
+      onChange(nextValue);
+
+      return;
+    }
+
+    editor.setValue(nextValue);
+    editor.setPosition({ lineNumber: 1, column: nextValue.length + 1 });
+    focusDynamicValueEditor(editor, monaco, options);
+  };
+  const handleExpressionAssist = (anchor: HTMLElement) => {
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
+
+    if (!editor || !monaco) {
+      if (
+        !value.trim() ||
+        isExpressionValue(value) ||
+        looksLikeDynamicValueExpressionBody(value)
+      ) {
+        onChange(ensureExpressionPrefix(value));
+      } else {
+        setAssistMenuAnchor(anchor);
+      }
+
+      return;
+    }
+
+    const editorCurrentValue = editor.getValue();
+
+    if (isExpressionValue(editorCurrentValue)) {
+      focusDynamicValueEditor(editor, monaco);
+
+      return;
+    }
+
+    if (!editorCurrentValue.trim()) {
+      replaceEditorValue("=");
+
+      return;
+    }
+
+    if (looksLikeDynamicValueExpressionBody(editorCurrentValue)) {
+      replaceEditorValue(ensureExpressionPrefix(editorCurrentValue));
+
+      return;
+    }
+
+    setAssistMenuAnchor(anchor);
+  };
+  const closeAssistMenu = () => setAssistMenuAnchor(null);
+  const replaceWithDynamicValue = () => {
+    closeAssistMenu();
+    replaceEditorValue("=");
+  };
+  const convertStaticTextToDynamicString = () => {
+    const currentValue = editorRef.current?.getValue() ?? value;
+
+    closeAssistMenu();
+    replaceEditorValue(toJsonataStringLiteral(currentValue), {
+      triggerSuggestions: false,
+    });
+  };
+  const showError = Boolean(validationMessage);
   const { mode } = useColorScheme();
-  const showModeIcon = isJsonataMode;
+  const showAssistIcon = enableExpressionAssist;
+  const showModeIcon = !showAssistIcon && isJsonataMode;
   const modeLabel = t("input.jsonata_formula_mode");
-  const resolvedHelperText = showError ? internalError : helperText;
+  const resolvedHelperText = showError ? validationMessage : helperText;
 
   return (
     <FormControl
@@ -314,7 +497,10 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
             borderRadius: resolvedTheme.shape.borderRadius,
             border: "1px solid",
             paddingLeft: theme.spacing(1),
-            paddingRight: showModeIcon ? theme.spacing(4.5) : theme.spacing(1),
+            paddingRight:
+              showModeIcon || showAssistIcon
+                ? theme.spacing(4.5)
+                : theme.spacing(1),
             borderColor,
             backgroundColor: disabled
               ? disabledBackground
@@ -380,9 +566,20 @@ export function JsonataFormulaField(props: JsonataFormulaFieldProps) {
             </Box>
           </Tooltip>
         ) : null}
+        {showAssistIcon ? (
+          <ExpressionAssist
+            disabled={disabled}
+            isExpression={isJsonataMode}
+            menuAnchor={assistMenuAnchor}
+            onConvertStaticText={convertStaticTextToDynamicString}
+            onMenuClose={closeAssistMenu}
+            onOpen={handleExpressionAssist}
+            onReplaceWithExpression={replaceWithDynamicValue}
+          />
+        ) : null}
         <Editor
           value={value}
-          onChange={(v) => onChange(v ?? "")}
+          onChange={handleEditorChange}
           onMount={onMount}
           theme={mode}
           beforeMount={handleEditorWillMount}

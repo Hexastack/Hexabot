@@ -114,6 +114,7 @@ const ToolFormDrawerContent = ({
             actionSettingSchema as RJSFSchema | undefined,
             actionSettingsData,
           )}
+          expressionPolicy="opt-in"
         />
       ) : (
         <Typography variant="body2" color="text.secondary" px={1}>

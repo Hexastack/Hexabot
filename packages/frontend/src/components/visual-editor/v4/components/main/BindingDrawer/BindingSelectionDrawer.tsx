@@ -221,6 +221,7 @@ const BindingSelectionDrawerContent = ({
             onVisibleErrorsChange={onVisibleErrorsChange}
             uiSchema={bindingUiSchema}
             idPrefix="single-binding-selection-drawer"
+            expressionPolicy="opt-in"
           />
         ) : (
           <Typography variant="body2" color="text.secondary" px={1}>

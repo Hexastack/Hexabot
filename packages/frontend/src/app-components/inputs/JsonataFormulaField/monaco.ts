@@ -108,36 +108,53 @@ export function createCompletionProvider(
   },
   targetModel?: import("monaco-editor").editor.ITextModel | null,
 ) {
-  const varItems: import("monaco-editor").languages.CompletionItem[] = [
-    {
-      label: "$input",
-      kind: monaco.languages.CompletionItemKind.Variable,
-      insertText: "$input",
-      detail: "Global variable",
-      documentation: "Incoming payload / current input",
-    },
-    {
-      label: "$output",
-      kind: monaco.languages.CompletionItemKind.Variable,
-      insertText: "$output",
-      detail: "Global variable",
-      documentation: "Output produced so far",
-    },
-    {
-      label: "$context",
-      kind: monaco.languages.CompletionItemKind.Variable,
-      insertText: "$context",
-      detail: "Global variable",
-      documentation: "Execution context / workflow context",
-    },
-  ] as any;
-
   function schemaForVar(v: "$input" | "$output" | "$context") {
     if (v === "$input") return globals.input;
     if (v === "$output") return globals.output;
 
     return globals.context;
   }
+
+  const triggerSuggestCommand = {
+    id: "editor.action.triggerSuggest",
+    title: "Show suggestions",
+  };
+  const getCompletionNode = (schema: JsonSchemaLike | undefined) => {
+    let node = deref(rootSchema, schema);
+
+    if (node && schemaTypeHas(node, "array")) {
+      node = deref(rootSchema, getItemsSchema(rootSchema, node));
+    }
+
+    return node;
+  };
+  const hasChildCompletions = (schema: JsonSchemaLike | undefined) => {
+    const node = getCompletionNode(schema);
+
+    return node ? getPropertyKeys(rootSchema, node).length > 0 : false;
+  };
+  const buildInsertBehavior = (
+    insertText: string,
+    schema: JsonSchemaLike | undefined,
+  ) =>
+    hasChildCompletions(schema)
+      ? {
+          insertText: `${insertText}.`,
+          command: triggerSuggestCommand,
+        }
+      : { insertText };
+  const buildVarItem = (
+    label: "$input" | "$output" | "$context",
+    documentation: string,
+    range: import("monaco-editor").IRange,
+  ): import("monaco-editor").languages.CompletionItem => ({
+    label,
+    kind: monaco.languages.CompletionItemKind.Variable,
+    detail: "Global variable",
+    documentation,
+    range,
+    ...buildInsertBehavior(label, deref(rootSchema, schemaForVar(label))),
+  });
 
   return monaco.languages.registerCompletionItemProvider("jsonata", {
     triggerCharacters: [".", "$", '"', "'"],
@@ -174,15 +191,32 @@ export function createCompletionProvider(
           : baseRange;
       const suggestions: import("monaco-editor").languages.CompletionItem[] =
         [];
+      const normalizedTextUntilCursor = textUntilCursor.trim();
 
       // Always allow vars when user is typing `$...`
       if (
+        normalizedTextUntilCursor === "" ||
+        normalizedTextUntilCursor === "=" ||
         textUntilCursor.endsWith("$") ||
         charBeforeWord === "$" ||
         word.word.startsWith("$")
       ) {
         suggestions.push(
-          ...varItems.map((i) => ({ ...i, range: rangeIncludingDollar })),
+          buildVarItem(
+            "$input",
+            "Incoming payload / current input",
+            rangeIncludingDollar,
+          ),
+          buildVarItem(
+            "$output",
+            "Output produced so far",
+            rangeIncludingDollar,
+          ),
+          buildVarItem(
+            "$context",
+            "Execution context / workflow context",
+            rangeIncludingDollar,
+          ),
         );
       }
 
@@ -234,6 +268,14 @@ export function createCompletionProvider(
       const keys = getPropertyKeys(rootSchema, node);
       // If user is right after `$input` with no dot yet, insert a dot automatically
       const needsDot = /(\$input|\$output|\$context)$/.test(textUntilCursor);
+      const propertyRange = needsDot
+        ? new monaco.Range(
+            position.lineNumber,
+            position.column,
+            position.lineNumber,
+            position.column,
+          )
+        : baseRange;
       const propertyItems = keys.map((k) => {
         const propSchema = deref(
           rootSchema,
@@ -241,16 +283,17 @@ export function createCompletionProvider(
         );
         const insert = formatSegmentForJsonata(k);
         const insertText = needsDot ? `.${insert}` : insert;
+        const insertBehavior = buildInsertBehavior(insertText, propSchema);
 
         return {
           label: k,
           kind: monaco.languages.CompletionItemKind.Field,
-          insertText,
-          range: baseRange,
+          range: propertyRange,
           detail: propSchema?.type
             ? `(${Array.isArray(propSchema.type) ? propSchema.type.join(" | ") : propSchema.type})`
             : "field",
           documentation: propSchema?.description,
+          ...insertBehavior,
         } as import("monaco-editor").languages.CompletionItem;
       });
 
