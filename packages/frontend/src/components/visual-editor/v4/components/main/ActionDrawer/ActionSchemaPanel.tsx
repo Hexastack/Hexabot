@@ -8,11 +8,17 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Box,
+  Stack,
   Typography,
 } from "@mui/material";
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
+import type { ReactNode } from "react";
 
-import { JsonSchemaForm } from "@/app-components/inputs/JsonSchemaForm";
+import {
+  JsonSchemaForm,
+  type ExpressionPolicy,
+} from "@/app-components/inputs/JsonSchemaForm";
 
 export type ActionSchemaPanelProps = {
   title: string;
@@ -23,6 +29,8 @@ export type ActionSchemaPanelProps = {
   panelKey: string;
   emptyLabel: string;
   uiSchema?: UiSchema;
+  expressionPolicy?: ExpressionPolicy;
+  headerAction?: ReactNode;
 };
 
 export const ActionSchemaPanel = ({
@@ -34,10 +42,31 @@ export const ActionSchemaPanel = ({
   panelKey,
   emptyLabel,
   uiSchema,
+  expressionPolicy = "input-default",
+  headerAction,
 }: ActionSchemaPanelProps) => (
   <Accordion variant="elevation" defaultExpanded>
     <AccordionSummary>
-      <Typography variant="subtitle2">{title}</Typography>
+      {headerAction ? (
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          width="100%"
+          gap={1}
+        >
+          <Typography variant="subtitle2">{title}</Typography>
+          <Box
+            component="span"
+            onClick={(event) => event.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            {headerAction}
+          </Box>
+        </Stack>
+      ) : (
+        <Typography variant="subtitle2">{title}</Typography>
+      )}
     </AccordionSummary>
     <AccordionDetails>
       {schema ? (
@@ -48,6 +77,7 @@ export const ActionSchemaPanel = ({
           onVisibleErrorsChange={onVisibleErrorsChange}
           uiSchema={uiSchema}
           idPrefix={`action-${panelKey}`}
+          expressionPolicy={expressionPolicy}
         />
       ) : (
         <Typography variant="body2" color="text.secondary">

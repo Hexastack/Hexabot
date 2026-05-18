@@ -682,7 +682,23 @@
   },
   "input": {
     "search": "Search",
-    "jsonata_formula_mode": "JSONata mode (starts with '=')"
+    "jsonata_formula_mode": "Dynamic value",
+    "dynamic_value": {
+      "active": "Dynamic value",
+      "use_dynamic": "Use dynamic value",
+      "menu": {
+        "replace": "Replace with dynamic value",
+        "replace_description": "Clear this static value and start an expression.",
+        "convert": "Convert current text to dynamic string",
+        "convert_description": "Keep this text as a quoted JSONata string.",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "disabled": "Values starting with '=' are dynamic values. This field does not support dynamic values.",
+        "empty": "Enter a dynamic value expression.",
+        "invalid_jsonata": "Invalid JSONata expression."
+      }
+    }
   },
   "link": {
     "reset": "Forgot your password?"
@@ -750,6 +766,15 @@
           "mode": {
             "override_global_settings": "Override global settings"
           }
+        },
+        "dynamic_values_help": {
+          "open": "About dynamic values",
+          "title": "Dynamic values",
+          "static": "Static values are kept exactly as entered.",
+          "dynamic": "Type '=' or click the function icon to use a dynamic value from $input, $output, or $context.",
+          "technical": "Dynamic values use JSONata expressions. In settings, only supported fields can use them.",
+          "docs": "Hexabot docs",
+          "jsonata_docs": "JSONata docs"
         },
         "description": {
           "placeholder": "Optional step description."

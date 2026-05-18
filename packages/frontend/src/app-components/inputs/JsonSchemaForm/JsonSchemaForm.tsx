@@ -16,6 +16,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isRecord } from "@/utils/object";
 import validator from "@/utils/rjsf-zod-validator";
 
+import type {
+  ExpressionFieldState,
+  ExpressionPolicy,
+} from "./expression.types";
 import { FORM_FIELDS } from "./fields";
 import { FORM_TEMPLATES } from "./templates";
 import { getFormWidgets } from "./widgets";
@@ -57,6 +61,7 @@ type JsonSchemaFormProps<
   uiSchema?: UiSchema;
   liveValidate?: "onChange" | "onBlur" | boolean;
   enableJsonataTextWidget?: boolean;
+  expressionPolicy?: ExpressionPolicy;
   formContext?: Record<string, unknown>;
   onVisibleErrorsChange?: (hasVisibleErrors: boolean) => void;
   validateOnMount?: boolean;
@@ -72,6 +77,7 @@ export const JsonSchemaForm = <
   uiSchema,
   liveValidate = "onChange",
   enableJsonataTextWidget = true,
+  expressionPolicy = "input-default",
   formContext,
   onVisibleErrorsChange,
   validateOnMount = false,
@@ -81,6 +87,9 @@ export const JsonSchemaForm = <
   );
   const visibleErrorFieldIdsRef = useRef<Set<string>>(new Set());
   const [hasVisibleErrors, setHasVisibleErrors] = useState(false);
+  const [expressionFieldStates, setExpressionFieldStates] = useState<
+    Record<string, ExpressionFieldState>
+  >({});
   const normalizedFormData = useMemo(
     () => withSchemaDefaults(schema, formData),
     [formData, schema],
@@ -106,6 +115,40 @@ export const JsonSchemaForm = <
       setHasVisibleErrors((previous) =>
         previous === nextHasVisibleErrors ? previous : nextHasVisibleErrors,
       );
+    },
+    [],
+  );
+  const reportExpressionFieldState = useCallback(
+    (fieldId: string, state?: ExpressionFieldState) => {
+      if (!fieldId) {
+        return;
+      }
+
+      setExpressionFieldStates((current) => {
+        const previous = current[fieldId];
+
+        if (!state) {
+          if (!previous) {
+            return current;
+          }
+
+          const { [fieldId]: _, ...next } = current;
+
+          return next;
+        }
+
+        if (
+          previous?.hasError === state.hasError &&
+          previous?.suppressSchemaErrors === state.suppressSchemaErrors
+        ) {
+          return current;
+        }
+
+        return {
+          ...current,
+          [fieldId]: state,
+        };
+      });
     },
     [],
   );
@@ -140,7 +183,10 @@ export const JsonSchemaForm = <
       formData={liveFormData}
       formContext={{
         ...(formContext ?? {}),
+        expressionFieldStates,
+        expressionPolicy,
         formData: liveFormData,
+        reportExpressionFieldState,
         reportFieldVisibleError,
       }}
       onChange={(event) => {

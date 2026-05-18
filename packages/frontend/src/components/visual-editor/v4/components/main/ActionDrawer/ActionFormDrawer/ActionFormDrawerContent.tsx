@@ -17,6 +17,7 @@ import {
 import { buildSettingsUiSchema } from "../../../../utils/settings-ui-schema.utils";
 import { ActionSchemaPanel } from "../ActionSchemaPanel";
 
+import { DynamicValueHelp } from "./DynamicValueHelp";
 import { ExecutionSettingsPanel } from "./ExecutionSettingsPanel";
 
 export type ActionFormDrawerContentProps = {
@@ -83,6 +84,8 @@ export const ActionFormDrawerContent = ({
           panelKey={`${panelKeyBase}-input`}
           emptyLabel={t("visual_editor.actions_drawer.form.empty_schema.input")}
           uiSchema={extractUiSchema(actionSchema.inputSchema as RJSFSchema)}
+          expressionPolicy="input-default"
+          headerAction={<DynamicValueHelp />}
         />
       ) : null}
       {hasSettingsSchema ? (
@@ -100,6 +103,8 @@ export const ActionFormDrawerContent = ({
             actionSchema.settingSchema as RJSFSchema | undefined,
             actionSettingsData,
           )}
+          expressionPolicy="opt-in"
+          headerAction={<DynamicValueHelp />}
         />
       ) : null}
       <ExecutionSettingsPanel

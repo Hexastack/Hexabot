@@ -682,7 +682,23 @@
   },
   "input": {
     "search": "Recherche",
-    "jsonata_formula_mode": "Mode JSONata (commence par '=')"
+    "jsonata_formula_mode": "Valeur dynamique",
+    "dynamic_value": {
+      "active": "Valeur dynamique",
+      "use_dynamic": "Utiliser une valeur dynamique",
+      "menu": {
+        "replace": "Remplacer par une valeur dynamique",
+        "replace_description": "Effacer cette valeur statique et commencer une expression.",
+        "convert": "Convertir le texte en chaîne dynamique",
+        "convert_description": "Conserver ce texte comme chaîne JSONata entre guillemets.",
+        "cancel": "Annuler"
+      },
+      "errors": {
+        "disabled": "Les valeurs qui commencent par '=' sont des valeurs dynamiques. Ce champ ne prend pas en charge les valeurs dynamiques.",
+        "empty": "Saisissez une expression de valeur dynamique.",
+        "invalid_jsonata": "Expression JSONata invalide."
+      }
+    }
   },
   "link": {
     "reset": "Mot de passe oublié?"
@@ -750,6 +766,15 @@
           "mode": {
             "override_global_settings": "Remplacer les paramètres globaux"
           }
+        },
+        "dynamic_values_help": {
+          "open": "À propos des valeurs dynamiques",
+          "title": "Valeurs dynamiques",
+          "static": "Les valeurs statiques sont conservées exactement comme elles sont saisies.",
+          "dynamic": "Saisissez '=' ou cliquez sur l'icône de fonction pour utiliser une valeur dynamique depuis $input, $output ou $context.",
+          "technical": "Les valeurs dynamiques utilisent des expressions JSONata. Dans les paramètres, seuls les champs compatibles peuvent les utiliser.",
+          "docs": "Documentation Hexabot",
+          "jsonata_docs": "Documentation JSONata"
         },
         "description": {
           "placeholder": "Description optionnelle de l'étape."

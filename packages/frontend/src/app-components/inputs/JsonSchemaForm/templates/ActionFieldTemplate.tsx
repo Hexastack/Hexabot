@@ -12,6 +12,8 @@ import {
 } from "@rjsf/utils";
 import { useEffect } from "react";
 
+import type { ExpressionFormContext } from "../expression.types";
+
 import { isActionFieldHidden } from "./action-field-template.utils";
 
 export const ActionFieldTemplate = (props: FieldTemplateProps) => {
@@ -36,16 +38,17 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
     schema,
     uiSchema,
     registry,
-    formData,
   } = props;
   const uiOptions = getUiOptions(uiSchema);
   const rootFormData = registry.formContext?.formData as
     | Record<string, unknown>
     | undefined;
+  const expressionFieldState = (
+    registry.formContext as ExpressionFormContext | undefined
+  )?.expressionFieldStates?.[id];
   const shouldIgnoreErrors =
-    id.startsWith("action-") &&
-    typeof formData === "string" &&
-    formData.startsWith("=");
+    expressionFieldState?.suppressSchemaErrors === true &&
+    expressionFieldState?.hasError !== true;
   const reportFieldVisibleError = registry.formContext
     ?.reportFieldVisibleError as
     | ((fieldId: string, hasVisibleError: boolean) => void)
@@ -55,8 +58,11 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
     uiOptions,
     formData: rootFormData,
   });
-  const hasVisibleError =
+  const hasSchemaVisibleError =
     !isHidden && !shouldIgnoreErrors && rawErrors.length > 0;
+  const hasExpressionVisibleError =
+    !isHidden && expressionFieldState?.hasError === true;
+  const hasVisibleError = hasSchemaVisibleError || hasExpressionVisibleError;
   const WrapIfAdditionalTemplate = getTemplate(
     "WrapIfAdditionalTemplate",
     registry,
@@ -95,7 +101,7 @@ export const ActionFieldTemplate = (props: FieldTemplateProps) => {
     >
       <FormControl fullWidth error={hasVisibleError} required={required}>
         {children}
-        {hasVisibleError ? errors : null}
+        {hasSchemaVisibleError ? errors : null}
         {help}
       </FormControl>
     </WrapIfAdditionalTemplate>
