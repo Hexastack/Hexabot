@@ -676,7 +676,10 @@
     "not_now": "Not now",
     "view_plans": "View plans",
     "enter_license_key": "Enter license key",
-    "manage_users": "Manage users"
+    "manage_users": "Manage users",
+    "next": "Next",
+    "skip": "Skip",
+    "done": "Done"
   },
   "input": {
     "search": "Search",
@@ -908,6 +911,33 @@
       "show": "Show YAML editor",
       "hide": "Hide YAML editor",
       "validation_title": "Workflow definition has errors"
+    },
+    "guided_tour": {
+      "workflow_name_prefix": "My first workflow",
+      "dashboard_create": {
+        "title": "Create your first workflow",
+        "content": "Start by creating a conversational workflow. Use the highlighted Create Workflow button and Hexabot will open a fresh visual editor for you."
+      },
+      "empty_insert": {
+        "title": "Add the first block",
+        "content": "Your canvas is ready. Click the highlighted plus button to drop in the first building block."
+      },
+      "insert_step": {
+        "title": "Choose a step",
+        "content": "Pick Step from the insert menu. This gives the workflow a real action to run when the conversation starts."
+      },
+      "send_text_action": {
+        "title": "Send a text message",
+        "content": "Choose Send Text Message. It is the quickest way to make your bot answer with a clear, friendly reply."
+      },
+      "action_save": {
+        "title": "Save the action",
+        "content": "Save the action with the default values. That locks the first reply into the workflow so you can try it right away."
+      },
+      "chat_widget": {
+        "title": "Test the conversation",
+        "content": "Now test the flow from the chat widget. Send a message and watch your first workflow answer back."
+      }
     },
     "workflow_versions": {
       "show": "Show workflow versions",

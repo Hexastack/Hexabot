@@ -55,6 +55,7 @@ export const WorkflowEmptyState = ({
             aria-controls={isMenuOpen ? menuId : undefined}
             aria-haspopup="menu"
             aria-expanded={isMenuOpen ? "true" : undefined}
+            data-tour-id="admin-workflow-tour-empty-insert"
             onClick={handleOpenInsertMenu}
           >
             <Plus size={24} />
