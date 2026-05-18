@@ -92,6 +92,8 @@ export type {
 
 export { NonDeterministicWorkflowError } from './runner-runtime-control';
 
+export { ParallelSuspensionError, WorkflowCancellationError } from './errors';
+
 export {
   compileValue,
   evaluateMapping,

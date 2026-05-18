@@ -23,9 +23,21 @@ import type {
   Suspension,
 } from '../workflow-types';
 
+export type StepExecutorEnvForkOverrides = {
+  context?: BaseWorkflowContext;
+  signal?: AbortSignal;
+  setCurrentStep?: (step?: StepInfo) => void;
+  captureTaskOutput?: (
+    task: CompiledTask,
+    state: ExecutionState,
+    result: unknown,
+  ) => Promise<void>;
+};
+
 export type StepExecutorEnv = {
   compiled: CompiledWorkflow;
   context: BaseWorkflowContext;
+  signal: AbortSignal;
   runId?: string;
   buildInstanceStepInfo: (
     step: CompiledStep,
@@ -67,4 +79,5 @@ export type StepExecutorEnv = {
     state: ExecutionState,
     path: Array<number | string>,
   ) => Promise<Suspension | void>;
+  fork: (overrides: StepExecutorEnvForkOverrides) => StepExecutorEnv;
 };

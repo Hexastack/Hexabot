@@ -151,5 +151,14 @@ export const mapWorkflowEventToExecutionActions = (
     });
   }
 
+  if (event.workflowEvent === "step:cancelled") {
+    stepActions.push({
+      type: "append",
+      key: stepExecutionKey,
+      state: "cancelled",
+      t: event.t,
+    });
+  }
+
   return stepActions;
 };

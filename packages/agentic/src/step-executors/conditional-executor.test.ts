@@ -48,10 +48,10 @@ const createEnv = (): StepExecutorEnv => {
     outputMapping: {},
     inputParser: { parse: (value: unknown) => value } as any,
   } as any;
-
-  return {
+  const env = {
     compiled,
     context: new TestContext(),
+    signal: new AbortController().signal,
     runId: 'run-1',
     buildInstanceStepInfo: jest.fn(),
     markSnapshot: jest.fn(),
@@ -68,7 +68,12 @@ const createEnv = (): StepExecutorEnv => {
     captureTaskOutput: jest.fn(),
     executeFlow: jest.fn(),
     executeStep: jest.fn(),
-  };
+    fork: jest.fn(),
+  } as StepExecutorEnv;
+
+  env.fork = jest.fn((overrides) => ({ ...env, ...overrides }));
+
+  return env;
 };
 
 describe('executeConditional', () => {

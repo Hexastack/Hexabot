@@ -27,6 +27,7 @@ export const ActionFormDrawerFooter = ({
       ariaLabel={saveLabel}
       onClick={onSave}
       disabled={saveDisabled}
+      dataTourId="admin-workflow-tour-action-save"
       startIcon={<Save size={18} />}
     />
   );

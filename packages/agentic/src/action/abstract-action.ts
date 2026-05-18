@@ -8,6 +8,7 @@ import { z, ZodType } from 'zod';
 
 import { BaseWorkflowContext } from '../context';
 import { BaseSettingsSchema } from '../dsl.types';
+import { throwIfAborted } from '../errors';
 import { sleep, withTimeout } from '../utils/timeout';
 
 import {
@@ -110,6 +111,7 @@ export abstract class AbstractAction<
     context: C,
     settings?: Partial<RuntimeSettings<S>>,
     bindings?: B,
+    signal?: AbortSignal,
   ): Promise<O> {
     const input = this.parseInput(payload);
     const parsedSettings = this.parseSettings(settings);
@@ -134,6 +136,10 @@ export abstract class AbstractAction<
     const multiplier = retrySettings.multiplier;
 
     while (attempt < maxAttempts) {
+      if (signal) {
+        throwIfAborted(signal);
+      }
+
       try {
         const result = await withTimeout(
           this.execute({
@@ -141,8 +147,10 @@ export abstract class AbstractAction<
             context,
             settings: parsedSettings,
             bindings: parsedBindings,
+            signal: signal ?? new AbortController().signal,
           }),
           timeoutMs,
+          signal,
         );
 
         return this.parseOutput(result);
@@ -164,7 +172,7 @@ export abstract class AbstractAction<
           const jitteredDelay = Math.max(0, Math.round(delay * jitterFactor));
 
           if (jitteredDelay > 0) {
-            await sleep(jitteredDelay);
+            await sleep(jitteredDelay, signal);
           }
         }
 

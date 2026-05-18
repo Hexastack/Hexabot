@@ -12,6 +12,7 @@ type DrawerPrimaryFooterActionProps = {
   onClick: () => void;
   disabled?: boolean;
   ariaLabel?: string;
+  dataTourId?: string;
   startIcon?: ReactNode;
   minWidth?: number;
 };
@@ -21,6 +22,7 @@ export const DrawerPrimaryFooterAction = ({
   onClick,
   disabled,
   ariaLabel,
+  dataTourId,
   startIcon,
   minWidth = 200,
 }: DrawerPrimaryFooterActionProps) => {
@@ -32,6 +34,7 @@ export const DrawerPrimaryFooterAction = ({
         onClick={onClick}
         disabled={disabled}
         aria-label={ariaLabel}
+        data-tour-id={dataTourId}
         startIcon={startIcon}
         sx={{ minWidth }}
       >

@@ -404,6 +404,7 @@ export const WorkflowBottomDrawer = () => {
         {isConversationalWorkflow ? (
           <ChatWidgetColumn
             variant="spaced"
+            data-tour-id="admin-workflow-tour-chat-widget"
             onWheelCapture={(event) => {
               event.stopPropagation();
             }}

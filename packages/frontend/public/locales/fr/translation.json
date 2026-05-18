@@ -571,6 +571,7 @@
       "status_failed": "Échouée",
       "status_skipped": "Ignorée",
       "status_suspended": "Suspendue",
+      "status_cancelled": "Annulée",
       "status_pending": "En attente",
       "type_llm": "LLM",
       "type_http": "HTTP",
@@ -675,7 +676,10 @@
     "not_now": "Plus tard",
     "view_plans": "Voir les offres",
     "enter_license_key": "Saisir une clé de licence",
-    "manage_users": "Gérer les utilisateurs"
+    "manage_users": "Gérer les utilisateurs",
+    "next": "Suivant",
+    "skip": "Ignorer",
+    "done": "Terminé"
   },
   "input": {
     "search": "Recherche",
@@ -906,6 +910,33 @@
       "show": "Afficher l'éditeur YAML",
       "hide": "Masquer l'éditeur YAML",
       "validation_title": "La définition du workflow contient des erreurs"
+    },
+    "guided_tour": {
+      "workflow_name_prefix": "Mon premier workflow",
+      "dashboard_create": {
+        "title": "Créez votre premier workflow",
+        "content": "Commencez par créer un workflow conversationnel. Utilisez le bouton Créer un workflow mis en évidence et Hexabot ouvrira un éditeur visuel tout neuf."
+      },
+      "empty_insert": {
+        "title": "Ajoutez le premier bloc",
+        "content": "Votre canevas est prêt. Cliquez sur le bouton plus mis en évidence pour déposer le premier bloc."
+      },
+      "insert_step": {
+        "title": "Choisissez une étape",
+        "content": "Choisissez Étape dans le menu d'insertion. Le workflow aura ainsi une vraie action à exécuter au début de la conversation."
+      },
+      "send_text_action": {
+        "title": "Envoyez un message texte",
+        "content": "Choisissez Envoyer un message texte. C'est le moyen le plus rapide de faire répondre votre bot avec un message clair et sympa."
+      },
+      "action_save": {
+        "title": "Enregistrez l'action",
+        "content": "Enregistrez l'action avec les valeurs par défaut. La première réponse est alors ajoutée au workflow et vous pouvez l'essayer tout de suite."
+      },
+      "chat_widget": {
+        "title": "Testez la conversation",
+        "content": "Testez maintenant la conversation depuis le widget de chat. Envoyez un message et regardez votre premier workflow répondre."
+      }
     },
     "workflow_versions": {
       "show": "Afficher les versions du workflow",

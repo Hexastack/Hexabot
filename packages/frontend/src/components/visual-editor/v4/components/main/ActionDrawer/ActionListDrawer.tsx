@@ -160,6 +160,11 @@ const ActionListDrawerContent = ({
                   return (
                     <ActionItem
                       key={actionKey}
+                      data-tour-id={
+                        action.name === "send_text_message"
+                          ? "admin-workflow-tour-send-text-action"
+                          : undefined
+                      }
                       onClick={() => onActionSelect?.(action)}
                     >
                       <ListItemIcon

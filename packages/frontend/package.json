@@ -59,6 +59,7 @@
     "react-hook-form": "^7.51.5",
     "react-i18next": "^14.1.1",
     "react-is": "^18.3.1",
+    "react-joyride": "^2.9.3",
     "react-router-dom": "^6.30.2",
     "socket.io-client": "^4.7.5",
     "yaml": "^2.8.3",

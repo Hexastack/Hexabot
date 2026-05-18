@@ -35,6 +35,9 @@ export const QuickActions = () => {
             variant="outlined"
             startIcon={<Icon size={18} color={theme.palette.primary.main} />}
             onClick={() => url && router.push(url)}
+            data-tour-id={
+              id === "create" ? "admin-workflow-tour-create" : undefined
+            }
           >
             {t(label)}
           </Button>

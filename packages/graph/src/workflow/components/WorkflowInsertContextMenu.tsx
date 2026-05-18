@@ -173,6 +173,11 @@ export const WorkflowInsertContextMenu = ({
               role="menuitem"
               className="workflow-insert-menu__item nodrag nopan"
               data-item-id={item.id}
+              data-tour-id={
+                item.id === "step"
+                  ? "admin-workflow-tour-insert-step"
+                  : undefined
+              }
               onClick={(event) => {
                 handleMenuItemClick(event, item.type);
               }}

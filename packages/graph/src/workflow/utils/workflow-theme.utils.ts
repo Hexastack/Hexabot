@@ -48,9 +48,11 @@ const WORKFLOW_STATE_ICONS: Partial<Record<ActionStatus, WorkflowIcon>> = {
   running: WorkflowRunningIcon,
   failed: Icons.TriangleAlert,
   suspended: Icons.SquarePause,
+  cancelled: Icons.Ban,
 };
 const WORKFLOW_STATE_COLOR_OVERRIDES: Partial<Record<ActionStatus, string>> = {
   failed: "#FF0000",
+  cancelled: "#64748B",
 };
 
 export const getWorkflowStateConfig = (

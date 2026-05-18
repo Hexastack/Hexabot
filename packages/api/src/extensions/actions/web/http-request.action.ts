@@ -136,6 +136,17 @@ function resolveFinalUrl(response: {
   return response.request?.res?.responseUrl ?? response.request?.responseUrl;
 }
 
+function isAxiosCancellation(error: unknown) {
+  if (typeof axios.isCancel === 'function' && axios.isCancel(error)) {
+    return true;
+  }
+
+  return (
+    error instanceof Error &&
+    (error as Error & { code?: string }).code === 'ERR_CANCELED'
+  );
+}
+
 function parseRequestBody(
   body: string,
 ): string | Record<string, unknown> | unknown[] {
@@ -171,7 +182,7 @@ export const HttpRequestAction = createAction<
   inputSchema: httpRequestInputSchema,
   outputSchema: httpRequestOutputSchema,
   settingsSchema: httpRequestSettingsSchema,
-  async execute({ input, context, settings }) {
+  async execute({ input, context, settings, signal }) {
     const logger = context.services.logger;
     const timeoutMs = settings.timeout_ms ?? 10000;
     const method = settings.method ?? 'GET';
@@ -192,6 +203,7 @@ export const HttpRequestAction = createAction<
         method,
         headers,
         timeout: timeoutMs,
+        signal,
         validateStatus: () => true,
         ...(requestData !== undefined ? { data: requestData } : {}),
       });
@@ -240,6 +252,10 @@ export const HttpRequestAction = createAction<
         truncated: false,
       };
     } catch (error) {
+      if (signal?.aborted || isAxiosCancellation(error)) {
+        throw error;
+      }
+
       const message =
         error instanceof Error ? error.message : 'Unknown network error';
 

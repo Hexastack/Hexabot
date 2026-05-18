@@ -30,17 +30,17 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - Entry points: `Workflow.fromYaml` / `Workflow.fromDefinition` validate via `validateWorkflow` then compile via `compileWorkflow` into a `CompiledWorkflow`.
 - Runner: `WorkflowRunner.start` executes the compiled flow; `resume` continues after a suspension. `Workflow.run` is a convenience that throws an error carrying suspension details (`stepId`, `reason`, `data`) on suspension.
 - Step ids: generated from the flow path (e.g., `0.branch.1:conditional`); loop iterations append `[i.j]` suffixes.
-- Snapshots: every start/resume returns `{ status, snapshot }` with `WorkflowSnapshot.actions` capturing per-step status (`pending|running|suspended|completed|failed|skipped`).
-- Events: runners can emit to any `emit`/`on`-compatible emitter (`WorkflowEventEmitter` is the built-in helper) with `hook:workflow:start|finish|failure|suspended` and `hook:step:start|success|error|suspended|skipped`.
+- Snapshots: every start/resume returns `{ status, snapshot }` with `WorkflowSnapshot.actions` capturing per-step status (`pending|running|suspended|completed|failed|cancelled|skipped`).
+- Events: runners can emit to any `emit`/`on`-compatible emitter (`WorkflowEventEmitter` is the built-in helper) with `hook:workflow:start|finish|failure|suspended` and `hook:step:start|success|error|cancelled|suspended|skipped`.
 - Evaluation order: task-def inputs are evaluated before marking a step as running; task results are stored raw under `$output.<task>`. Final workflow outputs are evaluated only after the flow completes.
-- Parallel semantics: executed sequentially for determinism; `wait_any` short-circuits after the first completed child, `wait_all` waits for all.
+- Parallel semantics: child steps start concurrently. Each branch receives an isolated `$output`, `$iteration`, `$accumulator`, and context state snapshot from parallel entry; parent `$output` is merged only when the block resolves. `wait_all` merges branch output deltas in child-index order. `wait_any` uses the first successful branch, aborts siblings with `AbortSignal`, and discards loser outputs. Suspensions inside parallel fail the workflow with `ParallelSuspensionError`.
 - Loop semantics:
   - `type: for_each`: iterates over evaluated `for_each.in` (arrays only), threads `$iteration` and accumulator, and optionally checks `until` after each iteration.
   - `type: while`: evaluates `while` before each iteration and then executes loop steps.
   - Accumulated values are exposed under `$output.<loop_name>.<accumulator_alias>` when `name` is set.
 
 ## Actions and settings
-- Create actions with `defineAction` (or extend `AbstractAction`): provide `name` (snake_case), optional `description`, `inputSchema`, `outputSchema`, optional `settingSchema`, and an async `execute`.
+- Create actions with `defineAction` (or extend `AbstractAction`): provide `name` (snake_case), optional `description`, `inputSchema`, `outputSchema`, optional `settingSchema`, and an async `execute`. `execute` receives an `AbortSignal` as `signal`; long-running actions should stop promptly when it is aborted.
 - `AbstractAction.run` handles `parseInput`, merges/parses settings (defaults live in `SettingsSchema`, including `timeout_ms` and retry policy), wraps `execute` with timeout/retries, and validates the output.
 - Suspension: inside `execute`, `await context.workflow.suspend(options)`; the runner marks the step as `suspended` and returns `{ status: 'suspended', step, reason?, data? }`. On resume, the suspended action continues from the `await` with the provided data.
 - Settings merge: `mergeSettings` deep-merges `defaults.settings` with task-def overrides; undefined values do not clobber defaults.
@@ -55,6 +55,7 @@ Use this file as the predictable entrypoint for AI coding agents working on the 
 - `timeout_ms: 0` disables timeouts. Default retries come from `DEFAULT_RETRY_SETTINGS` (3 attempts, exponential backoff starting at 25ms, capped at 10s, no jitter).
 - Task-level output mapping is not supported; the entire raw action result is always stored under `$output.<task>`.
 - `BaseWorkflowContext.workflow` is attached only while running; don’t hold references beyond execution.
+- `context.workflow.suspend()` is valid only outside parallel blocks; inside parallel branches it rejects with `ParallelSuspensionError`.
 
 ## When extending the package
 - Add or adjust DSL shape in `packages/agentic/src/dsl.types.ts` and update `packages/agentic/DSL.md` plus the example workflow if behavior changes.
