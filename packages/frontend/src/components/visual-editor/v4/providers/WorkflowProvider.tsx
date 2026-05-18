@@ -44,7 +44,6 @@ import type { WorkflowContextProps } from "../types/workflow.types";
 import { getSchemaDefaults } from "../utils/schema-defaults.utils";
 import {
   createBaseDefinition,
-  createTaskName,
   extractTaskIdsFromYaml,
 } from "../utils/workflow-definition.utils";
 
@@ -117,11 +116,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
   const addActionStep = useCallback(
     (action: IAction, insertPath?: FlowStepPath | null) => {
       const baseDefinition = definition ?? createBaseDefinition();
-      const nextTaskName = createTaskName(
-        action.name,
-        baseDefinition.defs ?? {},
-        taskDefinitions,
-      );
+      const nextTaskName = action.name;
       const taskDescription = action.description?.trim();
       const inputDefaults = getSchemaDefaults<TaskInputs>(action.inputSchema);
       const settingDefaults = getSchemaDefaults<TaskSettings>(
@@ -162,7 +157,7 @@ export const WorkflowProvider: React.FC<WorkflowContextProps> = ({
 
       updateDefinitionState(nextDefinition);
     },
-    [definition, taskDefinitions, updateDefinitionState],
+    [definition, updateDefinitionState],
   );
   const addConditionalStep = useCallback(
     (insertPath?: FlowStepPath | null) => {

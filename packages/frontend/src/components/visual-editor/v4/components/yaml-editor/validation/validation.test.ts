@@ -69,47 +69,4 @@ describe("yaml validation markers", () => {
     expect(markers[0]?.startLineNumber).toBe(4);
     expect((markers[0]?.endLineNumber ?? 0) >= 4).toBe(true);
   });
-
-  it("flags non-snake-case task names using agentic naming rules", () => {
-    const setModelMarkers = vi.fn();
-    const model = {} as editor.ITextModel;
-    const editorInstance = {
-      getModel: () => model,
-    } as editor.IStandaloneCodeEditor;
-    const monacoInstance = {
-      MarkerSeverity: {
-        Error: 8,
-      },
-      editor: {
-        setModelMarkers,
-      },
-    } as unknown as Monaco;
-    const yaml = [
-      "defs:",
-      "  taskalpha:",
-      "    kind: task",
-      "    action: known_action",
-      "flow:",
-      "  - do: taskalpha",
-      "outputs:",
-      '  result: "=$output.taskalpha"',
-    ].join("\n");
-
-    applyWorkflowValidationMarkers({
-      editorInstance,
-      monacoInstance,
-      yaml,
-      actions: [makeAction("known_action")],
-    });
-
-    const [, , markers] = setModelMarkers.mock.calls[0] as [
-      editor.ITextModel,
-      string,
-      editor.IMarkerData[],
-    ];
-
-    expect(markers[0]?.message).toBe(
-      'action name must be snake_case with at least one underscore. Received: "taskalpha"',
-    );
-  });
 });

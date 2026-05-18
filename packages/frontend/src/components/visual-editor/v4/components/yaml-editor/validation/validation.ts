@@ -5,7 +5,6 @@
  */
 
 import {
-  assertSnakeCaseName,
   BaseSettingsSchema,
   extractTaskDefinitions,
   WorkflowDefinitionSchema,
@@ -141,19 +140,6 @@ export const applyWorkflowValidationMarkers = ({
       const actionName = task.action;
       const actionDefinition = actionsByName[actionName];
       const taskPath: ReferencePath = ["defs", taskName];
-
-      try {
-        assertSnakeCaseName(taskName, "action");
-      } catch (error) {
-        markers.push({
-          ...getRangeForPath(doc, taskPath, lineCounter),
-          message:
-            error instanceof Error
-              ? error.message
-              : `Invalid task name: "${taskName}"`,
-          severity: monacoInstance.MarkerSeverity.Error,
-        });
-      }
 
       if (!actionDefinition) {
         markers.push({

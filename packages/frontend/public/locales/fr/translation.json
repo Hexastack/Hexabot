@@ -739,7 +739,6 @@
           "placeholder": "id_etape",
           "errors": {
             "required": "L'ID de l'étape est obligatoire.",
-            "snake_case": "L'ID de l'étape doit être en snake_case avec un underscore.",
             "unique": "Cet ID d'étape existe déjà dans ce workflow."
           }
         },

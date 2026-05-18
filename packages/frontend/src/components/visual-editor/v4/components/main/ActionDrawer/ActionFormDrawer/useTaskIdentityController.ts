@@ -9,8 +9,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
-import { normalizeTaskName } from "../../../../utils/workflow-definition.utils";
-
 type UseTaskIdentityControllerParams = {
   open: boolean;
   actionName?: string;
@@ -30,7 +28,7 @@ export const useTaskIdentityController = ({
   const [taskNameValue, setTaskNameValue] = useState("");
   const [taskDescriptionValue, setTaskDescriptionValue] = useState("");
   const normalizedTaskName = useMemo(
-    () => normalizeTaskName(taskNameValue),
+    () => taskNameValue.trim(),
     [taskNameValue],
   );
   const taskNameValidationError = useMemo(() => {
@@ -40,10 +38,6 @@ export const useTaskIdentityController = ({
 
     if (!taskNameValue.trim()) {
       return t("visual_editor.actions_drawer.form.step_id.errors.required");
-    }
-
-    if (!normalizedTaskName) {
-      return t("visual_editor.actions_drawer.form.step_id.errors.snake_case");
     }
 
     if (
@@ -66,9 +60,7 @@ export const useTaskIdentityController = ({
   }, [open, actionName, taskName, taskDescription]);
 
   const handleTaskNameCommit = useCallback((nextTaskName: string) => {
-    const nextNormalizedTaskName = normalizeTaskName(nextTaskName);
-
-    setTaskNameValue(nextNormalizedTaskName || "");
+    setTaskNameValue(nextTaskName.trim());
   }, []);
   const handleTaskNameCancel = useCallback(() => {
     setTaskNameValue(taskName ?? "");

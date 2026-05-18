@@ -84,10 +84,7 @@ import {
   getDisabledBindingRefs,
   isNonToolBindingKind,
 } from "../utils/workflow-binding-routing.utils";
-import {
-  createBaseDefinition,
-  createTaskName,
-} from "../utils/workflow-definition.utils";
+import { createBaseDefinition } from "../utils/workflow-definition.utils";
 import "./workflow-layout.css";
 
 const StyledBox = styled(Box)(() => ({
@@ -133,7 +130,6 @@ export const Workflow = () => {
     updateWorkflow,
     updateWorkflowURL,
     definition,
-    taskDefinitions,
     flow,
     isDefinitionDirty,
     isSaving: isDefinitionSaving,
@@ -310,12 +306,7 @@ export const Workflow = () => {
         return;
       }
 
-      const baseDefinition = definition ?? createBaseDefinition();
-      const nextTaskName = createTaskName(
-        action.name,
-        baseDefinition.defs ?? {},
-        taskDefinitions,
-      );
+      const nextTaskName = action.name;
 
       setPendingActionCreateTarget({
         action,
@@ -333,13 +324,7 @@ export const Workflow = () => {
       setPendingBindingAdd(null);
       setEditingBindingTarget(null);
     },
-    [
-      definition,
-      pendingInsertPath,
-      pendingToolBindingAdd,
-      setGraphSelection,
-      taskDefinitions,
-    ],
+    [definition, pendingInsertPath, pendingToolBindingAdd, setGraphSelection],
   );
 
   useEffect(() => {
