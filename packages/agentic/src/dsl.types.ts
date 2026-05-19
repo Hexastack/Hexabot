@@ -10,6 +10,7 @@ import { z } from 'zod';
 
 import type { BindingKindSchemas } from './bindings/base-binding';
 import { validateAndResolveBindings } from './bindings/base-binding';
+import { SNAKE_CASE_REGEX } from './utils/naming';
 
 export const ExpressionStringSchema = z
   .string()
@@ -330,7 +331,10 @@ export const WorkflowDefinitionSchema = z.strictObject({
   inputs: InputsSchema.optional(),
   context: z.record(z.string(), JsonValueSchema).optional(),
   defaults: DefaultsSchema.optional(),
-  defs: z.record(z.string(), DefDefinitionSchema),
+  defs: z.record(
+    z.string().regex(SNAKE_CASE_REGEX, 'Name must be snake_case'),
+    DefDefinitionSchema,
+  ),
   flow: z.array(FlowStepSchema),
   outputs: z.record(z.string(), ExpressionStringSchema),
 });

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-const SNAKE_CASE_REGEX = /^[a-z0-9]+(?:_[a-z0-9]+)+$/;
+export const SNAKE_CASE_REGEX = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
 
 export type WorkflowEntity = 'action' | 'workflow' | 'predicate';
 
