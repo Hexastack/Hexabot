@@ -109,7 +109,11 @@ export { createDeferred } from './utils/deferred';
 
 export type { Deferred } from './utils/deferred';
 
-export { isSnakeCaseName, toSnakeCase } from './utils/naming';
+export {
+  assertSnakeCaseName,
+  isSnakeCaseName,
+  toSnakeCase,
+} from './utils/naming';
 
 export { sleep, withTimeout } from './utils/timeout';
 

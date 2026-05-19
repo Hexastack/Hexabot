@@ -9,6 +9,7 @@ import { z, ZodType } from 'zod';
 import { BaseWorkflowContext } from '../context';
 import { BaseSettingsSchema } from '../dsl.types';
 import { throwIfAborted } from '../errors';
+import { assertSnakeCaseName } from '../utils/naming';
 import { sleep, withTimeout } from '../utils/timeout';
 
 import {
@@ -63,6 +64,7 @@ export abstract class AbstractAction<
       }
     }
 
+    assertSnakeCaseName(metadata.name, 'action');
     this.name = metadata.name;
     this.description = metadata.description;
     this.inputSchema = metadata.inputSchema;
